@@ -7,7 +7,6 @@ export interface BranchLocationDataTypes {
   name: string; // Name of the branch
   address: string; // Address of the branch
   contact_phone: string; // Contact phone number
-
 }
 
 // API Slice for Branch Locations
@@ -46,11 +45,20 @@ export const locationBranchAPI = createApi({
       invalidatesTags: ["BranchLocation"],
     }),
     // Delete a branch location
-    deleteBranchLocation: builder.mutation<{ success: boolean; branch_id: number }, number>({
+     deleteBranchLocation: builder.mutation<{ success?: boolean; branch_id?: number }, number>({ // Modify to reflect what your service now returns
       query: (branch_id) => ({
         url: `branchLocations/${branch_id}`,
         method: "DELETE",
       }),
+      transformErrorResponse: (response) => {
+                // Check the original status code.
+                if (response.status === 403) {
+                    // If its a Forbidden response, construct the message:
+                    return { message: "You do not have permission to delete this branch." };
+                }
+                // Otherwise return the existing error:
+                return response;
+            },
       invalidatesTags: ["BranchLocation"],
     }),
   }),

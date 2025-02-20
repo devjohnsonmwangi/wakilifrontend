@@ -30,6 +30,7 @@
     "file-saver": "^2.0.5",
     "flowbite": "^2.4.1",
     "flowbite-react": "^0.10.1",
+    "framer-motion": "^12.4.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",

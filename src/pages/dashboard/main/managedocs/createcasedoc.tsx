@@ -71,13 +71,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
         try {
             // IMPORTANT: No longer expect a direct URL back. The backend will now manage.
             await createCaseDocument(formData).unwrap();
-            await createLog({ action: `Uploaded document: ${file.name} to Azure Blob Storage` });
-            toast.success("Document uploaded successfully to Azure Blob Storage!");
+            await createLog({ action: `Uploaded document: ${file.name}` }); //Removed from azure since is not being stored there
+            toast.success("Document uploaded successfully!"); //removed azure
             resetForm();
             onClose();
         } catch (error: any) {
             console.error("Failed to upload document:", error);
-            toast.error("Failed to upload document to Azure Blob Storage"); //Specific message
+            toast.error("Failed to upload document"); //Specific message Removed azure
         } finally {
             setIsUploading(false); // Reset uploading state in finally block
         }
@@ -142,14 +142,14 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             });
 
             await createCaseDocument(formData).unwrap();
-            await createLog({ action: `Created document: ${documentName} and uploaded to Azure Blob Storage` });
-            toast.success("Document created and uploaded to Azure Blob Storage!");
+            await createLog({ action: `Created document: ${documentName}` }); // removed azure
+            toast.success("Document created and uploaded!"); //removed azure
             resetForm();
             onClose();
 
         } catch (error: any) {
             console.error("Failed to generate PDF:", error);
-            toast.error("Failed to generate PDF and upload to Azure Blob Storage"); //Specific message
+            toast.error("Failed to generate PDF and upload"); //Specific message removed azure
         } finally {
             setIsGeneratingPdf(false);
         }

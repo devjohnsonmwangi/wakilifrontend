@@ -4,14 +4,15 @@ import { APIDomain } from "../../utils/APIDomain";
 // Define Appointment Data Types
 export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled";
 
-
 export interface AppointmentDataTypes {
-  appointment_id: number; // Unique identifier for the appointment
-  client_id: number; // ID of the client
-  lawyer_id: number; // ID of the lawyer
-  appointment_date: string; // Date and time of the appointment
-  status: AppointmentStatus; // Status of the appointment
-
+  appointment_id: number;
+  user_id: number;
+  branch_id: number;
+  party: string;
+  reason: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: AppointmentStatus;
 }
 
 // API Slice for Appointments
@@ -32,7 +33,7 @@ export const appointmentAPI = createApi({
       providesTags: ["Appointments"],
     }),
     // Create new appointment
-    createAppointment: builder.mutation<AppointmentDataTypes, Partial<AppointmentDataTypes>>({
+    createAppointment: builder.mutation<AppointmentDataTypes, Omit<AppointmentDataTypes, "appointment_id">>({
       query: (newAppointment) => ({
         url: "appointments",
         method: "POST",
@@ -43,7 +44,7 @@ export const appointmentAPI = createApi({
     // Update existing appointment
     updateAppointment: builder.mutation<
       AppointmentDataTypes,
-      Partial<AppointmentDataTypes & { appointment_id: number }>
+      Partial<Omit<AppointmentDataTypes, "appointment_id">> & { appointment_id: number }
     >({
       query: ({ appointment_id, ...rest }) => ({
         url: `appointments/${appointment_id}`,
@@ -53,7 +54,7 @@ export const appointmentAPI = createApi({
       invalidatesTags: ["Appointments"],
     }),
     // Delete an appointment
-    deleteAppointment: builder.mutation<{ success: boolean; appointment_id: number }, number>({
+    deleteAppointment: builder.mutation<{ success: boolean }, number>({
       query: (appointment_id) => ({
         url: `appointments/${appointment_id}`,
         method: "DELETE",

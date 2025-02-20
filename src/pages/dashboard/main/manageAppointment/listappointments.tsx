@@ -1,172 +1,205 @@
-import { useState } from "react";
+// ListAppointments.tsx
+
+import React, { useState } from 'react';
 import {
-    useFetchAppointmentsQuery,
-    AppointmentDataTypes,
-    useDeleteAppointmentMutation
-} from "../../../../features/appointment/appointmentapi";
-import AppointmentCreate from "./createappointment";
-import AppointmentEdit from "./editappointments";
-import { toast } from "sonner";
-import { format } from 'date-fns';
-import { AiOutlinePlus } from "react-icons/ai"; // Import plus icon
+  useFetchAppointmentsQuery,
+  useUpdateAppointmentMutation,
+  useDeleteAppointmentMutation,
+  AppointmentDataTypes,
+  AppointmentStatus
+} from '../../../../features/appointment/appointmentapi'; // Adjust path
+import { Toaster, toast } from 'sonner';
+import CreateAppointment from './createappointment'; // Adjust path
+import EditAppointment from './editappointments'; // Adjust path
 
-const AppointmentList = () => {
-    const { data: appointments, isLoading, isError } = useFetchAppointmentsQuery();
-    const [deleteAppointment] = useDeleteAppointmentMutation();
-    const [editingAppointmentId, setEditingAppointmentId] = useState<number | null>(null);
-    const [calendarEvents, setCalendarEvents] = useState<AppointmentDataTypes[]>([]);
-    const [showCreateModal, setShowCreateModal] = useState(false);  // State to control create modal visibility
+const ListAppointments: React.FC = () => {
+  const { data: appointments, isLoading, isError, refetch } = useFetchAppointmentsQuery();
+  const [updateAppointment, { isLoading: isStatusLoading }] = useUpdateAppointmentMutation();
+  const [deleteAppointment, { isLoading: isDeleteLoading }] = useDeleteAppointmentMutation();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
 
-    const handleDelete = async (appointment_id: number) => {
-        try {
-            await deleteAppointment(appointment_id).unwrap();
-            toast.success("Appointment deleted successfully!");
-        } catch (error: any) {
-            console.error("Failed to delete appointment:", error);
-            toast.error(`Failed to delete appointment: ${error.message}`);
-        }
-    };
+  const openCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
 
-    const handleAppointmentCreated = (newAppointment: AppointmentDataTypes) => {
-        setCalendarEvents([...calendarEvents, newAppointment]);
-        setShowCreateModal(false); // Close the modal after creating
-    };
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
 
-    const handleAppointmentUpdated = (updatedAppointment: AppointmentDataTypes) => {
-        setCalendarEvents(
-            calendarEvents.map((event) =>
-                event.appointment_id === updatedAppointment.appointment_id ? updatedAppointment : event
-            )
-        );
-        setEditingAppointmentId(null);
-    };
+  const openEditModal = (appointment: AppointmentDataTypes) => {
+    setSelectedAppointment(appointment);
+    setIsEditModalOpen(true);
+  };
 
-    const closeModal = () => {
-        setEditingAppointmentId(null);
-    };
-    const closeCreateModal = () => {
-        setShowCreateModal(false);
-    };
+  const closeEditModal = () => {
+    setSelectedAppointment(null);
+    setIsEditModalOpen(false);
+  };
 
-    if (isLoading) return <div>Loading appointments...</div>;
-    if (isError) return <div>Error loading appointments.</div>;
+  const handleAppointmentCreated = () => {
+    refetch(); // Refresh the list after creating an appointment
+  };
 
-    return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-extrabold text-gray-800 mb-6 text-center">Appointments</h1>
+  const handleAppointmentUpdated = () => {
+    refetch(); // Refresh the list after updating an appointment
+  };
 
-            {/* Create Appointment Button and Modal */}
-            <div className="mb-4 flex justify-end">
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center"
-                >
-                    <AiOutlinePlus className="mr-2" />
-                    Create Appointment
-                </button>
-            </div>
+  const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
+    try {
+      await updateAppointment({ appointment_id: appointmentId, status: newStatus }).unwrap();
+      toast.success(`Appointment status updated to ${newStatus}!`);
+      refetch(); // Refresh the list after status update
+    } catch (error) {
+      console.error('Failed to update appointment status:', error);
+      toast.error('Failed to update appointment status. Please try again.');
+    }
+  };
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                ID
-                            </th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Client ID
-                            </th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Lawyer ID
-                            </th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Date
-                            </th>
-                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {appointments?.map((appointment) => (
-                            <tr key={appointment.appointment_id} className="hover:bg-gray-50 transition-colors duration-200">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                    {appointment.appointment_id}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {appointment.client_id}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {appointment.lawyer_id}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {format(new Date(appointment.appointment_date), 'PPP p')}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : appointment.status === 'completed' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                                            }`}
-                                    >
-                                        {appointment.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button
-                                        onClick={() => setEditingAppointmentId(appointment.appointment_id)}
-                                        className="text-blue-600 hover:text-blue-900 mr-2"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(appointment.appointment_id)}
-                                        className="text-red-600 hover:text-red-900"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+  const handleDeleteAppointment = async (appointmentId: number) => {
+    try {
+      await deleteAppointment(appointmentId).unwrap();
+      toast.success('Appointment deleted successfully!');
+      refetch(); // Refresh the list after deleting an appointment
+    } catch (error) {
+      console.error('Failed to delete appointment:', error);
+      toast.error('Failed to delete appointment. Please try again.');
+    }
+  };
 
-            {/* Edit Modal */}
-            {editingAppointmentId && (
-                <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-75 flex items-center justify-center">
-                    <div className="bg-white rounded-lg shadow-xl p-6 relative" style={{ width: '500px', maxWidth: '90%' }}>
-                        <button
-                            title="Close"
-                            onClick={closeModal}
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                        >
-                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        <AppointmentEdit appointmentId={editingAppointmentId} onAppointmentUpdated={handleAppointmentUpdated} onClose={closeModal} />
+  if (isLoading) {
+    return <div className="text-center py-4">Loading appointments...</div>;
+  }
+
+  if (isError) {
+    return <div className="text-center py-4 text-red-500">Error loading appointments.</div>;
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <Toaster richColors closeButton />
+      <h1 className="text-4xl font-extrabold text-blue-700 tracking-tight mb-6 text-center">
+        Appointments
+      </h1>
+
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={openCreateModal}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Create Appointment
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="shadow-xl rounded-xl overflow-hidden">
+          <table className="min-w-full leading-normal table-auto">
+            <thead>
+              <tr className="bg-blue-100 text-blue-700">
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Party
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Time
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Reason
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {appointments && appointments.map((appointment) => (
+                <tr key={appointment.appointment_id} className="hover:bg-gray-50">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {appointment.appointment_id}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {appointment.party}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {new Date(appointment.appointment_date).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                    {appointment.appointment_time}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <div className="w-64 max-h-20 overflow-y-auto">
+                      <textarea
+                        title='Reason'
+                        readOnly
+                        value={appointment.reason}
+                        rows={2}
+                        className="shadow-md appearance-none border-none bg-gray-100 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline resize-none"
+                      />
                     </div>
-                </div>
-            )}
-            {showCreateModal && (
-                <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-75 flex items-center justify-center">
-                    <div className="bg-white rounded-lg shadow-xl p-6 relative" style={{ width: '500px', maxWidth: '90%' }}>
-                      
-                        <AppointmentCreate onAppointmentCreated={handleAppointmentCreated} onClose={closeCreateModal} />
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <select
+                      title="Change Status"
+                      value={appointment.status}
+                      onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)}
+                      className="shadow-md appearance-none border-none bg-gray-100 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      disabled={isStatusLoading}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <button
+                        onClick={() => openEditModal(appointment)}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAppointment(appointment.appointment_id)}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        disabled={isDeleteLoading}
+                      >
+                        Delete
+                      </button>
                     </div>
-                </div>
-            )}
-
-            {/* Calendar Integration (Placeholder) */}
-            <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-2">Calendar View</h2>
-                {/* Integrate your calendar component here */}
-            </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-    );
+      </div>
+
+      {isCreateModalOpen && (
+        <CreateAppointment
+          onAppointmentCreated={handleAppointmentCreated}
+          onClose={closeCreateModal}
+        />
+      )}
+
+      {isEditModalOpen && selectedAppointment && (
+        <EditAppointment
+          appointment={selectedAppointment}
+          onAppointmentUpdated={handleAppointmentUpdated}
+          onClose={closeEditModal}
+        />
+      )}
+    </div>
+  );
 };
 
-export default AppointmentList;
+export default ListAppointments;

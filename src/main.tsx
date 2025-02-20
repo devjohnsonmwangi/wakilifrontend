@@ -33,6 +33,9 @@ import Account from './pages/dashboard/main/Account.tsx';
  import CreateTicket from './pages/dashboard/main/Tickets/CreateTicket.tsx';
  import Logout from './components/logout/logout.tsx'
  import  AppointmentList from './pages/dashboard/main/manageAppointment/listappointments.tsx'
+
+ import BranchLocationManagement from './pages/dashboard/main/branchlocation/listbranch.tsx'
+  import ListAppointments from './pages/dashboard/main/manageAppointment/listappointments.tsx'
  
 
 
@@ -124,10 +127,10 @@ const router = createBrowserRouter([
 
   {
     path:'appoint',
-    element: < AppointmentList/>,
+    element: <ListAppointments/>,
     errorElement: <Error/>
   },
-
+  
 
  
 
@@ -165,7 +168,7 @@ const router = createBrowserRouter([
         element: < AppointmentList/>,
      
       },
-      
+     
       // {
       //   path: 'payments',
       //   element: <UserBookings />
@@ -209,6 +212,10 @@ const router = createBrowserRouter([
         path: 'reports',
         element: <Reports />
 
+      },
+      {
+        path:'branch',
+        element: <BranchLocationManagement/>
       }
     ]
   }
