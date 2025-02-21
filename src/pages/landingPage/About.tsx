@@ -1,17 +1,26 @@
-
 import { useGetTeamByRolesQuery } from '../../features/team/teamApi';
 import { 
    Mail, Phone, Loader2, Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake 
 } from 'lucide-react'; // Importing Lucide Icons
 import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg'; // Importing the background image
 
+// Define the member type based on the expected structure
+interface Member {
+    id: number;
+    full_name: string;
+    role: string;
+    email: string;
+    phone_number: string;
+    profile_picture?: string;
+}
+
 const About = () => {
   const { data: team, isLoading, isError } = useGetTeamByRolesQuery('all');
-    // Log the team data for debugging
-    console.log('Team data:', team);
+  // Log the team data for debugging
+  console.log('Team data:', team);
 
-    // If the API response contains a `users` array, extract it
-    const members = Array.isArray(team) ? team : team?.users || [];
+  // If the API response contains a `users` array, extract it
+  const members: Member[] = Array.isArray(team) ? team : team?.users || [];
 
   return (
     <div className="relative mt-10 mb-10 px-6 ">
@@ -41,13 +50,13 @@ const About = () => {
             <div className="flex items-center gap-4">
               <Target className="w-10 h-10 text-[#006400]" />
               <p className="text-lg text-white">
-                <strong className="w-10 h-10 text-[#006400]" >Our Mission:</strong> To provide high-quality, accessible legal services to clients of all backgrounds.
+                <strong className="w-10 h-10 text-[#006400]">Our Mission:</strong> To provide high-quality, accessible legal services to clients of all backgrounds.
               </p>
             </div>
             <div className="flex items-center gap-4">
               <Eye className="w-10 h-10 text-[#006400]" />
               <p className="text-lg text-white">
-                <strong className="w-10 h-10 text-[#006400]" >Our Vision:</strong> We envision a future where legal services are simple, accessible, and client-driven.
+                <strong className="w-10 h-10 text-[#006400]">Our Vision:</strong> We envision a future where legal services are simple, accessible, and client-driven.
               </p>
             </div>
           </div>
@@ -59,23 +68,23 @@ const About = () => {
           <ul className="list-none space-y-6">
             <li className="flex items-center gap-4">
               <ShieldCheck className="w-8 h-8 text-[#006400]" />
-              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]" >Integrity:</strong> We uphold the highest ethical standards and act with honesty and fairness.</p>
+              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]">Integrity:</strong> We uphold the highest ethical standards and act with honesty and fairness.</p>
             </li>
             <li className="flex items-center gap-4">
               <Users className="w-8 h-8 text-[#006400]" />
-              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]" >Client-Centered Approach:</strong> We tailor our services to meet unique client needs.</p>
+              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]">Client-Centered Approach:</strong> We tailor our services to meet unique client needs.</p>
             </li>
             <li className="flex items-center gap-4">
               <TrendingUp className="w-8 h-8 text-[#006400]" />
-              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]" >Excellence:</strong> We strive for excellence, continuously improving to exceed client expectations.</p>
+              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]">Excellence:</strong> We strive for excellence, continuously improving to exceed client expectations.</p>
             </li>
             <li className="flex items-center gap-4">
               <Lightbulb className="w-8 h-8 text-[#006400]" />
-              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]" >Innovation:</strong> We embrace technology and innovation to deliver modern legal solutions.</p>
+              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]">Innovation:</strong> We embrace technology and innovation to deliver modern legal solutions.</p>
             </li>
             <li className="flex items-center gap-4">
               <ShieldCheck className="w-8 h-8 text-[#006400]" />
-              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]" >Accountability:</strong> We take responsibility for our actions and ensure transparency.</p>
+              <p className="text-lg text-white"><strong className="w-10 h-10 text-[#006400]">Accountability:</strong> We take responsibility for our actions and ensure transparency.</p>
             </li>
           </ul>
         </div>
@@ -92,7 +101,7 @@ const About = () => {
             <p className="text-center text-red-500">Failed to load team members. Please try again later.</p>
           ) : members.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-6">
-              {members.map((member:any) => (
+              {members.map((member: Member) => ( // Use the Member type here
                 <div 
                   key={member.id} 
                   className="w-56 bg-[#f7f7f7] rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300"

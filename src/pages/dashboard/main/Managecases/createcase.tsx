@@ -6,19 +6,36 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { RootState } from '../../../../app/store';
 import { Toaster, toast } from 'sonner';
 
+// Define the types for the case data
+type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
+type CaseStatus = 'open' | 'in_progress' | 'closed';
+type PaymentStatus = 'pending' | 'paid' | 'failed';
+
+// Define the type for form data
+interface FormData {
+  case_type: CaseType;
+  case_status: CaseStatus;
+  case_number: string;
+  case_track_number: string;
+  court: string;
+  station: string;
+  parties: string;
+  fee: number;
+  payment_status: PaymentStatus;
+  case_description: string;
+}
+
 // Validation schema using Yup
 const validationSchema = yup.object().shape({
-  case_type: yup.string().required('Case type is required'),
-  case_status: yup.string().required('Case status is required'),
+  case_type: yup.string().oneOf(['criminal', 'civil', 'family', 'corporate', 'property', 'employment', 'intellectual_property', 'immigration', 'elc', 'childrenCase', 'tribunal', 'conveyances']).required('Case type is required'),
+  case_status: yup.string().oneOf(['open', 'in_progress', 'closed']).required('Case status is required'),
   case_number: yup.string().required('Case number is required').min(5, 'Case number must be at least 5 characters'),
   case_track_number: yup.string().required('Track number is required').min(5, 'Track number must be at least 5 characters'),
-  court:  yup.string().required('court is required'),
-  station: yup.string().required('Court station  is required'),
-  parties: yup.string().required('parties are  is required').min(5,'parties must be at least 5 characters'),
+  court: yup.string().required('Court is required'),
+  station: yup.string().required('Court station is required'),
+  parties: yup.string().required('Parties are required').min(5, 'Parties must be at least 5 characters'),
   fee: yup.number().typeError('Fee must be a number').required('Fee is required').positive('Fee must be a positive number'),
-
-
-  payment_status: yup.string().required('Payment status is required'),
+  payment_status: yup.string().oneOf(['pending', 'paid', 'failed']).required('Payment status is required'),
   case_description: yup.string().required('Case description is required').min(10, 'Description must be at least 10 characters'),
 });
 
@@ -32,7 +49,7 @@ const CreateCaseForm: React.FC = () => {
     handleSubmit, 
     reset, 
     formState: { errors } 
-  } = useForm({
+  } = useForm<FormData>({
     resolver: yupResolver(validationSchema),
     defaultValues: {
       case_type: 'criminal',
@@ -40,17 +57,24 @@ const CreateCaseForm: React.FC = () => {
       case_description: '',
       case_number: '',
       case_track_number: '',
-      court:'',
-      station:'',
-      parties:'',
+      court: '',
+      station: '',
+      parties: '',
       fee: 0,
       payment_status: 'pending',
     },
   });
 
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: FormData) => {
     try {
-      await createCase({ ...formData, user_id: userId }).unwrap();
+      const caseData = {
+        ...formData,
+        user_id: userId,
+        case_type: formData.case_type as CaseType,
+        case_status: formData.case_status as CaseStatus,
+      };
+
+      await createCase(caseData).unwrap();
       toast.success('🎉 Case created successfully!');
       reset();
     } catch (error) {
@@ -94,10 +118,9 @@ const CreateCaseForm: React.FC = () => {
               <option value="intellectual_property">Intellectual Property</option>
               <option value="immigration">Immigration</option>
               <option value="elc">ELC</option>
-              <option value="childrenCase">childrencase</option>
-              <option value="Tribunal">Tribunal</option>
-              <option value="conveyances ">conveyances </option>
-              
+              <option value="childrenCase">Children's Case</option>
+              <option value="tribunal">Tribunal</option>
+              <option value="conveyances">Conveyances</option>
             </select>
             {errors.case_type && <p className="text-red-500 text-sm">{errors.case_type.message}</p>}
           </div>
@@ -137,8 +160,8 @@ const CreateCaseForm: React.FC = () => {
             />
             {errors.case_track_number && <p className="text-red-500 text-sm">{errors.case_track_number.message}</p>}
           </div>
-        {/* court */}
-          {/* Case Number */}
+
+          {/* Court */}
           <div className="flex flex-col">
             <label htmlFor="court" className="font-medium text-gray-700">Court</label>
             <input 
@@ -149,11 +172,9 @@ const CreateCaseForm: React.FC = () => {
             {errors.court && <p className="text-red-500 text-sm">{errors.court.message}</p>}
           </div>
 
-          {/* station */}
-          
-          {/* Case Number */}
+          {/* Station */}
           <div className="flex flex-col">
-            <label htmlFor="station" className="font-medium text-gray-700">station</label>
+            <label htmlFor="station" className="font-medium text-gray-700">Station</label>
             <input 
               type="text" 
               {...register('station')} 
@@ -161,11 +182,10 @@ const CreateCaseForm: React.FC = () => {
             />
             {errors.station && <p className="text-red-500 text-sm">{errors.station.message}</p>}
           </div>
-          {/* parties */}
-          
-          {/* Case Number */}
+
+          {/* Parties */}
           <div className="flex flex-col">
-            <label htmlFor="parties" className="font-medium text-gray-700">parties</label>
+            <label htmlFor="parties" className="font-medium text-gray-700">Parties</label>
             <input 
               type="text" 
               {...register('parties')} 
@@ -173,6 +193,7 @@ const CreateCaseForm: React.FC = () => {
             />
             {errors.parties && <p className="text-red-500 text-sm">{errors.parties.message}</p>}
           </div>
+
           {/* Fee */}
           <div className="flex flex-col">
             <label htmlFor="fee" className="font-medium text-gray-700">Fee</label>

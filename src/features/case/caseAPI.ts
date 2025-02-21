@@ -2,19 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain";
 
 // Enums for Case Table
-export type CaseType =
-  | "criminal"
-  | "civil"
-  | "family"
-  | "corporate"
-  | "property"
-  | "employment"
-  | "intellectual_property"
-  | "immigration"
-    "ELC"
-    "childrenCase"
-    "conveyances"
-    "Tribunal";
+// Enums for Case Table
+export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
 
    
 
@@ -23,10 +12,24 @@ export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolv
 // Enums for Payment Table
 export type PaymentStatus = "pending" | "paid" | "failed";
 
+//Case Data Types
+export interface UserDataType {
+    user_id: number;
+    full_name: string;
+    email: string;
+    phone_number: string;
+    role: string;
+    profile_picture: string | null;
+    location: string;
+    is_active: boolean;
+    created_at: string;
+}
+
 // Case Data Types
 export interface CaseDataTypes {
   case_id: number;
   user_id: number;
+  user: UserDataType
   case_type: CaseType;
   case_status: CaseStatus;
   case_description: string | null;
@@ -36,10 +39,10 @@ export interface CaseDataTypes {
   station:string;
   parties:string;
   fee: number;
-  payment_status: string;
+  payment_status: PaymentStatus ;
   created_at: string;
+  updated_at: string
 }
-
 // Payment Data Types
 export interface PaymentDataTypes {
   payment_id: number;

@@ -8,7 +8,14 @@ import {
 import DocumentUpload from './createcasedoc'; // Adjust the path if necessary
 import { saveAs } from 'file-saver';
 
-const CloseButton = ({ onClick }) => {
+// Define the types for documents
+
+
+interface CloseButtonProps {
+    onClick: () => void;  // Define a type for the onClick prop
+}
+
+const CloseButton: React.FC<CloseButtonProps> = ({ onClick }) => {
     return (
         <button
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -20,9 +27,7 @@ const CloseButton = ({ onClick }) => {
     );
 };
 
-interface DocumentListProps {}
-
-const DocumentList: React.FC<DocumentListProps> = () => {
+const DocumentList: React.FC = () => {
     const { data: documents, isLoading, error, refetch } = useFetchCaseDocumentsQuery();
     const [updateCaseDocument] = useUpdateCaseDocumentMutation();
     const [deleteCaseDocument] = useDeleteCaseDocumentMutation();
@@ -32,12 +37,10 @@ const DocumentList: React.FC<DocumentListProps> = () => {
     const [content, setContent] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-
     const handleDownload = async (document_id: number, filename: string) => {
         try {
-            const response = await fetch(`/api/casedocuments/${document_id}`, { // Backend will stream the blob
+            const response = await fetch(`/api/casedocuments/${document_id}`, { 
                 method: 'GET',
-                // No need to set Content-Type in the request headers
             });
 
             if (!response.ok) {
@@ -61,7 +64,7 @@ const DocumentList: React.FC<DocumentListProps> = () => {
             await deleteCaseDocument(document_id).unwrap();
             toast.success("Document deleted");
             refetch();
-        } catch (err: unknown) {
+        } catch (err) {
             console.error("Error deleting document:", err);
             toast.error("Failed to delete document");
         }
@@ -91,7 +94,7 @@ const DocumentList: React.FC<DocumentListProps> = () => {
             await updateCaseDocument({ document_id: selectedDocumentId, document_name: name, document_url: content }).unwrap();
             toast.success("Document updated successfully!");
             refetch();
-        } catch (err: unknown) {
+        } catch (err) {
             console.error("Error updating document:", err);
             toast.error("Failed to update document");
         } finally {
@@ -138,15 +141,13 @@ const DocumentList: React.FC<DocumentListProps> = () => {
                 </button>
             </div>
 
-            {/* The Modal  */}
+            {/* The Modal */}
             {isCreateModalOpen && (
                 <div className="w-full">
-                    <div className=" relative  bg-white rounded-lg shadow-xl w-full max-w-full"
-                         style={{ maxWidth: '100%', overflowX: 'auto' }}
-                    >
+                    <div className="relative bg-white rounded-lg shadow-xl w-full max-w-full">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Create Case Document</h2>
                         <CloseButton onClick={closeCreateModal} />
-                        <DocumentUpload onClose={closeCreateModal}/>
+                        <DocumentUpload onClose={closeCreateModal} />
                     </div>
                 </div>
             )}
@@ -165,7 +166,7 @@ const DocumentList: React.FC<DocumentListProps> = () => {
             {isLoading && <div className="text-center text-gray-600">Loading documents...</div>}
             {error && (
                 <div className="text-center text-red-500">
-                    Error: {(error as any)?.message || 'An unexpected error occurred'}
+                    Error: {(error as { message: string })?.message || 'An unexpected error occurred'}
                 </div>
             )}
 
@@ -178,7 +179,7 @@ const DocumentList: React.FC<DocumentListProps> = () => {
                                     Name
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    doc ID
+                                    Doc ID
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                     Date Updated
@@ -237,8 +238,8 @@ const DocumentList: React.FC<DocumentListProps> = () => {
                         </tbody>
                     </table>
                 </div>
-
             )}
+
             {isModalOpen && selectedDocumentId !== null && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
                     <div className="relative p-5 bg-white rounded-lg shadow-xl w-full max-w-md">

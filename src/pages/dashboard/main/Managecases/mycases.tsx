@@ -1,14 +1,12 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
-import { caseAndPaymentAPI, CaseDataTypes,CaseStatus} from "../../../../features/case/caseAPI"; // Adjust this import to your actual Case API file
-import { useState, useMemo, useEffect } from 'react';
-import CreateCase from '../../main/Managecases/createcase'; // Component to create new cases
-import EditUserCase from '../../main/Managecases/updatecase'; // Component to edit existing cases
-// import DeleteUserCase from '../../main/Managecases/deletecase'; // Component to delete cases
-import { FaEdit,  FaRegWindowRestore, FaPlus, FaSearch } from 'react-icons/fa'; // Icons
-
-// Define your CaseStatus and CaseDataTypes
-
+import { caseAndPaymentAPI, CaseDataTypes, CaseStatus } from "../../../../features/case/caseAPI";
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import CreateCase from '../../main/Managecases/createcase';
+import EditUserCase from '../../main/Managecases/updatecase';
+import DeleteCaseForm from '../../main/Managecases/deletecase';
+import ViewCaseDetailsModal from './viewsinglecasedetails'; // Import the Modal
+import { FaEdit, FaRegWindowRestore, FaPlus, FaSearch, FaTrashAlt, FaInfoCircle } from 'react-icons/fa'; // Import icons
 
 // MyCases component
 const MyCases = () => {
@@ -16,57 +14,46 @@ const MyCases = () => {
     const user_id = user.user?.user_id ?? 0;
 
     // Fetch user-specific cases data
-    const { data: caseData, isLoading: caseLoading, error: caseError } = caseAndPaymentAPI. useGetUserCasesByUserIdQuery(user_id, {
+    const { data: caseData, isLoading: caseLoading, error: caseError, refetch } = caseAndPaymentAPI.useGetUserCasesByUserIdQuery(user_id, {
         refetchOnMountOrArgChange: true,
     });
 
-    // Keep track of the cases locally
     const [cases, setCases] = useState<CaseDataTypes[]>([]);
     const [filter, setFilter] = useState({ subject: '', description: '', status: '' });
-
-    // Update Case
     const [updateCase] = caseAndPaymentAPI.useUpdateCaseMutation();
     const [editCase, setEditCase] = useState<CaseDataTypes | null>(null);
-    // const [deleteCase, setDeleteCase] = useState<CaseDataTypes | null>(null);
+    const [caseToDelete, setCaseToDelete] = useState<CaseDataTypes | null>(null);
+    const [selectedCase, setSelectedCase] = useState<CaseDataTypes | null>(null); // Selected case for details modal
+    const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
 
-
-        // // Update Ticket
-        // const [updateTicket] = TicketAPI.useUpdateTicketMutation();
-        // const [editTicket, setEditTicket] = useState<TypeTickets | null>(null);
-        // const [deleteTicket, setDeleteTicket] = useState<TypeTickets | null>(null);
-
-    // Handle side effects when caseData changes
     useEffect(() => {
         if (caseData) {
             setCases(caseData);
         }
     }, [caseData]);
-///
-    // const handleDeleteCase = (caseItem: CaseDataTypes) => {
-    //     setDeleteCase(caseItem);
-    //     (document.getElementById('delete_case_modal') as HTMLDialogElement)?.showModal();
-    // }
 
-   const handleEditCase = (caseItem: CaseDataTypes) => {
+    const handleDeleteCase = (caseItem: CaseDataTypes) => {
+        setCaseToDelete(caseItem);
+        (document.getElementById('delete_case_modal') as HTMLDialogElement)?.showModal();
+    };
+
+    const handleEditCase = (caseItem: CaseDataTypes) => {
         setEditCase(caseItem);
         (document.getElementById('edit_case_modal') as HTMLDialogElement)?.showModal();
-     }
-//
+    };
+
     const handleReopenCase = async (caseItem: CaseDataTypes) => {
         try {
-            const updatedCase = { ...caseItem, case_status: 'open' as CaseStatus }; // Reopen the case
+            const updatedCase = { ...caseItem, case_status: 'open' as CaseStatus };
             await updateCase(updatedCase);
-
-            // Update the local case list with the reopened case
             setCases((prevCases) =>
                 prevCases.map((c) => (c.case_id === caseItem.case_id ? updatedCase : c))
             );
         } catch (error) {
             console.error('Error reopening case', error);
         }
-    }
+    };
 
-    // Apply filtering logic
     const filteredCases = useMemo(() => {
         if (!cases) return [];
         return cases.filter(caseItem => {
@@ -77,10 +64,21 @@ const MyCases = () => {
         });
     }, [cases, filter]);
 
-    // Reset the filters
     const resetFilters = () => {
         setFilter({ subject: '', description: '', status: '' });
     };
+
+    // Function to open the details modal
+    const openModal = useCallback((caseItem: CaseDataTypes) => {
+        setSelectedCase(caseItem);
+        setIsModalOpen(true);
+    }, []);
+
+    // Function to close the details modal
+    const closeModal = useCallback(() => {
+        setIsModalOpen(false);
+        setSelectedCase(null);
+    }, []);
 
     if (caseLoading) {
         return <div className="text-center p-8 text-2xl font-bold text-webcolor">Loading...</div>;
@@ -160,11 +158,11 @@ const MyCases = () => {
                             <thead className="bg-green-800 text-white">
                                 <tr>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Case ID 📑</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">case_type</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">case_number 📝</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Description 📰</th>
+                                  
+                               
+                                  
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Status ⚡</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">track_number</th> 
+                                    <th className="px-4 py-2 text-left text-sm sm:text-base">track_number</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">fees</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">paymentstatus</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Actions 🔧</th>
@@ -175,12 +173,12 @@ const MyCases = () => {
                                 {filteredCases.map((caseItem) => (
                                     <tr key={caseItem.case_id} className="border-b hover:bg-slate-100 transition duration-300">
                                         <td className="px-4 py-2 text-sm sm:text-base font-medium text-gray-700">{caseItem.case_id} 📜</td>
-                                        <td className="px-4 py-2 text-sm sm:text-base font-medium text-gray-700">{caseItem.case_type}</td>
-                                        <td className="px-4 py-2 text-sm sm:text-base font-medium text-gray-700">{caseItem.case_number} ✍️</td>
-                                        <td className="px-4 py-2 text-sm sm:text-base text-gray-600">{caseItem.case_description}</td>
+                                        
+                                        
+                                      
                                         <td className="px-4 py-2">
                                             <span className={`inline-block px-2 py-1 rounded-full ${(caseItem.case_status)}`}>
-                                                {caseItem.case_status }
+                                                {caseItem.case_status}
                                             </span>
                                         </td>
                                         <td className="px-4 py-2 text-sm sm:text-base text-gray-600">{caseItem.case_track_number}</td>
@@ -190,29 +188,36 @@ const MyCases = () => {
                                             {caseItem.case_status === 'closed' ? (
                                                 <button
                                                     className="btn bg-yellow-500 text-white flex items-center space-x-2"
-                                                    onClick={() => handleReopenCase(caseItem)} // Reopen case
+                                                    onClick={() => handleReopenCase(caseItem)}
                                                 >
                                                     <FaRegWindowRestore />
                                                     <span>Reopen</span>
                                                 </button>
                                             ) : (
                                                 <>
-                                                 <button
+                                                    <button
                                                         className="btn bg-blue-500 text-white flex items-center space-x-2"
-                                                        onClick={() => handleEditCase(caseItem)} // Open the edit modal
+                                                        onClick={() => handleEditCase(caseItem)}
                                                     >
                                                         <FaEdit />
                                                         <span>Edit</span>
                                                     </button>
-                                                    {/* <button
+                                                    <button
                                                         className="btn bg-red-500 text-white flex items-center space-x-2"
-                                                        onClick={() => handleDeleteCase(caseItem)} // Open the delete modal
+                                                        onClick={() => handleDeleteCase(caseItem)}
                                                     >
                                                         <FaTrashAlt />
                                                         <span>Delete</span>
-                                                    </button> */}
+                                                    </button>
                                                 </>
                                             )}
+                                            <button
+                                                 className="btn bg-green-500 text-white flex items-center space-x-2"
+                                                 onClick={() => openModal(caseItem)}
+                                            >
+                                                <FaInfoCircle />
+                                                <span>View Details</span>
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -223,11 +228,8 @@ const MyCases = () => {
                     )}
                 </div>
             </div>
-            
-            {/* Edit case modal */}
-            
-            {/* Delete case modal */}
-            {/* {deleteCase && <DeleteUserCase caseItem={deleteCase} />} */}
+
+            {/* Create case modal */}
             <dialog id='create_case' className="modal">
                 <div className="modal-box w-11/12 max-w-5xl">
                     <form method="dialog" className="relative">
@@ -236,31 +238,33 @@ const MyCases = () => {
                     <CreateCase />
                 </div>
             </dialog>
-            {/* {editCase && <EditUserCase caseItem={editCase} />} */}
-                       {/* Edit Ticket Modal */}
-                       <dialog id='edit_case_modal' className="modal">
+
+            {/* Edit Case Modal */}
+            <dialog id='edit_case_modal' className="modal">
                 <div className="modal-box w-11/12 max-w-5xl">
                     <form method="dialog" className="relative">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                     </form>
-                    <EditUserCase  caseItem={editCase} modalId="edit_case_modal" />
+                    <EditUserCase caseItem={editCase} modalId="edit_case_modal" />
                 </div>
             </dialog>
-            {/* Edit Ticket Modal */}
-            {/* <dialog id='edit_case_modal' className="modal">
-                <div className="modal-box w-11/12 max-w-5xl">
+
+            {/* Delete Case Modal */}
+            <dialog id='delete_case_modal' className="modal">
+                <div className="modal-box">
                     <form method="dialog" className="relative">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                        <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-xs">✕</button>
                     </form>
-                    <DeleteUserCase caseItem={deleteCase}  modalId="edit_case_modal" />
+                    {caseToDelete && <DeleteCaseForm caseItem={caseToDelete} modalId="delete_case_modal" refetch={refetch} />}
                 </div>
-            </dialog> */}
-            {/* Create case modal */}
-          
+            </dialog>
+
+            {/* View Case Details Modal */}
+            {isModalOpen && selectedCase && (
+                <ViewCaseDetailsModal selectedCase={selectedCase} closeModal={closeModal} />
+            )}
         </div>
     );
 };
-
-
 
 export default MyCases;

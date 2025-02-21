@@ -22,12 +22,15 @@ const DeleteUserTicket = ({ ticket, modalId }: DeleteUserTicketProps) => {
                 } else {
                     toast.error('Failed to delete ticket.');
                 }
-            } catch (err: any) {
+            } catch (err) {
                 console.error('Error during ticket deletion:', err);
-    
-                if (err?.status === 403 || err?.originalStatus === 403) {
+                
+                // Assuming the error has a consistent structure
+                const error = err as { status?: number; originalStatus?: number; error?: string };
+
+                if (error.status === 403 || error.originalStatus === 403) {
                     toast.error('You are not authorized to delete this ticket.');
-                } else if (err?.error?.includes('Forbidden')) {
+                } else if (error.error?.includes('Forbidden')) {
                     toast.error('Access denied. Please log in again.');
                 } else {
                     toast.error('An error occurred while deleting the ticket.');

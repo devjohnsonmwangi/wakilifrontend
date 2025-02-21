@@ -22,7 +22,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [pages, setPages] = useState<string[]>([""]);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-    const [isUploading, setIsUploading] = useState(false); // New state for upload loading
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (!isLoading && cases?.length) {
@@ -55,13 +55,12 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             return;
         }
 
-        setIsUploading(true); // Set uploading state to true
+        setIsUploading(true);
 
         const formData = new FormData();
         formData.append("case_id", selectedCaseId.toString());
         formData.append("document_name", file.name);
-        formData.append("file", file); // Let browser handle File conversion.
-        // No longer appending mime_type and file_size.
+        formData.append("file", file);
         console.log("Data being sent (Upload):", {
             case_id: selectedCaseId,
             document_name: file.name,
@@ -69,17 +68,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
         });
 
         try {
-            // IMPORTANT: No longer expect a direct URL back. The backend will now manage.
             await createCaseDocument(formData).unwrap();
-            await createLog({ action: `Uploaded document: ${file.name}` }); //Removed from azure since is not being stored there
-            toast.success("Document uploaded successfully!"); //removed azure
+            await createLog({ action: `Uploaded document: ${file.name}` });
+            toast.success("Document uploaded successfully!");
             resetForm();
             onClose();
-        } catch (error: any) {
+        } catch (error) {
             console.error("Failed to upload document:", error);
-            toast.error("Failed to upload document"); //Specific message Removed azure
+            toast.error("Failed to upload document");
         } finally {
-            setIsUploading(false); // Reset uploading state in finally block
+            setIsUploading(false);
         }
     };
 
@@ -115,7 +113,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                 const availableWidth = pdf.internal.pageSize.getWidth() - 2 * margin;
                 const lines = pdf.splitTextToSize(pageContent, availableWidth);
 
-                lines.forEach(line => {
+                lines.forEach((line: string) => { // Specify the type for line
                     if (y > pdf.internal.pageSize.getHeight() - margin) {
                         pdf.addPage();
                         y = margin;
@@ -125,7 +123,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                 });
             });
 
-            //Convert to blob and send.
             const documentBlob = pdf.output('blob');
             const documentName = selectedTemplate ? `${selectedTemplate}.pdf` : "document.pdf";
 
@@ -134,7 +131,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             formData.append("document_name", documentName);
             formData.append("file", documentBlob, documentName);
 
-            // Log the form data before sending (for debugging)
             console.log("Data being sent (Create):", {
                 case_id: selectedCaseId,
                 document_name: documentName,
@@ -142,14 +138,14 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             });
 
             await createCaseDocument(formData).unwrap();
-            await createLog({ action: `Created document: ${documentName}` }); // removed azure
-            toast.success("Document created and uploaded!"); //removed azure
+            await createLog({ action: `Created document: ${documentName}` });
+            toast.success("Document created and uploaded!");
             resetForm();
             onClose();
 
-        } catch (error: any) {
+        } catch (error: unknown) { // Specify the type for error
             console.error("Failed to generate PDF:", error);
-            toast.error("Failed to generate PDF and upload"); //Specific message removed azure
+            toast.error("Failed to generate PDF and upload");
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -226,9 +222,9 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                 <button
                     onClick={handleUpload}
                     className="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600"
-                    disabled={isUploading} // Disable the button while uploading
+                    disabled={isUploading}
                 >
-                    {isUploading ? "Uploading..." : "Upload Document"} {/* Show loading text */}
+                    {isUploading ? "Uploading..." : "Upload Document"}
                 </button>
             </div>
 

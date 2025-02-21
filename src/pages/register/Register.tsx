@@ -10,19 +10,25 @@ import { Toaster, toast } from 'sonner';
 type FormData = {
   full_name: string;
   email: string;
-  phone_number: string; // Renamed from contact_phone to phone_number
+  phone_number: string;
   address: string;
   password: string;
   confirmPassword: string;
-  image_url?: string; // Optional, if it is set automatically by the backend, you may not need this
-  role?: string; // Optional, defaulting to "user" or as defined in the API
+  image_url?: string; // Optional
+  role?: string; // Optional
 };
+
+// Define the error response type
+interface ErrorResponse {
+    message?: string;
+    errors?: Array<{ message?: string }>;
+}
 
 const schema = yup.object().shape({
   full_name: yup.string().required("Full name is required"),
   email: yup.string().email("Enter a valid email").required("Email is required"),
   phone_number: yup.string()
-    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits") // Ensure it matches the required pattern
+    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
     .required("Phone number is required"), 
   address: yup.string().required("Address is required"),
   password: yup.string()
@@ -48,11 +54,11 @@ const Register = () => {
       const formattedData = {
         full_name: data.full_name,
         email: data.email,
-        phone_number: data.phone_number, // Use phone_number as required by the API
+        phone_number: data.phone_number,
         address: data.address,
         password: data.password,
-        image_url: "https://randomuser.me/api/portraits/men/1.jpg", // Can be set dynamically if needed
-        role: "user" // Default role (you can set it as "admin" if you want)
+        image_url: "https://randomuser.me/api/portraits/men/1.jpg",
+        role: "user"
       };
 
       const response = await createUser(formattedData).unwrap();
@@ -61,22 +67,19 @@ const Register = () => {
       setTimeout(() => {
         navigate('/login');
       }, 1000);
-    } catch (err: any) {
-      if (err?.data) {
-        console.error("API error:", err.data); 
+    } catch (err) {
+      const error = err as { data?: ErrorResponse }; // Cast to a more generic error type
+      if (error.data) {
+        console.error("API error:", error.data); 
 
-        if (Array.isArray(err.data)) {
-          err.data.forEach((error: any) => {
-            if (error.message) {
-              toast.error(`Error: ${error.message}`);
+        if (Array.isArray(error.data.errors)) {
+          error.data.errors.forEach((errorItem: { message?: string }) => { // Explicitly type errorItem
+            if (errorItem.message) {
+              toast.error(`Error: ${errorItem.message}`);
             }
           });
-        } else if (err.data.errors) {
-          err.data.errors.forEach((error: any) => {
-            if (error.message) {
-              toast.error(`Error: ${error.message}`);
-            }
-          });
+        } else if (error.data.message) {
+          toast.error(`Error: ${error.data.message}`);
         } else {
           toast.error("Registration failed. Please try again.");
         }
@@ -111,7 +114,7 @@ const Register = () => {
         </div>
 
         <div className="w-full lg:w-1/2">
-          <div className="card  w-full bg-[#fefffe] max-w-md mx-auto shadow-xl">
+          <div className="card w-full bg-[#fefffe] max-w-md mx-auto shadow-xl">
             <form onSubmit={handleSubmit(onSubmit)} className="card-body">
               <h2 className="text-center text-[#006400] text-2xl font-bold mb-4">Create An Account 📢</h2>
 

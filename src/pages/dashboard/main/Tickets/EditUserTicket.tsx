@@ -8,8 +8,15 @@ import { TypeTickets } from '../../../../features/Tickets/AllTickets';
 import { FaEdit } from 'react-icons/fa'; // Importing an edit icon from react-icons
 
 interface EditTicketFormProps {
-    ticket:  TypeTickets  | null;
+    ticket: TypeTickets | null;
     modalId: string;
+}
+
+// Define the form data type
+interface FormData {
+    subject: string;
+    description: string;
+    status: string;
 }
 
 const validationSchema = yup.object().shape({
@@ -23,7 +30,7 @@ const EditUserTicket = ({ ticket, modalId }: EditTicketFormProps) => {
     const userID = ticket?.user_id;
     const [updateTicket] = TicketAPI.useUpdateTicketMutation();
     const [isLoading, setIsLoading] = useState(false); // Add loading state
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
         resolver: yupResolver(validationSchema),
     });
 
@@ -35,7 +42,7 @@ const EditUserTicket = ({ ticket, modalId }: EditTicketFormProps) => {
         }
     }, [ticket, setValue]);
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: FormData) => { // Use the FormData type here
         if (!id) {
             toast.error('Ticket ID is undefined.');
             return;
