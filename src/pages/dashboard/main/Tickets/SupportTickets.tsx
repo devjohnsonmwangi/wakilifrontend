@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link} from "react-router-dom";
 import { TicketAPI, TypeTickets } from "../../../../features/Tickets/AllTickets";
-import { logAPI } from "../../../../features/logs/logsapi";
+import { logAPI } from "../../../../features/log/logsapi";
 import { RootState } from "../../../../app/store";
 import AnimatedLoader from "../../../../components/AnimatedLoader";
 import { useSelector } from "react-redux";

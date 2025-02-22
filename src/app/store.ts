@@ -6,7 +6,7 @@ import storage from "redux-persist/lib/storage";
 import { usersAPI } from "../features/users/usersAPI";
 import { caseAndPaymentAPI } from "../features/case/caseAPI";
 import { paymentAPI } from "../features/payment/paymentAPI";
-import { logAPI } from "../features/logs/logsapi";
+import { logAPI } from "../features/log/logsapi";
 import { feedbackAPI } from "../features/feedback/feedbackapi";
 import { TicketAPI } from "../features/Tickets/AllTickets";
 import { eventAndReminderAPI } from "../features/events/events";

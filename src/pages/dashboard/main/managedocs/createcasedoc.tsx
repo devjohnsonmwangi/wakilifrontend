@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useFetchCasesQuery } from "../../../../features/case/caseAPI";
 import { useCreateCaseDocumentMutation } from "../../../../features/casedocument/casedocmentapi";
-import { useCreateLogMutation } from "../../../../features/logs/logsapi";
+import { useCreateLogMutation } from "../../../../features/log/logsapi";
 import { Toaster, toast } from "sonner";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';

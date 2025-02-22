@@ -144,24 +144,24 @@ const ListAppointments: React.FC = () => {
           <table className="min-w-full leading-normal table-auto">
             <thead>
               <tr className="bg-blue-100 text-blue-700">
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Party</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Time</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Reason</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Location</th>
-                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">ID</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Party</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Date</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Time</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Reason</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Status</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Location</th>
+                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAppointments?.map((appointment) => (
                 <tr key={appointment.appointment_id} className="hover:bg-gray-50">
-                  <td className="px-2 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{appointment.appointment_id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">{appointment.party}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">{appointment.appointment_time}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-lg font-medium text-gray-900">{appointment.appointment_id}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{appointment.party}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{appointment.appointment_time}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
                     <div className="w-48 max-h-20 overflow-y-auto">
                       <textarea
                         title='Reason'
@@ -172,12 +172,12 @@ const ListAppointments: React.FC = () => {
                       />
                     </div>
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
                     <select
                       title="Change Status"
                       value={appointment.status}
                       onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)}
-                      className="shadow-md appearance-none border-none bg-gray-100 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-xs"
+                      className="shadow-md appearance-none border-none bg-gray-100 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-lg"
                       disabled={isStatusLoading}
                     >
                       <option value="pending">Pending</option>
@@ -186,20 +186,20 @@ const ListAppointments: React.FC = () => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
                     {branchLocations?.find(location => location.branch_id === appointment.branch_id)?.name || 'N/A'}
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-2 py-4 whitespace-nowrap text-lg font-medium">
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => openEditModal(appointment)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-xs"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-lg"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteAppointment(appointment.appointment_id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-xs"
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-lg"
                         disabled={isDeleteLoading}
                       >
                         Delete

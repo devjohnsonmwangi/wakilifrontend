@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { caseAndPaymentAPI, CaseDataTypes, CaseStatus } from "../../../../features/case/caseAPI";
 import { Toaster, toast } from 'sonner';
-import { logAPI } from "../../../../features/logs/logsapi";
+import { logAPI } from "../../../../features/log/logsapi";
 import { RootState } from "../../../../app/store";
 import AnimatedLoader from "../../../../components/AnimatedLoader";
 import { useSelector } from "react-redux";
