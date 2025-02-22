@@ -10,14 +10,14 @@ interface EditCaseFormProps {
     modalId: string;
 }
 
-// Define the expected form data based on your validation schema. Use specific types here
+// Define the expected form data based on your validation schema.
 interface FormData {
-    case_type: CaseType; // Ensure CaseType is an enum or union of string literals
-    case_status: CaseStatus; // Ensure CaseStatus is an enum or union of string literals
+    case_type: CaseType;
+    case_status: CaseStatus;
     case_number: string;
     case_track_number: string;
     fee: number;
-    payment_status:PaymentStatus; // Ensure PaymentStatus is an enum or union of string literals
+    payment_status: PaymentStatus;
     case_description: string;
 }
 
@@ -36,7 +36,7 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
     const id = Number(caseItem?.case_id);
     const userId = caseItem?.user_id;
     const [updateCase] = useUpdateCaseMutation();
-    const [isLoading, setIsLoading] = useState(false); // Add loading state
+    const [isLoading, setIsLoading] = useState(false);
     const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm<FormData>({
         resolver: yupResolver(validationSchema),
     });
@@ -59,19 +59,18 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
             return;
         }
 
-        setIsLoading(true); // Set loading state to true when the update starts
+        setIsLoading(true);
 
         try {
-            // Construct the update object, matching the expected type by the API
             const updateObject = {
                 case_id: id,
                 user_id: userId,
-                case_type: data.case_type as CaseType,
-                case_status: data.case_status as CaseStatus,
+                case_type: data.case_type,
+                case_status: data.case_status,
                 case_number: data.case_number,
                 case_track_number: data.case_track_number,
                 fee: data.fee,
-                payment_status: data.payment_status as PaymentStatus, // Ensure this is correctly typed
+                payment_status: data.payment_status,
                 case_description: data.case_description,
             };
             await updateCase(updateObject).unwrap();
@@ -82,9 +81,9 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
             reset();
         } catch (err) {
             toast.error('Failed to update case.');
-            console.error(err); // Log the error for debugging purposes.
+            console.error(err);
         } finally {
-            setIsLoading(false); // Set loading state back to false after the update is finished
+            setIsLoading(false);
         }
     };
 
@@ -110,14 +109,14 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
             />
             <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="w-full sm:w-4/5 max-w-4xl bg-white p-4 sm:p-8 rounded-lg shadow-md space-y-6"
+                className="w-full max-w-md bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4"
             >
-                <h2 className="bg-blue-500 text-white text-2xl font-bold text-center py-4 rounded-md">Update Case</h2>
+                <h2 className="bg-blue-500 text-white text-xl font-bold text-center py-3 rounded-md">Update Case</h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-4">
                     <div className="flex flex-col">
                         <label htmlFor="case_type" className="font-medium text-gray-700">Case Type</label>
-                        <select {...register('case_type')} className="p-3 border rounded-md">
+                        <select {...register('case_type')} className="p-2 border rounded-md">
                             <option value="criminal">Criminal</option>
                             <option value="civil">Civil</option>
                             <option value="family">Family</option>
@@ -136,7 +135,7 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
 
                     <div className="flex flex-col">
                         <label htmlFor="case_status" className="font-medium text-gray-700">Case Status</label>
-                        <select {...register('case_status')} className="p-3 border rounded-md">
+                        <select {...register('case_status')} className="p-2 border rounded-md">
                             <option value="open">Open</option>
                             <option value="in_progress">In Progress</option>
                             <option value="closed">Closed</option>
@@ -148,25 +147,25 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
 
                     <div className="flex flex-col">
                         <label htmlFor="case_number" className="font-medium text-gray-700">Case Number</label>
-                        <input type="text" {...register('case_number')} className="p-3 border rounded-md" />
+                        <input type="text" {...register('case_number')} className="p-2 border rounded-md" />
                         {errors.case_number && <p className="text-red-500 text-sm">{errors.case_number.message}</p>}
                     </div>
 
                     <div className="flex flex-col">
                         <label htmlFor="case_track_number" className="font-medium text-gray-700">Track Number</label>
-                        <input type="text" {...register('case_track_number')} className="p-3 border rounded-md" />
+                        <input type="text" {...register('case_track_number')} className="p-2 border rounded-md" />
                         {errors.case_track_number && <p className="text-red-500 text-sm">{errors.case_track_number.message}</p>}
                     </div>
 
                     <div className="flex flex-col">
                         <label htmlFor="fee" className="font-medium text-gray-700">Fee</label>
-                        <input type="number" {...register('fee')} className="p-3 border rounded-md" />
+                        <input type="number" {...register('fee')} className="p-2 border rounded-md" />
                         {errors.fee && <p className="text-red-500 text-sm">{errors.fee.message}</p>}
                     </div>
 
                     <div className="flex flex-col">
                         <label htmlFor="payment_status" className="font-medium text-gray-700">Payment Status</label>
-                        <select {...register('payment_status')} className="p-3 border rounded-md">
+                        <select {...register('payment_status')} className="p-2 border rounded-md">
                             <option value="pending">Pending</option>
                             <option value="paid">Paid</option>
                             <option value="failed">Failed</option>
@@ -174,31 +173,31 @@ const UpdateCaseForm = ({ caseItem, modalId }: EditCaseFormProps) => {
                         {errors.payment_status && <p className="text-red-500 text-sm">{errors.payment_status.message}</p>}
                     </div>
 
-                    <div className="sm:col-span-2">
+                    <div className="col-span-1">
                         <label htmlFor="case_description" className="font-medium text-gray-700">Case Description</label>
                         <textarea
                             {...register('case_description')}
-                            className="p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                            className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                             rows={4}
                         ></textarea>
                         {errors.case_description && <p className="text-red-500 text-sm">{errors.case_description.message}</p>}
                     </div>
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row justify-between mt-4">
                     <button
-                        className="submit bg-green-500 text-white py-2 px-4 rounded-md"
+                        className="bg-red-500 text-white py-1 px-2 rounded-md text-sm mb-2 sm:mb-0"
                         onClick={handleCloseModal}
                     >
                         ✖ Discard Changes
                     </button>
                     <button
-                        className={`btn bg-blue-600 text-white hover:bg-blue-700 font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center space-x-2 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+                        className={`bg-blue-600 text-white hover:bg-blue-700 font-bold py-1 px-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center space-x-2 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                         type="submit"
-                        disabled={isLoading} // Disable button while loading
+                        disabled={isLoading}
                     >
                         {isLoading ? (
-                            <div className="animate-spin border-4 border-t-4 border-white w-5 h-5 rounded-full"></div> // Loader spinner
+                            <div className="animate-spin border-4 border-t-4 border-white w-4 h-4 rounded-full"></div>
                         ) : (
                             <span>💾 Save Changes</span>
                         )}

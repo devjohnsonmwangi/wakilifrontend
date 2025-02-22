@@ -92,15 +92,15 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
   const filteredUsers = users ? users.filter(user => user.role !== "client" && user.role !== "user") : [];
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-      <div className="relative top-20 mx-auto p-8 border shadow-lg rounded-xl bg-white w-3/4 md:w-2/3 lg:w-1/2">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"> {/* Center the modal */}
+      <div className="relative p-4 sm:p-6 border shadow-lg rounded-xl bg-white w-full max-w-4xl mx-auto"> {/* Full width with max width */}
         <div className="mt-3 text-center">
           <div className="flex justify-between items-center">
-            <h3 className="text-3xl font-extrabold text-blue-700 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight">
               Edit Appointment
             </h3>
             <button
-              title="close module"
+              title="close modal"
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 focus:outline-none"
             >
@@ -109,16 +109,16 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </svg>
             </button>
           </div>
-          <div className="px-7 py-3">
+          <div className="px-4 py-3">
             <Toaster richColors closeButton />
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="branch" className="block text-blue-500 text-sm font-bold mb-2">Branch:</label>
+                <label htmlFor="branch" className="block text-blue-500 text-sm font-bold mb-1">Branch:</label>
                 <select
                   id="branch"
                   value={selectedBranchId || ''}
                   onChange={(e) => setSelectedBranchId(parseInt(e.target.value))}
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   disabled={isBranchesLoading}
                 >
                   <option value="">Select a Branch</option>
@@ -131,12 +131,12 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </div>
 
               <div>
-                <label htmlFor="userId" className="block text-blue-500 text-sm font-bold mb-2">Appointment Administer:</label>
+                <label htmlFor="userId" className="block text-blue-500 text-sm font-bold mb-1">Appointment Administer:</label>
                 <select
                   id="userId"
                   value={selectedUserId || ''}
                   onChange={(e) => setSelectedUserId(parseInt(e.target.value))}
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   disabled={isUsersLoading}
                 >
                   <option value="">Appointment Administer:</option>
@@ -149,11 +149,11 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </div>
 
               <div>
-                <label htmlFor="party" className="block text-blue-500 text-sm font-bold mb-2">Party:</label>
+                <label htmlFor="party" className="block text-blue-500 text-sm font-bold mb-1">Party:</label>
                 <input
                   type="text"
                   id="party"
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   value={party}
                   onChange={(e) => setParty(e.target.value)}
                   required
@@ -161,11 +161,11 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </div>
 
               <div>
-                <label htmlFor="appointmentDate" className="block text-blue-500 text-sm font-bold mb-2">Date:</label>
+                <label htmlFor="appointmentDate" className="block text-blue-500 text-sm font-bold mb-1">Date:</label>
                 <input
                   type="date"
                   id="appointmentDate"
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   value={appointmentDate}
                   onChange={(e) => setAppointmentDate(e.target.value)}
                   required
@@ -173,11 +173,11 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </div>
 
               <div>
-                <label htmlFor="appointmentTime" className="block text-blue-500 text-sm font-bold mb-2">Time:</label>
+                <label htmlFor="appointmentTime" className="block text-blue-500 text-sm font-bold mb-1">Time:</label>
                 <input
                   type="time"
                   id="appointmentTime"
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   value={appointmentTime}
                   onChange={(e) => setAppointmentTime(e.target.value)}
                   required
@@ -185,10 +185,10 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
               </div>
 
               <div>
-                <label htmlFor="reason" className="block text-blue-500 text-sm font-bold mb-2">Reason:</label>
+                <label htmlFor="reason" className="block text-blue-500 text-sm font-bold mb-1">Reason:</label>
                 <textarea
                   id="reason"
-                  className="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   rows={3}
@@ -196,16 +196,16 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
                 />
               </div>
 
-              <div className="mt-6 flex justify-between">
+              <div className="mt-4 flex flex-col sm:flex-row justify-between">
                 <button
                   onClick={onClose}
-                  className="bg-red-200 hover:bg-red-300 text-red-800 font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline"
+                  className="bg-red-200 hover:bg-red-300 text-red-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline ${isUpdateLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${isUpdateLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   disabled={isUpdateLoading}
                 >
                   {isUpdateLoading ? 'Updating...' : 'Update Appointment'}

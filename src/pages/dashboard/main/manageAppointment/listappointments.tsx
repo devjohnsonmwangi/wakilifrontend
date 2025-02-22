@@ -1,3 +1,5 @@
+// ListAppointments.tsx
+
 import React, { useState, useMemo } from 'react';
 import {
   useFetchAppointmentsQuery,
@@ -95,73 +97,73 @@ const ListAppointments: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="h-screen flex flex-col"> {/* Ensure full height and flex layout */}
       <Toaster richColors closeButton />
-      <h1 className="text-4xl font-extrabold text-blue-700 tracking-tight mb-6 text-center">
-        Appointments
-      </h1>
+      <div className="flex-grow p-4"> {/* Allow this div to grow and cover available space */}
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight mb-6 text-center"> {/* Smaller font for small screens */}
+          Appointments
+        </h1>
 
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={openCreateModal}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Create Appointment
-        </button>
-      </div>
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={openCreateModal}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Create Appointment
+          </button>
+        </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Filter by party"
-          value={searchParty}
-          onChange={(e) => setSearchParty(e.target.value)}
-          className="border p-2 rounded w-full sm:w-auto"
-        />
-        <input
-          type="text"
-          placeholder="Filter by location"
-          value={searchLocation}
-          onChange={(e) => setSearchLocation(e.target.value)}
-          className="border p-2 rounded w-full sm:w-auto"
-        />
-        <select
-          title='Filter by status'
-          value={searchStatus}
-          onChange={(e) => setSearchStatus(e.target.value)}
-          className="border p-2 rounded w-full sm:w-auto"
-        >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <input
+            type="text"
+            placeholder="Filter by party"
+            value={searchParty}
+            onChange={(e) => setSearchParty(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto text-sm sm:text-lg" // Smaller font on small screens
+          />
+          <input
+            type="text"
+            placeholder="Filter by location"
+            value={searchLocation}
+            onChange={(e) => setSearchLocation(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto text-sm sm:text-lg" // Smaller font on small screens
+          />
+          <select
+            title='Filter by status'
+            value={searchStatus}
+            onChange={(e) => setSearchStatus(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto text-sm sm:text-lg" // Smaller font on small screens
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
 
-      <div className="overflow-x-auto shadow-xl rounded-xl"> {/* Apply shadow here */}
-        <div className="min-w-full overflow-hidden"> {/*Ensure inner div doesn't clip shadow */}
+        <div className="overflow-x-auto shadow-xl rounded-xl flex-grow"> {/* Apply shadow and allow growth */}
           <table className="min-w-full leading-normal table-auto">
             <thead>
               <tr className="bg-blue-100 text-blue-700">
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">ID</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Party</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Date</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Time</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Reason</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Status</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Location</th>
-                <th className="px-2 py-3 text-left text-lg font-bold uppercase tracking-wider">Actions</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">ID</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Party</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Date</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Time</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Reason</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Status</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Location</th>
+                <th className="px-2 py-3 text-sm sm:text-lg font-bold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAppointments?.map((appointment) => (
                 <tr key={appointment.appointment_id} className="hover:bg-gray-50">
-                  <td className="px-2 py-4 whitespace-nowrap text-lg font-medium text-gray-900">{appointment.appointment_id}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{appointment.party}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">{appointment.appointment_time}</td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg font-medium text-gray-900">{appointment.appointment_id}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">{appointment.party}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">{appointment.appointment_time}</td>
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">
                     <div className="w-48 max-h-20 overflow-y-auto">
                       <textarea
                         title='Reason'
@@ -172,12 +174,12 @@ const ListAppointments: React.FC = () => {
                       />
                     </div>
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">
                     <select
                       title="Change Status"
                       value={appointment.status}
                       onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)}
-                      className="shadow-md appearance-none border-none bg-gray-100 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-lg"
+                      className="shadow-md appearance-none border-none bg-gray-100 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm sm:text-lg"
                       disabled={isStatusLoading}
                     >
                       <option value="pending">Pending</option>
@@ -186,20 +188,20 @@ const ListAppointments: React.FC = () => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg text-gray-700">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg text-gray-700">
                     {branchLocations?.find(location => location.branch_id === appointment.branch_id)?.name || 'N/A'}
                   </td>
-                  <td className="px-2 py-4 whitespace-nowrap text-lg font-medium">
+                  <td className="px-2 py-4 whitespace-nowrap text-sm sm:text-lg font-medium">
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => openEditModal(appointment)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-lg"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm sm:text-lg"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDeleteAppointment(appointment.appointment_id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-lg"
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm sm:text-lg"
                         disabled={isDeleteLoading}
                       >
                         Delete
