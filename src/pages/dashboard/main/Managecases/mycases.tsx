@@ -6,7 +6,7 @@ import CreateCase from '../../main/Managecases/createcase';
 import EditUserCase from '../../main/Managecases/updatecase';
 import DeleteCaseForm from '../../main/Managecases/deletecase';
 import ViewCaseDetailsModal from './viewsinglecasedetails'; // Import the Modal
-import { FaEdit, FaRegWindowRestore, FaPlus, FaSearch, FaTrashAlt, FaInfoCircle } from 'react-icons/fa'; // Import icons
+import { FaEdit, FaRegWindowRestore, FaPlus, FaSearch, FaTrashAlt, FaEye } from 'react-icons/fa'; // Import eye icon
 
 // MyCases component
 const MyCases = () => {
@@ -162,7 +162,7 @@ const MyCases = () => {
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Track Number</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Fees</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Payment Status</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Actions 🔧</th>
+                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -181,36 +181,40 @@ const MyCases = () => {
                                             <div className="flex items-center space-x-2">
                                                 {caseItem.case_status === 'closed' ? (
                                                     <button
-                                                        className="btn bg-yellow-500 text-white text-xs flex items-center justify-center w-8 h-8"
+                                                        className="flex items-center justify-center w-32 h-8 text-yellow-500 hover:bg-yellow-100 transition duration-300 rounded-lg"
                                                         onClick={() => handleReopenCase(caseItem)}
                                                         title="Reopen"
                                                     >
-                                                        <FaRegWindowRestore className="text-lg" />
+                                                        <FaRegWindowRestore className="h-4 w-4 mr-1" />
+                                                        Reopen
                                                     </button>
                                                 ) : (
                                                     <>
                                                         <button
-                                                            className="btn bg-blue-500 text-white text-xs flex items-center justify-center w-8 h-8"
+                                                            className="flex items-center justify-center w-32 h-8 text-blue-500 hover:bg-blue-100 transition duration-300 rounded-lg"
                                                             onClick={() => handleEditCase(caseItem)}
                                                             title="Edit"
                                                         >
-                                                            <FaEdit className="text-lg" />
+                                                            <FaEdit className="h-4 w-4 mr-1" />
+                                                            Edit
                                                         </button>
                                                         <button
-                                                            className="btn bg-red-500 text-white text-xs flex items-center justify-center w-8 h-8"
+                                                            className="flex items-center justify-center w-32 h-8 text-red-500 hover:bg-red-100 transition duration-300 rounded-lg"
                                                             onClick={() => handleDeleteCase(caseItem)}
                                                             title="Delete"
                                                         >
-                                                            <FaTrashAlt className="text-lg" />
+                                                            <FaTrashAlt className="h-4 w-4 mr-1" />
+                                                            Delete
                                                         </button>
                                                     </>
                                                 )}
                                                 <button
-                                                    className="btn bg-green-500 text-white text-xs flex items-center justify-center w-8 h-8"
+                                                    className="flex items-center justify-center w-32 h-8 text-green-500 hover:bg-green-100 transition duration-300 rounded-lg"
                                                     onClick={() => openModal(caseItem)}
                                                     title="View Details"
                                                 >
-                                                    <FaInfoCircle className="text-lg" />
+                                                    <FaEye className="h-4 w-4 mr-1" />
+                                                    View
                                                 </button>
                                             </div>
                                         </td>

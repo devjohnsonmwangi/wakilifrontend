@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { TicketAPI, TypeTickets } from "../../../../features/Tickets/AllTickets";
 import { logAPI } from "../../../../features/log/logsapi";
 import { RootState } from "../../../../app/store";
 import AnimatedLoader from "../../../../components/AnimatedLoader";
 import { useSelector } from "react-redux";
-import { FaTicketAlt, FaCheckCircle, FaUser, FaEnvelope, FaFileAlt, FaRedo, FaTimes, FaPhone , FaRegComment, FaCalendarAlt , FaHeading ,
-    FaIdCard} from "react-icons/fa";
+import {
+    FaTicketAlt, FaCheckCircle, FaUser, FaEnvelope, FaFileAlt, FaRedo, FaTimes, FaPhone, FaRegComment, FaCalendarAlt, FaHeading, FaIdCard
+} from "react-icons/fa";
 
 const AllTicket = () => {
     const [tickets, setTickets] = useState<TypeTickets[]>([]);
@@ -21,7 +22,6 @@ const AllTicket = () => {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error' | null>(null);
     const [loadingTicketId, setLoadingTicketId] = useState<number | null>(null);
-   
 
     const [filters, setFilters] = useState({
         full_name: '',
@@ -37,6 +37,7 @@ const AllTicket = () => {
             setTickets(allUserTickets);
         }
     }, [allUserTickets]);
+
     const showToast = (message: string, type: 'success' | 'error') => {
         setToastMessage(message);
         setToastType(type);
@@ -82,9 +83,6 @@ const AllTicket = () => {
         );
     });
 
-
-    
-
     // Conditional rendering during loading state
     if (isLoading) {
         return <div className="text-center"><AnimatedLoader /> Loading Tickets...</div>;
@@ -116,8 +114,21 @@ const AllTicket = () => {
         });
     };
 
+    // Function to format date
+    const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        return new Date(dateString).toLocaleString(undefined, options);
+    };
+
     return (
-        <div className="container mx-auto py-6 px-4">
+        <div className="w-full h-full p-0">
             <div className="breadcrumbs text-sm my-6 text-yellow-300 flex items-center gap-2">
                 <FaTicketAlt />
                 <ul className="flex gap-2">
@@ -141,7 +152,7 @@ const AllTicket = () => {
                         placeholder="Search by Full Name"
                         value={filters.full_name}
                         onChange={(e) => setFilters({ ...filters, full_name: e.target.value })}
-                        className="input input-bordered w-full md:w-64"
+                        className="input input-bordered w-full"
                     />
                 </div>
                 <div className="flex items-center gap-1">
@@ -151,7 +162,7 @@ const AllTicket = () => {
                         placeholder="Search by Email"
                         value={filters.email}
                         onChange={(e) => setFilters({ ...filters, email: e.target.value })}
-                        className="input input-bordered w-full md:w-64"
+                        className="input input-bordered w-full"
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -161,7 +172,7 @@ const AllTicket = () => {
                         placeholder="Search by Subject"
                         value={filters.subject}
                         onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-                        className="input input-bordered w-full md:w-64"
+                        className="input input-bordered w-full"
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -170,7 +181,7 @@ const AllTicket = () => {
                         title="status"
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                        className="select select-bordered w-full md:w-64"
+                        className="select select-bordered w-full"
                     >
                         <option value="">All Statuses</option>
                         <option value="Open">Open</option>
@@ -188,8 +199,9 @@ const AllTicket = () => {
                 </div>
             </div>
 
+            {/* Open Tickets Section */}
             <h2 className="text-3xl font-semibold mb-6 text-indigo-600">
-                🚀 Pending Tickets
+                🚀 Open Tickets
             </h2>
 
             <div className="flex justify-between mb-4">
@@ -202,76 +214,120 @@ const AllTicket = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-4 gap-6">
-                {filteredTickets.filter(ticket => ticket.status === 'Open').map((ticket) => (
-                    <div key={ticket.ticket_id} className="card shadow-lg p-6 bg-gradient-to-r from-indigo-100 to-indigo-300 rounded-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out">
-                        <input
-                            title="checkbox"
-                            type="checkbox"
-                            checked={selectedTickets.has(ticket.ticket_id)}
-                            onChange={() => handleTicketSelection(ticket.ticket_id)}
-                            className="checkbox"
-                        />
-                        <h3 className="text-xl font-bold text-indigo-700">
-                            🎫 Ticket ID: {ticket.ticket_id}
-                        </h3>
-                        <h4 className="text-lg text-indigo-600 font-medium mt-2">
-                            📝 {ticket.subject}
-                        </h4>
-                        <div className="p-4 bg-white border border-indigo-400 rounded-md mt-4 shadow-sm">
-                            {/* <p className="text-lg text-indigo-600 font-medium mt-2"> 📰description</p> */}
-                            <p className="text-md text-gray-800"><FaRegComment className="inline mr-1 text-indigo-600" />{ticket.description}</p>
-                        </div>
-                        <p className="text-sm mt-2 text-gray-600">
-                             <FaUser className="inline" /> name:{ticket.user.full_name}
-                        </p>
-                        <p className="text-sm mt-2 text-gray-600">< FaEnvelope className="inline mr-1 text-indigo-600" />email:{ticket.user.email}</p>
-                        <p className="text-sm mt-2 text-gray-600"><FaPhone className="inline mr-1 text-green-600" />phone: {ticket.user.phone_number}</p>
-                        <div className="mt-4">
-                            <button
-                                className="btn btn-outline btn-info mr-2 text-white hover:bg-indigo-500"
-                                onClick={() => handleUpdateStatus(ticket.ticket_id, 'Closed')}
-                                disabled={loadingTicketId === ticket.ticket_id}
-                            >
-                                {loadingTicketId === ticket.ticket_id ? 'Closing...' : <FaCheckCircle className="inline mr-2" />}
-                                Close Ticket
-                            </button>
-                        </div>
-                    </div>
-                ))}
+            <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+                <table className="table table-zebra text-gray-800 w-full">
+                    <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                        <tr className="text-xl">
+                            <th>🎫 Ticket ID</th>
+                            <th>📝 Subject</th>
+                            <th>💬 Message</th>
+                            <th>🙋 Full Name</th>
+                            <th>📧 Email</th>
+                            <th><FaPhone className="inline mr-1 text-green-600" /> Phone</th>
+                            <th>📅 Date</th>
+                            <th>⚙️ Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredTickets.filter(ticket => ticket.status === 'Open').map((ticket) => (
+                            <tr key={ticket.ticket_id} className="hover:bg-indigo-50">
+                                <td><FaIdCard className="inline mr-1 text-indigo-600" /> {ticket.ticket_id}</td>
+                                <td><FaHeading className="inline mr-1 text-indigo-600" /> {ticket.subject}</td>
+                                <td>
+                                    <textarea
+                                        readOnly
+                                        value={ticket.description}
+                                        className="w-full h-24 border border-gray-300 rounded-md p-2 resize-none"
+                                    />
+                                </td>
+                                <td><FaUser className="inline mr-1 text-indigo-600" /> {ticket.user.full_name}</td>
+                                <td className="relative group">
+                                    <input
+                                        type="text"
+                                        value={ticket.user.email}
+                                        readOnly
+                                        className="input input-bordered w-full cursor-pointer"
+                                        onClick={() => window.location.href = `mailto:${ticket.user.email}`}
+                                    />
+                                    <div className="absolute left-0 -bottom-8 bg-gray-700 text-white text-sm p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {ticket.user.email}
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href={`tel:${ticket.user.phone_number}`} className="text-green-600 hover:underline">
+                                        <FaPhone className="inline mr-1" /> {ticket.user.phone_number}
+                                    </a>
+                                </td>
+                                <td>
+                                    {formatDate(ticket.updated_at)}
+                                </td>
+                                <td>
+                                    <button
+                                        className="btn btn-outline btn-info text-white hover:bg-indigo-500"
+                                        onClick={() => handleUpdateStatus(ticket.ticket_id, 'Closed')}
+                                        disabled={loadingTicketId === ticket.ticket_id}
+                                    >
+                                        {loadingTicketId === ticket.ticket_id ? 'Closing...' : <FaCheckCircle className="inline mr-2" />}
+                                        Close Ticket
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
+            {/* Closed Tickets Section */}
             <h2 className="text-3xl font-semibold mt-8 mb-6 text-gray-700">
                 ✅ Closed Tickets
             </h2>
             <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
-                <table className="table table-zebra text-gray-800">
-                    <thead className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                <table className="table table-zebra text-gray-800 w-full">
+                    <thead className="bg-gradient-to-r from-green-600 to-green-400 text-white">
                         <tr className="text-xl">
-                            <th>🎫</th>
+                            <th>🎫 Ticket ID</th>
                             <th>📝 Subject</th>
                             <th>💬 Message</th>
                             <th>🙋 Full Name</th>
-                            
                             <th>📧 Email</th>
-                            <th><FaPhone className="inline mr-1 text-green-600" />phnone</th>
+                            <th><FaPhone className="inline mr-1 text-green-600" /> Phone</th>
                             <th>📅 Date</th>
                             <th>⚙️ Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredTickets.filter(ticket => ticket.status === 'Closed').map(ticket => (
-                            <tr key={ticket.ticket_id} className="hover:bg-indigo-50">
-                                <td><FaIdCard  className="inline mr-1 text-indigo-600" />{ticket.ticket_id}</td>
-                                <td><FaHeading className="inline mr-1 text-indigo-600" />{ticket.subject}</td>
-                               
-                                <td><FaRegComment className="inline mr-1 text-indigo-600" />{ticket.description}</td>
-                                <td><FaUser className="inline mr-1 text-indigo-600" />{ticket.user.full_name}</td>
-                                
-                                <td><FaEnvelope className="inline mr-1 text-indigo-600" />{ticket.user.email}</td>
-                                <td><FaPhone className="inline mr-1  text-indigo-600" />{ticket.user.phone_number}</td>
-                                
-                                <td><FaCalendarAlt className="inline mr-1 text-indigo-600" />{ticket.updated_at}</td>
+                            <tr key={ticket.ticket_id} className="hover:bg-green-50">
+                                <td><FaIdCard className="inline mr-1 text-green-600" /> {ticket.ticket_id}</td>
+                                <td><FaHeading className="inline mr-1 text-green-600" /> {ticket.subject}</td>
+                                <td>
+                                    <textarea
+                                        readOnly
+                                        value={ticket.description}
+                                        className="w-full h-24 border border-gray-300 rounded-md p-2 resize-none"
+                                    />
+                                </td>
+                                <td><FaUser className="inline mr-1 text-green-600" /> {ticket.user.full_name}</td>
+                                <td className="relative group">
+                                    <input
+                                        type="text"
+                                        value={ticket.user.email}
+                                        readOnly
+                                        className="input input-bordered w-full cursor-pointer"
+                                        onClick={() => window.location.href = `mailto:${ticket.user.email}`}
+                                    />
+                                    <div className="absolute left-0 -bottom-8 bg-gray-700 text-white text-sm p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {ticket.user.email}
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href={`tel:${ticket.user.phone_number}`} className="text-green-600 hover:underline">
+                                        <FaPhone className="inline mr-1" /> {ticket.user.phone_number}
+                                    </a>
+                                </td>
+                                <td>
+                                    {formatDate(ticket.updated_at)}
+                                </td>
                                 <td>
                                     <button
                                         onClick={() => handleUpdateStatus(ticket.ticket_id, 'Open')}

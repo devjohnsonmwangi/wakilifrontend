@@ -6,26 +6,17 @@ import {
     useDeleteCaseDocumentMutation,
 } from "../../../../features/casedocument/casedocmentapi";
 import DocumentUpload from './createcasedoc'; // Adjust the path if necessary
-import { saveAs } from 'file-saver';
+import DeleteCaseForm from './DeleteCaseForm'; // Import the DeleteCaseForm
 
-// Define the types for documents
-
-
-interface CloseButtonProps {
-    onClick: () => void;  // Define a type for the onClick prop
-}
-
-const CloseButton: React.FC<CloseButtonProps> = ({ onClick }) => {
-    return (
-        <button
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-            onClick={onClick}
-            aria-label="Close"
-        >
-            ✕
-        </button>
-    );
-};
+const CloseButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <button
+        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        onClick={onClick}
+        aria-label="Close"
+    >
+        ✕
+    </button>
+);
 
 const DocumentList: React.FC = () => {
     const { data: documents, isLoading, error, refetch } = useFetchCaseDocumentsQuery();
@@ -33,49 +24,37 @@ const DocumentList: React.FC = () => {
     const [deleteCaseDocument] = useDeleteCaseDocumentMutation();
     const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [name, setName] = useState('');
     const [content, setContent] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    const handleDownload = async (document_id: number, filename: string) => {
-        try {
-            const response = await fetch(`/api/casedocuments/${document_id}`, { 
-                method: 'GET',
-            });
-
-            if (!response.ok) {
-                console.error(`Failed to fetch file: ${response.status} ${response.statusText}`);
-                toast.error(`Failed to download document: ${response.status} ${response.statusText}`);
-                return;
-            }
-
-            const blob = await response.blob();
-            saveAs(blob, filename);
-            toast.success("Document downloaded");
-        } catch (error) {
-            console.error("Download error:", error);
-            toast.error("Failed to download document");
-        }
+    const handleDownload = (document_url: string) => {
+        window.open(document_url, '_blank');
     };
 
-    const handleDelete = async (document_id: number) => {
-        if (!window.confirm("Are you sure you want to delete this document?")) return;
-        try {
-            await deleteCaseDocument(document_id).unwrap();
-            toast.success("Document deleted");
-            refetch();
-        } catch (err) {
-            console.error("Error deleting document:", err);
-            toast.error("Failed to delete document");
+    const openDeleteModal = (document_id: number) => {
+        setSelectedDocumentId(document_id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (selectedDocumentId) {
+            try {
+                await deleteCaseDocument(selectedDocumentId).unwrap();
+                toast.success("Document deleted");
+                refetch();
+                setIsDeleteModalOpen(false);
+            } catch (err) {
+                console.error("Error deleting document:", err);
+                toast.error("Failed to delete document");
+            }
         }
     };
 
     const handleUpdate = async (document_id: number) => {
         const document = documents?.find((doc) => doc.document_id === document_id);
-        if (!document) {
-            console.warn(`Document with id ${document_id} not found.`);
-            return;
-        }
+        if (!document) return;
         setSelectedDocumentId(document_id);
         setName(document.document_name);
         setContent(document.document_url);
@@ -116,32 +95,26 @@ const DocumentList: React.FC = () => {
     const filteredDocuments = documents
         ? documents.filter(document => {
             if (!document) return false;
-
             const name = document.document_name || '';
             const caseId = document.case_id != null ? document.case_id.toString() : '';
-
-            return (
-                name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                caseId.includes(searchTerm)
-            );
+            return name.toLowerCase().includes(searchTerm.toLowerCase()) || caseId.includes(searchTerm);
         })
         : [];
 
     return (
-        <div className="container mx-auto p-6 bg-gray-100 min-h-screen">
+        <div className="w-full h-full p-4 bg-gray-100 min-h-screen relative">
             <Toaster position="top-center" />
-            <h1 className="text-3xl font-bold text-gray-800 mb-6 animate-pulse">Manage Documents</h1>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6 animate-pulse text-center">Manage Documents</h1>
 
             <div className="mb-4">
                 <button
                     onClick={openCreateModal}
-                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-300"
+                    className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-300 w-full sm:w-auto"
                 >
                     Create Case Document
                 </button>
             </div>
 
-            {/* The Modal */}
             {isCreateModalOpen && (
                 <div className="w-full">
                     <div className="relative bg-white rounded-lg shadow-xl w-full max-w-full">
@@ -152,11 +125,10 @@ const DocumentList: React.FC = () => {
                 </div>
             )}
 
-            {/* Search Input */}
             <div className="mb-4">
                 <input
                     type="text"
-                    placeholder="Search documents...by either case id or document name, most preferred case id"
+                    placeholder="Search documents...by case id or document name"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -173,21 +145,21 @@ const DocumentList: React.FC = () => {
             {!isLoading && !error && documents && (
                 <div className="overflow-x-auto shadow-md rounded-lg">
                     <table className="min-w-full leading-normal">
-                        <thead className="bg-gray-200">
+                        <thead className="bg-blue-600 text-white">
                             <tr>
-                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Doc ID
                                 </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Date Updated
                                 </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Case ID
                                 </th>
-                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -214,10 +186,10 @@ const DocumentList: React.FC = () => {
                                     <td className="px-5 py-5 border-b border-gray-200 text-sm">
                                         <div className="flex space-x-2">
                                             <button
-                                                onClick={() => handleDownload(document.document_id, document.document_name)}
+                                                onClick={() => handleDownload(document.document_url)}
                                                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-300"
                                             >
-                                                Download
+                                                Open
                                             </button>
                                             <button
                                                 onClick={() => handleUpdate(document.document_id)}
@@ -226,7 +198,7 @@ const DocumentList: React.FC = () => {
                                                 Update
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(document.document_id)}
+                                                onClick={() => openDeleteModal(document.document_id)}
                                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-300"
                                             >
                                                 Delete
@@ -241,9 +213,9 @@ const DocumentList: React.FC = () => {
             )}
 
             {isModalOpen && selectedDocumentId !== null && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
                     <div className="relative p-5 bg-white rounded-lg shadow-xl w-full max-w-md">
-                        <button title='button' onClick={closeModal} className="absolute top-2 right-2 text-gray-600 hover:text-gray-800">
+                        <button onClick={closeModal} className="absolute top-2 right-2 text-gray-600 hover:text-gray-800">
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -296,6 +268,16 @@ const DocumentList: React.FC = () => {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {isDeleteModalOpen && selectedDocumentId !== null && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+                    <DeleteCaseForm
+                        caseItem={documents?.find(doc => doc.document_id === selectedDocumentId) || null}
+                        onClose={() => setIsDeleteModalOpen(false)} // Pass the close function
+                        refetch={refetch}
+                    />
                 </div>
             )}
         </div>
