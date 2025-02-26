@@ -3,7 +3,7 @@ import { Toaster, toast } from 'sonner';
 import {
     useFetchCaseDocumentsQuery,
     useUpdateCaseDocumentMutation,
-    useDeleteCaseDocumentMutation,
+   
 } from "../../../../features/casedocument/casedocmentapi";
 import DocumentUpload from './createcasedoc'; // Adjust the path if necessary
 import DeleteCaseForm from './deleteCaseForm'; // Import the DeleteCaseForm
@@ -21,7 +21,7 @@ const CloseButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 const DocumentList: React.FC = () => {
     const { data: documents, isLoading, error, refetch } = useFetchCaseDocumentsQuery();
     const [updateCaseDocument] = useUpdateCaseDocumentMutation();
-    const [deleteCaseDocument] = useDeleteCaseDocumentMutation();
+  
     const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -38,19 +38,7 @@ const DocumentList: React.FC = () => {
         setIsDeleteModalOpen(true);
     };
 
-    const handleDelete = async () => {
-        if (selectedDocumentId) {
-            try {
-                await deleteCaseDocument(selectedDocumentId).unwrap();
-                toast.success("Document deleted");
-                refetch();
-                setIsDeleteModalOpen(false);
-            } catch (err) {
-                console.error("Error deleting document:", err);
-                toast.error("Failed to delete document");
-            }
-        }
-    };
+
 
     const handleUpdate = async (document_id: number) => {
         const document = documents?.find((doc) => doc.document_id === document_id);
