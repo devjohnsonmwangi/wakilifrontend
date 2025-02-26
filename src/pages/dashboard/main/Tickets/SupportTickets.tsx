@@ -30,7 +30,7 @@ const AllTicket = () => {
         status: ''
     });
 
-    const [selectedTickets, setSelectedTickets] = useState<Set<number>>(new Set());
+   // const [selectedTickets, setSelectedTickets] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         if (allUserTickets) {
@@ -60,18 +60,18 @@ const AllTicket = () => {
         }
     };
 
-    const handleBulkUpdateStatus = async (status: string) => {
-        const selectedTicketIds = Array.from(selectedTickets);
-        try {
-            for (const ticket_id of selectedTicketIds) {
-                await updateTicket({ ticket_id, status }).unwrap();
-                await addLog({ user_id, action: `📜 Ticket ${ticket_id} status updated to ${status}` }).unwrap();
-            }
-            showToast('🎉 Bulk ticket status updated successfully!', 'success');
-        } catch (err) {
-            showToast('❌ Failed to update tickets status', 'error');
-        }
-    };
+    // const handleBulkUpdateStatus = async (status: string) => {
+    //     const selectedTicketIds = Array.from(selectedTickets);
+    //     try {
+    //         for (const ticket_id of selectedTicketIds) {
+    //             await updateTicket({ ticket_id, status }).unwrap();
+    //             await addLog({ user_id, action: `📜 Ticket ${ticket_id} status updated to ${status}` }).unwrap();
+    //         }
+    //         showToast('🎉 Bulk ticket status updated successfully!', 'success');
+    //     } catch (err) {
+    //         showToast('❌ Failed to update tickets status', 'error');
+    //     }
+    // };
 
     // Filtering tickets based on filters
     const filteredTickets = tickets.filter((ticket) => {
@@ -204,15 +204,6 @@ const AllTicket = () => {
                 🚀 Open Tickets
             </h2>
 
-            <div className="flex justify-between mb-4">
-                <button
-                    className="btn bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => handleBulkUpdateStatus('Closed')}
-                    disabled={selectedTickets.size === 0}
-                >
-                    Close Selected Tickets
-                </button>
-            </div>
 
             <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
                 <table className="table table-zebra text-gray-800 w-full">
@@ -235,6 +226,7 @@ const AllTicket = () => {
                                 <td><FaHeading className="inline mr-1 text-indigo-600" /> {ticket.subject}</td>
                                 <td>
                                     <textarea
+                                       title="description"
                                         readOnly
                                         value={ticket.description}
                                         className="w-full h-24 border border-gray-300 rounded-md p-2 resize-none"
@@ -302,6 +294,7 @@ const AllTicket = () => {
                                 <td><FaHeading className="inline mr-1 text-green-600" /> {ticket.subject}</td>
                                 <td>
                                     <textarea
+                                        title="description"
                                         readOnly
                                         value={ticket.description}
                                         className="w-full h-24 border border-gray-300 rounded-md p-2 resize-none"
