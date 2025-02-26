@@ -226,6 +226,7 @@ const AllTicket = () => {
                                 <td><FaHeading className="inline mr-1 text-indigo-600" /> {ticket.subject}</td>
                                 <td>
                                     <textarea
+                                       placeholder="description"
                                        title="description"
                                         readOnly
                                         value={ticket.description}
@@ -235,6 +236,7 @@ const AllTicket = () => {
                                 <td><FaUser className="inline mr-1 text-indigo-600" /> {ticket.user.full_name}</td>
                                 <td className="relative group">
                                     <input
+                                        placeholder="email"
                                         type="text"
                                         value={ticket.user.email}
                                         readOnly
@@ -303,13 +305,15 @@ const AllTicket = () => {
                                 <td><FaUser className="inline mr-1 text-green-600" /> {ticket.user.full_name}</td>
                                 <td className="relative group">
                                     <input
+                                        placeholder="email"
+                                        title="email"
                                         type="text"
                                         value={ticket.user.email}
                                         readOnly
                                         className="input input-bordered w-full cursor-pointer"
                                         onClick={() => window.location.href = `mailto:${ticket.user.email}`}
                                     />
-                                    <div className="absolute left-0 -bottom-8 bg-gray-700 text-white text-sm p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div title="email" className="absolute left-0 -bottom-8 bg-gray-700 text-white text-sm p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                         {ticket.user.email}
                                     </div>
                                 </td>
