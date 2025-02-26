@@ -1,139 +1,156 @@
+import { useState, useEffect, useRef, LegacyRef } from 'react';
 import serviceimg from '../../assets/images/landingPage/coverimageone.webp';
-import bgrides from '../../assets/images/landingPage/coverimage3.jpeg'; // Background image
-import { ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard, FileText, Users } from 'lucide-react'; // Importing necessary icons
+import bgrides from '../../assets/images/landingPage/coverimage3.jpeg';
+import { ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard, FileText, Users } from 'lucide-react';
+import React from 'react';
+
+interface ServiceItem {
+    icon: React.ComponentType<any>;
+    title: string;
+    description: string;
+    ref: React.RefObject<HTMLLIElement>; // Add a ref to each service item
+}
 
 const Services = () => {
-  return (
-    <div 
-      className="w-full bg-cover bg-center min-h-screen py-10"
-      style={{
-        backgroundImage: `url(${bgrides})`, // Background image
-      }}
-    >
-      {/* Image and Header in the Same Column */}
-      <div className="w-[90%] mx-auto py-10 bg-black bg-opacity-80 rounded-xl shadow-xl">
-        <div className="flex flex-row items-center">
-          <img 
-            src={serviceimg} 
-            alt="Wakili Services" 
-            className="w-48 h-48 rounded-full shadow-xl border-4 border-white mb-6" 
-          />
-          <div className="flex flex-col items-center">
-            <h2 className="font-extrabold text-center text-3xl md:text-4xl text-[#006400] mb-4">
-              Our Premium Legal Services
-            </h2>
-            <p className="text-lg text-white text-center mb-8">
-              At <strong className="font-semibold text-2xl text-[#006400]">Wakili</strong>, we are committed to providing top-notch legal services that cater to your personal, business, and legal needs. 
-              Our legal services align with the rights and provisions outlined in the Constitution. Below are the services we offer:
-            </p>
-          </div>
+    const initialServices: ServiceItem[] = [
+        {
+            icon: Clipboard,
+            title: 'Legal Consultation',
+            description: 'Expert legal consultants provide tailored advice for individuals and businesses.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: ShieldCheck,
+            title: 'Contract Drafting & Review',
+            description: 'Legally sound, clear contracts protecting your interests.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: Car,
+            title: 'Corporate Law',
+            description: 'Services like company formation, mergers, and shareholder agreements.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: Wrench,
+            title: 'Litigation & Dispute Resolution',
+            description: 'Mediation, arbitration, and court litigation to resolve disputes.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: DollarSign,
+            title: 'Employment Law',
+            description: 'Resolve issues related to wrongful termination, workplace rights, and compliance.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: Truck,
+            title: 'Intellectual Property Protection',
+            description: 'Protect your creative work, inventions, and innovations.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: FileText,
+            title: 'Oaths Commissioning',
+            description: 'Witness sworn affidavits, statutory declarations, and signing of legal documents.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+        {
+            icon: Users,
+            title: 'Family Law & Divorce',
+            description: 'Support for issues such as divorce, child custody, and adoption.',
+            ref: useRef<HTMLLIElement>(null),
+        },
+    ];
+
+    const [services, setServices] = useState(initialServices);
+    const [visibleServices, setVisibleServices] = useState<number[]>([]);
+
+    // Function to shuffle array (Fisher-Yates shuffle)
+    const shuffle = (array: ServiceItem[]) => {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    };
+
+    // useEffect for shuffling services every 10 seconds
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setServices((prevServices) => shuffle([...prevServices]));
+        }, 10000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const nextVisible = visibleServices.length;
+            if (nextVisible < services.length) {
+                const nextService = services[nextVisible];
+                if (nextService.ref.current) {
+                    const rect = nextService.ref.current.getBoundingClientRect();
+                    if (rect.top <= window.innerHeight * 0.75) { // Adjust 0.75 as needed
+                        setVisibleServices([...visibleServices, nextVisible]);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll(); // Initial check
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [services, visibleServices]);
+
+    return (
+        <div
+            className="w-full bg-cover bg-center min-h-screen py-10 relative overflow-hidden"
+            style={{ backgroundImage: `url(${bgrides})` }}
+        >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-500 opacity-20"></div>
+
+            <div className="relative z-10 w-full mx-auto p-6 md:p-8 rounded-xl shadow-lg text-gray-700 bg-white">
+                {/* Image and Header Section */}
+                <div className="flex flex-col md:flex-row items-center p-4 rounded-lg shadow-md">
+                    <img
+                        src={serviceimg}
+                        alt="Wakili Services"
+                        className="w-32 h-32 md:w-48 md:h-48 rounded-full shadow-xl border-4 border-purple-400 mb-4 md:mb-0 md:mr-8"
+                    />
+                    <div className="text-center md:text-left">
+                        <h2 className="font-extrabold text-3xl md:text-4xl text-purple-600 mb-2 tracking-tight">
+                            Our Premium Legal Services
+                        </h2>
+                        <p className="text-base md:text-lg leading-relaxed">
+                            At <strong className="font-semibold text-2xl text-purple-600">Wakili</strong>, we are committed to providing top-notch legal services that cater to your needs.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Services List */}
+                <ul className="mt-8 space-y-6">
+                    {services.map((service, index) => (
+                        <li
+                            key={index}
+                            ref={service.ref as LegacyRef<HTMLLIElement>} // Attach ref to the service item
+                            className={`flex items-start gap-4 p-4 rounded-lg shadow-sm bg-gray-50 hover:bg-gray-100 transition-opacity duration-500 ${visibleServices.includes(index) ? 'opacity-100' : 'opacity-0'}`}
+                        >
+                            <service.icon size={30} className="text-purple-500 flex-shrink-0" />
+                            <div>
+                                <h3 className="font-semibold text-xl text-purple-600 mb-1">{service.title}</h3>
+                                <p className="text-gray-700 leading-relaxed">{service.description}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
-
-        {/* Services Content in Column */}
-        <div className="flex flex-col space-y-10">
-          <ul className="list-none space-y-8">
-
-            {/* Legal Consultation Service */}
-            <li className="flex gap-4">
-              <Clipboard size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Legal Consultation</h3>
-                <p className="text-lg text-white italic mt-2">
-                  Our expert legal consultants provide tailored advice for individuals and businesses. We ensure clients receive the best possible outcomes in any legal situation. 
-                  This service is supported by <strong className="font-semibold text-2xl text-[#006400]">Article 48</strong> of the Constitution, which guarantees the right of access to justice for all.
-                </p>
-              </div>
-            </li>
-
-            {/* Contract Drafting Service */}
-            <li className="flex gap-4">
-              <ShieldCheck size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Contract Drafting & Review</h3>
-                <p className="text-lg text-white italic mt-2">
-                  Our team ensures all contracts are legally sound, clear, and protect your interests. 
-                  This service is guided by <strong className="font-semibold text-2xl text-[#006400]">Article 40</strong> of the Constitution, which protects property rights, including contractual rights.
-                </p>
-              </div>
-            </li>
-
-            {/* Corporate Law Service */}
-            <li className="flex gap-4">
-              <Car size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Corporate Law</h3>
-                <p className="text-lg text-white italic mt-2">
-                  We offer services like company formation, mergers, and shareholder agreements. 
-                  This service is guided by <strong className="font-semibold text-2xl text-[#006400]">Article 46</strong> of the Constitution, which ensures the protection of consumer rights and fair business practices.
-                </p>
-              </div>
-            </li>
-
-            {/* Litigation & Dispute Resolution Service */}
-            <li className="flex gap-4">
-              <Wrench size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Litigation & Dispute Resolution</h3>
-                <p className="text-lg text-white italic mt-2">
-                  We handle mediation, arbitration, and court litigation to resolve disputes. 
-                  Our litigation services align with <strong className="font-semibold text-2xl text-[#006400]">Article 50</strong> of the Constitution, which guarantees the right to a fair trial.
-                </p>
-              </div>
-            </li>
-
-            {/* Employment Law Service */}
-            <li className="flex gap-4">
-              <DollarSign size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Employment Law</h3>
-                <p className="text-lg text-white italic mt-2">
-                  We help resolve issues related to wrongful termination, workplace rights, and compliance. 
-                  This service is grounded in <strong className="font-semibold text-2xl text-[#006400]">Article 41</strong> of the Constitution, which guarantees labor rights, including fair treatment at the workplace.
-                </p>
-              </div>
-            </li>
-
-            {/* Intellectual Property Service */}
-            <li className="flex gap-4">
-              <Truck size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Intellectual Property Protection</h3>
-                <p className="text-lg text-white italic mt-2">
-                  Protect your creative work, inventions, and innovations with our intellectual property services. 
-                  This service aligns with <strong className="font-semibold text-2xl text-[#006400]">Article 40</strong> of the Constitution, which recognizes and protects intellectual property rights as part of the right to property.
-                </p>
-              </div>
-            </li>
-
-            {/* Oaths Commissioning Service */}
-            <li className="flex gap-4">
-              <FileText size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Oaths Commissioning</h3>
-                <p className="text-lg text-white italic mt-2">
-                  Our oaths commissioning service includes witnessing sworn affidavits, statutory declarations, and the signing of legal documents. 
-                  This service is linked to <strong className="font-semibold text-2xl text-[#006400]">Article 19</strong> of the Constitution, which ensures access to human rights and legal obligations.
-                </p>
-              </div>
-            </li>
-
-            {/* Family Law & Divorce Service */}
-            <li className="flex gap-4">
-              <Users size={30} className="text-[#006400]" />
-              <div>
-                <h3 className="font-semibold text-2xl text-[#006400]">Family Law & Divorce</h3>
-                <p className="text-lg text-white italic mt-2">
-                  We offer support for issues such as divorce, child custody, and adoption. 
-                  This service is guided by <strong className="font-semibold text-2xl text-[#006400]" >Article 45</strong> of the Constitution, which guarantees the right to family, marriage, and care for children.
-                </p>
-              </div>
-            </li>
-
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Services;

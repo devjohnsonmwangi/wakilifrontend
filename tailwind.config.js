@@ -16,6 +16,7 @@ export default {
         'button-gradient-start': '#FFA500',
         'button-gradient-end': '#FF4500',
       },
+
       keyframes: {
         marquee: {
           '0%': { transform: 'translateX(100%)' },
@@ -49,6 +50,18 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
+        // Add this keyframes
+        float: {
+          '0%': {
+            transform: 'translateY(0px)'
+          },
+          '50%': {
+            transform: 'translateY(-5px)'
+          },
+          '100%': {
+            transform: 'translateY(0px)'
+          }
+        }
       },
       animation: {
         marquee: 'marquee 10s linear infinite',
@@ -59,9 +72,11 @@ export default {
         'spin-fast': 'spinFast 0.7s linear infinite',
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
         'bounce': 'bounce 0.5s infinite',
+        // Add this float animation
+        float: 'float 3s ease-in-out infinite',
       },
       screens: {
-        'xs': '250px', 
+        'xs': '250px',
         'sm': '640px',
         'md': '768px',
         'lg': '1024px',
@@ -72,10 +87,10 @@ export default {
   plugins: [daisyui, flowbitePlugin],
   daisyui: {
     themes: [
-      "light", 
-      "dark", 
-      "cupcake", 
-      "retro", 
+      "light",
+      "dark",
+      "cupcake",
+      "retro",
       "forest",
       "aqua",
       "lofi",
