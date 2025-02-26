@@ -72,6 +72,7 @@ const Profile = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [image, setImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isChangePasswordMode, setIsChangePasswordMode] = useState(false);
     const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
     const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
@@ -101,17 +102,25 @@ const Profile = () => {
         const file = event.target.files?.[0];
         if (file) {
             setImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setImage(null);
+            setImagePreview(null);
         }
     };
 
     const onSubmit: SubmitHandler<UserFormData> = async (formData) => {
-        let toastId: string | number | undefined = undefined; // Define toastId
+        let toastId: string | number | undefined = undefined;
 
         try {
             setIsUpdating(true);
-            toastId = toast.loading('Updating profile...'); // Loading toast
+            toastId = toast.loading('Updating profile...');
 
-            let imageUrl = formData.profile_picture || '';
+            let imageUrlToUpdate = formData.profile_picture || '';
             if (image) {
                 const formImageData = new FormData();
                 formImageData.append('file', image);
@@ -120,21 +129,23 @@ const Profile = () => {
                 const response = await axios.post('https://api.cloudinary.com/v1_1/dl3ovuqjn/image/upload', formImageData);
 
                 if (response.status === 200) {
-                    imageUrl = response.data.secure_url;
+                    imageUrlToUpdate = response.data.secure_url;
                 } else {
                     throw new Error('Failed to upload image');
                 }
             }
 
-            await updateUser({ user_id: user_id, ...formData, profile_picture: imageUrl }).unwrap();
+            await updateUser({ user_id: user_id, ...formData, profile_picture: imageUrlToUpdate }).unwrap();
             setIsEditMode(false);
             refetch();
-            toast.success('User updated successfully', { id: toastId }); // Success toast
+            toast.success('User updated successfully', { id: toastId });
+            setImagePreview(null); // Clear the temporary URL after upload
+
         } catch (err) {
             console.error('Error updating user', err);
-            toast.error('Error updating user', { id: toastId }); // Error toast
+            toast.error('Error updating user', { id: toastId });
         } finally {
-             setIsUpdating(false);
+            setIsUpdating(false);
         }
     };
 
@@ -148,7 +159,7 @@ const Profile = () => {
 
         try {
             setIsPasswordUpdating(true);
-            toastId = toast.loading('Updating password...'); // Loading toast
+            toastId = toast.loading('Updating password...');
             await updateUser({
                 user_id: user_id,
                 full_name: userData?.full_name,
@@ -158,11 +169,11 @@ const Profile = () => {
                 password: formData.password,
             }).unwrap();
 
-            toast.success('Password updated successfully', { id: toastId }); // Success toast
+            toast.success('Password updated successfully', { id: toastId });
             setIsChangePasswordMode(false);
         } catch (err) {
             console.error('Error updating user', err);
-            toast.error('Error updating user', { id: toastId }); // Error toast
+            toast.error('Error updating user', { id: toastId });
         } finally {
             setIsPasswordUpdating(false);
         }
@@ -292,6 +303,20 @@ const Profile = () => {
                                             </label>
                                             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                                                 <div className="space-y-1 text-center">
+                                                    {/* Display the preview image */}
+                                                    {imagePreview ? (
+                                                        <img
+                                                            src={imagePreview}
+                                                            alt="Preview"
+                                                            className="mx-auto rounded-full h-24 w-24 object-cover"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
+                                                            alt="Current Profile"
+                                                            className="mx-auto rounded-full h-24 w-24 object-cover"
+                                                        />
+                                                    )}
                                                     <svg
                                                         className="mx-auto h-12 w-12 text-gray-400"
                                                         stroke="currentColor"
@@ -466,11 +491,11 @@ const Profile = () => {
                 )}
                 {isViewPicture && (
                     <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-75 z-50">
-                        <div className="bg-white rounded-lg p-4 max-w-md mx-auto">
+                        <div className="bg-white rounded-lg p-4 max-w-lg mx-auto"> {/* Increased max-w-lg */}
                             <img
                                 src={userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
                                 alt="Full User Avatar"
-                                className="rounded-md object-cover w-full h-64"
+                                className="rounded-md object-cover w-full h-96" // Increased h-96
                             />
                             <div className="flex justify-end mt-4">
                                 <button
