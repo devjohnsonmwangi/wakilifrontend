@@ -6,7 +6,7 @@ import {
     useDeleteCaseDocumentMutation,
 } from "../../../../features/casedocument/casedocmentapi";
 import DocumentUpload from './createcasedoc'; // Adjust the path if necessary
-import DeleteCaseForm from './DeleteCaseForm'; // Import the DeleteCaseForm
+import DeleteCaseForm from './deleteCaseForm'; // Import the DeleteCaseForm
 
 const CloseButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     <button

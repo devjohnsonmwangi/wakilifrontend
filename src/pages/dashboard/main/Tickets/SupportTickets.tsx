@@ -6,7 +6,7 @@ import { RootState } from "../../../../app/store";
 import AnimatedLoader from "../../../../components/AnimatedLoader";
 import { useSelector } from "react-redux";
 import {
-    FaTicketAlt, FaCheckCircle, FaUser, FaEnvelope, FaFileAlt, FaRedo, FaTimes, FaPhone, FaRegComment, FaCalendarAlt, FaHeading, FaIdCard
+    FaTicketAlt, FaCheckCircle, FaUser, FaEnvelope, FaFileAlt, FaRedo, FaTimes, FaPhone, FaHeading, FaIdCard
 } from "react-icons/fa";
 
 const AllTicket = () => {
@@ -102,17 +102,17 @@ const AllTicket = () => {
         });
     };
 
-    const handleTicketSelection = (ticketId: number) => {
-        setSelectedTickets(prevState => {
-            const newSelection = new Set(prevState);
-            if (newSelection.has(ticketId)) {
-                newSelection.delete(ticketId);
-            } else {
-                newSelection.add(ticketId);
-            }
-            return newSelection;
-        });
-    };
+    // const handleTicketSelection = (ticketId: number) => {
+    //     setSelectedTickets(prevState => {
+    //         const newSelection = new Set(prevState);
+    //         if (newSelection.has(ticketId)) {
+    //             newSelection.delete(ticketId);
+    //         } else {
+    //             newSelection.add(ticketId);
+    //         }
+    //         return newSelection;
+    //     });
+    // };
 
     // Function to format date
     const formatDate = (dateString: string) => {
