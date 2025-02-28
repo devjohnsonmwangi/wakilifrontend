@@ -1,7 +1,7 @@
 import { usersAPI, UserDataTypes } from "../../../features/users/usersAPI";
 import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaTrash } from 'react-icons/fa'; // Import FaTrash icon
 import { useNavigate } from 'react-router-dom';  
 
 function Account() {
@@ -9,7 +9,7 @@ function Account() {
   const { data: usersData, isLoading: usersLoading, error: usersError, refetch: refetchUsers } = usersAPI.useFetchUsersQuery();
   const [isUpdatingRole, setIsUpdatingRole] = useState<number | null>(null);
   const [updateUser] = usersAPI.useUpdateUserMutation();
-  const [deleteUser] = usersAPI.useDeleteUserMutation(); // Use delete mutation
+  const [deleteUser] = usersAPI.useDeleteUserMutation();
   const [filters, setFilters] = useState({
     name: '',
     email: '',
@@ -48,20 +48,18 @@ function Account() {
 
   const handleDeleteUser = async (userId: number) => {
     try {
-      const response = await deleteUser(userId); // Pass userId directly if deleteUser expects a number
+      const response = await deleteUser(userId);
       if (response && 'error' in response && typeof response.error === 'string') {
         throw new Error(response);
       }
       toast.success('🎉 User deleted successfully!');
-      refetchUsers(); // Refetch the list of users
+      refetchUsers();
     } catch (error) {
       console.error('Error deleting user', error); 
       toast.error('❌ Error deleting user');
     }
   };
   
-  
-
   if (usersLoading) {
     return <div>🚀 Loading user data...</div>;
   }
@@ -101,80 +99,87 @@ function Account() {
           <button onClick={handleResetFilters} className="btn bg-indigo-500 text-white hover:bg-indigo-600">🔄 Reset</button>
         </div>
 
-        <table className="table table-zebra w-full shadow-md rounded-lg overflow-hidden">
-          <thead>
-            <tr className="bg-indigo-600 text-white">
-              <th>ID</th>
-              <th>Profile</th>
-              <th>Full Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Address</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user: UserDataTypes) => (
-              <tr key={user.user_id} className="hover:bg-indigo-50">
-                <td>{user.user_id}</td>
-                <td>
-                  {user.profile_picture ? (
-                    <img src={user.profile_picture} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-white">No Image</span>
-                    </div>
-                  )}
-                </td>
-                <td>{user.full_name}</td>
-                <td><FaEnvelope className="inline mr-1 text-indigo-600" />{user.email}</td>
-                <td><FaPhone className="inline mr-1 text-green-600" />{user.phone_number}</td>
-                <td><FaMapMarkerAlt className="inline mr-1 text-red-600" />{user.address}</td>
-                <td>
-                  <select
-                    title="Change Role"
-                     className="select select-bordered"
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user.user_id, e.target.value as "user" | "admin" | "lawyer" | "client" | "clerk" | "manager" | "support")}
-                     disabled={isUpdatingRole === user.user_id}
-                  >
-                   <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="lawyer">Lawyer</option>
-                    <option value="clerk">Clerk</option>
-                    <option value="client">Client</option>
-                    <option value="support">Support</option>
-                  </select>
-                </td>
-                <td className="flex gap-2">
-                  <button 
-                    onClick={() => handleRoleChange(user.user_id, user.role === 'user' ? 'admin' : 'user')}
-                    className="btn bg-green-500 text-white hover:bg-green-600"
-                    disabled={isUpdatingRole === user.user_id}
-                  >
-                    {isUpdatingRole === user.user_id ? 'Updating...' : 'Change Role'}
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteUser(user.user_id)} 
-                    className="btn bg-red-500 text-white hover:bg-red-600"
-                  >
-                    🗑️ Delete
-                  </button>
-                </td>
+        <div className="overflow-x-auto"> {/* Add this div for scrolling */}
+          <table className="table table-zebra w-full shadow-md rounded-lg">
+            <thead>
+              <tr className="bg-indigo-600 text-white">
+                <th>ID</th>
+                <th>Profile</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Role</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user: UserDataTypes) => (
+                <tr key={user.user_id} className="hover:bg-indigo-50">
+                  <td>{user.user_id}</td>
+                  <td>
+                    {user.profile_picture ? (
+                      <img src={user.profile_picture} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-white">No Image</span>
+                      </div>
+                    )}
+                  </td>
+                  <td>{user.full_name}</td>
+                  <td>
+                    <a href={`mailto:${user.email}`} className="text-indigo-600 hover:underline">
+                      <FaEnvelope className="inline mr-1" />
+                      {user.email}
+                    </a>
+                  </td>
+                  <td>
+                    <a href={`tel:${user.phone_number}`} className="text-green-600 hover:underline">
+                      <FaPhone className="inline mr-1" />
+                      {user.phone_number}
+                    </a>
+                  </td>
+                  <td><FaMapMarkerAlt className="inline mr-1 text-red-600" />{user.address}</td>
+                  <td>
+                    <select
+                      title="Change Role"
+                      className="select select-bordered"
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.user_id, e.target.value as "user" | "admin" | "lawyer" | "client" | "clerk" | "manager" | "support")}
+                      disabled={isUpdatingRole === user.user_id}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="lawyer">Lawyer</option>
+                      <option value="clerk">Clerk</option>
+                      <option value="client">Client</option>
+                      <option value="support">Support</option>
+                    </select>
+                  </td>
+                  <td className="flex flex-col sm:flex-row gap-2"> {/* Change to flex-col for mobile responsiveness */}
+                    <button 
+                      onClick={() => handleRoleChange(user.user_id, user.role === 'user' ? 'admin' : 'user')}
+                      className="btn bg-green-500 text-white hover:bg-green-600 max-w-[100px] sm:max-w-[120px]" // Limit width for larger screens
+                      disabled={isUpdatingRole === user.user_id}
+                    >
+                      {isUpdatingRole === user.user_id ? 'Updating...' : 'Change Role'}
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteUser(user.user_id)} 
+                      className="btn bg-red-500 text-white hover:bg-red-600 max-w-[100px] sm:max-w-[120px] flex items-center justify-center" // Limit width for larger screens
+                    >
+                      <FaTrash className="text-white" /> {/* Only the trash icon */}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );
 }
 
 export default Account;
-
-
-
-
-

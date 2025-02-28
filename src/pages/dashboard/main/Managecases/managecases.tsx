@@ -207,30 +207,28 @@ const AllCases = () => {
                                 <option value="closed">Closed</option>
                             </select>
                         </div>
-                        <div className="flex justify-center items-center">
-                            <button
-                                onClick={resetFilters}
-                                className="btn btn-outline btn-error mt-4 md:mt-0"
-                            >
-                                <FaTimes className="inline mr-2" />
-                                Reset Filters
-                            </button>
-                        </div>
                     </div>
 
-                    <h2 className="text-3xl font-semibold mb-6 text-indigo-600">
-                        🚀 Open and In Progress Cases
-                    </h2>
-
-                    <div className="flex justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-4"> {/* Flex container for buttons */}
                         <button
-                            className="btn bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={resetFilters}
+                            className="btn btn-outline btn-error w-full sm:w-auto mb-2 sm:mb-0"
+                        >
+                            <FaTimes className="inline mr-2" />
+                            Reset Filters
+                        </button>
+                        <button
+                            className="btn bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                             onClick={() => handleBulkUpdateStatus('closed')}
                             disabled={selectedCases.size === 0}
                         >
                             Close Selected Cases
                         </button>
                     </div>
+
+                    <h2 className="text-3xl font-semibold mb-6 text-indigo-600">
+                        🚀 Open and In Progress Cases
+                    </h2>
 
                     <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
                         <table className="table table-zebra text-gray-800 w-full">
@@ -262,7 +260,7 @@ const AllCases = () => {
                                             <td><FaUser className="inline mr-1 text-indigo-600" />{caseItem.user.full_name}</td>
                                             <td><FaPhone className="inline mr-1 text-indigo-600" />{caseItem.user.phone_number}</td>
                                             <td>{caseItem.case_type}</td>
-                                            <td className="flex gap-2 justify-center">
+                                            <td className="flex gap-2 justify-center flex-wrap"> {/* Added flex-wrap for responsiveness */}
                                                 <button
                                                     title="View"
                                                     className="btn btn-outline btn-info text-white hover:bg-indigo-500 flex items-center"
@@ -331,7 +329,7 @@ const AllCases = () => {
                                             <td><FaUser className="inline mr-1 text-green-600" />{caseItem.user.full_name}</td>
                                             <td><FaPhone className="inline mr-1 text-green-600" />{caseItem.user.phone_number}</td>
                                             <td>{caseItem.case_type}</td>
-                                            <td className="flex gap-2 justify-center">
+                                            <td className="flex gap-2 justify-center flex-wrap"> {/* Added flex-wrap for responsiveness */}
                                                 <button
                                                     title="View"
                                                     className="btn btn-outline btn-info text-white hover:bg-indigo-500 flex items-center"

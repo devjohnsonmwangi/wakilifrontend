@@ -187,9 +187,9 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                 <table className="w-full border border-gray-300">
                     <thead>
                         <tr className="bg-gray-200">
-                            <th className="border p-2">Case ID</th>
-                            <th className="border p-2">Case Number</th>
-                            <th className="border p-2">Case Description</th>
+                            <th className="border p-2">Case_ID</th>
+                            <th className="border p-2">Case_Number</th>
+                            <th className="border p-2">track_number</th>
                             <th className="border p-2">Select</th>
                         </tr>
                     </thead>
@@ -201,7 +201,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                             <tr key={caseItem.case_id} className="hover:bg-gray-100">
                                 <td className="border p-2">{caseItem.case_id}</td>
                                 <td className="border p-2">{caseItem.case_number}</td>
-                                <td className="border p-2">{caseItem.case_description}</td>
+                                <td className="border p-2">{caseItem.case_track_number}</td>
                                 <td className="border p-2">
                                     <button
                                         onClick={() => setSelectedCaseId(caseItem.case_id)}

@@ -157,11 +157,11 @@ const MyCases = () => {
                         <table className="table-auto w-full shadow-lg bg-white rounded-lg">
                             <thead className="bg-green-800 text-white">
                                 <tr>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Case ID 📑</th>
+                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Case_ID 📑</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Status ⚡</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Track Number</th>
+                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Track_Number</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Fees</th>
-                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Payment Status</th>
+                                    <th className="px-4 py-2 text-left text-sm sm:text-base">Payment_Status</th>
                                     <th className="px-4 py-2 text-left text-sm sm:text-base">Actions</th>
                                 </tr>
                             </thead>

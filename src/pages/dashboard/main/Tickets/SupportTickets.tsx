@@ -20,7 +20,7 @@ const AllTicket = () => {
     const user_id = user?.user_id;
     const [addLog] = logAPI.useCreateLogMutation();
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [toastType, setToastType] = useState<'success' | 'error' | null>(null);
+    const [toastType, setToastType] = useState<'success' | 'error' | 'loading' | null>(null);
     const [loadingTicketId, setLoadingTicketId] = useState<number | null>(null);
 
     const [filters, setFilters] = useState({
@@ -30,15 +30,13 @@ const AllTicket = () => {
         status: ''
     });
 
-   // const [selectedTickets, setSelectedTickets] = useState<Set<number>>(new Set());
-
     useEffect(() => {
         if (allUserTickets) {
             setTickets(allUserTickets);
         }
     }, [allUserTickets]);
 
-    const showToast = (message: string, type: 'success' | 'error') => {
+    const showToast = (message: string, type: 'success' | 'error' | 'loading') => {
         setToastMessage(message);
         setToastType(type);
         setTimeout(() => {
@@ -50,6 +48,7 @@ const AllTicket = () => {
     const handleUpdateStatus = async (ticket_id: number, status: string) => {
         try {
             setLoadingTicketId(ticket_id);
+            showToast('🔄 Updating ticket status...', 'loading'); // Show loading message
             await updateTicket({ ticket_id, status }).unwrap();
             await addLog({ user_id, action: `📜 Ticket ${ticket_id} status updated to ${status}` }).unwrap();
             showToast('🎉 Ticket status updated successfully!', 'success');
@@ -60,20 +59,6 @@ const AllTicket = () => {
         }
     };
 
-    // const handleBulkUpdateStatus = async (status: string) => {
-    //     const selectedTicketIds = Array.from(selectedTickets);
-    //     try {
-    //         for (const ticket_id of selectedTicketIds) {
-    //             await updateTicket({ ticket_id, status }).unwrap();
-    //             await addLog({ user_id, action: `📜 Ticket ${ticket_id} status updated to ${status}` }).unwrap();
-    //         }
-    //         showToast('🎉 Bulk ticket status updated successfully!', 'success');
-    //     } catch (err) {
-    //         showToast('❌ Failed to update tickets status', 'error');
-    //     }
-    // };
-
-    // Filtering tickets based on filters
     const filteredTickets = tickets.filter((ticket) => {
         return (
             (filters.full_name ? ticket.user.full_name.toLowerCase().includes(filters.full_name.toLowerCase()) : true) &&
@@ -83,7 +68,6 @@ const AllTicket = () => {
         );
     });
 
-    // Conditional rendering during loading state
     if (isLoading) {
         return <div className="text-center"><AnimatedLoader /> Loading Tickets...</div>;
     }
@@ -102,19 +86,6 @@ const AllTicket = () => {
         });
     };
 
-    // const handleTicketSelection = (ticketId: number) => {
-    //     setSelectedTickets(prevState => {
-    //         const newSelection = new Set(prevState);
-    //         if (newSelection.has(ticketId)) {
-    //             newSelection.delete(ticketId);
-    //         } else {
-    //             newSelection.add(ticketId);
-    //         }
-    //         return newSelection;
-    //     });
-    // };
-
-    // Function to format date
     const formatDate = (dateString: string) => {
         const options: Intl.DateTimeFormatOptions = {
             year: 'numeric',
@@ -128,7 +99,7 @@ const AllTicket = () => {
     };
 
     return (
-        <div className="w-full h-full p-0">
+        <div className="w-full h-full p-0 relative"> {/* Added relative positioning */}
             <div className="breadcrumbs text-sm my-6 text-yellow-300 flex items-center gap-2">
                 <FaTicketAlt />
                 <ul className="flex gap-2">
@@ -138,8 +109,9 @@ const AllTicket = () => {
                 </ul>
             </div>
 
+            {/* Toast Notification */}
             {toastMessage && (
-                <div className={`toast ${toastType === 'success' ? 'bg-green-500' : 'bg-red-500'} p-3 rounded-md text-white mb-4`}>
+                <div className={`toast ${toastType === 'success' ? 'bg-green-500' : toastType === 'error' ? 'bg-red-500' : 'bg-yellow-500'} p-3 rounded-md text-white mb-4 absolute top-4 right-4 z-50`} style={{ height: '50px' }}>
                     {toastMessage}
                 </div>
             )}
@@ -203,7 +175,6 @@ const AllTicket = () => {
             <h2 className="text-3xl font-semibold mb-6 text-indigo-600">
                 🚀 Open Tickets
             </h2>
-
 
             <div className="overflow-x-auto rounded-lg shadow-md border border-gray-200">
                 <table className="table table-zebra text-gray-800 w-full">

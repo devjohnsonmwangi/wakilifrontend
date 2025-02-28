@@ -139,13 +139,13 @@ const DocumentList: React.FC = () => {
                                     Name
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
-                                    Doc ID
+                                    Doc_ID
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
-                                    Date Updated
+                                    Date_Updated
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
-                                    Case ID
+                                    Case_ID
                                 </th>
                                 <th className="px-5 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold uppercase tracking-wider">
                                     Actions
