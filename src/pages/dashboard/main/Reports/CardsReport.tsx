@@ -1,140 +1,274 @@
-import { usersAPI } from '../../../../features/users/usersAPI';
+import { usersAPI, UserDataTypes } from '../../../../features/users/usersAPI';
 import { useEffect, useState } from 'react';
+import {
+  PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
+} from 'recharts';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF4D4D', '#8A2BE2', '#5F9EA0'];
+
+interface UserCounts {
+  totalUsers: number;
+  totalCustomers: number;
+  totalAdmins: number;
+  totalLawyers: number;
+  totalClerks: number;
+  totalManagers: number;
+  totalClients: number;
+  totalSupporters: number;
+}
+
+interface ChartData {
+  name: string;
+  value: number;
+}
 
 const CardsReport = () => {
-  const { data: usersData, isLoading: usersLoading, error: usersError } = usersAPI. useFetchUsersQuery();
-  
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [totalCustomers, setTotalCustomers] = useState(0);
-  const [totalAdmins, setTotalAdmins] = useState(0);
-  const [totalLawyers, setTotalLawyers] = useState(0);
-  const [totalClerks, setTotalClerks] = useState(0);
-  const [totalManagers, setTotalManagers] = useState(0);
-  const [totalClients,setTotalClients]=useState(0);
-  const [totalSupporters,setTotalSupporters]=useState(0);
+  const { data: usersData, isLoading: usersLoading, error: usersError } = usersAPI.useFetchUsersQuery();
 
+  const [userCounts, setUserCounts] = useState<UserCounts>({
+    totalUsers: 0,
+    totalCustomers: 0,
+    totalAdmins: 0,
+    totalLawyers: 0,
+    totalClerks: 0,
+    totalManagers: 0,
+    totalClients: 0,
+    totalSupporters: 0,
+  });
+
+  const [pieData, setPieData] = useState<ChartData[]>([]);
+  const [barData, setBarData] = useState<ChartData[]>([]);
+  const [lineData, setLineData] = useState<ChartData[]>([]);
 
   useEffect(() => {
     if (usersData) {
       const usersCount = usersData.length;
-      const customersCount = usersData.filter(user => user.role === 'user').length;
-      const adminsCount = usersData.filter(user => user.role === 'admin').length;
-      const lawyerCount = usersData.filter(user => user.role === 'lawyer').length;
-      const clerksCount = usersData.filter(user => user.role === 'clerk').length;
-      const managersCount = usersData.filter(user => user.role === 'manager').length;
-      const clientsCount = usersData.filter(user => user.role === 'client').length;
-      const supportersCount = usersData.filter(user => user.role === 'support').length;
+      const customersCount = usersData.filter((user: UserDataTypes) => user.role === 'user').length;
+      const adminsCount = usersData.filter((user: UserDataTypes) => user.role === 'admin').length;
+      const lawyerCount = usersData.filter((user: UserDataTypes) => user.role === 'lawyer').length;
+      const clerksCount = usersData.filter((user: UserDataTypes) => user.role === 'clerk').length;
+      const managersCount = usersData.filter((user: UserDataTypes) => user.role === 'manager').length;
+      const clientsCount = usersData.filter((user: UserDataTypes) => user.role === 'client').length;
+      const supportersCount = usersData.filter((user: UserDataTypes) => user.role === 'support').length;
 
-      // Animation for counting numbers
-      const duration = 1000;
-      const steps = 30;
-      const usersStep = usersCount / steps;
-      const customersStep = customersCount / steps;
-      const adminsStep = adminsCount / steps;
-      const lawyerStep = lawyerCount / steps;
-      const clerksStep = clerksCount / steps;
-      const managersStep = managersCount / steps;
-      const clientStep = clientsCount / steps;
-      const supportersStep = supportersCount / steps;
+      //Animation code
+      const duration = 500;
+      const steps = 15;
+      const getStep = (count: number) => count / steps;
 
-      let currentUsers = 0;
-      let currentCustomers = 0;
-      let currentAdmins = 0;
-      let currentLawyers = 0;
-      let currentClerks = 0;
-      let currentManagers = 0;
-      let currentClients = 0;
-      let currentSupporters = 0;
-
+      let current = {
+        users: 0,
+        customers: 0,
+        admins: 0,
+        lawyers: 0,
+        clerks: 0,
+        managers: 0,
+        clients: 0,
+        supporters: 0,
+      };
 
       const interval = setInterval(() => {
-        currentUsers = Math.min(currentUsers + usersStep, usersCount);
-        currentCustomers = Math.min(currentCustomers + customersStep, customersCount);
-        currentAdmins = Math.min(currentAdmins + adminsStep, adminsCount);
-        currentLawyers = Math.min(currentLawyers + lawyerStep, lawyerCount);
-        currentClerks = Math.min(currentClerks + clerksStep, clerksCount);
-        currentManagers = Math.min(currentManagers + managersStep, managersCount);
-        currentClients = Math.min(currentClients + clientStep, clientsCount);
-        currentSupporters = Math.min(currentSupporters + supportersStep, supportersCount);
+        current.users = Math.min(current.users + getStep(usersCount), usersCount);
+        current.customers = Math.min(current.customers + getStep(customersCount), customersCount);
+        current.admins = Math.min(current.admins + getStep(adminsCount), adminsCount);
+        current.lawyers = Math.min(current.lawyers + getStep(lawyerCount), lawyerCount);
+        current.clerks = Math.min(current.clerks + getStep(clerksCount), clerksCount);
+        current.managers = Math.min(current.managers + getStep(managersCount), managersCount);
+        current.clients = Math.min(current.clients + getStep(clientsCount), clientsCount);
+        current.supporters = Math.min(current.supporters + getStep(supportersCount), supportersCount);
 
-        setTotalUsers(Math.floor(currentUsers));
-        setTotalCustomers(Math.floor(currentCustomers));
-        setTotalAdmins(Math.floor(currentAdmins));
-        setTotalLawyers(Math.floor(currentLawyers));
-        setTotalClerks(Math.floor(currentClerks));
-        setTotalManagers(Math.floor(currentManagers));
-        setTotalClients(Math.floor(currentClients));
-        setTotalSupporters(Math.floor(currentSupporters));
+        setUserCounts({
+          totalUsers: Math.floor(current.users),
+          totalCustomers: Math.floor(current.customers),
+          totalAdmins: Math.floor(current.admins),
+          totalLawyers: Math.floor(current.lawyers),
+          totalClerks: Math.floor(current.clerks),
+          totalManagers: Math.floor(current.managers),
+          totalClients: Math.floor(current.clients),
+          totalSupporters: Math.floor(current.supporters),
+        });
 
-        if (currentUsers >= usersCount
-           && currentCustomers >= customersCount
-           && currentAdmins >= adminsCount 
-           && currentLawyers >= lawyerCount
-            && currentClerks >= clerksCount 
-            && currentManagers >= managersCount
-             && currentClients >= clientsCount
-              && currentSupporters >= supportersCount) {
+        if (
+          current.users >= usersCount &&
+          current.customers >= customersCount &&
+          current.admins >= adminsCount &&
+          current.lawyers >= lawyerCount &&
+          current.clerks >= clerksCount &&
+          current.managers >= managersCount &&
+          current.clients >= clientsCount &&
+          current.supporters >= supportersCount
+        ) {
           clearInterval(interval);
         }
       }, duration / steps);
+
+      const pieChartData = [
+        { name: "Customers", value: customersCount },
+        { name: "Admins", value: adminsCount },
+        { name: "Lawyers", value: lawyerCount },
+        { name: "Clerks", value: clerksCount },
+        { name: "Managers", value: managersCount },
+        { name: "Clients", value: clientsCount },
+        { name: "Supporters", value: supportersCount },
+      ];
+
+      setPieData(pieChartData);
+      setBarData(pieChartData);  // Setting the bar chart data
+      setLineData(pieChartData); // Setting the line chart data
 
       return () => clearInterval(interval);
     }
   }, [usersData]);
 
-  if (usersLoading) {
-    return <div>Loading...</div>;
-  }
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
+          <p className="label text-sm font-medium">{`${label} : ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
-  if (usersError) {
-    return <div>Error loading users</div>;
+  let content;
+
+  if (usersLoading) {
+    content = <div className="text-center">Loading user data...</div>;
+  } else if (usersError) {
+    content = <div className="text-center text-red-500">Error loading users. Please check your network.</div>;
+  } else {
+    content = (
+      <>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-blue-700">Total Users</h3>
+            <div className="text-4xl font-bold animate-pulse text-blue-800">{userCounts.totalUsers}</div>
+            <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mt-2">{userCounts.totalUsers}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-green-700">Total Customers</h3>
+            <div className="text-4xl font-bold animate-pulse text-green-800">{userCounts.totalCustomers}</div>
+            <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{userCounts.totalCustomers}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-purple-700">Total Admins</h3>
+            <div className="text-4xl font-bold animate-pulse text-purple-800">{userCounts.totalAdmins}</div>
+            <div className="w-16 h-16 rounded-full bg-purple-500 text-white flex items-center justify-center mt-2">{userCounts.totalAdmins}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-orange-700">Total Lawyers</h3>
+            <div className="text-4xl font-bold animate-pulse text-orange-800">{userCounts.totalLawyers}</div>
+            <div className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center mt-2">{userCounts.totalLawyers}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-yellow-700">Total Clerks</h3>
+            <div className="text-4xl font-bold animate-pulse text-yellow-800">{userCounts.totalClerks}</div>
+            <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{userCounts.totalClerks}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-indigo-700">Total Managers</h3>
+            <div className="text-4xl font-bold animate-pulse text-indigo-800">{userCounts.totalManagers}</div>
+            <div className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center mt-2">{userCounts.totalManagers}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-pink-700">Total Clients</h3>
+            <div className="text-4xl font-bold animate-pulse text-pink-800">{userCounts.totalClients}</div>
+            <div className="w-16 h-16 rounded-full bg-pink-500 text-white flex items-center justify-center mt-2">{userCounts.totalClients}</div>
+          </div>
+
+          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-semibold text-red-700">Total Supporters</h3>
+            <div className="text-4xl font-bold animate-pulse text-red-800">{userCounts.totalSupporters}</div>
+            <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{userCounts.totalSupporters}</div>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-center gap-4">
+          {/* Pie Chart */}
+          <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+            <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">User Distribution (Pie)</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  label
+                  labelLine={false}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend align="center" verticalAlign="bottom" layout="vertical" />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Bar Chart */}
+          <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+            <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">User Distribution (Bar)</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar dataKey="value" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Line Chart */}
+          <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+            <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">User Trends (Line)</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </>
+    );
   }
 
   return (
-    <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Users</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalUsers}</div>
-        <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mt-2">{totalUsers}</div>
+    <div className="bg-slate-200 p-4">
+      <div className="card mx-auto bg-white w-full rounded-md mb-5 border-2 p-4">
+        <h2 className="text-center text-2xl mb-4 text-webcolor font-bold">User Report</h2>
+        {content}
+        {usersData && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
+            <p className="text-gray-700">
+              This report provides a summary of users by role, visualized with a pie chart, bar chart, and line chart.
+              The pie chart shows the proportion of each role, the bar chart displays the count of each role,
+              and the line chart visualizes trends in user distribution. Understanding these distributions can help administrators
+              manage resources, plan training programs, and ensure the system is being used effectively.
+            </p>
+          </div>
+        )}
       </div>
-
-      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Customers</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalCustomers}</div>
-        <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{totalCustomers}</div>
-      </div>
-
-      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Admins</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalAdmins}</div>
-        <div className="w-16 h-16 rounded-full bg-purple-500 text-white flex items-center justify-center mt-2">{totalAdmins}</div>
-      </div>
-      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Lawyers</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalLawyers}</div>
-        <div className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center mt-2">{totalLawyers}</div>
-
-      </div>
-      <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Clerks</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalClerks}</div>
-        <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{totalClerks}</div>
-    </div>
-    <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Managers</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalManagers}</div>
-        <div className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center mt-2">{totalManagers}</div>
-    </div>
-    <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Clients</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalClients}</div>
-        <div className="w-16 h-16 rounded-full bg-pink-500 text-white flex items-center justify-center mt-2">{totalClients}</div>
-    </div>
-    <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-        <h3 className="text-lg font-semibold">Total Supporters</h3>
-        <div className="text-4xl font-bold animate-pulse">{totalSupporters}</div>
-        <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{totalSupporters}</div>
-    </div>
     </div>
   );
 }

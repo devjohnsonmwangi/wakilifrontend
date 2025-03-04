@@ -75,48 +75,40 @@ const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
                 typeChartRef.current.destroy();
             }
 
-            // Data to be rendered in floating rectangles
-            const labels = Object.keys(typeCount);
-            const data = Object.values(typeCount);
-            const total = data.reduce((a, b) => a + b, 0);
-
-            // Clear the canvas before rendering rectangles
-            const ctx = typeChartCtx.getContext('2d');
-            if (ctx) {
-                ctx.clearRect(0, 0, typeChartCtx.width, typeChartCtx.height);
-
-                // Define colors for rectangles
-                const colors = [
-                    '#264653',
-                    '#2a9d8f',
-                    '#e9c46a',
-                    '#f4a261',
-                    '#e76f51',
-                ];
-
-                // Calculate rectangle dimensions and positions
-                const rectWidth = typeChartCtx.width / (labels.length + 1); // Calculate the width of each rectangle
-                const rectHeight = typeChartCtx.height * 0.7; // Set the height of each rectangle to 70% of the canvas height
-                const xOffset = rectWidth / 2; // Adjust the horizontal position of each rectangle
-
-                let currentX = xOffset; // start x position
-
-                // Render each rectangle
-                labels.forEach((label, index) => {
-                    const percentage = (data[index] / total) * 100;
-
-                    ctx.fillStyle = colors[index % colors.length];
-                    ctx.fillRect(currentX, (typeChartCtx.height - rectHeight) / 2, rectWidth, rectHeight);
-
-                    // Add text to the rectangle
-                    ctx.fillStyle = 'white';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`${label} (${percentage.toFixed(1)}%)`, currentX + rectWidth / 2, typeChartCtx.height / 2);
-
-                    currentX += rectWidth
-                });
-            }
+            typeChartRef.current = new Chart(typeChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(typeCount),
+                    datasets: [{
+                        data: Object.values(typeCount),
+                        backgroundColor: [
+                            '#264653',
+                            '#2a9d8f',
+                            '#e9c46a',
+                            '#f4a261',
+                            '#e76f51',
+                        ],
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allow custom height
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (tooltipItem) => {
+                                    const total = Object.values(typeCount).reduce((a, b) => a + b, 0);
+                                    const percentage = ((tooltipItem.raw as number / total) * 100).toFixed(1);
+                                    return `${tooltipItem.label}: ${percentage}%`;
+                                },
+                            },
+                        },
+                    },
+                },
+            });
         }
 
         const downloadChartCtx = document.getElementById('downloadChart') as HTMLCanvasElement;
@@ -129,24 +121,17 @@ const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
                 type: 'bar',
                 data: {
                     labels: Object.keys(typeCount),
-                    datasets: [
-                        {
-                            label: 'Downloads',
-                            data: Object.values(typeCount).map(() => Math.floor(Math.random() * 100)),
-                            backgroundColor: [
-                                '#264653',
-                                '#2a9d8f',
-                                '#e9c46a',
-                                '#f4a261',
-                                '#e76f51',
-                            ],
-                            borderWidth: 1,
-                            borderColor: '#ffffff',
-                            hoverBackgroundColor: '#1a73e8',
-                        },
-                    ],
+                    datasets: [{
+                        label: 'Downloads',
+                        data: Object.values(typeCount).map(() => Math.floor(Math.random() * 100)),
+                        backgroundColor: '#264653',
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                    }],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allow custom height
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -168,7 +153,7 @@ const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
                     },
                     plugins: {
                         legend: {
-                            display: false,
+                            display: true,
                         },
                         tooltip: {
                             bodyFont: {
@@ -218,12 +203,16 @@ const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
 
                 <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mb-8">
                     <h3 className="text-xl font-bold text-center mb-4">📄 Document Types</h3>
-                    <canvas id="typeChart"></canvas>
+                    <div className="h-64">
+                        <canvas id="typeChart"></canvas>
+                    </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mb-8">
                     <h3 className="text-xl font-bold text-center mb-4">📥 Downloads per Document Type</h3>
-                    <canvas id="downloadChart"></canvas>
+                    <div className="h-64">
+                        <canvas id="downloadChart"></canvas>
+                    </div>
                 </div>
 
                 {analysisResults && analysisResults.keywords && (
@@ -236,9 +225,18 @@ const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
                         </div>
                     </div>
                 )}
+                {/* Conclusion Notes */}
+                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mt-8">
+                    <h3 className="text-xl font-bold text-center mb-4">📝 Conclusion Notes</h3>
+                    <p className="text-gray-700">
+                        The document report provides insights into the types of documents available and their respective download counts.
+                        The pie chart illustrates the distribution of document types, while the bar graph shows the download frequency for each type.
+                        This analysis can help identify which document types are most utilized and guide future document management strategies.
+                    </p>
+                </div>
             </div>
         </div>
     );
-};
+}
 
 export default DocumentReport;

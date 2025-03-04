@@ -1,165 +1,219 @@
-// import { useEffect, useState } from 'react';
-// import { BarChart, LineChart, PieChart, Pie, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Line, ResponsiveContainer, Cell } from 'recharts';
-// import { caseAndPaymentAPI, CaseDataTypes } from '../../../../features/case/caseAPI';
+import  { useState, useEffect } from 'react';
+import {
+    PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
+} from 'recharts';
+import {
+    useFetchCasesQuery,
+    
+} from '../../../../features/case/caseAPI'; // Adjust the import path
 
-// interface ChartData {
-//   name: string;
-//   [key: string]: number | string; 
-// }
 
-// const CasesPerMonth = () => {
-//   const page = undefined;
-//   const fetchDuration = 10000;
-//   const { data: cases } = caseAndPaymentAPI.useFetchCasesQuery(page, {
-//     pollingInterval: fetchDuration,
-//     refetchOnMountOrArgChange: true,
-//   });
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF4D4D', '#8A2BE2', '#5F9EA0'];
 
-//   const [caseTypeData, setCaseTypeData] = useState<ChartData[]>([]);
-//   const [caseStatusData, setCaseStatusData] = useState<ChartData[]>([]);
-//   const [paymentStatusData, setPaymentStatusData] = useState<ChartData[]>([]);
+interface CaseSummary {
+    totalCases: number;
+    openCases: number;
+    inProgressCases: number;
+    closedCases: number;
+    onHoldCases: number;
+    resolvedCases: number;
+}
 
-//   useEffect(() => {
-//     if (cases) {
-//       // 1️⃣ Group cases by month and case_type
-//       const casesByType = cases.reduce((acc: { [key: string]: { [type: string]: number } }, caseData: CaseDataTypes) => {
-//         const monthYear = new Date(caseData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-//         const caseType = caseData.case_type || 'Unknown Type';
+interface ChartData {
+    name: string;
+    value: number;
+}
 
-//         if (!acc[monthYear]) acc[monthYear] = {};
-//         if (!acc[monthYear][caseType]) acc[monthYear][caseType] = 0;
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: any[];
+    label?: string;
+}
 
-//         acc[monthYear][caseType]++;
-//         return acc;
-//       }, {});
+const CaseReport = () => {
+    const { data: cases, isLoading, isError, error } = useFetchCasesQuery();
 
-//       const typeChartData = Object.keys(casesByType).map((month) => {
-//         const monthData: ChartData = { name: month };
-//         Object.keys(casesByType[month]).forEach((type) => {
-//           monthData[type] = casesByType[month][type];
-//         });
-//         return monthData;
-//       });
-//       setCaseTypeData(typeChartData);
+    const [caseSummary, setCaseSummary] = useState<CaseSummary>({
+        totalCases: 0,
+        openCases: 0,
+        inProgressCases: 0,
+        closedCases: 0,
+        onHoldCases: 0,
+        resolvedCases: 0,
+    });
 
-//       // 2️⃣ Group cases by month and case_status
-//       const casesByStatus = cases.reduce((acc: { [key: string]: { [status: string]: number } }, caseData: CaseDataTypes) => {
-//         const monthYear = new Date(caseData.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-//         const caseStatus = caseData.case_status || 'Unknown Status';
+    const [statusPieData, setStatusPieData] = useState<ChartData[]>([]);
 
-//         if (!acc[monthYear]) acc[monthYear] = {};
-//         if (!acc[monthYear][caseStatus]) acc[monthYear][caseStatus] = 0;
+    useEffect(() => {
+        if (cases) {
+            const totalCases = cases.length;
+            const openCases = cases.filter(c => c.case_status === 'open').length;
+            const inProgressCases = cases.filter(c => c.case_status === 'in_progress').length;
+            const closedCases = cases.filter(c => c.case_status === 'closed').length;
+            const onHoldCases = cases.filter(c => c.case_status === 'on_hold').length;
+            const resolvedCases = cases.filter(c => c.case_status === 'resolved').length;
 
-//         acc[monthYear][caseStatus]++;
-//         return acc;
-//       }, {});
+            setCaseSummary({
+                totalCases,
+                openCases,
+                inProgressCases,
+                closedCases,
+                onHoldCases,
+                resolvedCases,
+            });
 
-//       const statusChartData = Object.keys(casesByStatus).map((month) => {
-//         const monthData: ChartData = { name: month };
-//         Object.keys(casesByStatus[month]).forEach((status) => {
-//           monthData[status] = casesByStatus[month][status];
-//         });
-//         return monthData;
-//       });
-//       setCaseStatusData(statusChartData);
+            setStatusPieData([
+                { name: 'Open', value: openCases },
+                { name: 'In Progress', value: inProgressCases },
+                { name: 'Closed', value: closedCases },
+                { name: 'On Hold', value: onHoldCases },
+                { name: 'Resolved', value: resolvedCases },
+            ]);
+        }
+    }, [cases]);
 
-//       // 3️⃣ Group cases by payment status
-//       const paymentStatusCount = cases.reduce((acc: { [status: string]: number }, caseData: CaseDataTypes) => {
-//         const paymentStatus = caseData.payment_status || 'Unknown Payment Status';
-//         if (!acc[paymentStatus]) acc[paymentStatus] = 0;
-//         acc[paymentStatus]++;
-//         return acc;
-//       }, {});
+    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
+                    <p className="label text-sm font-medium">{`${label} : ${payload[0].value}`}</p>
+                </div>
+            );
+        }
 
-//       // Convert to chart data
-//       const paymentStatusChartData = Object.keys(paymentStatusCount).map((status) => ({
-//         name: status,
-//         value: paymentStatusCount[status],
-//       }));
-//       setPaymentStatusData(paymentStatusChartData);
-//     }
-//   }, [cases]);
+        return null;
+    };
 
-//   return (
-//     <div className="bg-slate-200 p-4">
-//       {/* Booking Per Month (Case Type) */}
-//       <div className="card mx-auto bg-white w-full rounded-md border-2 p-4 mb-8">
-//         <h2 className="text-center text-xl p-2 rounded-t-md text-webcolor font-bold">Case Per Month (Case Type)</h2>
-//         <ResponsiveContainer width="100%" height={400}>
-//           <BarChart data={caseTypeData}>
-//             <CartesianGrid strokeDasharray="3 3" />
-//             <XAxis dataKey="name" />
-//             <YAxis />
-//             <Tooltip />
-//             <Legend />
-//             {caseTypeData.length > 0 &&
-//               Object.keys(caseTypeData[0])
-//                 .filter((key) => key !== 'name')
-//                 .map((key, index) => (
-//                   <Bar key={key} dataKey={key} stackId="a" fill={getRandomColor(index)} />
-//                 ))}
-//           </BarChart>
-//         </ResponsiveContainer>
-//       </div>
+    let content;
 
-//       {/* Booking Per Month (Case Status) */}
-//       <div className="card mx-auto bg-white w-full rounded-md border-2 p-4 mb-8">
-//         <h2 className="text-center text-xl p-2 rounded-t-md text-webcolor font-bold">Case Per Month (Case Status)</h2>
-//         <ResponsiveContainer width="100%" height={400}>
-//           <LineChart data={caseStatusData}>
-//             <CartesianGrid strokeDasharray="3 3" />
-//             <XAxis dataKey="name" />
-//             <YAxis />
-//             <Tooltip />
-//             <Legend />
-//             {caseStatusData.length > 0 &&
-//               Object.keys(caseStatusData[0])
-//                 .filter((key) => key !== 'name')
-//                 .map((key, index) => (
-//                   <Line key={key} type="monotone" dataKey={key} stroke={getRandomColor(index)} />
-//                 ))}
-//           </LineChart>
-//         </ResponsiveContainer>
-//       </div>
+    if (isLoading) {
+        content = <div className="text-center">Loading case data...</div>;
+    } else if (isError) {
+        content = <div className="text-center text-red-500">Error loading cases: {(error as any)?.message || 'Unknown error'}</div>;
+    } else if (!cases || cases.length === 0) {
+        content = <div className="text-center">No case data available.</div>;
+    } else {
+        content = (
+            <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                    <div className="bg-blue-100 dark:bg-blue-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-200">Total Cases</h3>
+                        <div className="text-4xl font-bold text-blue-800 dark:text-blue-100">{caseSummary.totalCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mt-2">{caseSummary.totalCases}</div>
+                    </div>
 
-//       {/* Payment Status Pie Chart */}
-//       <div className="card mx-auto bg-white w-full rounded-md border-2 p-4">
-//         <h2 className="text-center text-xl p-2 rounded-t-md text-webcolor font-bold">Case Payment Status</h2>
-//         <ResponsiveContainer width="100%" height={400}>
-//           <PieChart>
-//             <Pie 
-//               data={paymentStatusData} 
-//               dataKey="value" 
-//               nameKey="name" 
-//               cx="50%" 
-//               cy="50%" 
-//               outerRadius={120} 
-//               fill="#8884d8" 
-//               label 
-//             >
-//               {paymentStatusData.map((entry, index) => (
-//                 <Cell key={`cell-${index}`} fill={getRandomColor(index)} />
-//               ))}
-//             </Pie>
-//             <Tooltip />
-//             <Legend />
-//           </PieChart>
-//         </ResponsiveContainer>
-//       </div>
-//     </div>
-//   );
-// };
+                    <div className="bg-green-100 dark:bg-green-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-green-700 dark:text-green-200">Open Cases</h3>
+                        <div className="text-4xl font-bold text-green-800 dark:text-green-100">{caseSummary.openCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{caseSummary.openCases}</div>
+                    </div>
 
-// export default CasesPerMonth;
+                    <div className="bg-yellow-100 dark:bg-yellow-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-yellow-700 dark:text-yellow-200">In Progress Cases</h3>
+                        <div className="text-4xl font-bold text-yellow-800 dark:text-yellow-100">{caseSummary.inProgressCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{caseSummary.inProgressCases}</div>
+                    </div>
 
-// /**
-//  * Utility function to generate random colors.
-//  */
-// const getRandomColor = (index: number) => {
-//   const colors = [
-//     '#8884d8', '#82ca9d', '#ffc658', '#d45087', 
-//     '#a05195', '#f95d6a', '#2f4b7c', '#ff7c43', 
-//     '#665191', '#a05195', '#d45087', '#ff6347',
-//   ];
-//   return colors[index % colors.length];
-// };
+                    <div className="bg-gray-100 dark:bg-gray-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">On Hold Cases</h3>
+                        <div className="text-4xl font-bold text-gray-800 dark:text-gray-100">{caseSummary.onHoldCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-gray-500 text-white flex items-center justify-center mt-2">{caseSummary.onHoldCases}</div>
+                    </div>
+
+                    <div className="bg-red-100 dark:bg-red-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-red-700 dark:text-red-200">Closed Cases</h3>
+                        <div className="text-4xl font-bold text-red-800 dark:text-red-100">{caseSummary.closedCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{caseSummary.closedCases}</div>
+                    </div>
+
+                    <div className="bg-indigo-100 dark:bg-indigo-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-200">Resolved Cases</h3>
+                        <div className="text-4xl font-bold text-indigo-800 dark:text-indigo-100">{caseSummary.resolvedCases}</div>
+                        <div className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center mt-2">{caseSummary.resolvedCases}</div>
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row justify-center gap-4">
+                    {/* Pie Chart */}
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">Case Status Distribution (Pie)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={statusPieData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={80}
+                                    fill="#8884d8"
+                                    label
+                                    labelLine={false}
+                                >
+                                    {statusPieData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend align="center" verticalAlign="bottom" layout="vertical" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Bar Chart */}
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">Case Status (Bar)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={statusPieData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Bar dataKey="value" fill="#82ca9d" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Line Chart */}
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg font-semibold text-gray-800 mb-2">Case Trend (Line)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={statusPieData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis />
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    return (
+        <div className="bg-slate-200 p-4">
+            <div className="card mx-auto bg-white w-full rounded-md mb-5 border-2 p-4">
+                <h2 className="text-center text-2xl mb-4 text-webcolor font-bold">Case Report</h2>
+                {content}
+                {cases && (
+                    <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
+                        <p className="text-gray-700">
+                            This report provides an overview of cases, broken down by status. The pie chart visualizes the proportion of cases by status,
+                            while the bar chart and line chart provide alternative views of the same data. Analyzing these metrics can help identify
+                            potential bottlenecks in case processing and improve overall efficiency. A high number of open or on-hold cases may indicate
+                            areas where additional resources or attention are needed.
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default CaseReport;
