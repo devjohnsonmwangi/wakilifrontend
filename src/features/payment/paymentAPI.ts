@@ -3,6 +3,7 @@ import { APIDomain } from "../../utils/APIDomain";
 
 // Enums for Payment Table
 export type PaymentStatus = "pending" | "paid" | "failed";
+
 export type PaymentGateway = "stripe" | "mpesa" | "cash";
 
 // Payment Data Types
@@ -22,10 +23,12 @@ export interface PaymentDataTypes {
     mpesa_phone_number?: string | null; // Phone number of the user that made the payment
     payment_date?: string; // backend has a default value
     updated_at?: string; // backend has a default value
+
 }
 
 // Payment API Slice
 export const paymentAPI = createApi({
+
     reducerPath: "paymentAPI",
     baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
     refetchOnReconnect: true,
@@ -77,14 +80,19 @@ export const paymentAPI = createApi({
             invalidatesTags: ["Payments"],
         }),
     }),
+
 });
 
 // Export hooks for usage in components
 export const {
+
     useFetchPaymentsQuery,
     useGetPaymentByIdQuery,
     useCreatePaymentMutation,
     useCreateCashPaymentMutation,
     useUpdatePaymentMutation,
     useDeletePaymentMutation,
+
+
 } = paymentAPI;
+

@@ -17,7 +17,12 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
+
+
     "@headlessui/react": "^2.2.0",
+
+    "@heroicons/react": "^1.0.0",
+    "@hookform/devtools": "^4.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@reduxjs/toolkit": "^2.2.6",
     "@stripe/stripe-js": "^4.1.0",

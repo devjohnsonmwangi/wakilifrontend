@@ -21,7 +21,12 @@ export const drawerData: DrawerData[] = [
     { id: 3, name: 'Manage users', icon: User, link: 'account', adminOnly: true },
     { id: 4, name: 'Manage Cases', icon: BookmarkPlus, link: 'cases', adminOnly: true },
     { id: 5, name: 'Support Tickets', icon: Ticket, link: 'supporttickets', adminOnly: true },
+
+
+   
     { id: 6, name: 'Payments', icon: DollarSign, link: 'payments', adminOnly: false },
+
+
     { id: 7, name: 'Reports', icon: Folder, link: 'reports', adminOnly: true },
     { id: 8, name: 'Profile', icon: User, link: 'profile', adminOnly: false },
     { id: 9, name: 'Settings', icon: FileCheck, link: 'settings', adminOnly: true },

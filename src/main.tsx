@@ -11,7 +11,15 @@ import Contactus from './pages/contact.tsx';
 import About from './pages/landingPage/About.tsx';
 import Dashboard from './pages/dashboard/Dashboard.tsx';
 import Reports from '../src/pages/dashboard/main/Reports/Reports.tsx'
+<<<<<<< HEAD
 // import CreateCase from '../src/pages/dashboard/main/Managecases/createcase.tsx'
+=======
+
+import CreateCase from '../src/pages/dashboard/main/Managecases/createcase.tsx'
+
+// import CreateCase from '../src/pages/dashboard/main/Managecases/createcase.tsx'
+
+>>>>>>> backup-lost-commits
 import  MyCases from '../src/pages/dashboard/main/Managecases/mycases.tsx'
 import  Cases from '../src/pages/dashboard/main/Managecases/managecases.tsx'
 
@@ -30,13 +38,30 @@ import Error from './pages/Error.tsx';
 import Account from './pages/dashboard/main/Account.tsx';
 
  import MyTickets from './pages/dashboard/main/Tickets/MyTickets.tsx';
+<<<<<<< HEAD
 //  import CreateTicket from './pages/dashboard/main/Tickets/CreateTicket.tsx';
+=======
+
+ import CreateTicket from './pages/dashboard/main/Tickets/CreateTicket.tsx';
+
+//  import CreateTicket from './pages/dashboard/main/Tickets/CreateTicket.tsx';
+
+>>>>>>> backup-lost-commits
  import Logout from './components/logout/logout.tsx'
  import  AppointmentList from './pages/dashboard/main/manageAppointment/listappointments.tsx'
 
  import BranchLocationManagement from './pages/dashboard/main/branchlocation/listbranch.tsx'
+<<<<<<< HEAD
   // import ListAppointments from './pages/dashboard/main/manageAppointment/listappointments.tsx'
   import  ParentComponent   from  './pages/dashboard/main/Payments/Payments.tsx'
+=======
+
+  import ListAppointments from './pages/dashboard/main/manageAppointment/listappointments.tsx'
+
+  // import ListAppointments from './pages/dashboard/main/manageAppointment/listappointments.tsx'
+  import  ParentComponent   from  './pages/dashboard/main/Payments/Payments.tsx'
+
+>>>>>>> backup-lost-commits
  
 
 
@@ -73,6 +98,72 @@ const router = createBrowserRouter([
     errorElement: <Error />
   },
 
+<<<<<<< HEAD
+=======
+
+  {
+    path: 'profile',
+    element: <Profile/>,
+    errorElement: <Error />
+  },
+
+
+  {
+    path: 'account',
+    element: <Account/>,
+    errorElement: <Error />
+  },
+
+  {
+    path: 'supporttickets',
+    element: <SupportTickets/>,
+    errorElement: <Error />
+  },
+
+  {
+    path: 'mytickets',
+    element: <MyTickets/>,
+    errorElement: <Error />
+  },
+
+  {
+    path: 'createticket',
+    element: <CreateTicket/>,
+    errorElement: <Error />
+  },
+  {
+    path: 'reports',
+    element: <Reports/>,
+    errorElement: <Error />
+  },
+  {
+    path: 'createcase',
+    element: <CreateCase/>,
+    errorElement: <Error />
+  },
+  {
+    path: 'mycases',
+    element: < MyCases/>,
+    errorElement: <Error />
+  },
+ 
+  
+  {
+    path:'listdoc',
+    element: <DocumentList/>,
+    errorElement: <Error/>
+  },
+
+  {
+    path:'appoint',
+    element: <ListAppointments/>,
+    errorElement: <Error/>
+  },
+  
+
+ 
+
+>>>>>>> backup-lost-commits
   // {
   //   path: 'profile',
   //   element: <Profile/>,
@@ -138,6 +229,10 @@ const router = createBrowserRouter([
  
  
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> backup-lost-commits
   
 
  
@@ -173,10 +268,23 @@ const router = createBrowserRouter([
      
       },
      
+<<<<<<< HEAD
+=======
+
+      // {
+      //   path: 'payments',
+      //   element: <UserBookings />
+      // },
+
+>>>>>>> backup-lost-commits
        {
         path: 'payments',
        element: <ParentComponent/>
        },
+<<<<<<< HEAD
+=======
+
+>>>>>>> backup-lost-commits
       // {
       //   path: 'payment-successful',
       //   element: <SuccessPayment />

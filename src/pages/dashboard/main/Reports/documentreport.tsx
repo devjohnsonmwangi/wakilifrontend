@@ -1,246 +1,193 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Chart, registerables } from 'chart.js';
-import { AiOutlineFile, AiOutlineDownload } from 'react-icons/ai';
-import { BiFile } from 'react-icons/bi';
-import { useFetchCaseDocumentsQuery } from '../../../../features/casedocument/casedocmentapi';
 
-Chart.register(...registerables);
+import { useEffect, useState } from 'react';
+import { appointmentAPI, AppointmentDataTypes } from '../../../../features/appointment/appointmentapi';
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip as RechartsTooltip,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Legend,
+    ResponsiveContainer,
+    LineChart,
+    Line,
+    Label
+} from 'recharts';
 
-interface DocumentData {
-    mime_type: string;
-    [key: string]: any;
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF4D4D', '#8A2BE2', '#5F9EA0'];
+const LINE_COLORS = ['#1a237e', '#388e3c', '#d84315', '#4527a0', '#b71c1c'];
+
+interface ChartData {
+    name: string;
+    value: number;
 }
 
-interface AnalysisResults {
-    keywords: string[];
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: { value: number }[]; // Specify the type for payload
+    label?: string;
 }
 
-interface DocumentReportProps {
-    analysisResults?: AnalysisResults;
-}
-
-const DocumentReport: React.FC<DocumentReportProps> = ({ analysisResults }) => {
-    const { data: documentsData = [], isLoading: documentsLoading } = useFetchCaseDocumentsQuery(undefined, {
+const AppointmentStatusReport = () => {
+    const { data: appointmentsData = [], isLoading: appointmentsLoading, isError, error } = appointmentAPI.useFetchAppointmentsQuery(undefined, {
         refetchOnMountOrArgChange: true,
     });
 
-    const [documentTypesCount, setDocumentTypesCount] = useState<Record<string, number>>({});
-    const [totalDownloads, setTotalDownloads] = useState<number>(0);
-    const [keywords, setKeywords] = useState<string[]>([]);
-
-    const typeChartRef = useRef<Chart | null>(null);
-    const downloadChartRef = useRef<Chart | null>(null);
+    const [statusData, setStatusData] = useState<ChartData[]>([]);
+    const [barChartData, setBarChartData] = useState<ChartData[]>([]);
+    const [lineChartData, setLineChartData] = useState<ChartData[]>([]);
+    const [reportData, setReportData] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
-        if (analysisResults && analysisResults.keywords) {
-            setKeywords(analysisResults.keywords);
-        }
-    }, [analysisResults]);
-
-    useEffect(() => {
-        if (!documentsLoading && documentsData.length > 0) {
-            const typeCount: Record<string, number> = {};
-            let totalDownloadsCount = 0;
-
-            documentsData.forEach((doc: DocumentData) => {
-                const type = doc.mime_type.split('/')[1] || 'unknown';
-                typeCount[type] = (typeCount[type] || 0) + 1;
-
-                const randomDownloads = Math.floor(Math.random() * 100);
-                totalDownloadsCount += randomDownloads;
-            });
-
-            setDocumentTypesCount(typeCount);
-            setTotalDownloads(totalDownloadsCount);
-
-            initializeCharts(typeCount);
-        }
-
-        return () => {
-            if (typeChartRef.current) {
-                typeChartRef.current.destroy();
-                typeChartRef.current = null;
-            }
-            if (downloadChartRef.current) {
-                downloadChartRef.current.destroy();
-                downloadChartRef.current = null;
-            }
+        const handleResize = () => {
+            window.dispatchEvent(new Event('resize'));
         };
-    }, [documentsLoading, documentsData]);
 
-    const initializeCharts = (typeCount: Record<string, number>) => {
-        const typeChartCtx = document.getElementById('typeChart') as HTMLCanvasElement;
-        if (typeChartCtx) {
-            if (typeChartRef.current) {
-                typeChartRef.current.destroy();
-            }
+        window.addEventListener('resize', handleResize);
+        handleResize();
 
-            const labels = Object.keys(typeCount);
-            const data = Object.values(typeCount);
-            const total = data.reduce((a, b) => a + b, 0);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
-            typeChartRef.current = new Chart(typeChartCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#264653',
-                            '#2a9d8f',
-                            '#e9c46a',
-                            '#f4a261',
-                            '#e76f51',
-                        ],
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Allow custom height
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (tooltipItem) => {
-                                    const percentage = ((tooltipItem.raw / total) * 100).toFixed(1);
-                                    return `${tooltipItem.label}: ${percentage}%`;
-                                },
-                            },
-                        },
-                    },
-                },
+    useEffect(() => {
+        if (!appointmentsLoading && appointmentsData.length > 0) {
+            const statusCounts: Record<string, number> = {};
+
+            appointmentsData.forEach((appointment: AppointmentDataTypes) => {
+                const status = appointment.status || 'Unknown';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
             });
+
+            const formattedStatusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+            setStatusData(formattedStatusData);
+            setBarChartData(formattedStatusData);
+            setLineChartData(formattedStatusData);
+            setReportData(statusCounts);
+
+        } else {
+            setStatusData([]);
+            setBarChartData([]);
+            setLineChartData([]);
+            setReportData({});
+        }
+    }, [appointmentsLoading, appointmentsData]);
+
+    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
+                    <p className="label text-sm font-medium">{`${label} : ${payload[0].value}`}</p>
+                </div>
+            );
         }
 
-        const downloadChartCtx = document.getElementById('downloadChart') as HTMLCanvasElement;
-        if (downloadChartCtx) {
-            if (downloadChartRef.current) {
-                downloadChartRef.current.destroy();
-            }
-
-            downloadChartRef.current = new Chart(downloadChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(typeCount),
-                    datasets: [{
-                        label: 'Downloads',
-                        data: Object.values(typeCount).map(() => Math.floor(Math.random() * 100)),
-                        backgroundColor: '#264653',
-                        borderWidth: 2,
-                        borderColor: '#ffffff',
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Allow custom height
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                font: {
-                                    size: 14,
-                                },
-                                color: '#333333',
-                            },
-                        },
-                        x: {
-                            ticks: {
-                                font: {
-                                    size: 14,
-                                },
-                                color: '#333333',
-                            },
-                        },
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                        },
-                        tooltip: {
-                            bodyFont: {
-                                size: 14,
-                            },
-                            titleFont: {
-                                size: 16,
-                            },
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                        },
-                    },
-                },
-            });
-        }
+        return null;
     };
 
-    if (documentsLoading) {
-        return <div className="text-center mt-20 text-lg font-semibold">Loading report...</div>;
+    let content;
+
+    if (appointmentsLoading) {
+        content = <div className="text-center">Loading appointment data...</div>;
+    } else if (isError) {
+        content = <div className="text-center text-red-500">Error loading appointments: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+    } else if (appointmentsData.length === 0) {
+        content = <div className="text-center">No appointment data available.</div>;
+    } else {
+        content = (
+            <>
+                <div className="flex flex-col md:flex-row justify-center gap-4">
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg mb-2 font-semibold text-gray-800">Appointment Status Distribution (Pie)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={statusData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius="80%"
+                                    fill="#8884d8"
+                                    label
+                                    labelLine={false}
+                                >
+                                    {statusData.map((_entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend align="center" verticalAlign="bottom" layout="vertical" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg mb-2 font-semibold text-gray-800">Appointment Status (Bar)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={barChartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis>
+                                    <Label angle={-90} value="Count" position="insideLeft" style={{ textAnchor: 'middle' }} />
+                                </YAxis>
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Bar dataKey="value" fill="#82ca9d" barSize={30} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className='w-full md:w-1/3 bg-white rounded-lg shadow-md p-4'>
+                        <h3 className="text-center text-lg mb-2 font-semibold text-gray-800">Appointment Status Trend (Line)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={lineChartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" />
+                                <YAxis>
+                                    <Label angle={-90} value="Count" position="insideLeft" style={{ textAnchor: 'middle' }} />
+                                </YAxis>
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend />
+                                <Line type="monotone" dataKey="value" stroke={LINE_COLORS[0]} strokeWidth={3} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+                <div className='mt-4 p-4 bg-white rounded-lg shadow-md'>
+                    <h3 className="text-center text-lg mb-2 font-semibold text-gray-800">Appointment status</h3>
+                    {Object.entries(reportData).map((item, index) => {
+                        return <p className="text-gray-700" key={index}>{item[0]}: {item[1]}</p>
+                    })}
+                </div>
+            </>
+        );
     }
 
-    const totalDocuments = documentsData.length;
-
     return (
-        <div className="bg-gradient-to-br from-blue-50 to-blue-200 min-h-screen p-6">
-            <div className="max-w-6xl mx-auto">
-                <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-8">📊 Document Report</h2>
+        <div className='bg-slate-200 p-4'>
+            <div className='card mx-auto bg-white w-full rounded-md mb-5 border-2 p-4'>
+                <h2 className="text-center text-2xl mb-4 text-webcolor font-bold">Appointment Status Report</h2>
+                {content}
 
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center border-l-4 border-blue-500">
-                        <AiOutlineFile className="text-blue-500 text-5xl mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-800">Total Documents</h3>
-                        <p className="text-3xl font-extrabold text-gray-800">{totalDocuments}</p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center border-l-4 border-green-500">
-                        <AiOutlineDownload className="text-green-500 text-5xl mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-800">Total Downloads</h3>
-                        <p className="text-3xl font-extrabold text-gray-800">{totalDownloads}</p>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-center border-l-4 border-gray-500">
-                        <BiFile className="text-gray-500 text-5xl mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-gray-800">Document Types</h3>
-                        <p className="text-3xl font-extrabold text-gray-800">{Object.keys(documentTypesCount).length}</p>
-                    </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mb-8">
-                    <h3 className="text-xl font-bold text-center mb-4">📄 Document Types</h3>
-                    <div className="h-64">
-                        <canvas id="typeChart"></canvas>
-                    </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mb-8">
-                    <h3 className="text-xl font-bold text-center mb-4">📥 Downloads per Document Type</h3>
-                    <div className="h-64">
-                        <canvas id="downloadChart"></canvas>
-                    </div>
-                </div>
-
-                {analysisResults && analysisResults.keywords && (
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mt-8">
-                        <h3 className="text-xl font-bold text-center mb-4">🔑 Keywords</h3>
-                        <div className="flex flex-wrap justify-center gap-2">
-                            {keywords.map((keyword, index) => (
-                                <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200 transition duration-200">{keyword}</span>
-                            ))}
-                        </div>
+                {appointmentsData.length > 0 && (
+                    <div className="mt-6">
+                        <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
+                        <p className="text-gray-700">
+                            This report provides a multifaceted view of appointment statuses. The pie chart offers a proportional overview,
+                            the bar chart shows absolute counts for comparison, and the line chart visualizes trends. By examining these
+                            visualizations, patterns and potential areas for improvement become apparent, such as high cancellation rates
+                            or scheduling bottlenecks. The data-driven insights can guide strategic decisions for better resource management
+                            and improved patient experience.
+                        </p>
                     </div>
                 )}
-
-                {/* Conclusion Notes */}
-                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 mt-8">
-                    <h3 className="text-xl font-bold text-center mb-4">📝 Conclusion Notes</h3>
-                    <p className="text-gray-700">
-                        The document report provides insights into the types of documents available and their respective download counts. 
-                        The pie chart illustrates the distribution of document types, while the bar graph shows the download frequency for each type. 
-                        This analysis can help identify which document types are most utilized and guide future document management strategies.
-                    </p>
-                </div>
             </div>
         </div>
     );
-};
+}
 
-export default DocumentReport;
+export default AppointmentStatusReport;
