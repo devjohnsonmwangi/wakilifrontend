@@ -26,7 +26,7 @@ interface ChartData {
 
 interface CustomTooltipProps {
     active?: boolean;
-    payload?: any[];
+    payload?:  { value: number }[];
     label?: string;
 }
 
@@ -97,7 +97,7 @@ const PaymentReport = () => {
     if (isLoading) {
         content = <div className="text-center">Loading payment data...</div>;
     } else if (isError) {
-        content = <div className="text-center text-red-500">Error loading payments: {(error as any)?.message || 'Unknown error'}</div>;
+        content = <div className="text-center text-red-500">Error loading payments:  {error instanceof Error ? error.message : 'Unknown error'}</div>;
     } else if (!payments || payments.length === 0) {
         content = <div className="text-center">No payment data available.</div>;
     } else {
@@ -149,7 +149,7 @@ const PaymentReport = () => {
                                     label
                                     labelLine={false}
                                 >
-                                    {statusPieData.map((entry, index) => (
+                                    {statusPieData.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>

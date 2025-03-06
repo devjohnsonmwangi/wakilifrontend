@@ -27,7 +27,7 @@ interface ChartData {
 
 interface CustomTooltipProps {
     active?: boolean;
-    payload?: any[];
+    payload?:  { value: number }[];
     label?: string;
 }
 
@@ -90,7 +90,7 @@ const CaseReport = () => {
     if (isLoading) {
         content = <div className="text-center">Loading case data...</div>;
     } else if (isError) {
-        content = <div className="text-center text-red-500">Error loading cases: {(error as any)?.message || 'Unknown error'}</div>;
+        content = <div className="text-center text-red-500">Error loading cases: {error instanceof Error ? error.message : 'Unknown error'}</div>;
     } else if (!cases || cases.length === 0) {
         content = <div className="text-center">No case data available.</div>;
     } else {
@@ -151,7 +151,7 @@ const CaseReport = () => {
                                     label
                                     labelLine={false}
                                 >
-                                    {statusPieData.map((entry, index) => (
+                                    {statusPieData.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>

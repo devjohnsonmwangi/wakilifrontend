@@ -1,5 +1,5 @@
 import { PieChart, Pie, Tooltip as RechartsTooltip, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from 'recharts';
-import { TicketAPI, TicketDataTypes } from "../../../../features/Tickets/AllTickets";
+import { TicketAPI, TypeTickets } from "../../../../features/Tickets/AllTickets";
 import { usersAPI, UserDataTypes } from "../../../../features/users/usersAPI";
 import { useState, useEffect } from 'react';
 
@@ -13,7 +13,7 @@ interface UserTicketData {
 
 interface CustomTooltipProps {
     active?: boolean;
-    payload?: any[];
+    payload?:  { value: number }[];
     label?: string;
 }
 
@@ -24,7 +24,7 @@ const TicketReport = () => {
     pollingInterval: fetchDuration, refetchOnMountOrArgChange: true
   });
 
-  const { data: usersData, isLoading: usersLoading, error: usersError } = usersAPI. useFetchUsersQuery(page, {
+  const { data: usersData, isLoading: usersLoading, error: usersError } = usersAPI.useFetchUsersQuery(page, {
     pollingInterval: fetchDuration, refetchOnMountOrArgChange: true
   });
 
@@ -32,25 +32,13 @@ const TicketReport = () => {
   const [totalTickets, setTotalTickets] = useState(0);
   const [totalOpen, setTotalOpen] = useState(0);
   const [totalClosed, setTotalClosed] = useState(0);
-  const [pieChartWidth, setPieChartWidth] = useState<number>(Math.min(window.innerWidth * 0.9, 500));
   const [barChartData, setBarChartData] = useState<UserTicketData[]>([]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setPieChartWidth(Math.min(window.innerWidth * 0.9, 500));
-        };
-
-        window.addEventListener('resize', handleResize);
-        handleResize();
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
   useEffect(() => {
     if (tickets && usersData) {
       const userTicketMap: Record<number, { open: number; closed: number }> = {};
 
-      tickets.forEach((ticket: TicketDataTypes) => { // Added type annotation
+      tickets.forEach((ticket: TypeTickets) => {
         const { user_id, status } = ticket;
         if (!userTicketMap[user_id]) {
           userTicketMap[user_id] = { open: 0, closed: 0 };
@@ -63,7 +51,7 @@ const TicketReport = () => {
       });
 
       const data = Object.entries(userTicketMap).map(([user_id, counts]) => {
-        const user = usersData.find((u: UserDataTypes) => u.user_id === Number(user_id)); // Added type annotation
+        const user = usersData.find((u: UserDataTypes) => u.user_id === Number(user_id));
         return {
           name: user ? user.full_name : 'Unknown User',
           open: counts.open,
@@ -72,7 +60,7 @@ const TicketReport = () => {
       });
 
       setUserTicketData(data);
-      setBarChartData(data); //Setting Bar Chart data here
+      setBarChartData(data); // Setting Bar Chart data here
 
       setTotalTickets(tickets.length);
       setTotalOpen(tickets.filter(ticket => ticket.status === 'Open').length);
@@ -185,8 +173,8 @@ const TicketReport = () => {
             <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
             <p className="text-gray-700">
               This report provides an overview of tickets, broken down by user and status. The pie chart visualizes the proportion of open and closed tickets,
-              while the bar chart shows the distribution of tickets among users.  Analyzing these metrics can help identify workload imbalances,
-              track resolution times, and improve overall support efficiency. Areas with high open tickets requires monitoring for quick resolution and areas that need resource allocation.
+              while the bar chart shows the distribution of tickets among users. Analyzing these metrics can help identify workload imbalances,
+              track resolution times, and improve overall support efficiency. Areas with high open tickets require monitoring for quick resolution and areas that need resource allocation.
             </p>
           </div>
         )}

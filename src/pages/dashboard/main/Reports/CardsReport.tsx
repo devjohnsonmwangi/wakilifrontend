@@ -52,12 +52,12 @@ const CardsReport = () => {
       const clientsCount = usersData.filter((user: UserDataTypes) => user.role === 'client').length;
       const supportersCount = usersData.filter((user: UserDataTypes) => user.role === 'support').length;
 
-      //Animation code
+      // Animation code
       const duration = 500;
       const steps = 15;
       const getStep = (count: number) => count / steps;
 
-      let current = {
+      const current = {
         users: 0,
         customers: 0,
         admins: 0,
@@ -121,7 +121,7 @@ const CardsReport = () => {
     }
   }, [usersData]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
@@ -142,53 +142,20 @@ const CardsReport = () => {
     content = (
       <>
         <div className="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-blue-700">Total Users</h3>
-            <div className="text-4xl font-bold animate-pulse text-blue-800">{userCounts.totalUsers}</div>
-            <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mt-2">{userCounts.totalUsers}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-green-700">Total Customers</h3>
-            <div className="text-4xl font-bold animate-pulse text-green-800">{userCounts.totalCustomers}</div>
-            <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{userCounts.totalCustomers}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-purple-700">Total Admins</h3>
-            <div className="text-4xl font-bold animate-pulse text-purple-800">{userCounts.totalAdmins}</div>
-            <div className="w-16 h-16 rounded-full bg-purple-500 text-white flex items-center justify-center mt-2">{userCounts.totalAdmins}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-orange-700">Total Lawyers</h3>
-            <div className="text-4xl font-bold animate-pulse text-orange-800">{userCounts.totalLawyers}</div>
-            <div className="w-16 h-16 rounded-full bg-orange-500 text-white flex items-center justify-center mt-2">{userCounts.totalLawyers}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-yellow-700">Total Clerks</h3>
-            <div className="text-4xl font-bold animate-pulse text-yellow-800">{userCounts.totalClerks}</div>
-            <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{userCounts.totalClerks}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-indigo-700">Total Managers</h3>
-            <div className="text-4xl font-bold animate-pulse text-indigo-800">{userCounts.totalManagers}</div>
-            <div className="w-16 h-16 rounded-full bg-indigo-500 text-white flex items-center justify-center mt-2">{userCounts.totalManagers}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-pink-700">Total Clients</h3>
-            <div className="text-4xl font-bold animate-pulse text-pink-800">{userCounts.totalClients}</div>
-            <div className="w-16 h-16 rounded-full bg-pink-500 text-white flex items-center justify-center mt-2">{userCounts.totalClients}</div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-semibold text-red-700">Total Supporters</h3>
-            <div className="text-4xl font-bold animate-pulse text-red-800">{userCounts.totalSupporters}</div>
-            <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{userCounts.totalSupporters}</div>
-          </div>
+          {/* Cards for each user role */}
+          {Object.entries(userCounts).map(([role, count]) => (
+            <div key={role} className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
+              <h3 className={`text-lg font-semibold text-${role === 'totalUsers' ? 'blue' : role === 'totalCustomers' ? 'green' : role === 'totalAdmins' ? 'purple' : role === 'totalLawyers' ? 'orange' : role === 'totalClerks' ? 'yellow' : role === 'totalManagers' ? 'indigo' : role === 'totalClients' ? 'pink' : 'red'}-700`}>
+                Total {role.charAt(0).toUpperCase() + role.slice(1)}
+              </h3>
+              <div className={`text-4xl font-bold animate-pulse text-${role === 'totalUsers' ? 'blue' : role === 'totalCustomers' ? 'green' : role === 'totalAdmins' ? 'purple' : role === 'totalLawyers' ? 'orange' : role === 'totalClerks' ? 'yellow' : role === 'totalManagers' ? 'indigo' : role === 'totalClients' ? 'pink' : 'red'}-800`}>
+                {count}
+              </div>
+              <div className={`w-16 h-16 rounded-full bg-${role === 'totalUsers' ? 'blue' : role === 'totalCustomers' ? 'green' : role === 'totalAdmins' ? 'purple' : role === 'totalLawyers' ? 'orange' : role === 'totalClerks' ? 'yellow' : role === 'totalManagers' ? 'indigo' : role === 'totalClients' ? 'pink' : 'red'}-500 text-white flex items-center justify-center mt-2`}>
+                {count}
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="flex flex-col md:flex-row justify-center gap-4">
@@ -208,7 +175,7 @@ const CardsReport = () => {
                   label
                   labelLine={false}
                 >
-                  {pieData.map((entry, index) => (
+                  {pieData.map((_, index) => ( // Changed 'entry' to '_' to indicate unused variable
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
