@@ -25,7 +25,7 @@ const Reports: React.FC = () => {
       paymentReport: "payment report".includes(lowerSearchTerm) || lowerSearchTerm === '',
       casesPerMonth: "cases per month".includes(lowerSearchTerm) || lowerSearchTerm === '',
       ticketReport: "ticket report".includes(lowerSearchTerm) || lowerSearchTerm === '',
-      vSpecReport: "appointment report".includes(lowerSearchTerm) || "vspec report".includes(lowerSearchTerm) || lowerSearchTerm === '', // Added appointment report to search for vSpecReport
+      vSpecReport: "appointment report".includes(lowerSearchTerm) || "vspec report".includes(lowerSearchTerm) || lowerSearchTerm === '',
       documentReport: "document report".includes(lowerSearchTerm) || lowerSearchTerm === '',
     });
   }, [searchTerm]);
@@ -36,7 +36,7 @@ const Reports: React.FC = () => {
 
   return (
     <div className="bg-slate-200 h-full overflow-x-hidden">
-      <h1 className="text-center text-2xl p-2 rounded-t-md text-webcolor font-bold border-b-2 border-slate-500">Welcome to wakili app Report</h1>
+      <h1 className="text-center text-2xl p-2 rounded-t-md text-blue-800 font-bold border-b-2 border-slate-500">Welcome to Wakili App Report</h1>
 
       {/* Search Input */}
       <div className="p-4">

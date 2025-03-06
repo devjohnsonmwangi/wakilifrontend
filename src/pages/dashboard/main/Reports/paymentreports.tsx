@@ -1,13 +1,16 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 } from 'recharts';
-import {
-    useFetchPaymentsQuery,
-} from '../../../../features/payment/paymentAPI'; // Import from the correct relative path
+import { useFetchPaymentsQuery } from '../../../../features/payment/paymentAPI';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF4D4D', '#8A2BE2', '#5F9EA0'];
+
+interface Payment {
+    payment_status?: string;
+    payment_amount?: number; // Ensure payment_amount is of type number
+}
 
 interface PaymentSummary {
     totalPayments: number;
@@ -26,9 +29,7 @@ interface ChartData {
 
 interface CustomTooltipProps {
     active?: boolean;
-
-    payload?:  { value: number }[];
-
+    payload?: { value: number }[];
     label?: string;
 }
 
@@ -49,49 +50,47 @@ const PaymentReport = () => {
     useEffect(() => {
         if (payments) {
             const totalPayments = payments.length;
-            const pendingPayments = payments.filter(p => p.payment_status === 'pending');
-            const paidPayments = payments.filter(p => p.payment_status === 'paid');
-            const failedPayments = payments.filter(p => p.payment_status === 'failed');
+            const statusCounts = payments.reduce((acc, payment: Payment) => {
+                const status = payment.payment_status || 'Unknown'; // Ensure status is defined
+                acc[status] = (acc[status] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>);
 
-            const totalAmountPending = pendingPayments.reduce((sum, p) => sum + (p.payment_amount || 0), 0);
-            const totalAmountPaid = paidPayments.reduce((sum, p) => sum + (p.payment_amount || 0), 0);
-            const totalAmountFailed = failedPayments.reduce((sum, p) => sum + (p.payment_amount || 0), 0);
+            const totalAmount = payments.reduce((acc, payment: Payment) => {
+                const status = payment.payment_status || 'Unknown'; // Ensure status is defined
+                acc[status] = (acc[status] || 0) + (typeof payment.payment_amount === 'number' ? payment.payment_amount : 0);
+                return acc;
+            }, {} as Record<string, number>);
 
             setPaymentSummary({
                 totalPayments,
-                totalPending: pendingPayments.length,
-                totalPaid: paidPayments.length,
-                totalFailed: failedPayments.length,
-                totalAmountPending,
-                totalAmountPaid,
-                totalAmountFailed,
+                totalPending: statusCounts['pending'] || 0,
+                totalPaid: statusCounts['paid'] || 0,
+                totalFailed: statusCounts['failed'] || 0,
+                totalAmountPending: totalAmount['pending'] || 0,
+                totalAmountPaid: totalAmount['paid'] || 0,
+                totalAmountFailed: totalAmount['failed'] || 0,
             });
 
             setStatusPieData([
-                { name: 'Pending', value: pendingPayments.length },
-                { name: 'Paid', value: paidPayments.length },
-                { name: 'Failed', value: failedPayments.length },
+                { name: 'Pending', value: statusCounts['pending'] || 0 },
+                { name: 'Paid', value: statusCounts['paid'] || 0 },
+                { name: 'Failed', value: statusCounts['failed'] || 0 },
             ]);
         }
     }, [payments]);
 
-    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
-                    <p className="label text-sm font-medium">{`${label} : ${payload[0].value}`}</p>
-                </div>
-            );
-        }
+    const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => (
+        active && payload && payload.length ? (
+            <div className="custom-tooltip bg-white p-2 border rounded shadow-md">
+                <p className="label text-sm font-medium">{`${label} : ${payload[0].value}`}</p>
+            </div>
+        ) : null
+    );
 
-        return null;
-    };
-
-    const formatAmount = (amount: number | undefined): string => {
-      if (typeof amount !== 'number') {
-        return 'N/A'; // Or any other placeholder you prefer
-      }
-      return amount.toFixed(2);
+    const formatAmount = (amount?: number): string => {
+        // Check if amount is a number and format accordingly
+        return typeof amount === 'number' ? `$${amount.toFixed(2)}` : 'No Amount'; 
     };
 
     let content;
@@ -99,9 +98,7 @@ const PaymentReport = () => {
     if (isLoading) {
         content = <div className="text-center">Loading payment data...</div>;
     } else if (isError) {
-
-        content = <div className="text-center text-red-500">Error loading payments:  {error instanceof Error ? error.message : 'Unknown error'}</div>;
-
+        content = <div className="text-center text-red-500">Error loading payments: {error instanceof Error ? error.message : 'Unknown error'}</div>;
     } else if (!payments || payments.length === 0) {
         content = <div className="text-center">No payment data available.</div>;
     } else {
@@ -118,21 +115,21 @@ const PaymentReport = () => {
                         <h3 className="text-lg font-semibold text-yellow-700 dark:text-yellow-200">Pending Payments</h3>
                         <div className="text-4xl font-bold text-yellow-800 dark:text-yellow-100">{paymentSummary.totalPending}</div>
                         <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalPending}</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: ${formatAmount(paymentSummary.totalAmountPending)}</p>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountPending)}</p>
                     </div>
 
                     <div className="bg-green-100 dark:bg-green-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
                         <h3 className="text-lg font-semibold text-green-700 dark:text-green-200">Paid Payments</h3>
                         <div className="text-4xl font-bold text-green-800 dark:text-green-100">{paymentSummary.totalPaid}</div>
                         <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalPaid}</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: ${formatAmount(paymentSummary.totalAmountPaid)}</p>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountPaid)}</p>
                     </div>
 
                     <div className="bg-red-100 dark:bg-red-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
                         <h3 className="text-lg font-semibold text-red-700 dark:text-red-200">Failed Payments</h3>
                         <div className="text-4xl font-bold text-red-800 dark:text-red-100">{paymentSummary.totalFailed}</div>
                         <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalFailed}</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: ${formatAmount(paymentSummary.totalAmountFailed)}</p>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountFailed)}</p>
                     </div>
                 </div>
 
@@ -149,14 +146,10 @@ const PaymentReport = () => {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={80}
-                                    fill="#8884d8"
                                     label
                                     labelLine={false}
                                 >
-
-
                                     {statusPieData.map((_, index) => (
-
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -210,7 +203,7 @@ const PaymentReport = () => {
                         <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
                         <p className="text-gray-700">
                             This report provides an overview of payments, broken down by status. The pie chart visualizes the proportion of payments by status,
-                            while the bar chart and line chart provide alternative views of the same data. Analysing these metrics can help identify
+                            while the bar chart and line chart provide alternative views of the same data. Analyzing these metrics can help identify
                             potential issues with payment processing and improve overall financial management. A high number of pending or failed
                             payments may indicate problems with the payment gateway or customer payment methods.
                         </p>
