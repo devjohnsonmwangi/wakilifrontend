@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import Footer from "../../../landingPage/Footer";
 import CasesPerMonth from "./casesPerMonth";
 import CardsReport from "./CardsReport";

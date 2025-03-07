@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useCreatePaymentMutation, PaymentGateway, useCreateCashPaymentMutation } from '../../../../features/payment/paymentAPI'; // Adjust path
+import {  PaymentGateway } from '../../../../features/payment/paymentAPI';
 import { toast } from "sonner"; // Import sonner
 import { useFetchCasesQuery, CaseDataTypes } from '../../../../features/case/caseAPI'; // Adjust the Path to your caseAPI
+import StripePaymentModal from './stripe'; // Adjust the path to your StripeModal
+import CashPaymentModal from './cash'; // Adjust the path to your CashModal
+import MpesaPayment from './mpesa'; // Adjust path to MpesaPayment component
 
 export interface PaymentModalProps {
     isOpen: boolean;
@@ -17,8 +20,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onAction }
     const [selectedCase, setSelectedCase] = useState<CaseDataTypes | null>(null);
     const [filterText, setFilterText] = useState('');
     const { data: cases, isLoading: isCasesLoading, isError: isCasesError, error: casesError } = useFetchCasesQuery();
-    const [createPayment] = useCreatePaymentMutation();
-    const [createCashPayment] = useCreateCashPaymentMutation();
+   
+
+    //State to contol modal.
+    const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+    const [isCashModalOpen, setIsCashModalOpen] = useState(false);
+    const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);  // State for M-Pesa modal
 
     useEffect(() => {
         if (isCasesError) {
@@ -59,24 +66,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onAction }
                 return;
             }
 
-            const newPaymentData = {
-                case_id: selectedCase.case_id,
-                user_id: selectedCase.user_id,
-                payment_amount: amount, // Convert number to string
-                payment_gateway: paymentGateway,
-                transaction_id: paymentGateway === 'cash' ? `cash_txn_${Date.now()}` : `txn_${Date.now()}`,
-                payment_notes: paymentNotes || undefined,
-            };
-
-            if (paymentGateway === 'cash') {
-                await createCashPayment(newPaymentData).unwrap();
-                onAction('Cash payment initiated successfully!', "success");
-            } else {
-                await createPayment(newPaymentData).unwrap();
-                onAction('Payment initiated successfully!', "success");
+            // Open the modal to record payment for case and cash,
+            if (paymentGateway === 'cash'){
+                setIsCashModalOpen(true)
+                return;
             }
 
-            onClose(); // Close the modal
+            //Open the Stripe modal to record stripe payment.
+            if (paymentGateway === 'stripe'){
+                setIsStripeModalOpen(true)
+                return;
+            }
+
+             // Open the M-Pesa modal.
+            if (paymentGateway === 'mpesa') {
+                setIsMpesaModalOpen(true);
+                return;
+            }
+
         } catch (err: unknown) {
             if (err instanceof Error) {
                 console.error('Failed to initiate payment:', err);
@@ -93,7 +100,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onAction }
     if (!isOpen) return null; // Don't render the modal if it's not open
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 dark:bg-neutral-900/80">
+        <>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 dark:bg-neutral-900/80 z-40">
             <div className="mx-auto max-w-3xl max-h-[80vh] overflow-y-auto rounded-lg bg-white dark:bg-neutral-800 p-6 shadow-lg ring-1 ring-black/5">
                 <h2 className="text-xl font-bold text-blue-600 mb-4">
                     Initiate Payment
@@ -234,6 +242,43 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onAction }
                 </div>
             </div>
         </div>
+           {/* Render the modals */}
+           {isStripeModalOpen && (
+                <StripePaymentModal
+                    isOpen={isStripeModalOpen}
+                    onClose={() => {
+                        setIsStripeModalOpen(false);
+                        onClose(); // Also close the parent modal after stripe modal close
+                    }}
+                    caseId={selectedCase ? selectedCase.case_id : 0}
+                    userId={selectedCase ? selectedCase.user_id : 0}
+                    amount={parseFloat(paymentAmount)}
+                />
+            )}
+            {isCashModalOpen && (
+                <CashPaymentModal
+                    isOpen={isCashModalOpen}
+                    onClose={() => {
+                        setIsCashModalOpen(false);
+                        onClose()
+                    }}
+                    caseId={selectedCase ? selectedCase.case_id : 0}
+                    userId={selectedCase ? selectedCase.user_id : 0}
+                />
+            )}
+               {isMpesaModalOpen && (
+                <MpesaPayment
+                    isOpen={isMpesaModalOpen}
+                    onClose={() => {
+                        setIsMpesaModalOpen(false);
+                        onClose()
+                    }}
+                    amount={parseFloat(paymentAmount)}
+                    caseId={selectedCase ? selectedCase.case_id : 0}
+                    userId={selectedCase ? selectedCase.user_id : 0}
+                />
+            )}
+        </>
     );
 };
 
