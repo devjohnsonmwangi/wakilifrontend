@@ -47,7 +47,7 @@ export interface StripeWebhookData {
 }
 
 // Interface for Create Payment Intent Request
-interface CreatePaymentIntentRequest {
+export interface CreatePaymentIntentRequest { // Exporting the interface
     amount: number;
     payment_id: number;
 }
