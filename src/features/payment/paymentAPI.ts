@@ -50,9 +50,7 @@ export interface StripeWebhookData {
 // Interface for Mpesa STK Request
 export interface MpesaStkRequest {
     phoneNumber: string;
-    amount: number;
-    accountReference: string;
-    transactionDesc: string;
+    amount: number;     
     user_id: number;
     case_id: number;
 }

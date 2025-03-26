@@ -31,8 +31,7 @@ interface CreateMpesaPaymentVariables {
     user_id: number;
     amount: number;
     phoneNumber: string;
-    accountReference: string;
-    transactionDesc: string;
+ 
 }
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
@@ -140,8 +139,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 user_id: selectedCase.user_id,
                 amount: Number(amount), // Use local amount
                 phoneNumber: phoneNumber,
-                accountReference: "Payment", // Hard Coded since this is the case.
-                transactionDesc: `Payment for case ${selectedCase.case_id}`,
+              
+   
             };
 
             if (paymentType === 'stk') {
