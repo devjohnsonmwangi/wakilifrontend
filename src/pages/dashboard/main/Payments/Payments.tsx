@@ -1,361 +1,251 @@
+// // src/components/PaymentModal.tsx
+// import React, { useState, useEffect, useCallback } from 'react';
+// import { PaymentGateway } from '../../../../features/payment/paymentAPI';
+// import { toast } from "sonner";
+// import { useFetchCasesQuery, CaseDataTypes } from '../../../../features/case/caseAPI';
+// import StripePaymentModal from './stripe';
+// import CashPaymentModal from './cash';
+// import MpesaPayment from './mpesa';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import PaymentModal from './PaymentModal'; // Adjust the path as necessary
-import {
-    useFetchPaymentsQuery,
-    PaymentDataTypes, // Ensure you import PaymentDataTypes
-    useDeletePaymentMutation // Import the delete mutation
-} from '../../../../features/payment/paymentAPI'; // Adjust the path as necessary
+// interface PaymentModalProps {
+//     isOpen: boolean; // Ensure this is passed correctly
+//     onClose: () => void; // Ensure this is passed correctly
+// }
 
-import { toast } from "sonner";
-import { format } from 'date-fns'; // For formatting dates
+// const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
+//     const [paymentAmount, setPaymentAmount] = useState('');
+//     const [paymentGateway, setPaymentGateway] = useState<PaymentGateway | null>(null);
+//     const [selectedCase, setSelectedCase] = useState<CaseDataTypes | null>(null);
+//     const [filterText, setFilterText] = useState('');
+//     const { data: cases, isLoading: isCasesLoading, isError: isCasesError, error: casesError } = useFetchCasesQuery();
 
-interface ParentComponentProps {
-    // No props needed for this component now
-}
+//     const [isCashModalOpen, setIsCashModalOpen] = useState(false);
+//     const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);
+//     const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
 
-const ParentComponent: React.FC<ParentComponentProps> = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [filterStatus, setFilterStatus] = useState<string>('');
-    const [filterGateway, setFilterGateway] = useState<string>('');
-    const [filterAmount, setFilterAmount] = useState<string>('');
-    const [filterDateFrom, setFilterDateFrom] = useState<string>('');
-    const [filterDateTo, setFilterDateTo] = useState<string>('');
-    const [filterCaseId, setFilterCaseId] = useState<string>(''); // Changed to case ID
-    const [filterUser, setFilterUser] = useState<string>('');
+//     useEffect(() => {
+//         if (isCasesError) {
+//             console.error('Error fetching cases:', casesError);
+//             toast.error('Failed to load cases. Please try again.');
+//         }
+//     }, [isCasesError, casesError]);
 
-    const { data: payments, isLoading, isError } = useFetchPaymentsQuery(); // Destructure refetch from the query
+//     const filteredCases = useCallback(() => {
+//         if (!cases) return [];
 
-    const [filteredPayments, setFilteredPayments] = useState<PaymentDataTypes[] | undefined>(payments);
-    const [deletePayment, { isLoading: isDeleting }] = useDeletePaymentMutation(); // Get the delete mutation
+//         const lowerFilter = filterText.toLowerCase();
+//         return cases.filter(c =>
+//             c.case_number.toLowerCase().includes(lowerFilter) ||
+//             c.case_track_number.toLowerCase().includes(lowerFilter) ||
+//             c.parties.toLowerCase().includes(lowerFilter)
+//         );
+//     }, [cases, filterText]);
 
-    useEffect(() => {
-        setFilteredPayments(payments); // Initialize with all payments
-    }, [payments]);
+//     useEffect(() => {
+//         if (selectedCase) {
+//             setPaymentAmount(selectedCase.fee.toString());
+//         } else {
+//             setPaymentAmount('');
+//             setPaymentGateway(null);
+//         }
+//     }, [selectedCase]);
 
-    // Filter Function
-    const handleFilter = useCallback(() => {
-        if (!payments) {
-            return; // Return early if payments is undefined or null
-        }
+//     const handleInitiatePayment = () => {
+//         if (!selectedCase) {
+//             toast.error('Please select a case.');
+//             return;
+//         }
 
-        let tempPayments = [...payments]; // Create a copy to avoid mutating the original data
+//         if (!paymentAmount) {
+//             toast.error('Payment amount is required.');
+//             return;
+//         }
 
-        if (filterStatus) {
-            tempPayments = tempPayments.filter(payment => payment.payment_status === filterStatus);
-        }
+//         if (!paymentGateway) {
+//             toast.error('Please select a payment gateway.');
+//             return;
+//         }
 
-        if (filterGateway) {
-            tempPayments = tempPayments.filter(payment => payment.payment_gateway === filterGateway);
-        }
+//         const amount = parseFloat(paymentAmount);
+//         if (isNaN(amount) || amount <= 0) {
+//             toast.error('Please enter a valid payment amount.');
+//             return;
+//         }
 
-        if (filterAmount) {
-            const amount = parseFloat(filterAmount);
-            if (!isNaN(amount)) {
-                tempPayments = tempPayments.filter(payment => Number(payment.payment_amount) === amount);
-            }
-        }
+//         switch (paymentGateway) {
+//             case 'cash':
+//                 setIsCashModalOpen(true);
+//                 break;
+//             case 'mpesa':
+//                 setIsMpesaModalOpen(true);
+//                 break;
+//             case 'stripe':
+//                 setIsStripeModalOpen(true);
+//                 break;
+//             default:
+//                 toast.error('Invalid payment gateway selected.');
+//                 break;
+//         }
+//     };
 
-        if (filterDateFrom) {
-            try {
-                const fromDate = new Date(filterDateFrom);
-                tempPayments = tempPayments.filter(payment => {
-                    const paymentDate = new Date(payment.payment_date || ''); // Provide a default value in case of undefined
-                    return paymentDate >= fromDate;
-                });
-            } catch (error) {
-                console.error("Error filtering by date from:", error);
-            }
-        }
+//     const handleCloseAllModals = () => {
+//         setIsCashModalOpen(false);
+//         setIsMpesaModalOpen(false);
+//         setIsStripeModalOpen(false);
+//         resetForm();
+//         onClose();
+//     };
 
-        if (filterDateTo) {
-            try {
-                const toDate = new Date(filterDateTo);
-                tempPayments = tempPayments.filter(payment => {
-                    const paymentDate = new Date(payment.payment_date || ''); // Provide a default value in case of undefined
-                    return paymentDate <= toDate;
-                });
-            } catch (error) {
-                console.error("Error filtering by date to:", error);
-            }
-        }
+//     const resetForm = () => {
+//         setPaymentAmount('');
+//         setSelectedCase(null);
+//         setPaymentGateway(null);
+//         setFilterText('');
+//     };
 
-        if (filterCaseId) { // Changed from filterCaseNumber to filterCaseId
-            tempPayments = tempPayments.filter(payment => String(payment.case_id) === filterCaseId); // Filter by case ID
-        }
+//     if (!isOpen) return null; // Ensure modal is not rendered when not open
 
-        if (filterUser) {
-            tempPayments = tempPayments.filter(payment => String(payment.user_id) === filterUser); // Ensure correct type
-        }
+//     return (
+//         <div className="fixed inset-0 flex items-center justify-center bg-black/30 dark:bg-neutral-900/80 z-40">
+//             <div className="mx-auto max-w-3xl max-h-[80vh] overflow-y-auto rounded-lg bg-white dark:bg-neutral-800 p-6 shadow-lg ring-1 ring-black/5">
+//                 <h2 className="text-xl font-bold text-blue-600 mb-4">Initiate Payment</h2>
 
-        setFilteredPayments(tempPayments);
-    }, [filterStatus, filterGateway, filterAmount, filterDateFrom, filterDateTo, filterCaseId, filterUser, payments]);
+//                 <div className="mt-4">
+//                     <label htmlFor="filterText" className="block text-sm font-bold text-blue-600 mb-1">Filter Cases</label>
+//                     <input
+//                         type="text"
+//                         id="filterText"
+//                         className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-neutral-700 rounded-md dark:bg-neutral-900 dark:text-white p-2"
+//                         placeholder="Enter case number, track number, or parties"
+//                         value={filterText}
+//                         onChange={(e) => setFilterText(e.target.value)}
+//                     />
+//                 </div>
 
-    // Use Effect to run the Filter Function
-    useEffect(() => {
-        handleFilter();
-    }, [handleFilter]);
+//                 <div className="mt-4">
+//                     <h3 className="text-lg font-semibold text-blue-600 mb-2">Please select a case to make a payment:</h3>
+//                 </div>
 
-    const handleOpenModal = () => {
-        setIsModalOpen(true);
-    };
+//                 <div className="mt-4 overflow-x-auto">
+//                     <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+//                         <thead className="bg-blue-600">
+//                             <tr>
+//                                 <th className="px-4 py-2 text-left text-sm font-bold text-white">Case Number</th>
+//                                 <th className="px-4 py-2 text-left text-sm font-bold text-white">Track Number</th>
+//                                 <th className="px-4 py-2 text-left text-sm font-bold text-white">Parties</th>
+//                                 <th className="px-4 py-2 text-left text-sm font-bold text-white">Action</th>
+//                             </tr>
+//                         </thead>
+//                         <tbody className="bg-white dark:bg-neutral-800 divide-y divide-gray-200 dark:divide-neutral-700">
+//                             {isCasesLoading ? (
+//                                 <tr>
+//                                     <td colSpan={4} className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">Loading cases...</td>
+//                                 </tr>
+//                             ) : filteredCases().length > 0 ? (
+//                                 filteredCases().map((caseItem) => (
+//                                     <tr key={caseItem.case_id} className="hover:bg-gray-100 dark:hover:bg-neutral-700 transition duration-150">
+//                                         <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{caseItem.case_number}</td>
+//                                         <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{caseItem.case_track_number}</td>
+//                                         <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">{caseItem.parties}</td>
+//                                         <td className="px-4 py-2 text-sm text-gray-900 dark:text-white text-right">
+//                                             <button
+//                                                 onClick={() => setSelectedCase(caseItem)}
+//                                                 className={`font-medium text-white px-3 py-1 rounded-md ${selectedCase?.case_id === caseItem.case_id ? 'bg-green-500' : 'bg-blue-500 hover:bg-blue-600'}`}
+//                                             >
+//                                                 Select
+//                                             </button>
+//                                         </td>
+//                                     </tr>
+//                                 ))
+//                             ) : (
+//                                 <tr>
+//                                     <td colSpan={4} className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">No cases available</td>
+//                                 </tr>
+//                             )}
+//                         </tbody>
+//                     </table>
+//                 </div>
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-    };
+//                 {selectedCase && (
+//                     <div className="mt-4">
+//                         <p className="text-sm text-gray-500 dark:text-gray-400">Selected Case: <span className="font-medium">{selectedCase.parties}</span></p>
+//                         <p className="text-sm text-gray-500 dark:text-gray-400">Case Fee: <span className="font-medium">{selectedCase.fee}</span></p>
+//                     </div>
+//                 )}
 
-    const formatDate = (dateString: string | undefined): string => {
-        if (!dateString) {
-            return "N/A"; // Handle undefined date
-        }
-        try {
-            const date = new Date(dateString);
-            return format(date, 'MMM dd, yyyy HH:mm'); // Example: Aug 15, 2024 14:30
-        } catch (formatError) {
-            console.error("Error formatting date:", formatError);
-            return "Invalid Date";
-        }
-    };
+//                 <div className="mt-4">
+//                     <label htmlFor="paymentAmount" className="block text-sm font-bold text-blue-600 mb-1">Payment Amount</label>
+//                     <input
+//                         type="number"
+//                         id="paymentAmount"
+//                         className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-neutral-700 rounded-md dark:bg-neutral-900 dark:text-white p-2"
+//                         placeholder="Enter amount"
+//                         value={paymentAmount}
+//                         onChange={(e) => setPaymentAmount(e.target.value)}
+//                     />
+//                 </div>
 
-    // New function to handle the actions
-    const handlePaymentAction = (message: string, type: "success" | "error" = "success") => {
-        if (type === "success") {
-            toast.success(message);
-        } else {
-            toast.error(message);
-        }
-    };
+//                 <div className="mt-4">
+//                     <label htmlFor="paymentGateway" className="block text-sm font-bold text-blue-600 mb-1">Payment Gateway</label>
+//                     <select
+//                         id="paymentGateway"
+//                         className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-neutral-700 rounded-md dark:bg-neutral-900 dark:text-white p-2"
+//                         value={paymentGateway || ''}
+//                         onChange={(e) => setPaymentGateway(e.target.value as PaymentGateway)}
+//                     >
+//                         <option value="">Select Payment Gateway</option>
+//                         <option value="stripe">Stripe</option>
+//                         <option value="mpesa">M-Pesa</option>
+//                         <option value="cash">Cash</option>
+//                     </select>
+//                 </div>
 
-    const handleDeletePayment = async (paymentId: number | undefined) => { // Ensure paymentId is a number
-        if (paymentId === undefined) {
-            toast.error('Invalid Payment ID.');
-            return;
-        }
-        try {
-            await deletePayment(Number(paymentId)).unwrap(); // Convert paymentId to string
-            toast.success('Payment deleted successfully!');
-            // Remove the deleted payment from the local state
-            setFilteredPayments(prevPayments => prevPayments?.filter(payment => payment.payment_id !== paymentId));
-        } catch (error: unknown) { // Use 'unknown' type for error
-            console.error('Failed to delete payment:', error);
-            if (error instanceof Error) {
-                toast.error(error.message || 'Failed to delete payment.'); // Access the error message safely
-            } else {
-                toast.error('Failed to delete payment.'); // Fallback message
-            }
-        }
-    };
+//                 <div className="mt-6 flex justify-end space-x-2">
+//                     <button
+//                         type="button"
+//                         className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-900 hover:bg-gray-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+//                         onClick={onClose}
+//                     >
+//                         Cancel
+//                     </button>
+//                     <button
+//                         type="button"
+//                         className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+//                         onClick={handleInitiatePayment}
+//                         disabled={!selectedCase || !paymentGateway}
+//                     >
+//                         Initiate Payment
+//                     </button>
+//                 </div>
+//             </div>
 
-    // Function to reset filters
-    const resetFilters = () => {
-        setFilterStatus('');
-        setFilterGateway('');
-        setFilterAmount('');
-        setFilterDateFrom('');
-        setFilterDateTo('');
-        setFilterCaseId(''); // Reset case ID filter
-        setFilterUser('');
-        setFilteredPayments(payments); // Reset filtered payments to all payments
-    };
+//             {selectedCase && (
+//                 <>
+//                     <CashPaymentModal
+//                         isOpen={isCashModalOpen}
+//                         onClose={handleCloseAllModals}
+//                         caseId={selectedCase.case_id}
+//                         userId={selectedCase.user_id}
+//                         amount={paymentAmount ? parseFloat(paymentAmount) : null}
+//                     />
+//                     <MpesaPayment
+//                         isOpen={isMpesaModalOpen}
+//                         onClose={handleCloseAllModals}
+//                         amount={paymentAmount ? parseFloat(paymentAmount) : null}
+//                         caseId={selectedCase.case_id}
+//                         userId={selectedCase.user_id}
+//                     />
+//                     <StripePaymentModal
+//                         isOpen={isStripeModalOpen}
+//                         onClose={handleCloseAllModals}
+//                         caseId={selectedCase.case_id}
+//                         userId={selectedCase.user_id}
+//                         amount={paymentAmount ? parseFloat(paymentAmount) : null}
+//                     />
+//                 </>
+//             )}
+//         </div>
+//     );
+// };
 
-    return (
-        <div className="w-full p-2">
-            {/* Header */}
-            <div className=" bg-blue-100 dark:bg-blue-900 z-10 py-2 mb-2 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-200 text-center">
-                    Payment History
-                </h2>
-                <div>
-                    {/* Button to open the modal */}
-                    <button
-                        onClick={handleOpenModal}
-                        className=" bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                        Initiate Payment
-                    </button>
-                </div>
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
-                {/* Status Filter */}
-                <div>
-                    <label htmlFor="statusFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Status:</label>
-                    <select
-                        id="statusFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="failed">Failed</option>
-                        {/* Add more options as needed */}
-                    </select>
-                </div>
-
-                {/* Gateway Filter */}
-                <div>
-                    <label htmlFor="gatewayFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Gateway:</label>
-                    <select
-                        id="gatewayFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterGateway}
-                        onChange={(e) => setFilterGateway(e.target.value)}
-                    >
-                        <option value="">All Gateways</option>
-                        <option value="stripe">Stripe</option>
-                        <option value="mpesa">M-Pesa</option>
-                        <option value="cash">Cash</option>
-                        {/* Add more options as needed */}
-                    </select>
-                </div>
-
-                {/* Amount Filter */}
-                <div>
-                    <label htmlFor="amountFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Amount:</label>
-                    <input
-                        type="number"
-                        id="amountFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter amount"
-                        value={filterAmount}
-                        onChange={(e) => setFilterAmount(e.target.value)}
-                    />
-                </div>
-
-                {/* Date From Filter */}
-                <div>
-                    <label htmlFor="dateFromFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Date From:</label>
-                    <input
-                        type="date"
-                        id="dateFromFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterDateFrom}
-                        onChange={(e) => setFilterDateFrom(e.target.value)}
-                    />
-                </div>
-
-                {/* Date To Filter */}
-                <div>
-                    <label htmlFor="dateToFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Date To:</label>
-                    <input
-                        type="date"
-                        id="dateToFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterDateTo}
-                        onChange={(e) => setFilterDateTo(e.target.value)}
-                    />
-                </div>
-
-                {/* Case ID Filter */}
-                <div>
-                    <label htmlFor="caseIdFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Case ID:</label>
-                    <input
-                        type="text"
-                        id="caseIdFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter Case ID"
-                        value={filterCaseId}
-                        onChange={(e) => setFilterCaseId(e.target.value)}
-                    />
-                </div>
-
-                {/* User Filter */}
-                <div>
-                    <label htmlFor="userFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">User ID:</label>
-                    <input
-                        type="number"
-                        id="userFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter User ID"
-                        value={filterUser}
-                        onChange={(e) => setFilterUser(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            {/* Reset Filters Button */}
-            <div className="mb-4">
-                <button
-                    onClick={resetFilters}
-                    className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Reset Filters
-                </button>
-            </div>
-
-            {/* Payment Table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
-                    <thead>
-                        <tr className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 uppercase text-sm">
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">ID</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Amount</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Status</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Gateway</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Date</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Transaction ID</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Actions</th> {/* New column */}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr><td colSpan={7} className="text-center py-4">Loading payments...</td></tr>
-                        ) : isError ? (  // Handle error state
-                            <tr><td colSpan={7} className="text-center py-4 text-red-500">Error loading payments.</td></tr>
-                        ) : filteredPayments && filteredPayments.length > 0 ? ( // Check for payments and length
-                            filteredPayments.map((payment) => (
-                                <tr key={payment.payment_id} className="hover:bg-gray-100 dark:hover:bg-neutral-700">
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">{payment.payment_id}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">{payment.payment_amount}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">{payment.payment_status}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">{payment.payment_gateway}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">
-                                            {formatDate(payment.payment_date)}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap">{payment.transaction_id}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-sm text-right">
-                                        <button
-                                            onClick={() => handleDeletePayment(payment.payment_id)} // Ensure payment_id is passed correctly
-                                            className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 font-bold py-1 px-3 rounded"
-                                            disabled={isDeleting}
-                                        >
-                                            {isDeleting ? 'Deleting...' : 'Delete'}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr><td colSpan={7} className="text-center py-4">No payments found.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Payment Modal */}
-            <PaymentModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onAction={handlePaymentAction}
-            />
-        </div>
-    );
-};
-
-export default ParentComponent;
-
-
+// export default PaymentModal;

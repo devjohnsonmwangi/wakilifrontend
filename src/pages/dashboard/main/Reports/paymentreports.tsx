@@ -1,24 +1,22 @@
+// src/components/PaymentReport.tsx
 import { useState, useEffect } from 'react';
 import {
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 } from 'recharts';
-import { useFetchPaymentsQuery } from '../../../../features/payment/paymentAPI';
+import { useFetchPaymentsQuery, PaymentDataTypes } from '../../../../features/payment/paymentAPI';
 
+// Define the colors for the pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF4D4D', '#8A2BE2', '#5F9EA0'];
 
-interface Payment {
-    payment_status?: string;
-    payment_amount?: number; // Ensure payment_amount is of type number
-}
-
+// Define interfaces for payment summary and chart data
 interface PaymentSummary {
     totalPayments: number;
     totalPending: number;
-    totalPaid: number;
+    totalCompleted: number;
     totalFailed: number;
     totalAmountPending: number;
-    totalAmountPaid: number;
+    totalAmountCompleted: number;
     totalAmountFailed: number;
 }
 
@@ -33,52 +31,70 @@ interface CustomTooltipProps {
     label?: string;
 }
 
+interface ApiResponse {
+    success: boolean;
+    payments: PaymentDataTypes[];
+}
+
+// Correctly typed hook result
+interface FetchPaymentsQueryResult {
+    data?: ApiResponse;
+    isLoading: boolean;
+    isError: boolean;
+    error: unknown; // Or a more specific error type if you have one
+}
+
 const PaymentReport = () => {
-    const { data: payments, isLoading, isError, error } = useFetchPaymentsQuery();
+    // Fetch payments data
+     const { data, isLoading, isError, error } = useFetchPaymentsQuery() as FetchPaymentsQueryResult;
     const [paymentSummary, setPaymentSummary] = useState<PaymentSummary>({
         totalPayments: 0,
         totalPending: 0,
-        totalPaid: 0,
+        totalCompleted: 0,
         totalFailed: 0,
         totalAmountPending: 0,
-        totalAmountPaid: 0,
+        totalAmountCompleted: 0,
         totalAmountFailed: 0,
     });
 
     const [statusPieData, setStatusPieData] = useState<ChartData[]>([]);
 
     useEffect(() => {
-        if (payments) {
+        if (data?.success && Array.isArray(data.payments)) {
+            const payments = data.payments;
             const totalPayments = payments.length;
-            const statusCounts = payments.reduce((acc, payment: Payment) => {
-                const status = payment.payment_status || 'Unknown'; // Ensure status is defined
+
+            const statusCounts = payments.reduce((acc: Record<string, number>, payment: PaymentDataTypes) => {
+                let status = payment.payment_status || 'Unknown';
+                status = status === 'paid' ? 'completed' : status;
                 acc[status] = (acc[status] || 0) + 1;
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
 
-            const totalAmount = payments.reduce((acc, payment: Payment) => {
-                const status = payment.payment_status || 'Unknown'; // Ensure status is defined
-                acc[status] = (acc[status] || 0) + (typeof payment.payment_amount === 'number' ? payment.payment_amount : 0);
+            const totalAmount = payments.reduce((acc: Record<string, number>, payment: PaymentDataTypes) => {
+                let status = payment.payment_status || 'Unknown';
+                status = status === 'paid' ? 'completed' : status;
+                acc[status] = (acc[status] || 0) + (typeof payment.payment_amount === 'string' || typeof payment.payment_amount === 'number' ? Number(payment.payment_amount) : 0);
                 return acc;
-            }, {} as Record<string, number>);
+            }, {});
 
             setPaymentSummary({
                 totalPayments,
                 totalPending: statusCounts['pending'] || 0,
-                totalPaid: statusCounts['paid'] || 0,
+                totalCompleted: statusCounts['completed'] || 0,
                 totalFailed: statusCounts['failed'] || 0,
                 totalAmountPending: totalAmount['pending'] || 0,
-                totalAmountPaid: totalAmount['paid'] || 0,
+                totalAmountCompleted: totalAmount['completed'] || 0,
                 totalAmountFailed: totalAmount['failed'] || 0,
             });
 
             setStatusPieData([
                 { name: 'Pending', value: statusCounts['pending'] || 0 },
-                { name: 'Paid', value: statusCounts['paid'] || 0 },
+                { name: 'Completed', value: statusCounts['completed'] || 0 },
                 { name: 'Failed', value: statusCounts['failed'] || 0 },
             ]);
         }
-    }, [payments]);
+    }, [data]);
 
     const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => (
         active && payload && payload.length ? (
@@ -89,8 +105,7 @@ const PaymentReport = () => {
     );
 
     const formatAmount = (amount?: number): string => {
-        // Check if amount is a number and format accordingly
-        return typeof amount === 'number' ? `$${amount.toFixed(2)}` : 'No Amount'; 
+        return typeof amount === 'number' ? `ksh${amount.toFixed(2)}` : 'No Amount';
     };
 
     let content;
@@ -99,7 +114,7 @@ const PaymentReport = () => {
         content = <div className="text-center">Loading payment data...</div>;
     } else if (isError) {
         content = <div className="text-center text-red-500">Error loading payments: {error instanceof Error ? error.message : 'Unknown error'}</div>;
-    } else if (!payments || payments.length === 0) {
+    } else if (!data || !data.success || !Array.isArray(data.payments) || data.payments.length === 0) {
         content = <div className="text-center">No payment data available.</div>;
     } else {
         content = (
@@ -108,27 +123,23 @@ const PaymentReport = () => {
                     <div className="bg-blue-100 dark:bg-blue-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
                         <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-200">Total Payments</h3>
                         <div className="text-4xl font-bold text-blue-800 dark:text-blue-100">{paymentSummary.totalPayments}</div>
-                        <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalPayments}</div>
                     </div>
 
                     <div className="bg-yellow-100 dark:bg-yellow-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
                         <h3 className="text-lg font-semibold text-yellow-700 dark:text-yellow-200">Pending Payments</h3>
                         <div className="text-4xl font-bold text-yellow-800 dark:text-yellow-100">{paymentSummary.totalPending}</div>
-                        <div className="w-16 h-16 rounded-full bg-yellow-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalPending}</div>
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountPending)}</p>
                     </div>
 
                     <div className="bg-green-100 dark:bg-green-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
-                        <h3 className="text-lg font-semibold text-green-700 dark:text-green-200">Paid Payments</h3>
-                        <div className="text-4xl font-bold text-green-800 dark:text-green-100">{paymentSummary.totalPaid}</div>
-                        <div className="w-16 h-16 rounded-full bg-green-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalPaid}</div>
-                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountPaid)}</p>
+                        <h3 className="text-lg font-semibold text-green-700 dark:text-green-200">Completed Payments</h3>
+                        <div className="text-4xl font-bold text-green-800 dark:text-green-100">{paymentSummary.totalCompleted}</div>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountCompleted)}</p>
                     </div>
 
                     <div className="bg-red-100 dark:bg-red-900 shadow-lg rounded-lg p-6 flex flex-col items-center justify-center">
                         <h3 className="text-lg font-semibold text-red-700 dark:text-red-200">Failed Payments</h3>
                         <div className="text-4xl font-bold text-red-800 dark:text-red-100">{paymentSummary.totalFailed}</div>
-                        <div className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center mt-2">{paymentSummary.totalFailed}</div>
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Total Amount: {formatAmount(paymentSummary.totalAmountFailed)}</p>
                     </div>
                 </div>
@@ -198,7 +209,7 @@ const PaymentReport = () => {
             <div className="card mx-auto bg-white w-full rounded-md mb-5 border-2 p-4">
                 <h2 className="text-center text-2xl mb-4 text-webcolor font-bold">Payment Report</h2>
                 {content}
-                {payments && (
+                {data && data.success && Array.isArray(data.payments) && (
                     <div className="mt-6">
                         <h3 className="text-lg font-semibold mb-2">Conclusion</h3>
                         <p className="text-gray-700">

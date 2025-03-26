@@ -51,7 +51,9 @@ import Account from './pages/dashboard/main/Account.tsx';
 
 
   // import ListAppointments from './pages/dashboard/main/manageAppointment/listappointments.tsx'
-  import  ParentComponent   from  './pages/dashboard/main/Payments/Payments.tsx'
+ // import  PaymentModal   from  './pages/dashboard/main/Payments/Payments.tsx'
+  import  PaymentHistory   from  './pages/dashboard/main/Payments/PaymentModal.tsx'
+ 
 
 
  
@@ -145,10 +147,10 @@ const router = createBrowserRouter([
     errorElement: <Error/>
   },
 
-  // {
-  //   path:'appoint',
-  //   element: <ListAppointments/>,
-  //   errorElement: <Error/>
+  //  {
+  //    path:'pay',
+  //   element: <PaymentModal />,
+  //  errorElement: <Error/>
   // },
   
 
@@ -264,7 +266,7 @@ const router = createBrowserRouter([
 
        {
         path: 'payments',
-       element: <ParentComponent/>
+       element: <PaymentHistory  />
        },
 
       // {
