@@ -1,6 +1,9 @@
 // src/components/MpesaPayment.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI';
+import {
+    useInitiateMpesaStkPushMutation,
+    useMpesaCallbackMutation // Import useMpesaCallbackMutation
+} from '../../../../features/payment/paymentAPI';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,7 +15,6 @@ import {
     CaseType
 } from '../../../../features/case/caseAPI';  // Adjust path as needed
 
-//import MpesaIcon from '../../../../assets/mpesa.png';
 const MPESA_ICON_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
 
 interface MpesaPaymentProps {
@@ -31,7 +33,30 @@ interface CreateMpesaPaymentVariables {
     user_id: number;
     amount: number;
     phoneNumber: string;
- 
+}
+
+// Define the structure of the expected request body for mpesaCallback API
+interface MpesaCallbackData {
+    Body: {
+        stkCallback: {
+            MerchantRequestID: string;
+            CheckoutRequestID: string;
+            ResultCode: number;
+            ResultDesc: string;
+            CallbackMetadata?: {
+                Item: { Name: string; Value: string }[];
+            } | undefined;
+        };
+    };
+}
+
+// Define the structure of the expected response from the mpesaCallback API
+interface MpesaResponse {
+    success: boolean;
+    message: string;
+    amount?: string; // Optional properties
+    transactionId?: string;
+    payerName?: string;
 }
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
@@ -40,12 +65,15 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [paymentType, setPaymentType] = useState<'stk' | 'direct'>('stk');
     const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
+    const [mpesaCallback] = useMpesaCallbackMutation();  // Use the imported hook
     const navigate = useNavigate();
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [amount, setAmount] = useState('');  // amount to pay (editable)
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
+    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string } | null>(null);
+    const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
     // Filter state
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
@@ -112,6 +140,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const handlePayment = async () => {
         if (!phoneNumber) {
             toast.error("Phone number is required.");
+            setPhoneNumberError("Phone number is required.");
             return;
         }
 
@@ -130,8 +159,16 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             return;
         }
 
+        if (!isValidPhoneNumber(phoneNumber)) {
+            toast.error("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
+            setPhoneNumberError("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
+            return;
+        }
+
         setIsLoading(true);
         setPaymentError(null); // Reset error message on new attempt
+        setTransactionDetails(null); // Reset the transaction details state
+        setPhoneNumberError(null); // Clear phone number specific error
 
         try {
             const paymentData: CreateMpesaPaymentVariables = {
@@ -139,21 +176,18 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 user_id: selectedCase.user_id,
                 amount: Number(amount), // Use local amount
                 phoneNumber: phoneNumber,
-              
-   
             };
 
             if (paymentType === 'stk') {
                 const response = await initiateMpesaStkPush(paymentData).unwrap();
                 if (response.success) {
                     toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
-                    setPaymentSuccess(true); // set payment Success.
-                    setIsSuccessModalOpen(true);  //Set state for successful payment submodal to open.
-                    console.log(`Payment was successful = ${paymentSuccess}`) //Used the payment success here to satify the eslint checker.
+                    setPaymentSuccess(true);  // Correct placement
                 } else {
                     toast.error("Failed to initiate M-Pesa payment. Please try again.");
                     setPaymentError(response.message || "Failed to initiate M-Pesa payment");
-                    setIsFailModalOpen(true);   //Set state to open fail payment submodal.
+                    setIsFailModalOpen(true);
+                    setIsLoading(false);
                 }
             } else {
                 toast.success("For Direct payments it has been created. Do check out for this");
@@ -167,10 +201,65 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             toast.error(apiError.data?.message || "Failed to initiate M-Pesa payment.");
             setPaymentError(apiError.data?.message || "Failed to initiate M-Pesa payment.");
             setIsFailModalOpen(true);      //Set state to open fail payment submodal.
-        } finally {
-            setIsLoading(false);
+            setIsLoading(false); // Set back the loading so as the user can retry.
         }
     };
+
+    // Effect to listen for successful payment confirmation (Backend implementation needed)
+    useEffect(() => {
+        if (paymentSuccess && selectedCase) {
+            const fetchTransactionDetails = async () => {
+                setIsLoading(true); // Start loading when fetching
+
+                try {
+                    const callbackData: MpesaCallbackData = {
+                        Body: {
+                            stkCallback: {
+                                MerchantRequestID: selectedCase.case_id.toString(), // Replace with the actual MerchantRequestID
+                                CheckoutRequestID: selectedCase.user_id.toString(), // Replace with the actual CheckoutRequestID
+                                ResultCode: 0, // Replace with the actual ResultCode
+                                ResultDesc: "result-description", // Replace with the actual ResultDesc
+                                CallbackMetadata: {
+                                    Item: [
+                                        { Name: "Amount", Value: selectedCase.fee.toString() },
+                                        { Name: "MpesaReceiptNumber", Value: "transaction-id" },
+                                        { Name: "PhoneNumber", Value: phoneNumber },
+                                    ]
+                                }
+                            }
+                        }
+                    };
+
+                    // Call the mpesaCallback mutation and cast the response.
+                    const response = await mpesaCallback(callbackData).unwrap() as MpesaResponse;
+
+                    if (response.success) {
+                        // Destructure the data according to your response
+                        const { amount, transactionId, payerName } = response;
+
+                        setTransactionDetails({
+                            amount: amount || 'N/A',
+                            receipt: transactionId || 'N/A',
+                            payer: payerName || 'N/A',
+                        });
+                        setIsSuccessModalOpen(true);
+                    } else {
+                        setPaymentError(response.message || "Transaction could not be confirmed.");
+                        setIsFailModalOpen(true);
+                    }
+                } catch (error: unknown) {
+                    const apiError = error as ApiError; // Cast to ApiError
+                    setPaymentError(apiError.data?.message || "Failed to confirm the transaction.");
+                    setIsFailModalOpen(true);
+                } finally {
+                    setIsLoading(false); // Stop loading regardless of success or failure
+                    setPaymentSuccess(false); // Reset payment success to prevent repeated calls
+                }
+            };
+    
+            fetchTransactionDetails();
+        }
+    }, [paymentSuccess, selectedCase, mpesaCallback, phoneNumber]);
 
     //Successful Payment submodal that display if a payment was successful
     const SuccessModal = () => {
@@ -184,6 +273,13 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                         <h3 className="text-2xl font-semibold text-green-500">Payment Successful!</h3>
                     </div>
                     <p className="text-gray-700 dark:text-gray-300">The payment has been recorded successfully.</p>
+                    {transactionDetails && (
+                        <div className="mt-4">
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid: {transactionDetails.amount}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Transaction Code: {transactionDetails.receipt}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Payer: {transactionDetails.payer}</p>
+                        </div>
+                    )}
                     <button
                         onClick={() => { setIsSuccessModalOpen(false); onClose(); navigate('/dashboard') }}
                         className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
@@ -484,10 +580,18 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                 type="tel"
                                 id="phoneNumber"
                                 value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                onChange={(e) => {
+                                    setPhoneNumber(e.target.value);
+                                    setPhoneNumberError(null); // Clear previous error when the user types
+                                }}
+                                className={`shadow-sm bg-gray-50 border ${phoneNumberError ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
                                 placeholder="Enter your phone number"
                             />
+                            {phoneNumberError && (
+                                <p className="mt-2 text-sm text-red-600 dark:text-red-500">
+                                    {phoneNumberError}
+                                </p>
+                            )}
                         </div>
 
                         {paymentError && (
@@ -505,7 +609,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                             <button
                                 onClick={handlePayment}
                                 className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={isLoading || !selectedCase}
+                                disabled={isLoading || !selectedCase || !!phoneNumberError} // Use boolean conversion !!
                             >
                                 {isLoading ? (
                                     <div className='flex items-center'>
@@ -531,8 +635,11 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             {isFailModalOpen && <FailModal />}
         </div>
     );
+
+    function isValidPhoneNumber(phoneNumber: string): boolean {
+        const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/; // More accurate regex
+        return phoneRegex.test(phoneNumber);
+    }
 };
 
 export default MpesaPayment;
-// Ensure it fits in the screen, is scrollable, and has a "Cancel" button
-// Ensure the tests pass.
