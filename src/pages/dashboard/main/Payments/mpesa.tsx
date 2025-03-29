@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-    useInitiateMpesaStkPushMutation,
-} from '../../../../features/payment/paymentAPI';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,17 +9,15 @@ import {
     CaseType
 } from '../../../../features/case/caseAPI';
 
+import {
+    useInitiateMpesaStkPushMutation,
+} from '../../../../features/payment/paymentAPI';
+
 const MPESA_ICON_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
 
 interface MpesaPaymentProps {
     isOpen: boolean;
     onClose: () => void;
-}
-
-interface ApiError {
-    data?: {
-        message?: string;
-    };
 }
 
 interface CreateMpesaPaymentVariables {
@@ -32,40 +27,29 @@ interface CreateMpesaPaymentVariables {
     phoneNumber: string;
 }
 
-interface MpesaCallbackResponse {
+interface MpesaTransactionDetails {
     success: boolean;
     message: string;
     amount?: string;
     transactionId?: string;
-    payerName?: string;
-    status?: string;
-    resultCode?: number;
-    error?: string;
     phoneNumber?: string;
+    status?: string;
+    payerName?: string;
 }
-
-interface MpesaEventPayload {
-    type: 'MPESA_CALLBACK';
-    payload: MpesaCallbackResponse;
-}
-
-const MPESA_CALLBACK_TIMEOUT = 60000; // 60 seconds timeout
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [selectedCase, setSelectedCase] = useState<Case | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [paymentType, setPaymentType] = useState<'stk' | 'direct'>('stk');
-    const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
+    const [initiateMpesaStkPush, { isLoading: isMutationLoading }] = useInitiateMpesaStkPushMutation();
     const navigate = useNavigate();
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [amount, setAmount] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
-    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string, status: string, phoneNumber: string } | null>(null);
+    const [transactionDetails, setTransactionDetails] = useState<{ amount: string; receipt: string; payer: string; status: string; phoneNumber: string; } | null>(null);
     const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
-    const [callbackReceived, setCallbackReceived] = useState(false);
-    const [callbackTimeoutId, setCallbackTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     // Filter state
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
@@ -75,7 +59,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const { data: cases, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
-
 
     const filteredCases = useMemo(() => {
         if (!cases) return [];
@@ -154,7 +137,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
         setPaymentError(null);
         setTransactionDetails(null);
         setPhoneNumberError(null);
-        setCallbackReceived(false);
 
         try {
             const paymentData: CreateMpesaPaymentVariables = {
@@ -164,79 +146,33 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 phoneNumber: phoneNumber,
             };
 
-            const response = await initiateMpesaStkPush(paymentData).unwrap();
+            const response = await initiateMpesaStkPush(paymentData).unwrap() as MpesaTransactionDetails;
 
             if (response.success) {
-                toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
-
-                // Set up callback timeout
-                const timeoutId = setTimeout(() => {
-                    if (!callbackReceived) {
-                        toast.error("No callback received from M-Pesa. Please check your phone and try again.");
-                        setPaymentError("No callback received from M-Pesa.");
-                        setIsLoading(false);
-                        setIsFailModalOpen(true);
-                    }
-                }, MPESA_CALLBACK_TIMEOUT);
-
-                setCallbackTimeoutId(timeoutId);
-
+                toast.success(response.message);
+                setTransactionDetails({
+                    amount: response.amount || 'N/A',
+                    receipt: response.transactionId || 'N/A',
+                    payer: response.payerName || 'N/A',
+                    status: response.status || 'Completed',
+                    phoneNumber: response.phoneNumber || 'N/A'
+                });
+                setIsSuccessModalOpen(true);
             } else {
-                toast.error(`Failed to initiate M-Pesa payment: ${response.message || "Unknown error"}`);
-                setPaymentError(response.message || "Failed to initiate M-Pesa payment");
+                toast.error(response.message || "Payment Failed");
+                setPaymentError(response.message || "Payment Failed");
                 setIsFailModalOpen(true);
             }
-        } catch (error: unknown) {
-            const apiError = error as ApiError;
-            const errorMessage = apiError.data?.message || "Failed to initiate M-Pesa payment.";
-            console.error("M-Pesa Payment Error:", apiError);
-            toast.error(errorMessage);
-            setPaymentError(errorMessage);
+        }  catch (error) {
+            const err = error as { response?: { data?: { message?: string } } };
+            console.error("M-Pesa Payment Error:", error);
+            toast.error(err.response?.data?.message || "Failed to initiate M-Pesa payment.");
+            setPaymentError(err.response?.data?.message || "Failed to initiate M-Pesa payment.");
             setIsFailModalOpen(true);
         } finally {
             setIsLoading(false);
         }
     };
-
-    const handleMpesaCallback = useCallback((data: MpesaCallbackResponse) => {
-        setIsLoading(false);
-        setCallbackReceived(true); // Set the callbackReceived to true
-
-        // Clear timeout if the callback is received before timeout
-        if (callbackTimeoutId) {
-            clearTimeout(callbackTimeoutId);
-            setCallbackTimeoutId(null);
-        }
-
-        if (data.success) {
-            setTransactionDetails({
-                amount: data.amount || 'N/A',
-                receipt: data.transactionId || 'N/A',
-                payer: data.payerName || 'N/A',
-                status: data.status || 'Completed',
-                phoneNumber: data.phoneNumber || 'N/A'
-            });
-            setIsSuccessModalOpen(true);
-        } else {
-            setPaymentError(data.message || "Payment Failed");
-            setIsFailModalOpen(true);
-        }
-    }, [callbackTimeoutId]);
-
-    useEffect(() => {
-        const callbackListener = (event: MessageEvent<MpesaEventPayload>) => {
-            if (event.data.type === 'MPESA_CALLBACK' && event.data.payload) {
-                handleMpesaCallback(event.data.payload);
-            }
-        };
-
-        window.addEventListener('message', callbackListener);
-
-        return () => {
-            window.removeEventListener('message', callbackListener);
-        };
-    }, [handleMpesaCallback]);
-
 
     const SuccessModal = () => {
         return (
@@ -268,7 +204,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             </div>
         );
     };
-
 
     const FailModal = () => {
         return (
@@ -521,15 +456,15 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                             )}
                         </div>
 
-                         {/* Display message while waiting for callback */}
-                         {isLoading && !callbackReceived && (
+                        {/* Display message while waiting for callback */}
+                        {isLoading || isMutationLoading ? (
                             <div className="p-4 rounded-md bg-yellow-100 border border-yellow-400 mb-4">
                                 <p className="text-gray-700">
-                                    Waiting for M-Pesa callback... Please check your phone to complete the payment.
-                                    If you don't receive a prompt in 60 seconds, please try again.
+                                    Processing M-Pesa payment... Please check your phone to complete the payment.
+                                    This may take up to 60 seconds.
                                 </p>
                             </div>
-                        )}
+                        ) : null}
 
                         {paymentError && (
                             <div className="p-4 rounded-md bg-red-100 border border-red-400 mb-4">
@@ -545,10 +480,10 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                         <div className="flex justify-between">
                             <button
                                 onClick={handlePayment}
-                                className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={isLoading || !selectedCase || !!phoneNumberError}
+                                className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isLoading || isMutationLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={isLoading || isMutationLoading || !selectedCase || !!phoneNumberError}
                             >
-                                {isLoading ? (
+                                {isLoading || isMutationLoading ? (
                                     <div className='flex items-center'>
                                         <span className="loading loading-spinner text-white"></span>
                                         <span> Processing...</span>
