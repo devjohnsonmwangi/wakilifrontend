@@ -49,6 +49,8 @@ interface MpesaEventPayload {
     payload: MpesaCallbackResponse;
 }
 
+const MPESA_CALLBACK_TIMEOUT = 60000; // 60 seconds timeout
+
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [selectedCase, setSelectedCase] = useState<Case | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -62,7 +64,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
     const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string, status: string, phoneNumber: string } | null>(null);
     const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
-
+    const [callbackReceived, setCallbackReceived] = useState(false);
+    const [callbackTimeoutId, setCallbackTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     // Filter state
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
@@ -151,7 +154,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
         setPaymentError(null);
         setTransactionDetails(null);
         setPhoneNumberError(null);
-
+        setCallbackReceived(false);
 
         try {
             const paymentData: CreateMpesaPaymentVariables = {
@@ -165,6 +168,19 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
             if (response.success) {
                 toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
+
+                // Set up callback timeout
+                const timeoutId = setTimeout(() => {
+                    if (!callbackReceived) {
+                        toast.error("No callback received from M-Pesa. Please check your phone and try again.");
+                        setPaymentError("No callback received from M-Pesa.");
+                        setIsLoading(false);
+                        setIsFailModalOpen(true);
+                    }
+                }, MPESA_CALLBACK_TIMEOUT);
+
+                setCallbackTimeoutId(timeoutId);
+
             } else {
                 toast.error(`Failed to initiate M-Pesa payment: ${response.message || "Unknown error"}`);
                 setPaymentError(response.message || "Failed to initiate M-Pesa payment");
@@ -184,6 +200,14 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
     const handleMpesaCallback = useCallback((data: MpesaCallbackResponse) => {
         setIsLoading(false);
+        setCallbackReceived(true); // Set the callbackReceived to true
+
+        // Clear timeout if the callback is received before timeout
+        if (callbackTimeoutId) {
+            clearTimeout(callbackTimeoutId);
+            setCallbackTimeoutId(null);
+        }
+
         if (data.success) {
             setTransactionDetails({
                 amount: data.amount || 'N/A',
@@ -197,7 +221,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             setPaymentError(data.message || "Payment Failed");
             setIsFailModalOpen(true);
         }
-    }, []);
+    }, [callbackTimeoutId]);
 
     useEffect(() => {
         const callbackListener = (event: MessageEvent<MpesaEventPayload>) => {
@@ -496,6 +520,16 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                 </p>
                             )}
                         </div>
+
+                         {/* Display message while waiting for callback */}
+                         {isLoading && !callbackReceived && (
+                            <div className="p-4 rounded-md bg-yellow-100 border border-yellow-400 mb-4">
+                                <p className="text-gray-700">
+                                    Waiting for M-Pesa callback... Please check your phone to complete the payment.
+                                    If you don't receive a prompt in 60 seconds, please try again.
+                                </p>
+                            </div>
+                        )}
 
                         {paymentError && (
                             <div className="p-4 rounded-md bg-red-100 border border-red-400 mb-4">
