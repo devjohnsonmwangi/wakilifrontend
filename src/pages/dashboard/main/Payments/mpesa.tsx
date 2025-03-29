@@ -1,8 +1,7 @@
 // src/components/MpesaPayment.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     useInitiateMpesaStkPushMutation,
-    useMpesaCallbackMutation // Import useMpesaCallbackMutation
 } from '../../../../features/payment/paymentAPI';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -35,28 +34,22 @@ interface CreateMpesaPaymentVariables {
     phoneNumber: string;
 }
 
-// Define the structure of the expected request body for mpesaCallback API
-interface MpesaCallbackData {
-    Body: {
-        stkCallback: {
-            MerchantRequestID: string;
-            CheckoutRequestID: string;
-            ResultCode: number;
-            ResultDesc: string;
-            CallbackMetadata?: {
-                Item: { Name: string; Value: string }[];
-            } | undefined;
-        };
-    };
-}
-
-// Define the structure of the expected response from the mpesaCallback API
-interface MpesaResponse {
+interface MpesaCallbackResponse {
     success: boolean;
     message: string;
-    amount?: string; // Optional properties
+    amount?: string;
     transactionId?: string;
     payerName?: string;
+    status?: string; // Add status
+    resultCode?: number;
+    error?: string;
+    phoneNumber?: string;  // Add phone number
+}
+
+// Define a type for the expected structure of the payload
+interface MpesaEventPayload {
+    type: 'MPESA_CALLBACK';
+    payload: MpesaCallbackResponse;
 }
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
@@ -65,14 +58,13 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [paymentType, setPaymentType] = useState<'stk' | 'direct'>('stk');
     const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
-    const [mpesaCallback] = useMpesaCallbackMutation();  // Use the imported hook
     const navigate = useNavigate();
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [amount, setAmount] = useState('');  // amount to pay (editable)
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
-    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string } | null>(null);
+    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string, status: string, phoneNumber: string } | null>(null);  // Include status
     const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
     // Filter state
@@ -80,7 +72,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [typeFilter, setTypeFilter] = useState<CaseType | ''>('');
     const [stationFilter, setStationFilter] = useState('');
     const [caseNumberFilter, setCaseNumberFilter] = useState('');
-    const [trackNumberFilter, setTrackNumberFilter] = useState('');
+   
     const [searchTerm, setSearchTerm] = useState('');
 
     const { data: cases, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
@@ -111,23 +103,16 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             );
         }
 
-        if (trackNumberFilter) {
-            filtered = filtered.filter(caseItem =>
-                caseItem.case_track_number.toLowerCase().includes(trackNumberFilter.toLowerCase())
-            );
-        }
-
         if (searchTerm) {
-            const term = searchTerm.toLowerCase();
             filtered = filtered.filter(caseItem =>
-                caseItem.case_number.toLowerCase().includes(term) ||
-                caseItem.case_track_number.toLowerCase().includes(term) ||
-                caseItem.parties.toLowerCase().includes(term)
+                caseItem.case_number.toLowerCase().includes(searchTerm) ||
+                caseItem.case_track_number.toLowerCase().includes(searchTerm) ||
+                caseItem.parties.toLowerCase().includes(searchTerm)
             );
         }
 
         return filtered;
-    }, [cases, statusFilter, typeFilter, stationFilter, caseNumberFilter, trackNumberFilter, searchTerm]);
+    }, [cases, statusFilter, typeFilter, stationFilter, caseNumberFilter, searchTerm]);
 
     useEffect(() => {
         if (selectedCase) {
@@ -182,7 +167,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 const response = await initiateMpesaStkPush(paymentData).unwrap();
                 if (response.success) {
                     toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
-                    setPaymentSuccess(true);  // Correct placement
+                    setPaymentSuccess(true); // Backend will now handle callback
                 } else {
                     toast.error("Failed to initiate M-Pesa payment. Please try again.");
                     setPaymentError(response.message || "Failed to initiate M-Pesa payment");
@@ -192,74 +177,73 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             } else {
                 toast.success("For Direct payments it has been created. Do check out for this");
                 setPaymentSuccess(true); // Set payment success.
-                setIsSuccessModalOpen(true);  //Set state for successful payment submodal to open.
-                console.log(`Payment was successful = ${paymentSuccess}`) //Used the payment success here to satify the eslint checker.
+                setIsSuccessModalOpen(true);  // Set state for successful payment submodal to open.
+                console.log(`Payment was successful = ${paymentSuccess}`); // Used the payment success here to satisfy the eslint checker.
             }
         } catch (error: unknown) {
             const apiError = error as ApiError; // Cast to ApiError
             console.error("M-Pesa Payment Error:", apiError);
             toast.error(apiError.data?.message || "Failed to initiate M-Pesa payment.");
             setPaymentError(apiError.data?.message || "Failed to initiate M-Pesa payment.");
-            setIsFailModalOpen(true);      //Set state to open fail payment submodal.
+            setIsFailModalOpen(true);      // Set state to open fail payment submodal.
             setIsLoading(false); // Set back the loading so as the user can retry.
         }
     };
 
-    // Effect to listen for successful payment confirmation (Backend implementation needed)
-    useEffect(() => {
-        if (paymentSuccess && selectedCase) {
-            const fetchTransactionDetails = async () => {
-                setIsLoading(true); // Start loading when fetching
-
-                try {
-                    const callbackData: MpesaCallbackData = {
-                        Body: {
-                            stkCallback: {
-                                MerchantRequestID: selectedCase.case_id.toString(), // Replace with the actual MerchantRequestID
-                                CheckoutRequestID: selectedCase.user_id.toString(), // Replace with the actual CheckoutRequestID
-                                ResultCode: 0, // Replace with the actual ResultCode
-                                ResultDesc: "result-description", // Replace with the actual ResultDesc
-                                CallbackMetadata: {
-                                    Item: [
-                                        { Name: "Amount", Value: selectedCase.fee.toString() },
-                                        { Name: "MpesaReceiptNumber", Value: "transaction-id" },
-                                        { Name: "PhoneNumber", Value: phoneNumber },
-                                    ]
-                                }
-                            }
-                        }
-                    };
-
-                    // Call the mpesaCallback mutation and cast the response.
-                    const response = await mpesaCallback(callbackData).unwrap() as MpesaResponse;
-
-                    if (response.success) {
-                        // Destructure the data according to your response
-                        const { amount, transactionId, payerName } = response;
-
-                        setTransactionDetails({
-                            amount: amount || 'N/A',
-                            receipt: transactionId || 'N/A',
-                            payer: payerName || 'N/A',
-                        });
-                        setIsSuccessModalOpen(true);
-                    } else {
-                        setPaymentError(response.message || "Transaction could not be confirmed.");
-                        setIsFailModalOpen(true);
-                    }
-                } catch (error: unknown) {
-                    const apiError = error as ApiError; // Cast to ApiError
-                    setPaymentError(apiError.data?.message || "Failed to confirm the transaction.");
-                    setIsFailModalOpen(true);
-                } finally {
-                    setIsLoading(false); // Stop loading regardless of success or failure
-                    setPaymentSuccess(false); // Reset payment success to prevent repeated calls
-                }
-            };
-    
-            fetchTransactionDetails();
+    // Callback handler
+    const handleMpesaCallback = useCallback((data: MpesaCallbackResponse) => {
+        setIsLoading(false);
+        setPaymentSuccess(false);  // Reset.
+        if (data.success) {
+            setTransactionDetails({
+                amount: data.amount || 'N/A',
+                receipt: data.transactionId || 'N/A',
+                payer: data.payerName || 'N/A',
+                status: data.status || 'Completed',
+                phoneNumber: data.phoneNumber || 'N/A'
+            });
+            setIsSuccessModalOpen(true);
+        } else {
+            setPaymentError(data.message || "Payment Failed");
+            setIsFailModalOpen(true);
         }
-    }, [paymentSuccess, selectedCase, mpesaCallback, phoneNumber]);
+    }, []);
+
+    // Set up listener for events
+    useEffect(() => {
+        const callbackListener = (event: MessageEvent<MpesaEventPayload>) => { // Specify the type here
+            if (event.data.type === 'MPESA_CALLBACK' && event.data.payload) {
+                handleMpesaCallback(event.data.payload);
+            }
+        };
+
+        window.addEventListener('message', callbackListener);
+
+        return () => {
+            window.removeEventListener('message', callbackListener);
+        };
+    }, [handleMpesaCallback]);
+
+    useEffect(() => {
+        const receiveMessage = (event: MessageEvent) => {
+            // Check for messages from the backend origin
+            if (event.origin !== 'https://wakili-app-api.onrender.com') {
+                return; // Only accept messages from the backend origin
+            }
+    
+            if (event.data && event.data.type === 'MPESA_CALLBACK') {
+                const payload: MpesaCallbackResponse = event.data.payload;
+                handleMpesaCallback(payload);
+            }
+        };
+    
+        window.addEventListener('message', receiveMessage);
+    
+        return () => {
+            window.removeEventListener('message', receiveMessage);
+        };
+    }, [handleMpesaCallback]);
+    
 
     //Successful Payment submodal that display if a payment was successful
     const SuccessModal = () => {
@@ -278,6 +262,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid: {transactionDetails.amount}</p>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Transaction Code: {transactionDetails.receipt}</p>
                             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Payer: {transactionDetails.payer}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number: {transactionDetails.phoneNumber}</p>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status: {transactionDetails.status}</p>
                         </div>
                     )}
                     <button
@@ -418,20 +404,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                             </div>
 
                             <div>
-                                <label htmlFor="trackNumberFilter" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
-                                    Filter by Track Number:
-                                </label>
-                                <input
-                                    type="text"
-                                    id="trackNumberFilter"
-                                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    placeholder="Enter Track Number"
-                                    value={trackNumberFilter}
-                                    onChange={(e) => setTrackNumberFilter(e.target.value)}
-                                />
-                            </div>
-
-                            <div>
                                 <label htmlFor="searchTerm" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
                                     Search:
                                 </label>
@@ -439,7 +411,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                     type="text"
                                     id="searchTerm"
                                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    placeholder="Parties"
+                                    placeholder="Search"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -478,9 +450,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                                 Case Number
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Track Number
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
                                                 Action
                                             </th>
                                         </tr>
@@ -508,9 +477,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                                                     {caseItem.case_number}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.case_track_number}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button
