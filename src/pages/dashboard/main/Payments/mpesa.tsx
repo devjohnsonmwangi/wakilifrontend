@@ -1,4 +1,3 @@
-// src/components/MpesaPayment.tsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     useInitiateMpesaStkPushMutation,
@@ -6,13 +5,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-// Import Redux Toolkit Query hooks and types from case api
 import {
     useFetchCasesQuery,
     CaseDataTypes as Case,
     CaseStatus,
     CaseType
-} from '../../../../features/case/caseAPI';  // Adjust path as needed
+} from '../../../../features/case/caseAPI';
 
 const MPESA_ICON_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
 
@@ -40,13 +38,12 @@ interface MpesaCallbackResponse {
     amount?: string;
     transactionId?: string;
     payerName?: string;
-    status?: string; // Add status
+    status?: string;
     resultCode?: number;
     error?: string;
-    phoneNumber?: string;  // Add phone number
+    phoneNumber?: string;
 }
 
-// Define a type for the expected structure of the payload
 interface MpesaEventPayload {
     type: 'MPESA_CALLBACK';
     payload: MpesaCallbackResponse;
@@ -60,24 +57,23 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
     const navigate = useNavigate();
     const [paymentError, setPaymentError] = useState<string | null>(null);
-    const [amount, setAmount] = useState('');  // amount to pay (editable)
-    const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [amount, setAmount] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
-    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string, status: string, phoneNumber: string } | null>(null);  // Include status
+    const [transactionDetails, setTransactionDetails] = useState<{ amount: string, receipt: string, payer: string, status: string, phoneNumber: string } | null>(null);
     const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
+
 
     // Filter state
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
     const [typeFilter, setTypeFilter] = useState<CaseType | ''>('');
     const [stationFilter, setStationFilter] = useState('');
     const [caseNumberFilter, setCaseNumberFilter] = useState('');
-   
     const [searchTerm, setSearchTerm] = useState('');
 
     const { data: cases, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
 
-    // Memoize the filtered cases for performance
+
     const filteredCases = useMemo(() => {
         if (!cases) return [];
 
@@ -144,56 +140,50 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             return;
         }
 
-        if (!isValidPhoneNumber(phoneNumber)) {
+        const isValid = isValidPhoneNumber(phoneNumber)
+        if (!isValid) {
             toast.error("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
             setPhoneNumberError("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
             return;
         }
 
         setIsLoading(true);
-        setPaymentError(null); // Reset error message on new attempt
-        setTransactionDetails(null); // Reset the transaction details state
-        setPhoneNumberError(null); // Clear phone number specific error
+        setPaymentError(null);
+        setTransactionDetails(null);
+        setPhoneNumberError(null);
+
 
         try {
             const paymentData: CreateMpesaPaymentVariables = {
                 case_id: selectedCase.case_id,
                 user_id: selectedCase.user_id,
-                amount: Number(amount), // Use local amount
+                amount: Number(amount),
                 phoneNumber: phoneNumber,
             };
 
-            if (paymentType === 'stk') {
-                const response = await initiateMpesaStkPush(paymentData).unwrap();
-                if (response.success) {
-                    toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
-                    setPaymentSuccess(true); // Backend will now handle callback
-                } else {
-                    toast.error("Failed to initiate M-Pesa payment. Please try again.");
-                    setPaymentError(response.message || "Failed to initiate M-Pesa payment");
-                    setIsFailModalOpen(true);
-                    setIsLoading(false);
-                }
+            const response = await initiateMpesaStkPush(paymentData).unwrap();
+
+            if (response.success) {
+                toast.success("M-Pesa STK push initiated! Check your phone to complete the payment.");
             } else {
-                toast.success("For Direct payments it has been created. Do check out for this");
-                setPaymentSuccess(true); // Set payment success.
-                setIsSuccessModalOpen(true);  // Set state for successful payment submodal to open.
-                console.log(`Payment was successful = ${paymentSuccess}`); // Used the payment success here to satisfy the eslint checker.
+                toast.error(`Failed to initiate M-Pesa payment: ${response.message || "Unknown error"}`);
+                setPaymentError(response.message || "Failed to initiate M-Pesa payment");
+                setIsFailModalOpen(true);
             }
         } catch (error: unknown) {
-            const apiError = error as ApiError; // Cast to ApiError
+            const apiError = error as ApiError;
+            const errorMessage = apiError.data?.message || "Failed to initiate M-Pesa payment.";
             console.error("M-Pesa Payment Error:", apiError);
-            toast.error(apiError.data?.message || "Failed to initiate M-Pesa payment.");
-            setPaymentError(apiError.data?.message || "Failed to initiate M-Pesa payment.");
-            setIsFailModalOpen(true);      // Set state to open fail payment submodal.
-            setIsLoading(false); // Set back the loading so as the user can retry.
+            toast.error(errorMessage);
+            setPaymentError(errorMessage);
+            setIsFailModalOpen(true);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Callback handler
     const handleMpesaCallback = useCallback((data: MpesaCallbackResponse) => {
         setIsLoading(false);
-        setPaymentSuccess(false);  // Reset.
         if (data.success) {
             setTransactionDetails({
                 amount: data.amount || 'N/A',
@@ -209,9 +199,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
         }
     }, []);
 
-    // Set up listener for events
     useEffect(() => {
-        const callbackListener = (event: MessageEvent<MpesaEventPayload>) => { // Specify the type here
+        const callbackListener = (event: MessageEvent<MpesaEventPayload>) => {
             if (event.data.type === 'MPESA_CALLBACK' && event.data.payload) {
                 handleMpesaCallback(event.data.payload);
             }
@@ -224,28 +213,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
         };
     }, [handleMpesaCallback]);
 
-    useEffect(() => {
-        const receiveMessage = (event: MessageEvent) => {
-            // Check for messages from the backend origin
-            if (event.origin !== 'https://wakili-app-api.onrender.com') {
-                return; // Only accept messages from the backend origin
-            }
-    
-            if (event.data && event.data.type === 'MPESA_CALLBACK') {
-                const payload: MpesaCallbackResponse = event.data.payload;
-                handleMpesaCallback(payload);
-            }
-        };
-    
-        window.addEventListener('message', receiveMessage);
-    
-        return () => {
-            window.removeEventListener('message', receiveMessage);
-        };
-    }, [handleMpesaCallback]);
-    
 
-    //Successful Payment submodal that display if a payment was successful
     const SuccessModal = () => {
         return (
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
@@ -277,6 +245,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
         );
     };
 
+
     const FailModal = () => {
         return (
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
@@ -307,7 +276,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             <div className="relative p-4 w-full max-w-4xl h-full md:h-auto">
                 <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-xl dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[90vh]">
                     <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-                        {/*Add the Mpesa icon here. */}
                         <span role="img" aria-label="mpesa" className="h-12 w-auto text-green-500 mr-2 text-4xl">
                             <img src={MPESA_ICON_URL} alt="Mpesa Icon" className="h-8 w-8" />
                         </span>
@@ -326,7 +294,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
                     {/* Case Selection Section */}
                     <div className="p-6">
-                        <h4 className="text-xl font-semibold text-green-500 mb-3">Select Case To Make  Payment:</h4>
+                        <h4 className="text-xl font-semibold text-green-500 mb-3">Select Case To Make Payment:</h4>
 
                         {/* Filters */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
@@ -396,7 +364,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                 <input
                                     type="text"
                                     id="caseNumberFilter"
-                                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                    className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark
+                                    .text-white"
                                     placeholder="Enter Case Number"
                                     value={caseNumberFilter}
                                     onChange={(e) => setCaseNumberFilter(e.target.value)}
@@ -428,56 +397,26 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                 <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                                     <thead className="bg-green-50 dark:bg-green-900">
                                         <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Case ID
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                User ID
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Fees
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Type
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Station
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Case Number
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                                                Action
-                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Case ID</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">User ID</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Fees</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Type</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Station</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Case Number</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-300 dark:bg-gray-700 dark:divide-gray-600">
                                         {filteredCases.map((caseItem) => (
                                             <tr key={caseItem.case_id} className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${selectedCase?.case_id === caseItem.case_id ? "bg-blue-100 dark:bg-blue-900" : ""}`}>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                                    {caseItem.case_id}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.user_id}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.fee}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.case_status}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.case_type}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.station}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                                    {caseItem.case_number}
-                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{caseItem.case_id}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.user_id}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.fee}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_status}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_type}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.station}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_number}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                     <button
                                                         onClick={() => setSelectedCase(caseItem)}
@@ -514,9 +453,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                     <option value="stk">STK Push</option>
                                     <option value="direct">Direct Payment</option>
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    ▼
-                                </div>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">▼</div>
                             </div>
                         </div>
 
@@ -548,7 +485,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                                 value={phoneNumber}
                                 onChange={(e) => {
                                     setPhoneNumber(e.target.value);
-                                    setPhoneNumberError(null); // Clear previous error when the user types
+                                    setPhoneNumberError(null);
                                 }}
                                 className={`shadow-sm bg-gray-50 border ${phoneNumberError ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
                                 placeholder="Enter your phone number"
@@ -575,7 +512,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                             <button
                                 onClick={handlePayment}
                                 className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={isLoading || !selectedCase || !!phoneNumberError} // Use boolean conversion !!
+                                disabled={isLoading || !selectedCase || !!phoneNumberError}
                             >
                                 {isLoading ? (
                                     <div className='flex items-center'>
@@ -603,7 +540,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     );
 
     function isValidPhoneNumber(phoneNumber: string): boolean {
-        const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/; // More accurate regex
+        const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/;
         return phoneRegex.test(phoneNumber);
     }
 };
