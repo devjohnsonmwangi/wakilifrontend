@@ -48,7 +48,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
   const [amount, setAmount] = useState('');
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isFailModalOpen, setIsFailModalOpen] = useState(false);
- 
+
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
   // Filter state
@@ -135,7 +135,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
     setIsLoading(true);
     setPaymentError(null);
-    
+
     setPhoneNumberError(null);
 
     try {
@@ -150,98 +150,82 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
       if (response.success) {
         toast.success(response.message);
-       
+
         setIsSuccessModalOpen(true);
       } else {
-        // Custom error message handling
-        let errorMessage = response.message || "Payment Failed";
-        if (response.message.toLowerCase().includes("user cancelled")) {
-          errorMessage = "You cancelled the transaction.";
-        } else if (response.message.toLowerCase().includes("insufficient")) {
-          errorMessage = "Insufficient balance.";
-        } else if (response.message.toLowerCase().includes("invalid credentials") || response.message.toLowerCase().includes("wrong pin")) {
-          errorMessage = "Incorrect PIN entered.";
-        }
-        toast.error(errorMessage);
-        setPaymentError(errorMessage);
+        // Display error message from backend
+        toast.error(response.message);
+        setPaymentError(response.message); // Store the error message
         setIsFailModalOpen(true);
       }
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } } };
       console.error("M-Pesa Payment Error:", error);
 
-      // Custom error message handling for API errors
-      let errorMessage = err.response?.data?.message || "Failed to initiate M-Pesa payment.";
-      if (errorMessage.toLowerCase().includes("user cancelled")) {
-        errorMessage = "You cancelled the transaction.";
-      } else if (errorMessage.toLowerCase().includes("insufficient")) {
-        errorMessage = "Insufficient balance.";
-      } else if (errorMessage.toLowerCase().includes("invalid credentials") || errorMessage.toLowerCase().includes("wrong pin")) {
-        errorMessage = "Incorrect PIN entered.";
-      }
-
+      // Display error message from backend API
+      const errorMessage = err.response?.data?.message || "Failed to initiate M-Pesa payment.";
       toast.error(errorMessage);
-      setPaymentError(errorMessage);
+      setPaymentError(errorMessage);  // Store the error message
       setIsFailModalOpen(true);
     } finally {
       setIsLoading(false);
     }
   };
 
- const SuccessModal = () => {
-        const [showFireworks, setShowFireworks] = useState(true);
-        const encouragementQuotes = [
-            "The only way to do great work is to love what you do.",
-            "Believe you can and you're halfway there.",
-            "The future belongs to those who believe in the beauty of their dreams.",
-            "Success is not final, failure is not fatal: It is the courage to continue that counts.",
-            "Don't watch the clock; do what it does. Keep going."
-        ];
-        const randomQuote = encouragementQuotes[Math.floor(Math.random() * encouragementQuotes.length)];
+  const SuccessModal = () => {
+    const [showFireworks, setShowFireworks] = useState(true);
+    const encouragementQuotes = [
+      "The only way to do great work is to love what you do.",
+      "Believe you can and you're halfway there.",
+      "The future belongs to those who believe in the beauty of their dreams.",
+      "Success is not final, failure is not fatal: It is the courage to continue that counts.",
+      "Don't watch the clock; do what it does. Keep going."
+    ];
+    const randomQuote = encouragementQuotes[Math.floor(Math.random() * encouragementQuotes.length)];
 
-        useEffect(() => {
-            // Simulate firework effect
-            const timer = setTimeout(() => {
-                setShowFireworks(false);
-            }, 5000); // Fireworks disappear after 5 seconds
+    useEffect(() => {
+      // Simulate firework effect
+      const timer = setTimeout(() => {
+        setShowFireworks(false);
+      }, 5000); // Fireworks disappear after 5 seconds
 
-            return () => clearTimeout(timer);
-        }, []);
+      return () => clearTimeout(timer);
+    }, []);
 
-        const fireworkStyle = (): React.CSSProperties => ({
-            position: 'absolute',
-            width: '10px',
-            height: '10px',
-            transformOrigin: 'bottom center',
-            animation: 'fireworkExplode 2s ease-out forwards, fireworkRise 2s ease-out forwards',
-            animationDelay: `${Math.random() * 2}s`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 30 + 50}%`,
-        });
+    const fireworkStyle = (): React.CSSProperties => ({
+      position: 'absolute',
+      width: '10px',
+      height: '10px',
+      transformOrigin: 'bottom center',
+      animation: 'fireworkExplode 2s ease-out forwards, fireworkRise 2s ease-out forwards',
+      animationDelay: `${Math.random() * 2}s`,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 30 + 50}%`,
+    });
 
-        const sparkStyle = (): React.CSSProperties => ({
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            transformOrigin: 'center',
-            animation: 'fireworkSpark 1s ease-out forwards',
-            animationDelay: `${Math.random() * 0.05}s`,
-            backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`,
-        });
+    const sparkStyle = (): React.CSSProperties => ({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      transformOrigin: 'center',
+      animation: 'fireworkSpark 1s ease-out forwards',
+      animationDelay: `${Math.random() * 0.05}s`,
+      backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`,
+    });
 
-        const fireworksContainerStyle: React.CSSProperties = {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: 1,
-        };
+    const fireworksContainerStyle: React.CSSProperties = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      pointerEvents: 'none',
+      zIndex: 1,
+    };
 
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
@@ -272,7 +256,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             <h3 className="text-3xl font-extrabold text-green-600 animate-pulse relative z-10">Payment Successful!</h3>
           </div>
           <p className="text-gray-700 dark:text-gray-300 text-center mb-4 relative z-10">
-            Thank you for your payment! We appreciate your business.
+            Thank you for your payment! We appreciate you  always.
           </p>
           <p className="text-lg italic text-gray-500 dark:text-gray-400 mb-6 relative z-10">
             "{randomQuote}"
@@ -285,8 +269,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             Okay
           </button>
         </div>
-                <style>
-                {`
+        <style>
+          {`
                   @keyframes fireworkRise {
                     0% {
                       transform: translateY(0) scale(1);
@@ -352,37 +336,37 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             animation: fireworkSpark 1s ease-out forwards;
           }
            `}
-                </style>
+        </style>
       </div>
     );
   };
 
-    const FailModal = () => {
-        return (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-                <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
-                    <div className="flex items-center justify-center mb-4">
-                        <svg className="h-12 w-12 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        <h3 className="text-2xl font-semibold text-red-500">Payment Unsuccessful!</h3>
-                    </div>
-                    <p className="text-gray-700 dark:text-gray-300 text-center">
-                        Oops, something went wrong. Please try again.
-                    </p>
-                    <p className="text-red-700 dark:text-red-300 text-center">Message: {paymentError}</p>
-                    <button
-                        onClick={() => setIsFailModalOpen(false)}
-                        className="mt-6 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-700 transition duration-300 block mx-auto"
-                    >
-                        Okay
-                    </button>
-                </div>
-            </div>
-        );
-    };
+  const FailModal = () => {
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
+          <div className="flex items-center justify-center mb-4">
+            <svg className="h-12 w-12 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <h3 className="text-2xl font-semibold text-red-500">Payment Unsuccessful!</h3>
+          </div>
+          <p className="text-gray-700 dark:text-gray-300 text-center">
+            Oops, something went wrong. Please try again.
+          </p>
+          <p className="text-red-700 dark:text-red-300 text-center">Message: {paymentError}</p>
+          <button
+            onClick={() => setIsFailModalOpen(false)}
+            className="mt-6 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-700 transition duration-300 block mx-auto"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
+    );
+  };
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
 
   return (
