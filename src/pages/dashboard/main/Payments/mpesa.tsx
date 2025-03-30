@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from 'sonner'; // Using sonner for toast notifications
 
 import {
   useFetchCasesQuery,
@@ -36,6 +36,20 @@ interface MpesaTransactionDetails {
   status?: string;
   payerName?: string;
 }
+
+// Define a type for the error object you are receiving from the API
+interface ApiError {
+  response?: {
+    data?: {
+      success: boolean; // Include the 'success' property
+      message?: string;
+      status?: string; // Include the 'status' property
+    };
+    status?: number; // Include HTTP status code
+  };
+  message?: string; // Include the 'message' property at the top level (e.g., for network errors)
+}
+
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
@@ -153,19 +167,37 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
         setIsSuccessModalOpen(true);
       } else {
-        // Display error message from backend
-        toast.error(response.message);
-        setPaymentError(response.message); // Store the error message
+        // Extract and display backend message
+        const rawErrorMessage = response.message || "Payment Failed";
+        const errorMessage =  rawErrorMessage ; // Make it more user-friendly
+        toast.error(errorMessage);
+        setPaymentError(errorMessage);
         setIsFailModalOpen(true);
       }
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
+      const err = error as ApiError;  // Use the ApiError type
+
       console.error("M-Pesa Payment Error:", error);
 
-      // Display error message from backend API
-      const errorMessage = err.response?.data?.message || "Failed to initiate M-Pesa payment.";
+      let rawErrorMessage = "Failed to initiate M-Pesa payment.";  // Default message
+
+      if (err.response?.data?.message) {
+        rawErrorMessage = err.response.data.message;  // Use backend message directly
+      } else if (err.message) {
+          rawErrorMessage = err.message; // Use the generic error message
+      } else {
+          rawErrorMessage = JSON.stringify(err);  // Fallback: Stringify the entire error object
+      }
+      try {
+           const parsedError = JSON.parse(rawErrorMessage)
+            rawErrorMessage = parsedError?.data?.message || parsedError.message || rawErrorMessage;
+      } catch (parseError) {
+             console.error("Error parsing error message:", parseError);
+      }
+
+      const errorMessage =   rawErrorMessage; // Make it more user-friendly
       toast.error(errorMessage);
-      setPaymentError(errorMessage);  // Store the error message
+      setPaymentError(errorMessage);
       setIsFailModalOpen(true);
     } finally {
       setIsLoading(false);
@@ -269,74 +301,6 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             Okay
           </button>
         </div>
-        <style>
-          {`
-                  @keyframes fireworkRise {
-                    0% {
-                      transform: translateY(0) scale(1);
-                    }
-                    100% {
-                      transform: translateY(-200px) scale(0.8);
-                    }
-                  }
-
-                  @keyframes fireworkExplode {
-                    0% {
-                      transform: rotate(0);
-                    }
-                    100% {
-                      transform: rotate(360deg);
-                    }
-                  }
-
-                  @keyframes fireworkSpark {
-                    0% {
-                      transform: translate(0, 0);
-                      opacity: 1;
-                    }
-                    100% {
-                      transform: translate(
-                        calc(cos(var(--spark-index) * 36deg) * 50px),
-                        calc(sin(var(--spark-index) * 36deg) * 50px)
-                      );
-                      opacity: 0;
-                    }
-                  }
-        
-        .fireworks-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .firework {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            transform-origin: bottom center;
-            animation: fireworkExplode 2s ease-out forwards,
-              fireworkRise 2s ease-out forwards;
-
-          
-}
-
-          .spark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transform-origin: center;
-            animation: fireworkSpark 1s ease-out forwards;
-          }
-           `}
-        </style>
       </div>
     );
   };
