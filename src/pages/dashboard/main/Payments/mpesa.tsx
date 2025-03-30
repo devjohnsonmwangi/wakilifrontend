@@ -48,7 +48,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     const [amount, setAmount] = useState('');
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isFailModalOpen, setIsFailModalOpen] = useState(false);
-    const [transactionDetails, setTransactionDetails] = useState<{ amount: string; receipt: string; payer: string; status: string; phoneNumber: string; } | null>(null);
+    
     const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
     // Filter state
@@ -135,7 +135,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
         setIsLoading(true);
         setPaymentError(null);
-        setTransactionDetails(null);
+        
         setPhoneNumberError(null);
 
         try {
@@ -150,24 +150,38 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
             if (response.success) {
                 toast.success(response.message);
-                setTransactionDetails({
-                    amount: response.amount || 'N/A',
-                    receipt: response.transactionId || 'N/A',
-                    payer: response.payerName || 'N/A',
-                    status: response.status || 'Completed',
-                    phoneNumber: response.phoneNumber || 'N/A'
-                });
+            
                 setIsSuccessModalOpen(true);
             } else {
-                toast.error(response.message || "Payment Failed");
-                setPaymentError(response.message || "Payment Failed");
+                // Custom error message handling
+                let errorMessage = response.message || "Payment Failed";
+                if (response.message.toLowerCase().includes("user cancelled")) {
+                    errorMessage = "You cancelled the transaction.";
+                } else if (response.message.toLowerCase().includes("insufficient")) {
+                    errorMessage = "Insufficient balance.";
+                } else if (response.message.toLowerCase().includes("invalid credentials") || response.message.toLowerCase().includes("wrong pin")) {
+                    errorMessage = "Incorrect PIN entered.";
+                }
+                toast.error(errorMessage);
+                setPaymentError(errorMessage);
                 setIsFailModalOpen(true);
             }
-        }  catch (error) {
+        } catch (error) {
             const err = error as { response?: { data?: { message?: string } } };
             console.error("M-Pesa Payment Error:", error);
-            toast.error(err.response?.data?.message || "Failed to initiate M-Pesa payment.");
-            setPaymentError(err.response?.data?.message || "Failed to initiate M-Pesa payment.");
+
+            // Custom error message handling for API errors
+            let errorMessage = err.response?.data?.message || "Failed to initiate M-Pesa payment.";
+            if (errorMessage.toLowerCase().includes("user cancelled")) {
+                errorMessage = "You cancelled the transaction.";
+            } else if (errorMessage.toLowerCase().includes("insufficient")) {
+                errorMessage = "Insufficient balance.";
+            } else if (errorMessage.toLowerCase().includes("invalid credentials") || errorMessage.toLowerCase().includes("wrong pin")) {
+                errorMessage = "Incorrect PIN entered.";
+            }
+
+            toast.error(errorMessage);
+            setPaymentError(errorMessage);
             setIsFailModalOpen(true);
         } finally {
             setIsLoading(false);
@@ -179,24 +193,18 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
                 <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
                     <div className="flex items-center justify-center mb-4">
-                        <svg className="h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="h-12 w-12 text-green-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <h3 className="text-2xl font-semibold text-green-500">Payment Successful!</h3>
+                        <h3 className="text-3xl font-extrabold text-green-600 animate-pulse">Payment Successful!</h3>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300">The payment has been recorded successfully.</p>
-                    {transactionDetails && (
-                        <div className="mt-4">
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount Paid: {transactionDetails.amount}</p>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Transaction Code: {transactionDetails.receipt}</p>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Payer: {transactionDetails.payer}</p>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number: {transactionDetails.phoneNumber}</p>
-                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Status: {transactionDetails.status}</p>
-                        </div>
-                    )}
+                    <p className="text-gray-700 dark:text-gray-300 text-center">
+                        Your payment has been processed successfully.
+                    </p>
+
                     <button
                         onClick={() => { setIsSuccessModalOpen(false); onClose(); navigate('/dashboard') }}
-                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+                        className="mt-6 px-6 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-full hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-600 transition duration-300 block mx-auto"
                     >
                         Okay
                     </button>
@@ -210,16 +218,18 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
                 <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
                     <div className="flex items-center justify-center mb-4">
-                        <svg className="h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg className="h-12 w-12 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
-                        <h3 className="text-2xl font-semibold text-red-500">Payment Failed!</h3>
+                        <h3 className="text-2xl font-semibold text-red-500">Payment Unsuccessful!</h3>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300">Please try again</p>
-                    <p className="text-red-700 dark:text-red-300">Error: {paymentError}</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-center">
+                        Oops, something went wrong. Please try again.
+                    </p>
+                    <p className="text-red-700 dark:text-red-300 text-center">Message: {paymentError}</p>
                     <button
                         onClick={() => setIsFailModalOpen(false)}
-                        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                        className="mt-6 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-700 transition duration-300 block mx-auto"
                     >
                         Okay
                     </button>
@@ -468,8 +478,8 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
                         {paymentError && (
                             <div className="p-4 rounded-md bg-red-100 border border-red-400 mb-4">
-                                <h3 className="text-lg font-semibold text-red-700">Payment Failed!</h3>
-                                <p className="text-gray-700">{paymentError}</p>
+                                <h3 className="text-lg font-semibold text-red-700">Payment Unsuccessful!</h3>
+                                <p className="text-gray-700">Message: {paymentError}</p>
                                 <div className="flex justify-end mt-4">
                                     <button onClick={handlePayment} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 mr-2">Retry</button>
                                     <button onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200">Cancel</button>
