@@ -189,17 +189,46 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     };
 
     const SuccessModal = () => {
+        const [showConfetti, setShowConfetti] = useState(true);
+
+        useEffect(() => {
+            // Simulate confetti effect
+            const timer = setTimeout(() => {
+                setShowConfetti(false);
+            }, 3000); // Confetti disappears after 3 seconds
+
+            return () => clearTimeout(timer);
+        }, []);
+
         return (
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-                <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
-                    <div className="flex items-center justify-center mb-4">
+                <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 text-center">
+                    {showConfetti && (
+                        <div className="confetti-container absolute inset-0 overflow-hidden">
+                            {[...Array(100)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="confetti"
+                                    style={{
+                                        left: `${Math.random() * 100}vw`,
+                                        animationDelay: `${Math.random()}s`,
+                                        backgroundColor: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                                    }}
+                                ></div>
+                            ))}
+                        </div>
+                    )}
+                    <div className="flex items-center justify-center mb-4 relative">
                         <svg className="h-12 w-12 text-green-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <h3 className="text-3xl font-extrabold text-green-600 animate-pulse">Payment Successful!</h3>
+                        <h3 className="text-3xl font-extrabold text-green-600 animate-pulse relative">Payment Successful!</h3>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 text-center">
-                        Your payment has been processed successfully.
+                    <p className="text-gray-700 dark:text-gray-300 text-center mb-4">
+                        Thank you for your payment! We appreciate your business.
+                    </p>
+                    <p className="text-lg italic text-gray-500 dark:text-gray-400 mb-6">
+                        "The expert in anything was once a beginner." - Helen Hayes
                     </p>
 
                     <button
@@ -209,6 +238,36 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                         Okay
                     </button>
                 </div>
+                <style>
+                    {`
+                    .confetti-container {
+                        position: absolute;
+                        inset: 0;
+                        overflow: hidden;
+                        z-index: 10;
+                    }
+
+                    .confetti {
+                        position: absolute;
+                        width: 10px;
+                        height: 10px;
+                        animation: confettiFall 3s linear forwards;
+                        top: -10px;
+                        opacity: 0;
+                    }
+
+                    @keyframes confettiFall {
+                        0% {
+                            transform: translateY(0) rotate(0);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translateY(120vh) rotate(360deg);
+                            opacity: 0;
+                        }
+                    }
+                    `}
+                </style>
             </div>
         );
     };
