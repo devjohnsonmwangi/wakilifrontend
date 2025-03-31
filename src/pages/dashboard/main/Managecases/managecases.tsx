@@ -376,11 +376,13 @@ const AllCases = () => {
                                 >
                                     <FaTimes />
                                 </button>
-                                <DeleteCaseForm
-                                    caseItem={caseToDelete}
-                                    modalId="delete_case_modal"
-                                    refetch={refetch}
-                                />
+                                           <DeleteCaseForm
+                                                  isOpen={isDeleteModalOpen}
+                                                  onClose={closeDeleteModal}
+                                                  caseItem={caseToDelete}
+                                                
+                                                  refetch={refetch}
+                                              />
                             </div>
                         </div>
                     )}
