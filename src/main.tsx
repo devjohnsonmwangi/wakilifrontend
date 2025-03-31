@@ -13,7 +13,7 @@ import Dashboard from './pages/dashboard/Dashboard.tsx';
 import Reports from '../src/pages/dashboard/main/Reports/Reports.tsx'
 
 
-import CreateCase from '../src/pages/dashboard/main/Managecases/createcase.tsx'
+//import CreateCaseForm from '../src/pages/dashboard/main/Managecases/createcase.tsx'
 
 // import CreateCase from '../src/pages/dashboard/main/Managecases/createcase.tsx'
 
@@ -129,11 +129,11 @@ const router = createBrowserRouter([
     element: <Reports/>,
     errorElement: <Error />
   },
-  {
-    path: 'createcase',
-    element: <CreateCase/>,
-    errorElement: <Error />
-  },
+  // {
+  //   path: 'createcase',
+  //   element: <CreateCaseForm/>,
+  //   errorElement: <Error />
+  // },
   {
     path: 'mycases',
     element: < MyCases/>,
