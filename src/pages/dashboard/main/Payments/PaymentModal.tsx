@@ -42,6 +42,7 @@ const PaymentHistory: React.FC = () => {
     const [filterDateTo, setFilterDateTo] = useState<string>('');
     const [filterCaseId, setFilterCaseId] = useState<string>('');
     const [filterUser, setFilterUser] = useState<string>('');
+    const [filterTransactionId, setFilterTransactionId] = useState<string>(''); // New state for transaction ID filter
 
     const { data, isLoading, isError, error, refetch } = useFetchPaymentsQuery() as FetchPaymentsQueryResult;
     const [filteredPayments, setFilteredPayments] = useState<PaymentDataTypes[]>([]);
@@ -101,8 +102,28 @@ const PaymentHistory: React.FC = () => {
             tempPayments = tempPayments.filter(payment => String(payment.user_id) === filterUser);
         }
 
+        // Transaction ID Filter Logic:
+        if (filterTransactionId) {
+            const transactionId = filterTransactionId.trim();
+            tempPayments = tempPayments.filter(payment => {
+                if (payment.transaction_id && payment.transaction_id.toLowerCase() === transactionId.toLowerCase()) {
+                    return true; // Direct match on transaction_id field
+                }
+
+                if (payment.payment_gateway === 'mpesa') {
+                    // Check if the transaction ID exists within the M-Pesa message
+                    const mpesaMessage = payment.mpesa_message || ''; // Assuming there's a field for the message
+                    return mpesaMessage.toLowerCase().includes(transactionId.toLowerCase());
+                }
+
+                return false;
+            });
+        }
+
+
+
         setFilteredPayments(tempPayments);
-    }, [filterStatus, filterGateway, filterAmount, filterDateFrom, filterDateTo, filterCaseId, filterUser, data]);
+    }, [filterStatus, filterGateway, filterAmount, filterDateFrom, filterDateTo, filterCaseId, filterUser, filterTransactionId, data]);
 
     useEffect(() => {
         handleFilter();
@@ -143,6 +164,7 @@ const PaymentHistory: React.FC = () => {
         setFilterDateTo('');
         setFilterCaseId('');
         setFilterUser('');
+        setFilterTransactionId(''); // Clear Transaction ID filter
         setFilteredPayments(data?.payments || []);
         refetch();
     };
@@ -347,6 +369,19 @@ const PaymentHistory: React.FC = () => {
                         placeholder="Enter User ID"
                         value={filterUser}
                         onChange={(e) => setFilterUser(e.target.value)}
+                    />
+                </div>
+
+                 {/* Transaction ID Filter */}
+                 <div>
+                    <label htmlFor="transactionIdFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Transaction ID / M-Pesa Message:</label>
+                    <input
+                        type="text"
+                        id="transactionIdFilter"
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
+                        placeholder="Enter Transaction ID or Paste M-Pesa Message"
+                        value={filterTransactionId}
+                        onChange={(e) => setFilterTransactionId(e.target.value)}
                     />
                 </div>
             </div>

@@ -17,6 +17,7 @@ export interface PaymentDataTypes {
     payment_notes?: string | null;
     transaction_id?: string | null;
     payment_date?:string;
+    mpesa_message?:string;
 }
 
 //M-Pesa callback
