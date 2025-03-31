@@ -181,7 +181,7 @@ const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose
 
                         {/* Case Selection Section */}
                         <div className="mb-6"> {/* Added margin at the bottom */}
-                            <h4 className="text-xl font-semibold text-blue-500 mb-3">Select Case To Make  Payment:</h4> {/* Subtitle blue */}
+                            <h4 className="text-xl font-semibold text-blue-500 mb-3">Select Case To Make  Payment with payment status not  paid:</h4> {/* Subtitle blue */}
 
                             {/* Filters */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">

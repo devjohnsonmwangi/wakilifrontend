@@ -356,7 +356,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
 
           {/* Case Selection Section */}
           <div className="p-6">
-            <h4 className="text-xl font-semibold text-green-500 mb-3">Select Case To Make Payment:</h4>
+            <h4 className="text-xl font-semibold text-green-500 mb-3">Select Case To Make Payment  only   case   with  status not  paid:</h4>
 
             {/* Filters */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
