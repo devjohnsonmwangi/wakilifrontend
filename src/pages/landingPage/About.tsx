@@ -20,7 +20,7 @@ const About = () => {
     const [shuffleTrigger, setShuffleTrigger] = useState(0);
 
     // Function to shuffle array (Fisher-Yates shuffle)
-    const shuffle = (array: any[]) => {
+    const shuffle = (array) => {
         let currentIndex = array.length, randomIndex;
         while (currentIndex !== 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
@@ -44,7 +44,7 @@ const About = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             setShuffleTrigger(prevTrigger => prevTrigger + 1);
-        }, 5000); // 2000 milliseconds = 2 seconds
+        }, 20000); // 2000 milliseconds = 2 seconds
 
         // Clean up the interval when the component unmounts
         return () => clearInterval(intervalId);
