@@ -20,7 +20,7 @@ const About = () => {
     const [shuffleTrigger, setShuffleTrigger] = useState(0);
 
     // Function to shuffle array (Fisher-Yates shuffle)
-    const shuffle = (array) => {
+    const shuffle = (array: any[]) => {
         let currentIndex = array.length, randomIndex;
         while (currentIndex !== 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
