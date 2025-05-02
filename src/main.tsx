@@ -11,7 +11,8 @@ import Contactus from './pages/contact.tsx';
 import About from './pages/landingPage/About.tsx';
 import Dashboard from './pages/dashboard/Dashboard.tsx';
 import Reports from '../src/pages/dashboard/main/Reports/Reports.tsx'
-
+import ResetPasswordForm from './components/resetpass.tsx'
+import {RequestPasswordResetForm} from './components/resetpassrequest.tsx'
 
 //import CreateCaseForm from '../src/pages/dashboard/main/Managecases/createcase.tsx'
 
@@ -147,6 +148,23 @@ const router = createBrowserRouter([
     errorElement: <Error/>
   },
 
+
+  {
+    path: 'forgot-password',
+    element: <RequestPasswordResetForm />,
+    errorElement: <Error />
+  },
+
+
+  {
+    path: 'reset-password',
+    element:<ResetPasswordForm token="realTokenHere" mode="reset" />,
+
+    errorElement: <Error />
+  },
+
+
+
   //  {
   //    path:'pay',
   //   element: <PaymentModal />,
@@ -216,6 +234,8 @@ const router = createBrowserRouter([
   //   errorElement: <Error/>
   // },
   
+
+
   
   
 
