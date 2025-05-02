@@ -111,7 +111,7 @@ export const usersAPI = createApi({
     // }),
 
     // Update user (Backend handles not updating password, should return user without password)
-    updateUser: builder.mutation<UserApiResponse, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at' | 'password' | 'email'>> & { user_id: number }>({
+    updateUser: builder.mutation<UserApiResponse, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at' | 'password' >> & { user_id: number }>({
       query: ({ user_id, ...rest }) => ({
         url: `users/${user_id}`,
         method: "PUT",
