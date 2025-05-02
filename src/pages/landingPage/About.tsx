@@ -44,7 +44,7 @@ const About = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             setShuffleTrigger(prevTrigger => prevTrigger + 1);
-        }, 20000); // 2000 milliseconds = 2 seconds
+        }, 100000); // 2000 milliseconds = 2 seconds
 
         // Clean up the interval when the component unmounts
         return () => clearInterval(intervalId);
