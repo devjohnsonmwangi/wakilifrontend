@@ -1,9 +1,10 @@
-// src/store/apis/usersAPI.ts (or your file path)
+// src/features/users/usersAPI.ts (or your file path)
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; // Ensure this points to your backend base URL
 
 // Type for user data returned by API (Password typically excluded in responses)
+// ✅ Already exported - good!
 export interface UserApiResponse {
   user_id: number;
   full_name: string ;
@@ -17,6 +18,7 @@ export interface UserApiResponse {
 }
 
 // Type for full user data including password (used internally, e.g., for type safety in inputs if needed)
+// ✅ Already exported - good!
 export interface UserDataTypes extends UserApiResponse {
     // This type might be used less often now if API consistently omits password
     password?: string; // Password might be present in some specific internal scenarios or older types
@@ -24,18 +26,21 @@ export interface UserDataTypes extends UserApiResponse {
 
 
 // Type for the payload when requesting password reset
-interface PasswordResetRequestPayload {
+// 👇 *** ADD export HERE ***
+export interface PasswordResetRequestPayload {
   email: string;
 }
 
 // Type for the payload when resetting/changing password with a token
-interface ResetPasswordPayload {
+// 👇 *** ADD export HERE ***
+export interface ResetPasswordPayload {
   token: string;
   newPassword: string;
 }
 
 // Type for the generic success response from password endpoints
-interface PasswordActionResponse {
+// 👇 *** ADD export HERE ***
+export interface PasswordActionResponse {
   msg: string;
 }
 
@@ -46,10 +51,12 @@ export const usersAPI = createApi({
   // See RTK Query docs for prepareHeaders: https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests
   baseQuery: fetchBaseQuery({
       baseUrl: `${APIDomain}/api`, // Assuming your user routes are under /api
-      prepareHeaders: (headers) => {
-        // Example: Get token from your auth state
-        // const token = (getState() as RootState).auth.token; // Adjust according to your state structure
-        const token = localStorage.getItem('authToken'); // Or wherever you store the token
+      prepareHeaders: (headers) => { // Added { getState } for potential token access from Redux state
+        // Example 1: Get token from localStorage
+        const token = localStorage.getItem('authToken');
+
+        // Example 2: Get token from Redux state (adjust 'auth.token' to your actual path)
+        // const token = (getState() as RootState).auth.token;
 
         if (token) {
           headers.set('authorization', `Bearer ${token}`);
@@ -65,7 +72,7 @@ export const usersAPI = createApi({
     // Register user - Input may vary based on your backend (e.g., might not need role)
     // Output likely returns the created user profile without password
     // 1️⃣ Register a new user
-    registerUser: builder.mutation<UserDataTypes, Omit<UserDataTypes, 'user_id' | 'created_at' | 'updated_at' | 'role'>>({
+    registerUser: builder.mutation<UserApiResponse, Omit<UserDataTypes, 'user_id' | 'created_at' | 'updated_at' | 'role'>>({ // Using UserApiResponse as return type
       query: (newUser) => ({
         url: "auth/register",
         method: "POST",
@@ -75,37 +82,50 @@ export const usersAPI = createApi({
     }),
 
     // 2️⃣ Get user by ID
-    getUserById: builder.query<UserDataTypes, number>({
+    getUserById: builder.query<UserApiResponse, number>({ // Using UserApiResponse
       query: (user_id) => `users/${user_id}`,
-      providesTags: (_, __, id) => [{ type: "User", id }], // ✅ Replaced result, error with _ and __
+      providesTags: (_, __, id) => [{ type: "User", id }],
     }),
 
     // 3️⃣ Fetch all users
-    fetchUsers: builder.query<UserDataTypes[], void>({
+    fetchUsers: builder.query<UserApiResponse[], void>({ // Using UserApiResponse array
       query: () => "users",
-      providesTags: ["Users"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ user_id }) => ({ type: 'User' as const, id: user_id })),
+              { type: 'Users', id: 'LIST' },
+            ]
+          : [{ type: 'Users', id: 'LIST' }],
     }),
 
     // 4️⃣ Fetch users by role (excluding "client" and "user")
-    fetchUsersByRole: builder.query<UserDataTypes[], void>({
+    fetchUsersByRole: builder.query<UserApiResponse[], void>({ // Using UserApiResponse array
       query: () => "users/roles",
-      providesTags: ["Users"],
+       providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ user_id }) => ({ type: 'User' as const, id: user_id })),
+              { type: 'Users', id: 'LIST' }, // Potentially add a specific tag for this list?
+            ]
+          : [{ type: 'Users', id: 'LIST' }], // Tagging strategy might need refinement
     }),
 
-    // 5️⃣ Fetch users by role and user_id
-    fetchUsersByRoleAndId: builder.query<UserDataTypes[], { role: string; user_id: number }>({
-      query: ({ role, user_id }) => `users/roles/${role}/${user_id}`,
-      providesTags: ["Users"],
-    }),
+    // 5️⃣ Fetch users by role and user_id (Consider if this endpoint is truly needed or if filtering client-side is better)
+    // fetchUsersByRoleAndId: builder.query<UserApiResponse[], { role: string; user_id: number }>({
+    //   query: ({ role, user_id }) => `users/roles/${role}/${user_id}`,
+    //   providesTags: ["Users"], // Adjust tagging if kept
+    // }),
 
     // 6️⃣ Update a user
-    updateUser: builder.mutation<UserDataTypes, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at'>> & { user_id: number }>({
+    updateUser: builder.mutation<UserApiResponse, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at'>> & { user_id: number }>({ // Using UserApiResponse
       query: ({ user_id, ...rest }) => ({
         url: `users/${user_id}`,
         method: "PUT",
         body: rest,
       }),
-      invalidatesTags: (_, __, { user_id }) => [{ type: "User", id: user_id }], // ✅ Replaced result, error with _ and __
+      // Invalidate specific user and the general list
+      invalidatesTags: (_, __, { user_id }) => [{ type: "User", id: user_id }, { type: 'Users', id: 'LIST' }],
     }),
 
     // 7️⃣ Delete a user
@@ -114,7 +134,8 @@ export const usersAPI = createApi({
         url: `users/${user_id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_, __, id) => [{ type: "User", id }], // ✅ Replaced result, error with _ and __
+      // Invalidate specific user and the general list
+       invalidatesTags: (_, __, id) => [{ type: "User", id }, { type: 'Users', id: 'LIST' }],
     }),
 
     // === NEW Password Reset/Change Endpoints ===
@@ -122,7 +143,7 @@ export const usersAPI = createApi({
     // Request Password Reset Email (Public)
     requestPasswordReset: builder.mutation<PasswordActionResponse, PasswordResetRequestPayload>({
       query: (payload) => ({
-        url: `users/request-password-reset`,
+        url: `auth/request-password-reset`, // Adjusted URL to likely auth path
         method: "POST",
         body: payload,
       }),
@@ -132,29 +153,29 @@ export const usersAPI = createApi({
     // Reset Password using Token (Public)
     resetPassword: builder.mutation<PasswordActionResponse, ResetPasswordPayload>({
       query: (payload) => ({
-        url: `users/reset-password`,
+        url: `auth/reset-password`, // Adjusted URL to likely auth path
         method: "POST",
         body: payload,
       }),
     }),
 
-    // Request Password Change Email (Authenticated)
-    requestPasswordChange: builder.mutation<PasswordActionResponse, void>({
-        query: () => ({
-          url: `users/request-password-change`,
-          method: "POST",
-          // Body is empty, user identified by auth token in header
-        }),
-        // Requires authentication - ensure prepareHeaders sends the token
-    }),
+    // Request Password Change Email (Authenticated - Endpoint likely not needed if changePassword handles it)
+    // requestPasswordChange: builder.mutation<PasswordActionResponse, void>({
+    //     query: () => ({
+    //       url: `users/request-password-change`,
+    //       method: "POST",
+    //     }),
+    // }),
 
-    // Change Password using Token (Public)
-    changePassword: builder.mutation<PasswordActionResponse, ResetPasswordPayload>({
+    // Change Password using Token (Authenticated - User identified by token in header)
+    // The backend needs to handle verification of the user via JWT + potentially old password
+    changePassword: builder.mutation<PasswordActionResponse, { oldPassword?: string; newPassword: string }>({ // Payload might need old password depending on backend
       query: (payload) => ({
-        url: `users/change-password`,
+        url: `auth/change-password`, // Adjusted URL to likely auth path
         method: "POST",
-        body: payload,
+        body: payload, // Send new (and maybe old) password
       }),
+      // Requires authentication - ensure prepareHeaders sends the token
     }),
 
   }),
@@ -173,13 +194,10 @@ export const {
   // New hooks
   useRequestPasswordResetMutation,
   useResetPasswordMutation,
-  useRequestPasswordChangeMutation,
+  // useRequestPasswordChangeMutation, // Remove if endpoint removed
   useChangePasswordMutation,
 } = usersAPI;
 
 
-
-
-
-
-
+// Helper type for RootState if needed in prepareHeaders
+// import type { RootState } from '../../app/store'; // Adjust path as needed
