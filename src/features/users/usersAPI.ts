@@ -6,12 +6,12 @@ import { APIDomain } from "../../utils/APIDomain"; // Ensure this points to your
 // Type for user data returned by API (Password typically excluded in responses)
 export interface UserApiResponse {
   user_id: number;
-  full_name: string | null;
+  full_name: string ;
   email: string;
-  phone_number: string | null;
-  address: string | null;
-  role: "admin" | "user" | "lawyer" | "client" | "clerk" | "manager" | "support" | null;
-  profile_picture?: string | null;
+  phone_number: string ;
+  address: string ;
+  role: "admin" | "user" | "lawyer" | "client" | "clerk" | "manager" | "support" ;
+  profile_picture?: string ;
   created_at: string;
   updated_at: string;
 }
