@@ -64,78 +64,57 @@ export const usersAPI = createApi({
 
     // Register user - Input may vary based on your backend (e.g., might not need role)
     // Output likely returns the created user profile without password
-    registerUser: builder.mutation<UserApiResponse, Omit<UserDataTypes, 'user_id' | 'created_at' | 'updated_at' | 'role'>>({
+    // 1️⃣ Register a new user
+    registerUser: builder.mutation<UserDataTypes, Omit<UserDataTypes, 'user_id' | 'created_at' | 'updated_at' | 'role'>>({
       query: (newUser) => ({
-        url: "auth/register", // Adjust if register endpoint is different
+        url: "auth/register",
         method: "POST",
         body: newUser,
       }),
       invalidatesTags: ["Users"],
     }),
 
-    // Get user by ID (Backend should omit password)
-    getUserById: builder.query<UserApiResponse, number>({
+    // 2️⃣ Get user by ID
+    getUserById: builder.query<UserDataTypes, number>({
       query: (user_id) => `users/${user_id}`,
-      providesTags: (_, __, id) => [{ type: "User", id }],
+      providesTags: (_, __, id) => [{ type: "User", id }], // ✅ Replaced result, error with _ and __
     }),
 
-    // Fetch all users (Backend should omit password)
-    fetchUsers: builder.query<UserApiResponse[], void>({
+    // 3️⃣ Fetch all users
+    fetchUsers: builder.query<UserDataTypes[], void>({
       query: () => "users",
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ user_id }) => ({ type: 'User' as const, id: user_id })),
-              { type: 'Users', id: 'LIST' },
-            ]
-          : [{ type: 'Users', id: 'LIST' }],
+      providesTags: ["Users"],
     }),
 
-    // Fetch users by role (Backend should omit password)
-    fetchUsersByRole: builder.query<UserApiResponse[], void>({
+    // 4️⃣ Fetch users by role (excluding "client" and "user")
+    fetchUsersByRole: builder.query<UserDataTypes[], void>({
       query: () => "users/roles",
-       providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ user_id }) => ({ type: 'User' as const, id: user_id })),
-              { type: 'Users', id: 'ROLE_LIST' }, // Specific tag for this list
-            ]
-          : [{ type: 'Users', id: 'ROLE_LIST' }],
+      providesTags: ["Users"],
     }),
 
-    // Fetch users by role and user_id (Endpoint seems specific, ensure backend supports it)
-    // If this endpoint doesn't exist anymore, remove it. Backend should omit password.
-    // fetchUsersByRoleAndId: builder.query<UserApiResponse[], { role: string; user_id: number }>({
-    //   query: ({ role, user_id }) => `users/roles/${role}/${user_id}`,
-    //   providesTags: ["Users"], // Adjust tagging if needed
-    // }),
+    // 5️⃣ Fetch users by role and user_id
+    fetchUsersByRoleAndId: builder.query<UserDataTypes[], { role: string; user_id: number }>({
+      query: ({ role, user_id }) => `users/roles/${role}/${user_id}`,
+      providesTags: ["Users"],
+    }),
 
-    // Update user (Backend handles not updating password, should return user without password)
-    updateUser: builder.mutation<UserApiResponse, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at'  >> & { user_id: number }>({
+    // 6️⃣ Update a user
+    updateUser: builder.mutation<UserDataTypes, Partial<Omit<UserDataTypes, 'created_at' | 'updated_at'>> & { user_id: number }>({
       query: ({ user_id, ...rest }) => ({
         url: `users/${user_id}`,
         method: "PUT",
-        body: rest, // Send only allowed fields
+        body: rest,
       }),
-      // Invalidate specific user and the general list
-      invalidatesTags: (_, __, { user_id }) => [
-          { type: "User", id: user_id },
-          { type: 'Users', id: 'LIST' },
-          { type: 'Users', id: 'ROLE_LIST' }
-        ],
+      invalidatesTags: (_, __, { user_id }) => [{ type: "User", id: user_id }], // ✅ Replaced result, error with _ and __
     }),
 
-    // Delete user
-    deleteUser: builder.mutation<{ msg: string }, number>({ // Backend returns { msg: string }
+    // 7️⃣ Delete a user
+    deleteUser: builder.mutation<{ success: boolean; user_id: number }, number>({
       query: (user_id) => ({
         url: `users/${user_id}`,
         method: "DELETE",
       }),
-       invalidatesTags: (_, __, id) => [
-           { type: "User", id },
-           { type: 'Users', id: 'LIST' },
-           { type: 'Users', id: 'ROLE_LIST' }
-        ],
+      invalidatesTags: (_, __, id) => [{ type: "User", id }], // ✅ Replaced result, error with _ and __
     }),
 
     // === NEW Password Reset/Change Endpoints ===
@@ -197,3 +176,10 @@ export const {
   useRequestPasswordChangeMutation,
   useChangePasswordMutation,
 } = usersAPI;
+
+
+
+
+
+
+
