@@ -50,7 +50,7 @@ export const usersAPI = createApi({
   // Ensure your baseQuery is configured to add the Authorization header if needed
   // See RTK Query docs for prepareHeaders: https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests
   baseQuery: fetchBaseQuery({
-      baseUrl: `${APIDomain}/api`, // Assuming your user routes are under /api
+      baseUrl: APIDomain, // Assuming your user routes are under /api
       prepareHeaders: (headers) => { // Added { getState } for potential token access from Redux state
         // Example 1: Get token from localStorage
         const token = localStorage.getItem('authToken');
@@ -143,7 +143,7 @@ export const usersAPI = createApi({
     // Request Password Reset Email (Public)
     requestPasswordReset: builder.mutation<PasswordActionResponse, PasswordResetRequestPayload>({
       query: (payload) => ({
-        url: `auth/request-password-reset`, // Adjusted URL to likely auth path
+        url: `users/request-password-reset`, // Adjusted URL to likely auth path
         method: "POST",
         body: payload,
       }),
@@ -153,7 +153,7 @@ export const usersAPI = createApi({
     // Reset Password using Token (Public)
     resetPassword: builder.mutation<PasswordActionResponse, ResetPasswordPayload>({
       query: (payload) => ({
-        url: `auth/reset-password`, // Adjusted URL to likely auth path
+        url: `users/reset-password`, // Adjusted URL to likely auth path
         method: "POST",
         body: payload,
       }),
@@ -171,7 +171,7 @@ export const usersAPI = createApi({
     // The backend needs to handle verification of the user via JWT + potentially old password
     changePassword: builder.mutation<PasswordActionResponse, { oldPassword?: string; newPassword: string }>({ // Payload might need old password depending on backend
       query: (payload) => ({
-        url: `auth/change-password`, // Adjusted URL to likely auth path
+        url: `users/change-password`, // Adjusted URL to likely auth path
         method: "POST",
         body: payload, // Send new (and maybe old) password
       }),
