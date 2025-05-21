@@ -104,7 +104,11 @@ const AllCases = () => {
 
     if (isError) {
         toast.error('❌ Failed to load cases');
-        return <div className="text-center">Failed to load cases</div>;
+        return <div className="flex justify-center items-center h-screen">
+        <div className="text-center text-xl text-red-600">
+            Error loading case data 😞. Please check your network and refresh the page. if connected to  internet and  this error persists contact support team
+        </div>
+    </div>;
     }
 
     const resetFilters = () => {

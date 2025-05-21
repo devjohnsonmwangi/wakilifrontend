@@ -45,7 +45,7 @@ const BranchLocationManagement: React.FC<DocumentListProps> = () => {
       console.log("Deleting branch with ID:", branchId);
       setDeletingBranchId(branchId); // Set the ID of the branch being deleted
       await deleteBranchLocation(branchId).unwrap();
-      toast.success('Branch location deleted successfully!');
+      toast.success('Branch location deleted successfully!!');
       refetch();
     } catch (err) {
       console.error("Error deleting branch location:", err);
@@ -59,12 +59,20 @@ const BranchLocationManagement: React.FC<DocumentListProps> = () => {
   if (isLoading) return <div className="text-center">Loading branch locations...</div>;
 
   if (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to load branch locations.';
+    const errorMessage = error instanceof Error ? error.message : 'Failed to load branch locations, please check  your internet connection .if connected to  internet and   this error persist please contact support team.';
     return <div className="text-center text-red-500">{errorMessage}</div>;
   }
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
+                  {/* <div className="breadcrumbs text-sm my-6 text-yellow-300 flex items-center gap-2">
+                      <FaTicketAlt />
+                      <ul className="flex gap-2">
+                          <li><Link to="/dashboard/profile">🏠 Dashboard</Link></li>
+                          <li><Link to="/dashboard/account">📋 my profile/Link></li>
+                          <li><span className="inline-flex items-center gap-2">🎟️ Tickets</span></li>
+                      </ul>
+                  </div> */}
       <Toaster richColors />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight">Branch Locations</h1>

@@ -180,7 +180,11 @@ const Profile = () => {
     };
 
     if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error loading user data.</div>;
+    if (error) return <div className="flex justify-center items-center h-screen">
+    <div className="text-center text-xl text-red-600">
+        Error loading users data 😞. Please check your network and  refresh the page . if connected to  internet and  this error persists contact support team
+    </div>
+</div>;
     if (!userData) return <div>No user data available.</div>;
 
     return (

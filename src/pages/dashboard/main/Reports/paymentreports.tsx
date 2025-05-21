@@ -113,7 +113,7 @@ const PaymentReport = () => {
     if (isLoading) {
         content = <div className="text-center">Loading payment data...</div>;
     } else if (isError) {
-        content = <div className="text-center text-red-500">Error loading payments: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+        content = <div className="text-center text-red-500">Error loading payments: {error instanceof Error ? error.message : 'please check your network if error  persist contact support team'}</div>;
     } else if (!data || !data.success || !Array.isArray(data.payments) || data.payments.length === 0) {
         content = <div className="text-center">No payment data available.</div>;
     } else {

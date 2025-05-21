@@ -16,7 +16,7 @@ export default {
         'button-gradient-start': '#FFA500',
         'button-gradient-end': '#FF4500',
       },
-
+      
       keyframes: {
         marquee: {
           '0%': { transform: 'translateX(100%)' },

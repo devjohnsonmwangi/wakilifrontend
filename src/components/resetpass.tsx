@@ -149,4 +149,4 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, mode }) =>
   );
 };
 
-export default ResetPasswordForm; // ✅ Now using "default" export for easier importing
+export default ResetPasswordForm;

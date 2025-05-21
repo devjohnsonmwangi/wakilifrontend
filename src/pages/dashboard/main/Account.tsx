@@ -65,7 +65,11 @@ function Account() {
   }
 
   if (usersError) {
-    return <div>❌ Error loading users</div>;
+    return  <div className="flex justify-center items-center h-screen">
+    <div className="text-center text-xl text-red-600">
+        Error loading users data 😞. Please  check your network and refresh the page . if connected to  internet and  this error persists contact support team
+    </div>
+</div>
   }
 
   if (!usersData || usersData.length === 0) {

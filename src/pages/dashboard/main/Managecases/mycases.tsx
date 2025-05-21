@@ -147,7 +147,7 @@ const MyCases = () => {
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="text-center text-xl text-red-600">
-                    Error loading data 😞. Please refresh the page.
+                    Error loading data 😞. Please check your network and refresh the page  if  this  persist contact support team
                 </div>
             </div>
         );

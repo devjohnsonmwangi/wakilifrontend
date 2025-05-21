@@ -93,7 +93,11 @@ const ListAppointments: React.FC = () => {
   }
 
   if (isError) {
-    return <div className="text-center py-4 text-red-500">Error loading appointments.</div>;
+    return <div className="flex justify-center items-center h-screen">
+    <div className="text-center text-xl text-red-600">
+        Error loading appointment  😞. Please check your network and refresh the page . if connected to  internet and  this error persists contact support team
+    </div>
+</div>;
   }
 
   return (

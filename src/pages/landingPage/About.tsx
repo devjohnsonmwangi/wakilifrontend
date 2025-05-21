@@ -1,4 +1,6 @@
 import { useGetTeamByRolesQuery } from '../../features/team/teamApi';
+import Navbar from "../../components/navbar/Navbar";
+//import Footer from './Footer';
 import {
     Mail, Phone, Loader2, Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake
 } from 'lucide-react';
@@ -51,6 +53,8 @@ const About = () => {
     }, []); // Empty dependency array ensures this effect runs only once (on mount)
 
     return (
+     <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-black text-white min-h-screen flex flex-col">
+                    <Navbar />
         <div className="relative mt-10 mb-10 px-4 md:px-6 overflow-hidden">
             {/* Background Image with Subtle Animation */}
             <div
@@ -130,7 +134,7 @@ const About = () => {
                             <p className="ml-4">Loading team members...</p>
                         </div>
                     ) : isError ? (
-                        <p className="text-center text-red-500">Failed to load team members. Please try again later.</p>
+                        <p className="text-center text-red-500">Failed to load team members. Please check  your  internet connection and refresh  the page.</p>
                     ) : members.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                             {members.map((member: Member) => (
@@ -200,6 +204,8 @@ const About = () => {
 
             </div>
         </div>
+        
+      </div>  
     );
 };
 

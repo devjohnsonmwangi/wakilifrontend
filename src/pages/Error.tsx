@@ -13,7 +13,7 @@ function Error() {
                     Page not found
                 </h1>
                 <p className="mt-4 text-base leading-7 text-gray-600">
-                    Sorry, we couldn't find the page you're looking for.
+                    Sorry, we couldn't find the page you're looking for. Please contact  support  team if  you  keep seeing this multiple times
                 </p>
                 <p className="mt-4 text-base leading-7 text-gray-600">
                     {(error as Error)?.message}

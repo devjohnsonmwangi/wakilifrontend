@@ -126,7 +126,8 @@ const DocumentList: React.FC = () => {
             {isLoading && <div className="text-center text-gray-600">Loading documents...</div>}
             {error && (
                 <div className="text-center text-red-500">
-                    Error: {(error as { message: string })?.message || 'An unexpected error occurred'}
+                    Error: {(error as { message: string })?.message || 'An error occurred while loading documents . please check your internet connection and reload the page. if connected to  internet  and  this error persists please contact support team'}
+                    
                 </div>
             )}
 

@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, LegacyRef } from 'react';
+import Navbar from "../../components/navbar/Navbar";
+//import Footer from './Footer';
 import serviceimg from '../../assets/images/landingPage/coverimageone.webp';
 import bgrides from '../../assets/images/landingPage/coverimage3.jpeg';
 import { ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard, FileText, Users } from 'lucide-react';
@@ -82,7 +84,7 @@ const Services = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             setServices((prevServices) => shuffle([...prevServices]));
-        }, 10000);
+        }, 30000);
 
         return () => clearInterval(intervalId);
     }, []);
@@ -108,6 +110,8 @@ const Services = () => {
     }, [services, visibleServices]);
 
     return (
+     <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-black text-white min-h-screen flex flex-col">
+                    <Navbar />
         <div
             className="w-full bg-cover bg-center min-h-screen py-10 relative overflow-hidden"
             style={{ backgroundImage: `url(${bgrides})` }}
@@ -150,6 +154,8 @@ const Services = () => {
                 </ul>
             </div>
         </div>
+   
+    </div>
     );
 };
 

@@ -78,7 +78,11 @@ const MyTickets = () => {
     }
 
     if (ticketError) {
-        return <div className="text-center p-8 text-xl text-red-600">Error loading data 😞</div>;
+        return<div className="flex justify-center items-center h-screen">
+        <div className="text-center text-xl text-red-600">
+            Error loading tickets  😞. Please  check your internet connection and refresh the page  . if connected to  internet and  this error persists contact support team
+        </div>
+    </div>;
     }
 
     return (

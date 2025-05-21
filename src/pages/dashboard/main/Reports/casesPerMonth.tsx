@@ -89,7 +89,7 @@ const CaseReport = () => {
     if (isLoading) {
         content = <div className="text-center">Loading case data...</div>;
     } else if (isError) {
-        content = <div className="text-center text-red-500">Error loading cases: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+        content = <div className="text-center text-red-500">Error loading cases: {error instanceof Error ? error.message : 'please check your network'}</div>;
 
     } else if (!cases || cases.length === 0) {
         content = <div className="text-center">No case data available.</div>;

@@ -414,7 +414,7 @@ const PaymentHistory: React.FC = () => {
                         {isLoading ? (
                             <tr><td colSpan={7} className="text-center py-4">Loading payments...</td></tr>
                         ) : isError ? (
-                            <tr><td colSpan={7} className="text-center py-4 text-red-500">Error loading payments.</td></tr>
+                            <tr><td colSpan={7} className="text-center py-4 text-red-500">Error loading payments.please check your internet connection and reload the page. If connected to internet  and this error  persist contact support team</td></tr>
                         ) : filteredPayments.length > 0 ? (
                             filteredPayments.map((payment, index) => (
                                 <tr key={payment.payment_id} className={`hover:bg-gray-200 dark:hover:bg-neutral-700 ${index % 2 === 0 ? 'bg-gray-50 dark:bg-neutral-800' : 'bg-white dark:bg-neutral-900'} transition-colors duration-200`}> {/* Striped Rows and Hover Effects */}

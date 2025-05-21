@@ -8,7 +8,7 @@ import { Toaster, toast } from 'sonner';
 
 interface CreateAppointmentProps {
     onAppointmentCreated?: () => void;
-    onClose: () => void; // Add onClose prop
+    onClose: () => void; // Add onClose props
 }
 
 const CreateAppointment: React.FC<CreateAppointmentProps> = ({ onAppointmentCreated, onClose }) => {

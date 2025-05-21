@@ -136,7 +136,7 @@ const AppointmentStatusReport = () => {
             return <div className="text-center">Loading appointment data...</div>;
         }
         if (isError) {
-            return <div className="text-center text-red-500">Error loading appointments: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+            return <div className="text-center text-red-500">Error loading appointments: {error instanceof Error ? error.message : 'please  check your network '}</div>;
         }
         if (appointmentsData.length === 0) {
             return <div className="text-center">No appointment data available.</div>;

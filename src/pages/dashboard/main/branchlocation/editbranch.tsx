@@ -46,7 +46,7 @@ const EditBranchLocation = ({ branch, onClose }: EditBranchLocationProps) => {
 
       // Display a success toast
       toast.success('Branch location updated successfully!', {
-        duration: 3000,
+        duration: 4000,
       });
 
       onClose(); // Close the modal after successful update

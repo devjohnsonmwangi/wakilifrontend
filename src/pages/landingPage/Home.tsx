@@ -6,11 +6,16 @@ import Services from "./Services";
 
 const Home = () => {
   return (
-    <div>
-      {/* Navbar with Links to Sections */}
+    // Main container for the page content
+    // pt-16: Padding top for the fixed top navbar (applies on all screen sizes)
+    // pb-16: Padding bottom for the fixed bottom mobile navbar
+    // lg:pb-0: On large screens and up, remove bottom padding as the mobile bottom navbar is hidden
+    <div className="pt-16 pb-16 lg:pb-0">
+      {/* Navbar will be rendered by its own fixed positioning */}
       <Navbar />
 
       {/* Hero Section */}
+      {/* Sections now live inside the padded container */}
       <section id="hero">
         <Hero />
       </section>
@@ -26,6 +31,7 @@ const Home = () => {
       </section>
 
       {/* Footer Section */}
+      {/* Footer is part of the scrollable content and will benefit from the bottom padding on mobile */}
       <Footer />
     </div>
   );

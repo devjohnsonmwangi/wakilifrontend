@@ -37,8 +37,9 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
       await createBranchLocation(newBranch).unwrap();
 
       toast.success('Branch location created successfully!', {
-        duration: 3000,
+        duration: 4000,
       });
+      
 
       setName('');
       setAddress('');
