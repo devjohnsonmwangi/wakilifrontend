@@ -87,12 +87,12 @@ export const eventAndReminderAPI = createApi({
       providesTags: ["EventReminder"],
     }),
     getReminderById: builder.query<EventReminderDataTypes, number>({
-      query: (reminder_id) => `eventReminders/${reminder_id}`,
+      query: (reminder_id) => `reminders/${reminder_id}`,
       providesTags: ["EventReminder"],
     }),
     createReminder: builder.mutation<EventReminderDataTypes, Partial<EventReminderDataTypes>>({
       query: (newReminder) => ({
-        url: "eventReminders",
+        url: "reminders",
         method: "POST",
         body: newReminder,
       }),
@@ -100,7 +100,7 @@ export const eventAndReminderAPI = createApi({
     }),
     updateReminder: builder.mutation<EventReminderDataTypes, Partial<EventReminderDataTypes & { reminder_id: number }>>({
       query: ({ reminder_id, ...rest }) => ({
-        url: `eventReminders/${reminder_id}`,
+        url: `reminders/${reminder_id}`,
         method: "PUT",
         body: rest,
       }),
@@ -108,7 +108,7 @@ export const eventAndReminderAPI = createApi({
     }),
     deleteReminder: builder.mutation<{ success: boolean; reminder_id: number }, number>({
       query: (reminder_id) => ({
-        url: `eventReminders/${reminder_id}`,
+        url: `reminders/${reminder_id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["EventReminder"],
