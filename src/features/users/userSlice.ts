@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from '../../app/store'; // Adjust path to your RootState if necessary
 
-export interface User{
+export interface User {
     full_name: string;
     email: string;
     role: string;
-    user_id: number;
+    user_id: number; // This is the ID we need
     address: string;
     profile_picture: string;
 }
@@ -20,7 +21,7 @@ const initialState: UserState = {
 }
 
 const userSlice = createSlice({
-    name: 'user',
+    name: 'user', // It's good practice to match the slice name ('user') with the key in the root reducer
     initialState,
     reducers: {
         loginSuccess(state, action: PayloadAction<UserState>) {
@@ -35,9 +36,12 @@ const userSlice = createSlice({
 })
 
 export const { loginSuccess, logOut } = userSlice.actions;
+
+// Selectors
+// Make sure 'user' here matches the key you use for this slice in your root reducer (configureStore)
+export const selectCurrentUser = (state: RootState) => state.user.user;
+export const selectCurrentToken = (state: RootState) => state.user.token;
+export const selectIsAuthenticated = (state: RootState) => !!state.user.token && !!state.user.user;
+export const selectCurrentUserId = (state: RootState): number | undefined => state.user.user?.user_id;
+
 export default userSlice.reducer;
-
-
-
-
-

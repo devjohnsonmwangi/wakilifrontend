@@ -139,8 +139,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <h1 className="text-3xl sm:text-4xl font-bold">
               {getGreeting()}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-sky-600">{userName}</span>!
             </h1>
-            <p className="text-md text-slate-600 mt-1">
-              Welcome to your Wakili command center. Email: {userEmail}
+            <p className="text-md text-slate-600 mt-1 font-medium">
+              Welcome to your Wakili App Personal Dashboard command center. Email: {userEmail}
             </p>
           </div>
           <div className="flex items-center gap-4">

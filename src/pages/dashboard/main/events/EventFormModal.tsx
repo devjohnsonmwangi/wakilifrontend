@@ -1,5 +1,6 @@
 // src/pages/dashboard/main/events/EventFormModal.tsx
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef, useMemo } from 'react'; // Added useMemo
+import { useSelector } from 'react-redux'; // Import useSelector
 import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -20,9 +21,13 @@ import {
 import {
   useCreateEventMutation,
   useUpdateEventMutation,
-  EventDataTypes, // Will expect start_time as ISO string, no event_date
+  EventDataTypes,
   EventType as RawEventType,
 } from '../../../../features/events/events';
+// Adjust this import path to your actual auth slice location
+import { selectCurrentUserId } from '../../../../features/users/userSlice';
+// Import RootState if you need to type the selector directly, or rely on inference
+// import { RootState } from '../../../../app/store'; // Adjust path
 
 type AppEventType = RawEventType | 'meeting' | 'hearing' | 'consultation' | 'reminder' | 'court_date';
 
@@ -47,16 +52,26 @@ const getValidEventType = (eventType?: string): AppEventType => {
   return 'meeting';
 };
 
-const getInitialFormState = (eventToEdit?: Partial<EventDataTypes> | null) => {
+// Updated to accept userId from the hook
+const getInitialFormState = (
+  eventToEdit?: Partial<EventDataTypes> | null,
+  currentUserId?: number | null // Accept currentUserId
+) => {
   let initialDateStr = '';
   let initialTimeStr = '';
 
   if (eventToEdit?.start_time) {
     try {
-      const dt = new Date(eventToEdit.start_time);
+      // parseISO is generally more robust for ISO strings
+      const dt = new Date(eventToEdit.start_time); // Or use parseISO from date-fns
       if (isValid(dt)) {
         initialDateStr = format(dt, 'yyyy-MM-dd');
-        initialTimeStr = format(dt, 'HH:mm:ss');
+        // Check if the original start_time was date-only (all-day event)
+        if (eventToEdit.start_time.length === 10 && !eventToEdit.start_time.includes('T')) {
+          initialTimeStr = '00:00:00'; // Default time for all-day, or can be empty
+        } else {
+          initialTimeStr = format(dt, 'HH:mm:ss');
+        }
       }
     } catch (e) { console.error("Error parsing eventToEdit.start_time for form", e); }
   }
@@ -68,7 +83,7 @@ const getInitialFormState = (eventToEdit?: Partial<EventDataTypes> | null) => {
     form_time_part: initialTimeStr,
     event_description: eventToEdit?.event_description || '',
     case_id: eventToEdit?.case_id ? String(eventToEdit.case_id) : '',
-    user_id: 1, // MOCK
+    user_id: eventToEdit?.user_id || currentUserId || 0, // Use currentUserId, fallback to 0 or handle error
   };
 };
 
@@ -94,7 +109,7 @@ const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
       ref={ref}
       readOnly
       placeholder={placeholder}
-      onChange={onChange}
+      onChange={onChange} // Added onChange here if CustomDateInput needs to manage its own input changes, though DatePicker usually handles this
     />
   )
 );
@@ -106,7 +121,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   onClose,
   eventToEdit,
 }) => {
-  const [formData, setFormData] = useState(getInitialFormState(eventToEdit));
+  // Get current user ID from Redux store
+  const currentUserId = useSelector(selectCurrentUserId); // Type for currentUserId will be inferred from selector
+
+  // Use useMemo for initial form state to depend on currentUserId
+  const initialFormState = useMemo(() => getInitialFormState(eventToEdit, currentUserId as number | null), [eventToEdit, currentUserId]);
+
+  const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
@@ -115,10 +136,11 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
   useEffect(() => {
     if (open) {
-      setFormData(getInitialFormState(eventToEdit));
+      // Re-initialize form data when modal opens or eventToEdit/currentUserId changes
+      setFormData(getInitialFormState(eventToEdit, currentUserId as number | null));
       setErrors({});
     }
-  }, [eventToEdit, open]);
+  }, [eventToEdit, open, currentUserId]); // Add currentUserId to dependency array
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -152,6 +174,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     if (!formData.form_date_part) newErrors.start_time = "Date is required.";
     if (!formData.form_time_part) newErrors.start_time = (newErrors.start_time || "") + " Time is required.";
     if (!formData.case_id) newErrors.case_id = "Case ID is required.";
+    if (!formData.user_id) newErrors.user_id = "User ID is missing. Please re-login."; // Add validation for user_id
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -159,6 +182,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   const handleSubmit = async () => {
     if (!validateForm()) {
         toast.error("Please fill in all required fields.");
+        return;
+    }
+
+    // Ensure user_id is present before submission
+    if (!formData.user_id) {
+        toast.error("User information is missing. Cannot save event.");
+        setErrors(prev => ({ ...prev, user_id: "User ID is missing. Please re-login." }));
         return;
     }
 
@@ -182,26 +212,34 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
         return;
     }
 
-    // Payload type to match what RTK Query createEvent/updateEvent expects
-    // (excluding event_id, created_at, updated_at for creation)
-    type EventCreationPayload = Omit<EventDataTypes, 'event_id' | 'created_at' | 'updated_at' | 'event_date'> & { event_date?: never };
+    // Payload type should match what RTK Query createEvent/updateEvent expects
+    // Ensure your RTK Query endpoint definitions for CreateEventPayload and UpdateEventPayload
+    // include user_id and don't include event_date.
+    interface CreateEventPayloadForApi {
+        event_title: string;
+        event_type: AppEventType;
+        start_time: string; // ISO String
+        event_description?: string;
+        case_id: number;
+        user_id: number;
+        // event_date is removed
+    }
 
-
-    const payload: EventCreationPayload = {
+    const payload: CreateEventPayloadForApi = {
       event_title: formData.event_title,
       event_type: formData.event_type,
-      start_time: combinedStartDateTime.toISOString(), // Key field for datetime
-      // event_date is removed from payload
+      start_time: combinedStartDateTime.toISOString(),
       event_description: formData.event_description,
       case_id: Number(formData.case_id),
-      user_id: Number(formData.user_id),
+      user_id: Number(formData.user_id), // Use formData.user_id which should be set
     };
 
     try {
       if (eventToEdit?.event_id) {
-        // For update, the payload type might be Partial of EventDataTypes, but still excluding event_date
-        type EventUpdatePayload = Partial<Omit<EventDataTypes, 'event_id' | 'created_at' | 'updated_at' | 'event_date'>> & { event_date?: never };
-        await updateEvent({ event_id: eventToEdit.event_id, ...(payload as EventUpdatePayload) }).unwrap();
+        // For update, the payload type might be Partial of the creation payload plus the event_id
+        // The RTK Query updateEvent mutation expects: { event_id: number } & UpdateEventPayload
+        // where UpdateEventPayload is Partial<CreateEventPayloadForApi>
+        await updateEvent({ event_id: eventToEdit.event_id, ...payload }).unwrap();
         toast.success("Event updated successfully!");
       } else {
         await createEvent(payload).unwrap();
@@ -219,10 +257,16 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     }
   };
 
-  const selectedDateForPicker = formData.form_date_part ? parse(formData.form_date_part, 'yyyy-MM-dd', new Date()) : null;
-  const selectedTimeForPicker = formData.form_time_part
-    ? parse(formData.form_time_part, 'HH:mm:ss', new Date())
-    : null;
+  // Memoize selectedDateForPicker and selectedTimeForPicker for performance
+  const selectedDateForPicker = useMemo(() =>
+    formData.form_date_part ? parse(formData.form_date_part, 'yyyy-MM-dd', new Date()) : null,
+    [formData.form_date_part]
+  );
+
+  const selectedTimeForPicker = useMemo(() =>
+    formData.form_time_part ? parse(formData.form_time_part, 'HH:mm:ss', new Date()) : null,
+    [formData.form_time_part]
+  );
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.9 },
@@ -235,7 +279,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       {open && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4"
-          onClick={onClose}
+          onClick={onClose} // Close on backdrop click
         >
           <motion.div
             className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
@@ -244,7 +288,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
             animate="visible"
             exit="exit"
             transition={{ type: 'spring', damping: 18, stiffness: 200 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
           >
             <div className="flex items-center justify-between p-5 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">
@@ -257,8 +301,9 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
             <form
               onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
-              className="p-6 space-y-5"
+              className="p-6 space-y-5" // Increased spacing for better readability
             >
+              {/* Event Title */}
               <div>
                 <label htmlFor="event_title" className={labelBaseClasses}>
                   <Type size={14} className="inline mr-1 mb-0.5" /> Title *
@@ -267,6 +312,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                   className={`${inputBaseClasses} ${errors.event_title ? 'border-red-500' : ''}`} placeholder="e.g., Client Meeting" />
                 {errors.event_title && <p className="mt-1 text-xs text-red-600">{errors.event_title}</p>}
               </div>
+
+              {/* Event Type */}
               <div>
                 <label htmlFor="event_type" className={labelBaseClasses}>
                   <Tag size={14} className="inline mr-1 mb-0.5" /> Event Type *
@@ -281,6 +328,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                 </select>
                 {errors.event_type && <p className="mt-1 text-xs text-red-600">{errors.event_type}</p>}
               </div>
+
+              {/* Case ID */}
               <div>
                 <label htmlFor="case_id" className={labelBaseClasses}>
                   <Briefcase size={14} className="inline mr-1 mb-0.5" /> Case ID *
@@ -290,38 +339,43 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                 {errors.case_id && <p className="mt-1 text-xs text-red-600">{errors.case_id}</p>}
               </div>
 
+              {/* Date and Time Pickers */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="form_date_part" className={labelBaseClasses}> {/* Changed htmlFor */}
+                  <label htmlFor="form_date_part" className={labelBaseClasses}>
                     <CalendarIcon size={14} className="inline mr-1 mb-0.5" /> Date *
                   </label>
                   <DatePicker
-                    id="form_date_part" // Changed id
+                    id="form_date_part"
                     selected={selectedDateForPicker && isValid(selectedDateForPicker) ? selectedDateForPicker : null}
                     onChange={handleDatePartChange}
                     dateFormat="yyyy-MM-dd"
-                    placeholderText="Select date (YYYY-MM-DD)"
-                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Date")} />}
+                    placeholderText="Select date" // Simplified placeholder
+                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Date")} placeholder="YYYY-MM-DD"/>}
                     wrapperClassName="w-full"
                     isClearable showPopperArrow={false} />
                 </div>
                 <div>
-                  <label htmlFor="form_time_part" className={labelBaseClasses}> {/* Changed htmlFor */}
+                  <label htmlFor="form_time_part" className={labelBaseClasses}>
                     <Clock size={14} className="inline mr-1 mb-0.5" /> Time *
                   </label>
                   <DatePicker
-                    id="form_time_part" // Changed id
+                    id="form_time_part"
                     selected={selectedTimeForPicker && isValid(selectedTimeForPicker) ? selectedTimeForPicker : null}
                     onChange={handleTimePartChange}
                     showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time"
-                    dateFormat="HH:mm:ss" timeFormat="HH:mm:ss" placeholderText="Select time (HH:MM:SS)"
-                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Time")} />}
+                    dateFormat="HH:mm:ss" timeFormat="HH:mm" // Changed timeFormat to HH:mm for user input convenience, still submits HH:mm:ss
+                    placeholderText="Select time" // Simplified placeholder
+                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Time")} placeholder="HH:MM"/>}
                     wrapperClassName="w-full"
                     isClearable showPopperArrow={false} />
                 </div>
               </div>
               {errors.start_time && <p className="mt-1 text-xs text-red-600">{errors.start_time}</p>}
+              {errors.user_id && <p className="mt-1 text-xs text-red-600">{errors.user_id}</p>} {/* Display user_id error */}
 
+
+              {/* Event Description */}
               <div>
                 <label htmlFor="event_description" className={labelBaseClasses}>
                   <FileText size={14} className="inline mr-1 mb-0.5" /> Description
@@ -333,12 +387,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
                 {errors.event_description && <p className="mt-1 text-xs text-red-600">{errors.event_description}</p>}
               </div>
 
+              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={onClose} disabled={isLoading}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors">
                   <X size={16} className="inline mr-1.5" /> Cancel
                 </button>
-                <button type="submit" disabled={isLoading}
+                <button type="submit" disabled={isLoading || !formData.user_id} // Disable if no user_id
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-colors flex items-center">
                   {isLoading ? (<Loader2 size={16} className="inline mr-1.5 animate-spin" />) : (<Save size={16} className="inline mr-1.5" />)}
                   {isLoading ? 'Saving...' : (eventToEdit?.event_id ? 'Update Event' : 'Create Event')}

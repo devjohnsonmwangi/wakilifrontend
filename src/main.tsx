@@ -75,6 +75,7 @@ const router = createBrowserRouter([
       { path: 'branch', element: <BranchLocationManagement /> },
       {path: 'activity-log',element:<FullActivityHistory/>},
       {path:'help',element:<HelpCenter/>},
+      {path:'dashboard',element:<DashboardOverviewLoader/>},
     ],
   },
   // Remove duplicate top-level routes that are meant to be under /dashboard
