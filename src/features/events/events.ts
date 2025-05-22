@@ -1,5 +1,6 @@
+// src/features/events/events.ts (or your RTK Query file)
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain";
+import { APIDomain } from "../../utils/APIDomain"; // Adjust path if needed
 
 // Define Event Types
 export type EventType = "meeting" | "hearing" | "consultation" | "reminder" | "court_date";
@@ -11,13 +12,13 @@ export interface EventDataTypes {
   event_type: EventType;
   event_title: string;
   event_description?: string;
-  start_time: string;
-  event_date?: string;
+  start_time: string;    // Expected as ISO 8601 string from backend
+  // event_date?: string | null; // REMOVED
   created_at: string;
   updated_at: string;
 }
 
-export interface EventReminderDataTypes {
+export interface EventReminderDataTypes { // Assuming this remains the same
   reminder_id: number;
   event_id: number;
   reminder_time: string;
@@ -26,14 +27,28 @@ export interface EventReminderDataTypes {
   updated_at: string;
 }
 
-// Combined API Slice for Events and Event Reminders
+// Define the types for the mutation payloads more precisely
+interface CreateEventPayload {
+    event_title: string;
+    event_type: EventType;
+    start_time: string; // ISO String
+    event_description?: string;
+    case_id: number;
+    user_id: number;
+    // event_date is removed
+}
+
+interface UpdateEventPayload extends Partial<CreateEventPayload> {
+    // No event_date here either
+}
+
+
 export const eventAndReminderAPI = createApi({
   reducerPath: "eventAndReminderAPI",
   baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
   refetchOnReconnect: true,
   tagTypes: ["Event", "EventReminder"],
   endpoints: (builder) => ({
-    // Event Endpoints
     fetchEvents: builder.query<EventDataTypes[], void>({
       query: () => "events",
       providesTags: ["Event"],
@@ -42,7 +57,7 @@ export const eventAndReminderAPI = createApi({
       query: (event_id) => `events/${event_id}`,
       providesTags: ["Event"],
     }),
-    createEvent: builder.mutation<EventDataTypes, Partial<EventDataTypes>>({
+    createEvent: builder.mutation<EventDataTypes, CreateEventPayload>({
       query: (newEvent) => ({
         url: "events",
         method: "POST",
@@ -50,7 +65,7 @@ export const eventAndReminderAPI = createApi({
       }),
       invalidatesTags: ["Event"],
     }),
-    updateEvent: builder.mutation<EventDataTypes, Partial<EventDataTypes & { event_id: number }>>({
+    updateEvent: builder.mutation<EventDataTypes, { event_id: number } & UpdateEventPayload>({
       query: ({ event_id, ...rest }) => ({
         url: `events/${event_id}`,
         method: "PUT",
@@ -102,13 +117,11 @@ export const eventAndReminderAPI = createApi({
 });
 
 export const {
-  // Event Hooks
   useFetchEventsQuery,
   useGetEventByIdQuery,
   useCreateEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,
-  // Event Reminder Hooks
   useFetchRemindersQuery,
   useGetReminderByIdQuery,
   useCreateReminderMutation,

@@ -8,7 +8,7 @@ import {
   EventReminderDataTypes,
   useFetchRemindersQuery,
   useDeleteReminderMutation,
-} from '../../../../features/events/events';
+} from '../../../../features/events/events'; // Path should be correct
 
 import ReminderFormModal from './ReminderFormModal';
 import EventTypeChip from './components/EventTypeChip';
@@ -18,16 +18,18 @@ interface Props {
   open: boolean;
   onClose: () => void;
   event: EventDataTypes;
-  onEditEvent: (event: EventDataTypes) => void;
-  onDeleteEvent: (eventId: number) => void;
-  onSuccess: (message: string) => void;
-  onError: (message: string) => void;
+  onEditEvent: (event: EventDataTypes) => void; // This prop is present but not used in the provided modal code
+  onDeleteEvent: (eventId: number) => void;   // This prop is present but not used in the provided modal code
+  onSuccess: (message: string) => void; // Likely for reminder operations
+  onError: (message: string) => void;   // Likely for reminder operations
 }
 
 const EventDetailsModal: React.FC<Props> = ({
   open,
   onClose,
   event,
+  // onEditEvent, // Not used in this component's current rendering logic
+  // onDeleteEvent, // Not used in this component's current rendering logic
 }) => {
   const { data: allReminders, isLoading, isError, error } = useFetchRemindersQuery(undefined, { skip: !open });
   const [deleteReminder, { isLoading: isDeleting }] = useDeleteReminderMutation();
@@ -70,14 +72,33 @@ const EventDetailsModal: React.FC<Props> = ({
     }
   };
 
-  const formatDate = (date?: string) => date ? format(parseISO(date), 'PPP') : 'N/A';
-  const formatTime = (time: string) => {
-    const [h, m] = time.split(':');
-    const date = new Date();
-    date.setHours(parseInt(h), parseInt(m));
-    return format(date, 'p');
+  // UPDATED: Combined function to display event start date and time from ISO string
+  const displayEventStart = (startTimeISO: string) => {
+    if (!startTimeISO) return 'N/A';
+    try {
+      const dateObj = parseISO(startTimeISO);
+      // Check if the original ISO string likely represented an all-day event (e.g., "YYYY-MM-DD")
+      if (startTimeISO.length === 10 && !startTimeISO.includes('T')) {
+        return `${format(dateObj, 'PPP')} (All-day)`; // e.g., "Oct 26, 2023 (All-day)"
+      }
+      return format(dateObj, 'PPp'); // e.g., "Oct 26, 2023, 2:30 PM"
+    } catch (e) {
+      console.error("Error parsing event start_time:", e);
+      return "Invalid date";
+    }
   };
-  const formatDateTime = (dt: string) => format(parseISO(dt), 'PPpp');
+
+  // Kept for created_at, updated_at, reminder_time
+  const formatDisplayDateTime = (dt?: string) => {
+    if (!dt) return 'N/A';
+    try {
+      return format(parseISO(dt), 'PPpp'); // e.g., "Oct 26, 2023, 2:30:00 PM"
+    } catch (e) {
+      console.error("Error parsing datetime:", e);
+      return "Invalid date";
+    }
+  }
+
 
   return (
     <>
@@ -86,7 +107,7 @@ const EventDetailsModal: React.FC<Props> = ({
           <Dialog.Panel className="bg-white rounded-lg w-full max-w-4xl shadow-lg border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">{event.event_title}</h2>
-              <button onClick={onClose} className="text-gray-500 hover:text-black">&times;</button>
+              <button onClick={onClose} className="text-gray-500 hover:text-black">×</button>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -94,8 +115,9 @@ const EventDetailsModal: React.FC<Props> = ({
               <div className="border p-4 rounded-md">
                 <h3 className="text-lg font-semibold mb-2">Event Details</h3>
                 <p><strong>Type:</strong> <EventTypeChip eventType={event.event_type} /></p>
-                <p><strong>Date:</strong> {formatDate(event.event_date)}</p>
-                <p><strong>Time:</strong> {formatTime(event.start_time)}</p>
+                {/* UPDATED: Display for event start time */}
+                <p><strong>Starts:</strong> {displayEventStart(event.start_time)}</p>
+                {/* REMOVED: Separate Date and Time fields */}
                 {event.case_id && <p><strong>Case ID:</strong> {event.case_id}</p>}
                 {event.event_description && (
                   <div>
@@ -104,7 +126,7 @@ const EventDetailsModal: React.FC<Props> = ({
                   </div>
                 )}
                 <p className="text-sm text-gray-400 mt-2">
-                  Created: {formatDateTime(event.created_at)} | Updated: {formatDateTime(event.updated_at)}
+                  Created: {formatDisplayDateTime(event.created_at)} | Updated: {formatDisplayDateTime(event.updated_at)}
                 </p>
               </div>
 
@@ -131,7 +153,7 @@ const EventDetailsModal: React.FC<Props> = ({
                       <li key={reminder.reminder_id} className="flex justify-between items-start border-b pb-1">
                         <div>
                           <p className="font-medium">{reminder.reminder_message || 'General Reminder'}</p>
-                          <p className="text-sm text-gray-600">Notify at: {formatDateTime(reminder.reminder_time)}</p>
+                          <p className="text-sm text-gray-600">Notify at: {formatDisplayDateTime(reminder.reminder_time)}</p>
                         </div>
                         <div className="flex space-x-2">
                           <button

@@ -5,7 +5,7 @@ import {
   useDeleteEventMutation,
   EventDataTypes,
   EventType,
-} from '../../../../features/events/events';
+} from '../../../../features/events/events'; // Assuming this path is correct
 
 import EventCalendarView from './EventCalendarView';
 import EventListView from './EventListView';
@@ -13,7 +13,7 @@ import EventFormModal from './EventFormModal';
 import EventDetailsModal from './EventDetailsModal';
 import ConfirmationDialog from './components/ConfirmationDialog';
 import NotificationSnackbar, { SnackbarMessage } from './components/NotificationSnackbar';
-import { format } from 'date-fns';
+import { format } from 'date-fns'; // format is already imported
 
 export type ViewMode = 'calendar' | 'list';
 
@@ -42,7 +42,7 @@ const EventsPage: React.FC = () => {
   const handleCloseSnackbar = () => setSnackbar(null);
 
   const filteredEvents = useMemo(() => {
-    if (!events) return []; // Handles case where events is undefined or null
+    if (!events) return [];
     return events
       .filter(event => eventTypeFilter === 'all' || event.event_type === eventTypeFilter)
       .filter(event =>
@@ -78,10 +78,11 @@ const EventsPage: React.FC = () => {
       try {
         await deleteEvent(eventToDeleteId).unwrap();
         showSnackbar('Event deleted successfully!', 'success');
+        // Optionally, refetch events or rely on cache invalidation
       } catch (err: unknown) {
         const errorMessage = (err as { data?: { msg?: string } })?.data?.msg || 'Failed to delete event.';
-        toast.error(errorMessage);
-        showSnackbar(errorMessage, 'error');
+        toast.error(errorMessage); // Using Sonner for immediate feedback
+        showSnackbar(errorMessage, 'error'); // And custom snackbar if desired
       } finally {
         setIsConfirmDeleteDialogOpen(false);
         setEventToDeleteId(null);
@@ -89,8 +90,6 @@ const EventsPage: React.FC = () => {
     }
   };
 
-  // Main page structure is returned unconditionally.
-  // Loading, error, and empty states are handled *inside* the content display area.
   return (
     <div className="max-w-screen-xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Header and Controls Section - Always Visible */}
@@ -102,7 +101,7 @@ const EventsPage: React.FC = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-md shadow-sm hover:shadow-md transition-colors duration-150 flex items-center gap-2 text-sm sm:text-base"
             aria-label="Add New Event"
           >
-            <span className="material-icons text-xl">add</span> Add Event
+            <span className="material-icons-outlined text-xl mr-1">add</span> Add Event
           </button>
         </div>
 
@@ -113,14 +112,14 @@ const EventsPage: React.FC = () => {
               className={`flex-1 p-2.5 rounded-md border text-sm font-medium transition-colors duration-150 ${currentView === 'calendar' ? 'bg-blue-100 border-blue-500 text-blue-700' : 'border-gray-300 hover:bg-gray-50 text-gray-700'}`}
               onClick={() => handleViewChange('calendar')}
             >
-              <span className="material-icons mr-1.5 align-middle text-lg">calendar_today</span> Calendar
+              <span className="material-icons-outlined mr-1.5 align-middle text-lg">calendar_today</span> Calendar
             </button>
             <button
               aria-label="Switch to List View"
               className={`flex-1 p-2.5 rounded-md border text-sm font-medium transition-colors duration-150 ${currentView === 'list' ? 'bg-blue-100 border-blue-500 text-blue-700' : 'border-gray-300 hover:bg-gray-50 text-gray-700'}`}
               onClick={() => handleViewChange('list')}
             >
-              <span className="material-icons mr-1.5 align-middle text-lg">list</span> List
+              <span className="material-icons-outlined mr-1.5 align-middle text-lg">list</span> List
             </button>
           </div>
 
@@ -135,7 +134,7 @@ const EventsPage: React.FC = () => {
             <option value="meeting">Meeting</option>
             <option value="hearing">Hearing</option>
             <option value="consultation">Consultation</option>
-            <option value="reminder">General Event</option>
+            <option value="reminder">General Event</option> {/* Assuming 'reminder' is the value for "General Event" */}
             <option value="court_date">Court Date</option>
           </select>
 
@@ -151,43 +150,39 @@ const EventsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Event Display Area - Content changes based on loading/error/data state */}
+      {/* Event Display Area */}
       <div
         className={`bg-white shadow-lg rounded-lg 
           ${(currentView === 'calendar' && filteredEvents.length > 0 && !isLoading && !isError) ? 
-            '' : // No padding for calendar view with events
-            'p-4 sm:p-6' // Padding for list view or any message/loader display
+            '' : 
+            'p-4 sm:p-6'
           }`}
       >
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[200px] text-center">
-            <div className="loader mr-4" /> {/* Ensure you have a CSS class for loader */}
+            {/* Consider adding a spinner component or simple text */}
             <p className="text-gray-600 text-lg">Loading events...</p>
           </div>
         ) : isError ? (
           <div className="text-center text-red-600 py-12 px-4">
-            <span className="material-icons text-5xl text-red-400 mb-3">error_outline</span>
+            <span className="material-icons-outlined text-5xl text-red-400 mb-3">error_outline</span>
             <h2 className="text-xl font-medium mb-2">Error Loading Events</h2>
             <p className="text-sm">
-              {(fetchErrorData as any)?.data?.msg ||
-               (fetchErrorData as any)?.error ||
-               'An unexpected error occurred. Please try again or check your connection.'}
+              {(fetchErrorData && typeof fetchErrorData === 'object' && 'data' in fetchErrorData && (fetchErrorData as { data?: { msg?: string } }).data?.msg) ||
+               (fetchErrorData && typeof fetchErrorData === 'object' && 'error' in fetchErrorData && (fetchErrorData as { error?: string }).error) ||
+               'An unexpected error occurred. Please try again.'}
             </p>
           </div>
         ) : isSuccess && (!events || events.length === 0) ? (
-          // This case handles when the API call was successful but returned no events.
           <div className="text-center text-gray-600 py-12 px-4">
-            <span className="material-icons text-5xl text-gray-400 mb-3">event_busy</span>
+            <span className="material-icons-outlined text-5xl text-gray-400 mb-3">event_busy</span>
             <h2 className="text-xl font-medium mb-2">No Events Yet</h2>
-            <p className="text-sm">There are no events scheduled in the system.</p>
             <p className="text-sm">Click "Add Event" above to get started.</p>
           </div>
         ) : filteredEvents.length === 0 ? (
-          // This case handles when there are events, but current filters/search yield no results.
           <div className="text-center text-gray-600 py-12 px-4">
-            <span className="material-icons text-5xl text-gray-400 mb-3">search_off</span>
+            <span className="material-icons-outlined text-5xl text-gray-400 mb-3">search_off</span>
             <h2 className="text-xl font-medium mb-2">No Matching Events</h2>
-            <p className="text-sm">No events match your current filters or search term.</p>
             <p className="text-sm">Try adjusting your search or filter criteria.</p>
           </div>
         ) : currentView === 'calendar' ? (
@@ -195,11 +190,27 @@ const EventsPage: React.FC = () => {
             events={filteredEvents}
             onEventClick={handleOpenDetailsModal}
             onDateSelect={(selectInfo) => {
+              // UPDATED: Construct start_time as ISO string
+              let startTimeISO: string;
+              if (selectInfo.allDay) {
+                // For all-day selections, format as "YYYY-MM-DD"
+                // FullCalendar's `start` for allDay selection is already at the beginning of the day.
+                startTimeISO = format(selectInfo.start, "yyyy-MM-dd");
+              } else {
+                // For timed selections, use the full ISO string from the Date object.
+                startTimeISO = selectInfo.start.toISOString();
+              }
+
               setEventToEdit({
-                event_id: 0, user_id: 0, case_id: 0, event_type: 'meeting',
-                event_title: '', start_time: format(selectInfo.start, "HH:mm"),
-                event_date: format(selectInfo.start, "yyyy-MM-dd"),
-                created_at: '', updated_at: ''
+                event_id: 0, // Placeholder for new event
+                user_id: 0,  // Placeholder, assuming this is set by backend or context
+                case_id: 0,  // Placeholder, or to be selected in form
+                event_type: 'meeting', // Default type for new event
+                event_title: '',
+                start_time: startTimeISO, // Correctly formatted ISO string
+                // event_date is removed
+                created_at: '', // Will be set by backend
+                updated_at: ''  // Will be set by backend
               });
               setIsEventFormModalOpen(true);
             }}
@@ -214,17 +225,14 @@ const EventsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modals and Snackbar - Conditionally rendered based on their own state */}
+      {/* Modals and Snackbar */}
       {isEventFormModalOpen && (
         <EventFormModal
           open={isEventFormModalOpen}
           onClose={() => { setIsEventFormModalOpen(false); setEventToEdit(null); }}
           eventToEdit={eventToEdit}
-          onSuccess={(message: string) => {
-            showSnackbar(message, 'success');
-            setIsEventFormModalOpen(false); setEventToEdit(null);
-          }}
-          onError={(message) => showSnackbar(message, 'error')}
+          // Assuming EventFormModal is updated to handle onSuccess/onError itself
+          // or these are passed down and used within its save logic
         />
       )}
 
@@ -235,8 +243,8 @@ const EventsPage: React.FC = () => {
           event={selectedEventForDetails}
           onEditEvent={(event) => { handleCloseDetailsModal(); handleOpenEditEventModal(event); }}
           onDeleteEvent={(eventId) => { handleCloseDetailsModal(); handleDeleteEventRequest(eventId); }}
-          onSuccess={(message) => showSnackbar(message, 'success')}
-          onError={(message) => showSnackbar(message, 'error')}
+          onSuccess={(message) => showSnackbar(message, 'success')} // For reminder success
+          onError={(message) => showSnackbar(message, 'error')}     // For reminder error
         />
       )}
 

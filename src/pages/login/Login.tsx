@@ -108,7 +108,7 @@ const Login = () => {
           case 'client':
           case 'clerk':    
           case 'receptionist':
-            navigate('/dashboard/profile');
+            navigate('/dashboard');
             break;
           default:
             navigate('/');

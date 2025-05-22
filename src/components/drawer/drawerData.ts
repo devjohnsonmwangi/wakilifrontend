@@ -15,6 +15,8 @@ export type DrawerData = {
 
 // Drawer data with roles and permissions
 export const drawerData: DrawerData[] = [
+    //navigating to  dashboard
+    { id: 17, name: 'Dashboard Overview', icon: Folder, link: '/dashboard', adminOnly: false },
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false },
     { id: 1, name: 'Appointments', icon: ClipboardList, link: 'appoint', adminOnly: false },
     { id: 2, name: 'Documents', icon: FileText, link: 'listdoc', adminOnly: false },
@@ -34,7 +36,7 @@ export const drawerData: DrawerData[] = [
     { id: 11, name: 'Event Reminders', icon: Calendar, link: 'event-reminders', adminOnly: false },
     { id: 12, name: 'Location', icon: MapPin, link: 'branch', adminOnly: false },
     { id: 13, name: 'Feedbacks', icon: MessageCircle, link: 'feedbacks', adminOnly: false },
-    { id: 14, name: 'Logs', icon: File, link: 'logs', adminOnly: true },
+    { id: 14, name: 'Logs_History', icon: File, link: 'activity-log', adminOnly: true },
     
     { id: 16, name: 'My Tickets', icon: Ticket, link: 'mytickets', adminOnly: false },
     { id: 15, name: 'Logout', icon: LogOut, link: 'logout', adminOnly: false },

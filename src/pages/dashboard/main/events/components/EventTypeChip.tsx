@@ -1,49 +1,69 @@
 // src/features/events/components/EventTypeChip.tsx
 import React from 'react';
-import Chip from '@mui/material/Chip';
-import { EventType } from '../../../../../features/events/events'; // Adjust path as needed
+// Assuming EventType is defined in a file like 'types.ts' or directly in 'events.ts'
+// in the parent 'events' feature folder.
+// If `EventType` is in `src/features/events/events.ts` and this file is `src/features/events/components/EventTypeChip.tsx`
+// then the path would be:
+import { EventType } from '../../../../../features/events/events'; // Adjusted path
 
 interface EventTypeChipProps {
   eventType: EventType;
 }
 
+// We'll use Tailwind classes directly for styling instead of hex codes for colors
+// to leverage your theme and provide better maintainability.
+// You might need to ensure these Tailwind color classes exist in your config
+// (e.g., bg-blue-100, text-blue-700). Standard Tailwind includes many.
 const getEventTypeStyle = (
   type: EventType
-): { backgroundColor: string; color: string; label: string } => {
+): { className: string; label: string } => {
   switch (type) {
     case 'meeting':
-      return { backgroundColor: '#e3f2fd', color: '#1976d2', label: 'Meeting' }; // Light Blue
-    case 'hearing':
-      return { backgroundColor: '#ffebee', color: '#d32f2f', label: 'Hearing' }; // Light Red
-    case 'consultation':
-      return { backgroundColor: '#e8f5e9', color: '#388e3c', label: 'Consultation' }; // Light Green
-    case 'reminder':
-      return { backgroundColor: '#fff3e0', color: '#f57c00', label: 'General Event' }; // Light Orange
-    case 'court_date':
-      return { backgroundColor: '#f3e5f5', color: '#7b1fa2', label: 'Court Date' }; // Light Purple
-    default:
       return {
-        backgroundColor: '#f5f5f5',
-        color: '#616161',
-        label: (type as string).replace('_', ' ').toUpperCase(),
+        className: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200', // Added dark mode variants
+        label: 'Meeting',
       };
+    case 'hearing':
+      return {
+        className: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200', // Added dark mode variants
+        label: 'Hearing',
+      };
+    case 'consultation':
+      return {
+        className: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200', // Added dark mode variants
+        label: 'Consultation',
+      };
+    case 'reminder':
+      return {
+        className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100', // Adjusted for better contrast and dark mode
+        label: 'General Event',
+      };
+    case 'court_date':
+      return {
+        className: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200', // Added dark mode variants
+        label: 'Court Date',
+      };
+    default: { // <--- ADDED OPENING BRACE
+      const formattedLabel = (type as string)
+        .replace(/_/g, ' ') // Replace underscores with spaces
+        .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
+      return {
+        className: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', // Added dark mode variants
+        label: formattedLabel,
+      };
+    } // <--- ADDED CLOSING BRACE
   }
 };
 
 const EventTypeChip: React.FC<EventTypeChipProps> = ({ eventType }) => {
-  const { backgroundColor, color, label } = getEventTypeStyle(eventType);
+  const { className, label } = getEventTypeStyle(eventType);
 
   return (
-    <Chip
-      label={label}
-      size="small"
-      sx={{
-        backgroundColor,
-        color,
-        fontWeight: 'medium',
-        textTransform: 'capitalize',
-      }}
-    />
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}
+    >
+      {label}
+    </span>
   );
 };
 

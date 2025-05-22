@@ -120,7 +120,7 @@ const Navbar = () => {
         { to: "/howitworks", icon: BookOpen, label: "How It Works" },
         { to: "/about", icon: Info, label: "About Us" },
         { to: "/services", icon: Briefcase, label: "Services" },
-        ...(userRole !== 'disabled' && username ? [{ to: "/dashboard/overview", icon: LayoutDashboard, label: "Dashboard" }] : []),
+        ...(userRole !== 'disabled' && username ? [{ to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : []),
         { to: "/contactus", icon: Mail, label: "Contact Us" },
     ];
 
@@ -140,7 +140,7 @@ const Navbar = () => {
             <div className="border-t border-gray-100"></div>
             <Link to="/dashboard/profile" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><User className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Profile</Link>
             <Link to="/dashboard/settings" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><Settings className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Settings</Link>
-            <Link to="/help" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Help</Link>
+            <Link to="/dashboard/help" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Help</Link>
             <div className="border-t border-gray-100"></div>
             <button
                 onClick={handleLogout} // This calls the robust handleLogout
@@ -225,7 +225,7 @@ const Navbar = () => {
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 w-full h-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-top z-50 flex items-stretch" aria-label="Mobile bottom navigation">
                 <Link to="/" className={bottomNavLinkClasses(location.pathname === "/")}> <Home className="w-5 h-5 mb-0.5 shrink-0" /> Home </Link>
                 {username && userRole !== 'disabled' ? (
-                    <Link to="/dashboard/overview" className={bottomNavLinkClasses(location.pathname.startsWith("/dashboard"))}> <LayoutDashboard className="w-5 h-5 mb-0.5 shrink-0" /> Dashboard </Link>
+                    <Link to="/dashboard" className={bottomNavLinkClasses(location.pathname.startsWith("/dashboard"))}> <LayoutDashboard className="w-5 h-5 mb-0.5 shrink-0" /> Dashboard </Link>
                 ) : (
                     <Link to="/services" className={bottomNavLinkClasses(location.pathname === "/services")}> <Briefcase className="w-5 h-5 mb-0.5 shrink-0" /> Services </Link>
                 )}

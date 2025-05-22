@@ -14,7 +14,7 @@ import HowItWorks from './pages/HowItWorks.tsx';
 import Contactus from './pages/contact.tsx';
 import About from './pages/landingPage/About.tsx';
 import Services from './pages/landingPage/Services.tsx';
-import Dashboard from './pages/dashboard/Dashboard.tsx';
+import Dashboard from './pages/dashboard/Dashboard.tsx'; // This is your layout that will contain the tracker
 import Reports from './pages/dashboard/main/Reports/Reports.tsx';
 import ResetPasswordForm from './components/resetpass.tsx';
 import { RequestPasswordResetForm } from './components/resetpassrequest.tsx';
@@ -31,9 +31,16 @@ import AppointmentList from './pages/dashboard/main/manageAppointment/listappoin
 import BranchLocationManagement from './pages/dashboard/main/branchlocation/listbranch.tsx';
 import PaymentHistory from './pages/dashboard/main/Payments/PaymentModal.tsx';
 import EventsPage from './pages/dashboard/main/events/EventsPage.tsx';
+import DashboardOverviewLoader from './pages/dashboard/overviewloader.tsx';
+import FullActivityHistory from './pages/dashboard/FullActivityHistory.tsx';
+import HelpCenter from './pages/dashboard/helpcenter.tsx';
+
+// NOTE: We are NOT importing RouteChangeTracker here globally anymore.
+// It will be imported and used within Dashboard.tsx
 
 // Define routes
 const router = createBrowserRouter([
+  // Non-Dashboard Routes (will not be tracked by the tracker inside Dashboard.tsx)
   { path: '/', element: <Home />, errorElement: <Error /> },
   { path: 'register', element: <Register />, errorElement: <Error /> },
   { path: 'login', element: <Login />, errorElement: <Error /> },
@@ -41,22 +48,16 @@ const router = createBrowserRouter([
   { path: 'contactus', element: <Contactus />, errorElement: <Error /> },
   { path: 'services', element: <Services />, errorElement: <Error /> },
   { path: 'about', element: <About />, errorElement: <Error /> },
-  { path: 'profile', element: <Profile />, errorElement: <Error /> },
-  { path: 'account', element: <Account />, errorElement: <Error /> },
-  { path: 'supporttickets', element: <SupportTickets />, errorElement: <Error /> },
-  { path: 'mytickets', element: <MyTickets />, errorElement: <Error /> },
-  { path: 'reports', element: <Reports />, errorElement: <Error /> },
-  { path: 'mycases', element: <MyCases />, errorElement: <Error /> },
-  { path: 'listdoc', element: <DocumentList />, errorElement: <Error /> },
   { path: 'forgot-password', element: <RequestPasswordResetForm />, errorElement: <Error /> },
-  { path: 'reset-password', element: <ResetPasswordForm token="realTokenHere" mode="reset" />, errorElement: <Error /> },
+  { path: 'reset-password', element: <ResetPasswordForm token="someToken" mode="reset" />, errorElement: <Error /> }, // Ensure token is dynamic or placeholder
 
   // Dashboard nested routes
   {
     path: 'dashboard',
-    element: <Dashboard />,
+    element: <Dashboard />, // Dashboard.tsx will contain its own DashboardRouteChangeTracker
     errorElement: <Error />,
     children: [
+      { index: true, element: <DashboardOverviewLoader /> }, // Default for /dashboard
       { path: 'supporttickets', element: <SupportTickets /> },
       { path: 'account', element: <Account /> },
       { path: 'appoint', element: <AppointmentList /> },
@@ -68,24 +69,32 @@ const router = createBrowserRouter([
       { path: 'logout', element: <Logout /> },
       { path: 'mycases', element: <MyCases /> },
       { path: 'cases', element: <Cases /> },
+      // Example for dynamic case route:
+      // { path: 'cases/:caseId', element: <YourCaseDetailPageComponent /> },
       { path: 'reports', element: <Reports /> },
       { path: 'branch', element: <BranchLocationManagement /> },
+      {path: 'activity-log',element:<FullActivityHistory/>},
+      {path:'help',element:<HelpCenter/>},
     ],
   },
+  // Remove duplicate top-level routes that are meant to be under /dashboard
+  // For example, if /profile is only meant to be /dashboard/profile, remove the top-level one.
+  // If they are distinct pages, keep them, but they won't be tracked by the dashboard tracker.
 ]);
 
-// Mount the app
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistedStore}>
+        {/* Render RouterProvider directly. The tracker is now inside Dashboard.tsx */}
         <RouterProvider router={router} />
       </PersistGate>
     </Provider>
   </React.StrictMode>
 );
 
-// Register service worker for PWA
+// ... rest of your service worker code
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')

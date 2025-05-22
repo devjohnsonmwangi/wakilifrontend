@@ -160,7 +160,7 @@ const AllCases = () => {
                     <div className="breadcrumbs text-sm my-6 text-yellow-300 flex items-center gap-2">
                         <FaFileAlt />
                         <ul className="flex gap-2">
-                            <li><Link to="/dashboard/profile">🏠 Dashboard</Link></li>
+                            <li><Link to="/dashboard">🏠 Dashboard</Link></li>
                             <li><Link to="/dashboard/account">📋 Admin</Link></li>
                             <li><span className="inline-flex items-center gap-2">📁 Cases</span></li>
                         </ul>

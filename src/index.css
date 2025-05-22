@@ -1,3 +1,54 @@
+/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* Styles for react-datepicker, heavily using @apply */
+  .custom-datepicker-popper { /* You could rename the popper if you want to control its class */
+    z-index: 55 !important;
+  }
+  .custom-datepicker-theme { /* Apply this class to DatePicker's calendarClassName prop */
+    @apply font-sans border-gray-300 rounded-md shadow-lg;
+    font-size: 0.9rem !important;
+  }
+  .custom-datepicker-theme .react-datepicker__header {
+    @apply bg-gray-100 border-b border-gray-200;
+    padding-top: 8px !important;
+  }
+  .custom-datepicker-theme .react-datepicker__current-month,
+  .custom-datepicker-theme .react-datepicker-time__header {
+    @apply text-gray-700 font-semibold;
+  }
+  /* ... and so on for all other selectors, prefixing with .custom-datepicker-theme */
+}
+/* FullCalendar custom styles */
+.event-calendar-wrapper .fc-button {
+  @apply bg-indigo-600 text-white border-none py-2 px-4 m-1 rounded hover:bg-indigo-700;
+  /* Or direct CSS:
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 0.5em 1em;
+  margin: 0.2em;
+  border-radius: 0.25em; */
+}
+.event-calendar-wrapper .fc-button:hover {
+   @apply hover:bg-indigo-700; /* Covered by above if using @apply for base */
+}
+.event-calendar-wrapper .fc-button-primary:disabled {
+  @apply opacity-60;
+}
+.event-calendar-wrapper .fc-event {
+  @apply cursor-pointer text-sm;
+  /* Background, border, and text color will be applied by event.classNames */
+}
+.event-calendar-wrapper .fc-event:hover {
+  @apply opacity-80;
+}
+.event-calendar-wrapper .fc-today-button {
+    @apply bg-emerald-500 hover:bg-emerald-600;
+}
+.event-calendar-wrapper .fc-toolbar-title {
+    @apply text-xl font-semibold text-gray-800; /* text-lg or text-2xl might also fit */
+}
