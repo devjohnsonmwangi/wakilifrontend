@@ -28,7 +28,7 @@ export interface EventReminderDataTypes { // Assuming this remains the same
 }
 
 // Define the types for the mutation payloads more precisely
-interface CreateEventPayload {
+export interface CreateEventPayload {
     event_title: string;
     event_type: EventType;
     start_time: string; // ISO String
@@ -38,7 +38,7 @@ interface CreateEventPayload {
     // event_date is removed
 }
 
-interface UpdateEventPayload extends Partial<CreateEventPayload> {
+export interface UpdateEventPayload extends Partial<CreateEventPayload> {
     // No event_date here either
 }
 
