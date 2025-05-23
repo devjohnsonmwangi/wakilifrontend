@@ -5,14 +5,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logOut } from "../../features/users/userSlice"; // Adjust path
 import { usersAPI } from "../../features/users/usersAPI"; // Adjust path
 import {
-    User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard, // Renamed LogOut to LogOutIcon to avoid conflict
+    User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard,
     X, ChevronDown, Settings, HelpCircle, Briefcase, BookOpen, DownloadCloud, MoreHorizontal,
     Menu
 } from 'lucide-react';
 
 import AppDrawer from "../../pages/dashboard/aside/Drawer"; // Adjust path
 
-const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = true;
+const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = true; // Set to false for production
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -31,29 +31,73 @@ const Navbar = () => {
     const [isMobileMoreSheetOpen, setIsMobileMoreSheetOpen] = useState(false);
     const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+    const [isRunningAsPWA, setIsRunningAsPWA] = useState(false); // New state
 
-    // Separate refs for desktop and mobile profile dropdown containers
     const desktopProfileMenuRef = useRef<HTMLDivElement>(null);
-    const mobileProfileMenuRef = useRef<HTMLDivElement>(null); // For the top-right mobile avatar dropdown
+    const mobileProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileSheetRef = useRef<HTMLDivElement>(null);
 
+    // Effect to detect if running as PWA and handle 'beforeinstallprompt'
     useEffect(() => {
-        const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
-        window.addEventListener('beforeinstallprompt', handler);
-        return () => window.removeEventListener('beforeinstallprompt', handler);
+        // Check if running in standalone mode
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        setIsRunningAsPWA(mediaQuery.matches);
+
+        const handleMediaQueryChange = (e: MediaQueryListEvent) => {
+            setIsRunningAsPWA(e.matches);
+        };
+        mediaQuery.addEventListener('change', handleMediaQueryChange);
+
+        // Handle beforeinstallprompt
+        const handleBeforeInstallPrompt = (e: Event) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            console.log("'beforeinstallprompt' event fired and captured.");
+        };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // Handle appinstalled event
+        const handleAppInstalled = () => {
+            console.log("PWA installed successfully!");
+            setDeferredPrompt(null); // Clear the prompt as it's been used
+            setIsRunningAsPWA(true); // Assume it will now run as PWA
+        };
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        return () => {
+            mediaQuery.removeEventListener('change', handleMediaQueryChange);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', handleAppInstalled);
+        };
     }, []);
+
 
     const handlePWAInstall = async () => {
         const promptToUse = deferredPrompt || (ALWAYS_SHOW_PWA_BUTTON_FOR_DEV ? { prompt: () => console.log("DEV MODE: Mock PWA prompt() called"), userChoice: Promise.resolve({ outcome: 'accepted' }) } : null);
         if (promptToUse) {
             (promptToUse as { prompt: () => void; userChoice: Promise<{ outcome: string }> }).prompt();
-            if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) setDeferredPrompt(null);
+            const { outcome } = await (promptToUse as { userChoice: Promise<{ outcome: string }> }).userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            if (outcome === 'accepted') {
+                console.log('User accepted the PWA installation');
+                if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) {
+                    setDeferredPrompt(null);
+                }
+            } else {
+                console.log('User dismissed the PWA installation');
+            }
             setIsMobileMoreSheetOpen(false); setIsAppDrawerOpen(false); setIsProfileDropdownOpen(false);
-        } else { alert('App installation is not available.'); }
+        } else {
+             if (isRunningAsPWA) {
+                alert('The app is already installed and running as a PWA.');
+            } else {
+                alert('App installation is not available at this moment.');
+            }
+        }
     };
 
     const toggleProfileDropdown = (event: React.MouseEvent) => {
-        event.stopPropagation(); // Important to prevent immediate closure by handleClickOutside
+        event.stopPropagation();
         setIsProfileDropdownOpen(prev => !prev);
         setIsMobileMoreSheetOpen(false); setIsAppDrawerOpen(false);
     };
@@ -70,18 +114,14 @@ const Navbar = () => {
         setIsProfileDropdownOpen(false); setIsMobileMoreSheetOpen(false);
     };
 
-    // Effect to handle clicks outside the profile dropdowns
     useEffect(() => {
-        if (!isProfileDropdownOpen) return; // Only add listener if dropdown is open
+        if (!isProfileDropdownOpen) return;
 
         const handleClickOutside = (event: MouseEvent) => {
             const targetNode = event.target as Node;
-            // Check if the click is outside the desktop dropdown
             const isOutsideDesktop = desktopProfileMenuRef.current && !desktopProfileMenuRef.current.contains(targetNode);
-            // Check if the click is outside the mobile (top-right avatar) dropdown
             const isOutsideMobile = mobileProfileMenuRef.current && !mobileProfileMenuRef.current.contains(targetNode);
 
-            // If it's open and click is outside both potential dropdown containers, close it
             if (isProfileDropdownOpen && isOutsideDesktop && isOutsideMobile) {
                 setIsProfileDropdownOpen(false);
             }
@@ -89,9 +129,8 @@ const Navbar = () => {
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isProfileDropdownOpen]); // Re-run when isProfileDropdownOpen changes
+    }, [isProfileDropdownOpen]);
 
-    // Effect to close all modals/drawers on route change
     useEffect(() => {
         setIsProfileDropdownOpen(false);
         setIsMobileMoreSheetOpen(false);
@@ -105,9 +144,7 @@ const Navbar = () => {
             console.log("Redux logOut action dispatched.");
         } catch (error) {
             console.error("Error dispatching logOut action:", error);
-            // Optionally, inform the user about the error
         }
-        // Close all modals/dropdowns
         setIsProfileDropdownOpen(false);
         setIsMobileMoreSheetOpen(false);
         setIsAppDrawerOpen(false);
@@ -130,10 +167,10 @@ const Navbar = () => {
     const bottomNavLinkClasses = (isActive: boolean) => `flex flex-col items-center justify-center flex-1 px-1 py-2 text-xs transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-green-500 focus:ring-offset-1 rounded-sm ${isActive ? 'text-green-600 font-medium' : 'text-gray-500 hover:text-green-600'}`;
     const PWA_BUTTON_SHARED_CLASSES = "flex items-center justify-center font-semibold rounded-md shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap px-2.5 py-1.5 text-sm";
     const desktopAuthButtonBaseClasses = "flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-150 whitespace-nowrap";
-    const shouldShowPWAButton = !!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV;
 
-    // ProfileDropdownPanel remains largely the same, but receives the triggerButtonId
-    // The logout button inside it already calls handleLogout, which is now more robust.
+    // Updated logic for showing the PWA install button
+    const shouldShowPWAButton = !isRunningAsPWA && (!!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV);
+
     const ProfileDropdownPanel = ({ triggerButtonId }: { triggerButtonId: string }) => (
         <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none py-1 z-70" role="menu" aria-orientation="vertical" aria-labelledby={triggerButtonId}>
             <div className="px-4 py-3"><p className="text-sm font-semibold text-gray-900 truncate" title={username || ""}>{username}</p>{userData?.email && <p className="text-xs text-gray-500 truncate" title={userData.email}>{userData.email}</p>}</div>
@@ -142,13 +179,8 @@ const Navbar = () => {
             <Link to="/dashboard/settings" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><Settings className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Settings</Link>
             <Link to="/dashboard/help" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Help</Link>
             <div className="border-t border-gray-100"></div>
-            <button
-                onClick={handleLogout} // This calls the robust handleLogout
-                className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
-                role="menuitem"
-            >
-                <LogOutIcon className="w-4 h-4 mr-2.5 shrink-0" /> {/* Using LogOutIcon */}
-                Logout
+            <button onClick={handleLogout} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700" role="menuitem">
+                <LogOutIcon className="w-4 h-4 mr-2.5 shrink-0" /> Logout
             </button>
         </div>
     );
@@ -183,7 +215,7 @@ const Navbar = () => {
                                     </Link>
                                 ))}
                             </nav>
-                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || username)) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
+                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || (username && !isRunningAsPWA) )) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
                             <div className="flex items-center space-x-2">
                                 {shouldShowPWAButton && (<button onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} bg-green-600 hover:bg-green-700 text-white`} title="Install WakiliApp"><DownloadCloud className="w-4 h-4 mr-1.5 shrink-0" /> Install App</button>)}
                                 {!username ? (
@@ -192,7 +224,6 @@ const Navbar = () => {
                                         <Link to="/login" className={`${desktopAuthButtonBaseClasses} text-white bg-green-600 hover:bg-green-700`}><LogIn className="w-4 h-4 mr-1.5 shrink-0" /> Login</Link>
                                     </>
                                 ) : (
-                                    // Desktop Profile Menu Container
                                     <div className="relative" ref={desktopProfileMenuRef}>
                                         <button id="user-menu-button-desktop" onClick={toggleProfileDropdown} aria-label="User menu" aria-expanded={isProfileDropdownOpen} aria-haspopup="true" className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
                                             <img src={profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=059669&color=fff&rounded=true&size=36&font-size=0.45&length=2&bold=true`} alt={`${username}'s Avatar`} className="w-9 h-9 rounded-full border-2 border-green-200 hover:border-green-500 transition-colors"/>
@@ -208,7 +239,6 @@ const Navbar = () => {
                             {!username ? (
                                 <Link to="/login" className="p-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1" aria-label="Login" title="Login"><LogIn className="w-5 h-5 shrink-0" /></Link>
                             ) : (
-                                // Mobile (top-right avatar) Profile Menu Container
                                 <div className="relative" ref={mobileProfileMenuRef}>
                                     <button id="user-menu-button-mobile" onClick={toggleProfileDropdown} aria-label="User menu" aria-expanded={isProfileDropdownOpen} aria-haspopup="true" className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
                                         <img src={profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=059669&color=fff&rounded=true&size=36&font-size=0.45&length=2&bold=true`} alt={`${username}'s Avatar`} className="w-9 h-9 rounded-full border-2 border-green-200 hover:border-green-500 transition-colors"/>
@@ -249,7 +279,7 @@ const Navbar = () => {
                                 <><div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700"></div>
                                 <Link to="/dashboard/profile" onClick={() => mobileSheetNavItemClick("/dashboard/profile")} className={mobileSheetLinkClasses(location.pathname === "/dashboard/profile")}><User className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> My Profile</Link>
                                 <Link to="/dashboard/settings" onClick={() => mobileSheetNavItemClick("/dashboard/settings")} className={mobileSheetLinkClasses(location.pathname === "/dashboard/settings")}><Settings className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> App Settings</Link>
-                                <button onClick={() => { handleLogout(); mobileSheetNavItemClick(); /* mobileSheetNavItemClick with no arg just closes sheet */ }} className={`${mobileSheetLinkClasses(false)} w-full text-red-600 hover:bg-red-50`}><LogOutIcon className="w-5 h-5 mr-3 shrink-0" /> Logout</button></>
+                                <button onClick={() => { handleLogout(); mobileSheetNavItemClick(); }} className={`${mobileSheetLinkClasses(false)} w-full text-red-600 hover:bg-red-50`}><LogOutIcon className="w-5 h-5 mr-3 shrink-0" /> Logout</button></>
                             ) : (
                                 <><div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700"></div>
                                 <Link to="/register" onClick={() => mobileSheetNavItemClick("/register")} className={mobileSheetLinkClasses(location.pathname === "/register")}><UserPlus className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> Register</Link>
