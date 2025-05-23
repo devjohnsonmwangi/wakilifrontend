@@ -1,7 +1,8 @@
 // src/pages/dashboard/main/events/EventCalendarView.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
-import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import { DateSelectArg, EventClickArg, EventInput} from '@fullcalendar/core';
+import { DateClickArg } from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -14,21 +15,19 @@ interface EventCalendarViewProps {
   onDateSelect: (selectInfo: { start: Date; end: Date; allDay: boolean }) => void;
 }
 
-// Define Tailwind color classes for event types
-// Ensure these colors are defined in your tailwind.config.js or are standard Tailwind colors
 const getEventColorClasses = (eventType: EventType): { backgroundColor: string; borderColor: string; textColor?: string } => {
   switch (eventType) {
-    case 'meeting': // Example: Blue
+    case 'meeting':
       return { backgroundColor: 'bg-blue-500', borderColor: 'border-blue-700', textColor: 'text-white' };
-    case 'hearing': // Example: Red
+    case 'hearing':
       return { backgroundColor: 'bg-red-500', borderColor: 'border-red-700', textColor: 'text-white' };
-    case 'consultation': // Example: Green
+    case 'consultation':
       return { backgroundColor: 'bg-green-500', borderColor: 'border-green-700', textColor: 'text-white' };
-    case 'reminder': // Example: Yellow/Orange
-      return { backgroundColor: 'bg-yellow-500', borderColor: 'border-yellow-700', textColor: 'text-black' }; // text-black for better contrast on yellow
-    case 'court_date': // Example: Purple
+    case 'reminder':
+      return { backgroundColor: 'bg-yellow-500', borderColor: 'border-yellow-700', textColor: 'text-black' };
+    case 'court_date':
       return { backgroundColor: 'bg-purple-500', borderColor: 'border-purple-700', textColor: 'text-white' };
-    default: // Example: Gray
+    default:
       return { backgroundColor: 'bg-gray-400', borderColor: 'border-gray-600', textColor: 'text-white' };
   }
 };
@@ -39,48 +38,30 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
   onDateSelect,
 }) => {
   const calendarRef = useRef<FullCalendar | null>(null);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 640); // Tailwind 'sm' breakpoint is 640px
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 640);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobileView(window.innerWidth < 640); // Check against Tailwind's 'sm' breakpoint
+      setIsMobileView(window.innerWidth < 640);
     };
-
     window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
 
   const calendarEvents: EventInput[] = events.map((event) => {
     const colorClasses = getEventColorClasses(event.event_type);
     return {
       id: String(event.event_id),
       title: event.event_title,
-      // UPDATED: event.start_time is now a full ISO string
-      start: event.start_time, // Ensure event.start_time is a valid ISO 8601 string
-      // If event.start_time only contains a date (e.g., "2023-01-01"), FullCalendar treats it as all-day.
-      // If it contains date and time (e.g., "2023-01-01T10:00:00"), it's not all-day by default.
-      // If your backend guarantees start_time always includes a time component for non-all-day events,
-      // then `allDay: false` might not be strictly necessary, as FullCalendar can infer.
-      // However, if you want to explicitly state non-all-day for events with time, keep it.
-      // For now, let's assume start_time always includes time part for specific timed events.
-      allDay: event.start_time.length === 10, // Basic check: if ISO string is 'YYYY-MM-DD', it's likely all-day.
-                                              // More robust: parse and check if time is 00:00:00Z and it ends on same day or not provided
-                                              // Or, ideally, backend sends an `allDay` flag.
-                                              // For simplicity with current EventDataTypes, this is a guess.
-                                              // If start_time always includes a time, then `allDay: false` is safer.
-                                              // Let's revert to a safer default if no explicit allDay flag from backend:
-      // allDay: false, // Re-evaluating this: if start_time is 'YYYY-MM-DD', FullCalendar will make it allDay.
-                        // If it's 'YYYY-MM-DDTHH:mm:ss', it won't be. So this is fine to let FC handle.
-      // classNames for styling
+      start: event.start_time,
+      allDay: event.start_time.length === 10,
       classNames: [
         colorClasses.backgroundColor,
         colorClasses.borderColor,
-        colorClasses.textColor || 'text-white', // Default text color if not specified
-        'border', // Add a base border style if your theme requires it
-        '!p-1', // Example: Force padding for events using !important if needed
+        colorClasses.textColor || 'text-white',
+        'border',
+        '!p-1', // Base padding for events (0.25rem), will be overridden by more specific CSS below for mobile month view
       ],
       extendedProps: event,
     };
@@ -90,7 +71,7 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
     onEventClick(clickInfo.event.extendedProps as EventDataTypes);
   };
 
-  const handleDateSelect = (selectInfo: DateSelectArg) => {
+  const handleDateSelectRange = (selectInfo: DateSelectArg) => {
     onDateSelect({
       start: selectInfo.start,
       end: selectInfo.end,
@@ -99,104 +80,160 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
     calendarRef.current?.getApi().unselect();
   };
 
+  const handleCalendarDateClick = (clickInfo: DateClickArg) => {
+    const endDate = new Date(clickInfo.date.valueOf());
+    if (clickInfo.allDay) {
+      endDate.setDate(clickInfo.date.getDate() + 1);
+    }
+    onDateSelect({
+      start: clickInfo.date,
+      end: endDate,
+      allDay: clickInfo.allDay,
+    });
+  };
+
   useEffect(() => {
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       const currentViewType = calendarApi.view.type;
+      const preferredMobileGridView = 'dayGridMonth';
 
       if (isMobileView) {
-        if (currentViewType !== 'listWeek') {
-          calendarApi.changeView('listWeek');
+        if (currentViewType !== preferredMobileGridView) {
+          calendarApi.changeView(preferredMobileGridView);
         }
         calendarApi.setOption('headerToolbar', {
           left: 'prev,next',
           center: 'title',
-          right: 'listWeek,dayGridMonth',
+          right: 'dayGridMonth,timeGridDay,listWeek',
         });
+        if (currentViewType === 'dayGridMonth' || calendarApi.view.type === preferredMobileGridView) {
+          // For mobile month view, limit displayed events.
+          // Adjust 'dayMaxEvents' (e.g., 2 or 3) to control how many events are shown
+          // before a "+more" link. Fewer events mean each can appear wider.
+          calendarApi.setOption('dayMaxEvents', 2); // Example: show up to 2 events
+        } else {
+          calendarApi.setOption('dayMaxEvents', true);
+        }
       } else {
-        if (currentViewType === 'listWeek' && calendarApi.getOption('initialView') !== 'listWeek') {
-            calendarApi.changeView('dayGridMonth'); // Or your preferred default desktop view
+        const preferredDesktopView = 'dayGridMonth';
+        if ((currentViewType === 'listWeek' || currentViewType === 'timeGridDay' || currentViewType === preferredMobileGridView) && currentViewType !== preferredDesktopView) {
+           calendarApi.changeView(preferredDesktopView);
         }
         calendarApi.setOption('headerToolbar', {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
         });
+        calendarApi.setOption('dayMaxEvents', true); // Or a higher number for desktop
       }
     }
   }, [isMobileView, calendarRef]);
 
+  const initialCalendarView = 'dayGridMonth';
+
   return (
-    <div className="p-2 sm:p-4 md:p-6 event-calendar-wrapper">
+    <div className="p-2 sm:p-4 md:p-6 event-calendar-wrapper max-h-[70vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible">
       <style>{`
         .event-calendar-wrapper .fc-button {
-          background-color: #4f46e5; /* example: indigo-600 */
+          background-color: #4f46e5;
           color: white;
           border: none;
           padding: 0.5em 1em;
           margin: 0.2em;
           border-radius: 0.25em;
+          font-size: 0.875rem;
         }
         .event-calendar-wrapper .fc-button:hover {
-          background-color: #4338ca; /* example: indigo-700 */
+          background-color: #4338ca;
         }
         .event-calendar-wrapper .fc-button-primary:disabled {
             opacity: 0.65;
         }
-        .event-calendar-wrapper .fc-event { /* For event items themselves */
+        .event-calendar-wrapper .fc-event { /* General event styling */
           cursor: pointer;
           font-size: 0.85em;
+          /* Default padding is applied via Tailwind's !p-1 on the event itself */
         }
         .event-calendar-wrapper .fc-event:hover {
             opacity: 0.85;
         }
         .event-calendar-wrapper .fc-today-button {
-            background-color: #10b981; /* example: emerald-500 */
+            background-color: #10b981;
         }
         .event-calendar-wrapper .fc-today-button:hover {
-            background-color: #059669; /* example: emerald-600 */
+            background-color: #059669;
         }
         .event-calendar-wrapper .fc-toolbar-title {
-            font-size: 1.25em; /* Tailwind: text-xl */
-            font-weight: 600; /* Tailwind: font-semibold */
-            color: #1f2937; /* Tailwind: text-gray-800 */
+            font-size: 1.25em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .event-calendar-wrapper .fc {
+            min-height: 400px;
+        }
+
+        @media (max-width: 639px) { /* Below Tailwind 'sm' breakpoint */
+          .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-frame {
+            min-height: 85px; /* Increased height for day cells in mobile month view. Adjust as needed. */
+            /* Width is implicitly 1/7th of calendar width. */
+          }
+          .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-top {
+            flex-direction: row;
+          }
+          .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-number {
+            font-size: 0.8em;
+            padding: 2px 4px;
+          }
+          /* Event styling specific to mobile month view for better text fit */
+          .event-calendar-wrapper .fc-dayGridMonth-view .fc-event {
+            font-size: 0.70em; /* Slightly smaller font for events on mobile month view */
+            line-height: 1.25; /* Adjust line height for the smaller font */
+            /* Override Tailwind's !p-1 for finer control on mobile month view */
+            /* This provides less padding than default p-1 (0.25rem or ~4px) */
+            padding-top: 2px !important;
+            padding-bottom: 2px !important;
+            padding-left: 3px !important;  /* Slightly more horizontal space for text */
+            padding-right: 3px !important;
+            margin-bottom: 2px; /* Add a little space between stacked events */
+          }
+          .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-more-link {
+            font-size: 0.7em;
+            margin-top: 1px; /* Adjust if it overlaps with events */
+          }
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint and up */
+            .event-calendar-wrapper .fc {
+                 min-height: 550px;
+            }
         }
       `}</style>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-        initialView={isMobileView ? 'listWeek' : 'dayGridMonth'}
+        initialView={initialCalendarView}
+        headerToolbar={{
+          left: isMobileView ? 'prev,next' : 'prev,next today',
+          center: 'title',
+          right: isMobileView ? 'dayGridMonth,timeGridDay,listWeek' : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+        }}
         events={calendarEvents}
         selectable
         selectMirror
-        dayMaxEvents
         weekends
         eventClick={handleEventClick}
-        select={handleDateSelect}
+        select={handleDateSelectRange}
+        dateClick={handleCalendarDateClick}
         height="auto"
         contentHeight="auto"
-        aspectRatio={isMobileView ? 1.3 : 1.8}
-        longPressDelay={500}
+        longPressDelay={300}
         buttonText={{
-          today: 'Today',
-          month: 'Month',
-          week: 'Week',
-          day: 'Day',
-          list: 'List'
+          today: 'Today', month: 'Month', week: 'Week', day: 'Day', list: 'List'
         }}
-        // eventTimeFormat can be used to format time display if needed
-        eventTimeFormat={{
-          hour: 'numeric',
-          minute: '2-digit',
-          meridiem: 'short'
-        }}
-        // slotLabelFormat can be used to format time in timeGrid views
-        slotLabelFormat={{
-          hour: 'numeric',
-          minute: '2-digit',
-          omitZeroMinute: false,
-          meridiem: 'short'
-        }}
+        eventTimeFormat={{ hour: 'numeric', minute: '2-digit', meridiem: false }}
+        slotLabelFormat={{ hour: 'numeric', minute: '2-digit', omitZeroMinute: false, meridiem: false }}
+        // dayMaxEvents is now dynamically set in useEffect
       />
     </div>
   );
