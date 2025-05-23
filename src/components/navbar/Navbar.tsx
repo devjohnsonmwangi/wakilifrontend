@@ -12,7 +12,12 @@ import {
 
 import AppDrawer from "../../pages/dashboard/aside/Drawer"; // Adjust path
 
-const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = true; // Set to false for production
+// MODIFIED LINE:
+// This will be true during development (when NODE_ENV is 'development' or not 'production')
+// and false when a production build is made (NODE_ENV is 'production').
+const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = process.env.NODE_ENV !== 'production';
+// If using Vite, you might prefer: const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = import.meta.env.DEV;
+
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -31,15 +36,13 @@ const Navbar = () => {
     const [isMobileMoreSheetOpen, setIsMobileMoreSheetOpen] = useState(false);
     const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-    const [isRunningAsPWA, setIsRunningAsPWA] = useState(false); // New state
+    const [isRunningAsPWA, setIsRunningAsPWA] = useState(false);
 
     const desktopProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileSheetRef = useRef<HTMLDivElement>(null);
 
-    // Effect to detect if running as PWA and handle 'beforeinstallprompt'
     useEffect(() => {
-        // Check if running in standalone mode
         const mediaQuery = window.matchMedia('(display-mode: standalone)');
         setIsRunningAsPWA(mediaQuery.matches);
 
@@ -48,7 +51,6 @@ const Navbar = () => {
         };
         mediaQuery.addEventListener('change', handleMediaQueryChange);
 
-        // Handle beforeinstallprompt
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -56,11 +58,10 @@ const Navbar = () => {
         };
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // Handle appinstalled event
         const handleAppInstalled = () => {
             console.log("PWA installed successfully!");
-            setDeferredPrompt(null); // Clear the prompt as it's been used
-            setIsRunningAsPWA(true); // Assume it will now run as PWA
+            setDeferredPrompt(null);
+            setIsRunningAsPWA(true);
         };
         window.addEventListener('appinstalled', handleAppInstalled);
 
@@ -80,7 +81,7 @@ const Navbar = () => {
             console.log(`User response to the install prompt: ${outcome}`);
             if (outcome === 'accepted') {
                 console.log('User accepted the PWA installation');
-                if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) {
+                if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) { // This condition will be true in prod if it was a real prompt
                     setDeferredPrompt(null);
                 }
             } else {
@@ -168,7 +169,6 @@ const Navbar = () => {
     const PWA_BUTTON_SHARED_CLASSES = "flex items-center justify-center font-semibold rounded-md shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap px-2.5 py-1.5 text-sm";
     const desktopAuthButtonBaseClasses = "flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-150 whitespace-nowrap";
 
-    // Updated logic for showing the PWA install button
     const shouldShowPWAButton = !isRunningAsPWA && (!!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV);
 
     const ProfileDropdownPanel = ({ triggerButtonId }: { triggerButtonId: string }) => (
