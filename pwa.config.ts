@@ -14,17 +14,17 @@ export const pwaOptions: Partial<VitePWAOptions> = {
     start_url: '/',
     icons: [
       {
-        src: '/wakilifrontend/public/logo.png',
+        src: '/logo.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/wakilifrontend/public/logo.png',
+        src: '/logo.png',
         sizes: '512x512',
         type: 'image/png',
       },
       {
-        src: '/wakilifrontend/public/logo.png',
+        src: '/logo.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any maskable',
