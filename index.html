@@ -3,21 +3,13 @@
   <head>
     <meta charset="UTF-8" />
 
-    <!-- PWA Manifest (points to manifest.json in your public folder) -->
     <link rel="manifest" href="/manifest.json">
-
-    <!-- Theme Color for Browser UI (Matching your app's green) -->
     <meta name="theme-color" content="#059669"> <!-- YOUR GREEN COLOR -->
 
-    <!-- 
-      Service worker registration:
-      The service-worker.js file should be in your public folder.
-      Vite will ensure it's available at /service-worker.js
-    -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js') // Path is relative to the domain root
+          navigator.serviceWorker.register('/service-worker.js')
             .then(registration => {
               console.log('Service Worker registered with scope:', registration.scope);
             })
@@ -28,65 +20,76 @@
       }
     </script>
     
-    <!-- 
-      Favicon: Ensure 'logo.jpeg' is in your 'public' folder.
-      Vite will make it available at /logo.jpeg
-    -->
     <link rel="icon" type="image/jpeg" href="/logo.jpeg" /> 
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wakili APP</title>
 
-    <!-- Styles for the initial loading screen -->
     <style>
       html, body {
         height: 100%;
         margin: 0;
         padding: 0;
-        /* background-color: #059669; */ /* YOUR GREEN COLOR - Uncomment if you want the whole page green initially */
+        /* Optional: Set body background to your app's primary color for a seamless feel */
+        /* background-color: #059669; */ /* YOUR GREEN COLOR */
       }
-      #root {
-        /* display: flex;
-        align-items: center;
-        justify-content: center; */
-        min-height: 100vh;
-        background-color: #ffffff; /* Or transparent if body has the green color */
-      }
-      .app-loading-placeholder {
+
+      /* Styles for #root BEFORE React loads (for the placeholder) */
+      /* Targets #root only when it has no child elements (i.e., before React hydration) */
+      #root:empty {
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: #333333;
+        width: 100%; /* Ensure it takes full width */
+        min-height: 100vh; /* Ensure it takes full height */
+        /* Background color for the splash screen area */
+        /* If your logo has a transparent background and you want the green to show through: */
+        background-color: #059669; /* YOUR GREEN COLOR */
+        /* If your logo looks better on white, even if the app is green: */
+        /* background-color: #ffffff; */
       }
-      .app-loading-placeholder img {
-        width: 100px;
-        height: auto;
-        margin-bottom: 20px;
+
+      /* Styles for #root AFTER React loads (it will have children) */
+      #root {
+        min-height: 100vh; /* Still want it to be full height capable */
+        width: 100%;
+        /* display: block; by default or whatever your app needs */
       }
-      .app-loading-placeholder p {
-        font-size: 1.1em;
-        margin: 0;
+
+      .app-splash-logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
       }
+
+      .app-splash-logo-container img {
+        max-width: 60vw; /* Logo takes up to 60% of viewport width */
+        max-height: 60vh; /* Logo takes up to 60% of viewport height */
+        width: auto;      /* Maintain aspect ratio */
+        height: auto;     /* Maintain aspect ratio */
+        object-fit: contain; /* Ensures the image is scaled correctly within bounds */
+      }
+
+      /* Hide the placeholder once React has injected content into #root */
+      /* This is a fallback, React replacing content is the primary mechanism */
+      #root:not(:empty) .app-splash-logo-container {
+        display: none;
+      }
+
     </style>
   </head>
   <body>
     <div id="root">
-      <div class="app-loading-placeholder">
+      <!-- This content will be shown before React loads and replaces it -->
+      <div class="app-splash-logo-container">
         <!--
           Logo: Ensure 'wakililogo.png' is in your 'public' folder.
-          Vite will make it available at /wakililogo.png
         -->
-        <img src="/wakililogo.png" alt="Loading WakiliApp..." />
-        <p>Loading WakiliApp...</p>
+        <img src="/wakililogo.png" alt="WakiliApp" />
       </div>
     </div>
-    <!--
-      This script tag points to your React/TS entry point in the src folder.
-      Vite processes this.
-    -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
