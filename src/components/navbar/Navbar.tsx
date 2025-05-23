@@ -12,11 +12,23 @@ import {
 
 import AppDrawer from "../../pages/dashboard/aside/Drawer"; // Adjust path
 
-// MODIFIED LINE:
 // This will be true during development (when NODE_ENV is 'development' or not 'production')
 // and false when a production build is made (NODE_ENV is 'production').
-const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = process.env.NODE_ENV !== 'production';
-// If using Vite, you might prefer: const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = import.meta.env.DEV;
+// If using Vite:
+const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = import.meta.env.DEV;
+// If using Create React App or other Webpack-based setups:
+// const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = process.env.NODE_ENV !== 'production';
+
+
+// Define this interface at the top of the file or in a global types.d.ts
+interface BeforeInstallPromptEvent extends Event {
+    readonly platforms: Array<string>;
+    readonly userChoice: Promise<{
+        outcome: 'accepted' | 'dismissed';
+        platform: string;
+    }>;
+    prompt(): Promise<void>;
+}
 
 
 const Navbar = () => {
@@ -35,7 +47,7 @@ const Navbar = () => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isMobileMoreSheetOpen, setIsMobileMoreSheetOpen] = useState(false);
     const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
-    const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null); // Use the interface
     const [isRunningAsPWA, setIsRunningAsPWA] = useState(false);
 
     const desktopProfileMenuRef = useRef<HTMLDivElement>(null);
@@ -44,24 +56,21 @@ const Navbar = () => {
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(display-mode: standalone)');
-        setIsRunningAsPWA(mediaQuery.matches);
-
-        const handleMediaQueryChange = (e: MediaQueryListEvent) => {
-            setIsRunningAsPWA(e.matches);
-        };
+        const handleMediaQueryChange = (e: MediaQueryListEvent) => setIsRunningAsPWA(e.matches);
+        setIsRunningAsPWA(mediaQuery.matches); // Initial check
         mediaQuery.addEventListener('change', handleMediaQueryChange);
 
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
-            setDeferredPrompt(e);
+            setDeferredPrompt(e as BeforeInstallPromptEvent); // Cast here
             console.log("'beforeinstallprompt' event fired and captured.");
         };
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
         const handleAppInstalled = () => {
             console.log("PWA installed successfully!");
-            setDeferredPrompt(null);
-            setIsRunningAsPWA(true);
+            setDeferredPrompt(null); // Clear the prompt as it's been used or is no longer needed
+            // setIsRunningAsPWA(true); // Not strictly needed here if display-mode handles it
         };
         window.addEventListener('appinstalled', handleAppInstalled);
 
@@ -74,14 +83,22 @@ const Navbar = () => {
 
 
     const handlePWAInstall = async () => {
-        const promptToUse = deferredPrompt || (ALWAYS_SHOW_PWA_BUTTON_FOR_DEV ? { prompt: () => console.log("DEV MODE: Mock PWA prompt() called"), userChoice: Promise.resolve({ outcome: 'accepted' }) } : null);
+        // Dev mode mock prompt logic
+        const mockPrompt = {
+            prompt: () => console.log("DEV MODE: Mock PWA prompt() called"),
+            userChoice: Promise.resolve({ outcome: 'accepted' as 'accepted' | 'dismissed', platform: 'web' }) // Ensure outcome type matches
+        };
+
+        const promptToUse = deferredPrompt || (ALWAYS_SHOW_PWA_BUTTON_FOR_DEV ? mockPrompt : null);
+        
         if (promptToUse) {
-            (promptToUse as { prompt: () => void; userChoice: Promise<{ outcome: string }> }).prompt();
-            const { outcome } = await (promptToUse as { userChoice: Promise<{ outcome: string }> }).userChoice;
+            await promptToUse.prompt();
+            const { outcome } = await promptToUse.userChoice;
             console.log(`User response to the install prompt: ${outcome}`);
             if (outcome === 'accepted') {
                 console.log('User accepted the PWA installation');
-                if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) { // This condition will be true in prod if it was a real prompt
+                 // Only set deferredPrompt to null if it was the real prompt and not in dev "always show" mode
+                if (deferredPrompt && !ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) {
                     setDeferredPrompt(null);
                 }
             } else {
@@ -96,6 +113,7 @@ const Navbar = () => {
             }
         }
     };
+    // ... (rest of your toggle functions, useEffects, handleLogout remain the same)
 
     const toggleProfileDropdown = (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -190,7 +208,7 @@ const Navbar = () => {
             {/* Top Navbar: z-50 */}
             <header className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-gray-800 shadow-md h-16">
                 <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center">
+                    <div className="flex items-center"> {/* Left side: Hamburger and Brand */}
                         <button
                             onClick={username ? toggleAppDrawer : toggleMobileMoreSheet}
                             className="lg:hidden flex flex-col items-center justify-center p-2 -ml-2 mr-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -201,13 +219,24 @@ const Navbar = () => {
                             <Menu className="h-6 w-6 shrink-0" />
                             {username && (<span className="text-[10px] leading-none font-medium mt-0.5">Menu</span>)}
                         </button>
-                        <Link to="/" className="flex-shrink-0" aria-label="Go to Homepage">
-                            <span className="text-2xl font-bold text-green-700 dark:text-green-500">WakiliApp</span>
+
+                        {/* MODIFIED BRAND LINK */}
+                        <Link to="/" className="flex items-center flex-shrink-0" aria-label="Go to Homepage">
+                            <img
+                                src="/wakililogo.png" // Assuming wakililogo.png is in your public folder
+                                alt="WakiliApp Logo"
+                                className="h-8 w-8 rounded-full mr-2" // Adjust size (h-8 w-8), add margin (mr-2)
+                            />
+                            <span className="text-2xl font-bold text-green-700 dark:text-green-500">
+                                WakiliApp
+                            </span>
                         </Link>
                     </div>
 
+                    {/* Right side of Navbar */}
                     <div className="flex items-center">
-                        <div className="hidden lg:flex items-center space-x-3"> {/* Desktop Nav */}
+                        {/* Desktop Navigation and Auth */}
+                        <div className="hidden lg:flex items-center space-x-3">
                             <nav className="flex items-center space-x-1" aria-label="Main navigation">
                                 {desktopNavLinksList.map(link => (
                                     <Link key={link.to} to={link.to} className={desktopLinkClasses(location.pathname === link.to || (link.to !== "/" && location.pathname.startsWith(link.to) && link.to.length > 1) )} aria-current={location.pathname === link.to ? "page" : undefined}>
@@ -215,7 +244,8 @@ const Navbar = () => {
                                     </Link>
                                 ))}
                             </nav>
-                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || (username && !isRunningAsPWA) )) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
+                            {/* Adjusted separator logic slightly for clarity */}
+                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || username)) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
                             <div className="flex items-center space-x-2">
                                 {shouldShowPWAButton && (<button onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} bg-green-600 hover:bg-green-700 text-white`} title="Install WakiliApp"><DownloadCloud className="w-4 h-4 mr-1.5 shrink-0" /> Install App</button>)}
                                 {!username ? (
@@ -234,7 +264,8 @@ const Navbar = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="lg:hidden flex items-center space-x-1"> {/* Mobile Right Icons */}
+                        {/* Mobile Right Icons */}
+                        <div className="lg:hidden flex items-center space-x-1">
                             {shouldShowPWAButton && (<button onClick={handlePWAInstall} className="p-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1" title="Install WakiliApp" aria-label="Install WakiliApp"><DownloadCloud className="h-5 w-5 shrink-0" /></button>)}
                             {!username ? (
                                 <Link to="/login" className="p-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1" aria-label="Login" title="Login"><LogIn className="w-5 h-5 shrink-0" /></Link>
@@ -251,7 +282,8 @@ const Navbar = () => {
                 </div>
             </header>
 
-            {/* Bottom Mobile Navbar: z-50 */}
+            {/* Bottom Mobile Navbar and Mobile More Sheet remain the same */}
+            {/* ... your existing code for these sections ... */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 w-full h-16 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-top z-50 flex items-stretch" aria-label="Mobile bottom navigation">
                 <Link to="/" className={bottomNavLinkClasses(location.pathname === "/")}> <Home className="w-5 h-5 mb-0.5 shrink-0" /> Home </Link>
                 {username && userRole !== 'disabled' ? (
