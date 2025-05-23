@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { formatISO, isValid, parseISO } from 'date-fns';
-import { EventReminderDataTypes, useCreateReminderMutation, useUpdateReminderMutation } from '../../../../features/events/events';
-//       await deleteReminder(reminderToDeleteId).unwrap();
-//       toast.success('Reminder deleted successfully!');
+import {
+  EventReminderDataTypes,
+  useCreateReminderMutation,
+  useUpdateReminderMutation,
+  useDeleteReminderMutation, // Added import
+} from '../../../../features/events/events';
 import { Dialog } from '@headlessui/react';
 
 interface ReminderFormModalProps {
@@ -34,8 +37,10 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
 }) => {
   const [formData, setFormData] = useState(getInitialReminderFormState(eventTitle, reminderToEdit));
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [createReminder, { isLoading: isCreating }] = useCreateReminderMutation();
   const [updateReminder, { isLoading: isUpdating }] = useUpdateReminderMutation();
+  const [deleteReminder, { isLoading: isDeleting }] = useDeleteReminderMutation(); // Instantiated mutation
 
   useEffect(() => {
     if (open) {
@@ -78,7 +83,7 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
 
     const payload = {
       event_id: eventId,
-      reminder_time: new Date(formData.reminder_time).toISOString(),
+      reminder_time: new Date(formData.reminder_time).toISOString(), // Ensure full ISO string
       reminder_message: formData.reminder_message,
     };
 
@@ -99,10 +104,36 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
           setErrors((prev) => ({ ...prev, ...errorData.errors }));
         }
       } else {
-        onError('An error occurred.');
+        onError('An error occurred while saving the reminder.');
       }
     }
   };
+
+  const handleDelete = async () => {
+    if (!reminderToEdit?.reminder_id) {
+      onError('No reminder selected for deletion.');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to delete this reminder?')) {
+      try {
+        await deleteReminder(reminderToEdit.reminder_id).unwrap();
+        onSuccess('Reminder deleted successfully!');
+        onClose();
+      } catch (err: unknown) {
+        let errorMessage = 'Failed to delete reminder.';
+        if (typeof err === 'object' && err !== null && 'data' in err) {
+          const errorData = (err as { data?: { msg?: string } }).data;
+          if (errorData?.msg) {
+            errorMessage = errorData.msg;
+          }
+        }
+        onError(errorMessage);
+      }
+    }
+  };
+
+  const anyOperationLoading = isCreating || isUpdating || isDeleting;
 
   return (
     <Dialog open={open} onClose={onClose} className="fixed z-50 inset-0 overflow-y-auto">
@@ -127,7 +158,7 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
                 id="reminder_time"
                 name="reminder_time"
                 value={
-                  formData.reminder_time
+                  formData.reminder_time && isValid(parseISO(formData.reminder_time))
                     ? formatISO(parseISO(formData.reminder_time)).slice(0, 16)
                     : ''
                 }
@@ -136,6 +167,7 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
                   errors.reminder_time ? 'border-red-500' : 'border-gray-300'
                 } shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white`}
                 required
+                disabled={anyOperationLoading}
               />
               {errors.reminder_time && <p className="text-sm text-red-500 mt-1">{errors.reminder_time}</p>}
             </div>
@@ -154,6 +186,7 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
                   errors.reminder_message ? 'border-red-500' : 'border-gray-300'
                 } shadow-sm focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white`}
                 required
+                disabled={anyOperationLoading}
               />
               {errors.reminder_message && (
                 <p className="text-sm text-red-500 mt-1">{errors.reminder_message}</p>
@@ -161,22 +194,40 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500"
-              disabled={isCreating || isUpdating}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isCreating || isUpdating}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isCreating || isUpdating ? 'Saving...' : reminderToEdit ? 'Update Reminder' : 'Add Reminder'}
-            </button>
+          {/* Button container */}
+          <div className="flex justify-between items-center mt-6">
+            {/* Delete Button - shown only in edit mode */}
+            <div>
+              {reminderToEdit?.reminder_id && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                  disabled={anyOperationLoading}
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              )}
+            </div>
+
+            {/* Cancel and Save/Update Buttons */}
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 dark:text-white bg-gray-200 dark:bg-gray-600 rounded hover:bg-gray-300 dark:hover:bg-gray-500"
+                disabled={anyOperationLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={anyOperationLoading}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isCreating || isUpdating ? 'Saving...' : reminderToEdit ? 'Update Reminder' : 'Add Reminder'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
