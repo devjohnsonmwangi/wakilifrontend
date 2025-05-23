@@ -5,14 +5,25 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logOut } from "../../features/users/userSlice"; // Adjust path
 import { usersAPI } from "../../features/users/usersAPI"; // Adjust path
 import {
-    User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard, // Renamed LogOut to LogOutIcon to avoid conflict
+    User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard,
     X, ChevronDown, Settings, HelpCircle, Briefcase, BookOpen, DownloadCloud, MoreHorizontal,
     Menu
 } from 'lucide-react';
 
 import AppDrawer from "../../pages/dashboard/aside/Drawer"; // Adjust path
 
-const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = true;
+// Define this interface at the top of the file or in a global types.d.ts
+interface BeforeInstallPromptEvent extends Event {
+    readonly platforms: Array<string>;
+    readonly userChoice: Promise<{
+        outcome: 'accepted' | 'dismissed';
+        platform: string;
+    }>;
+    prompt(): Promise<void>;
+}
+
+// SET THIS TO FALSE FOR PRODUCTION or if you want to test the "hide when installed" logic
+const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = false;
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -30,26 +41,59 @@ const Navbar = () => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isMobileMoreSheetOpen, setIsMobileMoreSheetOpen] = useState(false);
     const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
-    const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null); // Correctly typed
+    const [isStandalone, setIsStandalone] = useState(false); // State for PWA standalone mode
 
     // Separate refs for desktop and mobile profile dropdown containers
     const desktopProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileProfileMenuRef = useRef<HTMLDivElement>(null); // For the top-right mobile avatar dropdown
     const mobileSheetRef = useRef<HTMLDivElement>(null);
 
+    // Effect to check PWA display mode
     useEffect(() => {
-        const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+        const mediaQuery = window.matchMedia('(display-mode: standalone)');
+        const handler = () => setIsStandalone(mediaQuery.matches);
+
+        handler(); // Check initial state
+        mediaQuery.addEventListener('change', handler); // Listen for changes
+
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, []);
+
+    // Effect for beforeinstallprompt
+    useEffect(() => {
+        const handler = (e: Event) => { // Standard Event type for the listener
+            e.preventDefault();
+            setDeferredPrompt(e as BeforeInstallPromptEvent); // Cast when setting state
+            console.log("'beforeinstallprompt' event fired and deferred.");
+        };
         window.addEventListener('beforeinstallprompt', handler);
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
     const handlePWAInstall = async () => {
-        const promptToUse = deferredPrompt || (ALWAYS_SHOW_PWA_BUTTON_FOR_DEV ? { prompt: () => console.log("DEV MODE: Mock PWA prompt() called"), userChoice: Promise.resolve({ outcome: 'accepted' }) } : null);
-        if (promptToUse) {
-            (promptToUse as { prompt: () => void; userChoice: Promise<{ outcome: string }> }).prompt();
-            if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) setDeferredPrompt(null);
-            setIsMobileMoreSheetOpen(false); setIsAppDrawerOpen(false); setIsProfileDropdownOpen(false);
-        } else { alert('App installation is not available.'); }
+        const canPrompt = !isStandalone && (deferredPrompt || (ALWAYS_SHOW_PWA_BUTTON_FOR_DEV && !deferredPrompt));
+
+        if (canPrompt && deferredPrompt) {
+            await deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            if (!ALWAYS_SHOW_PWA_BUTTON_FOR_DEV) { // Only clear if not in dev "always show" mode
+                setDeferredPrompt(null);
+            }
+            setIsMobileMoreSheetOpen(false);
+            setIsAppDrawerOpen(false);
+            setIsProfileDropdownOpen(false);
+        } else if (canPrompt && ALWAYS_SHOW_PWA_BUTTON_FOR_DEV && !deferredPrompt) {
+            console.log("DEV MODE: Mock PWA prompt() called because ALWAYS_SHOW_PWA_BUTTON_FOR_DEV is true and no real prompt available.");
+            setIsMobileMoreSheetOpen(false);
+            setIsAppDrawerOpen(false);
+            setIsProfileDropdownOpen(false);
+        } else if (isStandalone) {
+            alert('App is already installed and running in standalone mode.');
+        } else {
+            alert('App installation is not available at this moment.');
+        }
     };
 
     const toggleProfileDropdown = (event: React.MouseEvent) => {
@@ -105,9 +149,7 @@ const Navbar = () => {
             console.log("Redux logOut action dispatched.");
         } catch (error) {
             console.error("Error dispatching logOut action:", error);
-            // Optionally, inform the user about the error
         }
-        // Close all modals/dropdowns
         setIsProfileDropdownOpen(false);
         setIsMobileMoreSheetOpen(false);
         setIsAppDrawerOpen(false);
@@ -130,10 +172,10 @@ const Navbar = () => {
     const bottomNavLinkClasses = (isActive: boolean) => `flex flex-col items-center justify-center flex-1 px-1 py-2 text-xs transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-green-500 focus:ring-offset-1 rounded-sm ${isActive ? 'text-green-600 font-medium' : 'text-gray-500 hover:text-green-600'}`;
     const PWA_BUTTON_SHARED_CLASSES = "flex items-center justify-center font-semibold rounded-md shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap px-2.5 py-1.5 text-sm";
     const desktopAuthButtonBaseClasses = "flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-150 whitespace-nowrap";
-    const shouldShowPWAButton = !!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV;
+    
+    // Logic for showing the PWA button: Only if NOT standalone AND (deferredPrompt exists OR dev flag is true)
+    const shouldShowPWAButton = !isStandalone && (!!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV);
 
-    // ProfileDropdownPanel remains largely the same, but receives the triggerButtonId
-    // The logout button inside it already calls handleLogout, which is now more robust.
     const ProfileDropdownPanel = ({ triggerButtonId }: { triggerButtonId: string }) => (
         <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none py-1 z-70" role="menu" aria-orientation="vertical" aria-labelledby={triggerButtonId}>
             <div className="px-4 py-3"><p className="text-sm font-semibold text-gray-900 truncate" title={username || ""}>{username}</p>{userData?.email && <p className="text-xs text-gray-500 truncate" title={userData.email}>{userData.email}</p>}</div>
@@ -143,11 +185,11 @@ const Navbar = () => {
             <Link to="/dashboard/help" onClick={() => setIsProfileDropdownOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Help</Link>
             <div className="border-t border-gray-100"></div>
             <button
-                onClick={handleLogout} // This calls the robust handleLogout
+                onClick={handleLogout}
                 className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
                 role="menuitem"
             >
-                <LogOutIcon className="w-4 h-4 mr-2.5 shrink-0" /> {/* Using LogOutIcon */}
+                <LogOutIcon className="w-4 h-4 mr-2.5 shrink-0" />
                 Logout
             </button>
         </div>
@@ -183,7 +225,8 @@ const Navbar = () => {
                                     </Link>
                                 ))}
                             </nav>
-                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || username)) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
+                            {/* Show separator if PWA button is shown, OR if user is logged in (and PWA button might not be shown) */}
+                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || (username && !shouldShowPWAButton))) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
                             <div className="flex items-center space-x-2">
                                 {shouldShowPWAButton && (<button onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} bg-green-600 hover:bg-green-700 text-white`} title="Install WakiliApp"><DownloadCloud className="w-4 h-4 mr-1.5 shrink-0" /> Install App</button>)}
                                 {!username ? (
