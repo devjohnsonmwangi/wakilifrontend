@@ -14,17 +14,17 @@ export const pwaOptions: Partial<VitePWAOptions> = {
     start_url: '/',
     icons: [
       {
-        src: '/pwa-192x192.png',
+        src: '/wakilifrontend/public/logo.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/pwa-512x512.png',
+        src: '/wakilifrontend/public/logo.png',
         sizes: '512x512',
         type: 'image/png',
       },
       {
-        src: '/pwa-512x512.png',
+        src: '/wakilifrontend/public/logo.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any maskable',
@@ -34,7 +34,7 @@ export const pwaOptions: Partial<VitePWAOptions> = {
   workbox: {
     globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
     // THIS IS THE QUICK FIX - NOT A GOOD LONG-TERM SOLUTION
-    maximumFileSizeToCacheInBytes: 11 * 1024 * 1024, // e.g., 11 MiB to allow your 10.3MB file
+    maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // e.g., 11 MiB to allow your 10.3MB file
     // ... other workbox options
   
    // Example: To avoid caching large sourcemaps if 'hidden' isn't enough for your PWA caching
