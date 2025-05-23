@@ -83,7 +83,7 @@ export const eventAndReminderAPI = createApi({
 
     // Event Reminder Endpoints
     fetchReminders: builder.query<EventReminderDataTypes[], void>({
-      query: () => "eventReminders",
+      query: () => "reminders",
       providesTags: ["EventReminder"],
     }),
     getReminderById: builder.query<EventReminderDataTypes, number>({

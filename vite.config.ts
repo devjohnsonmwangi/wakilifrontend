@@ -1,8 +1,9 @@
-// vite.config.ts
-import { defineConfig } from 'vite';
+import { defineConfig, splitVendorChunkPlugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-// Optional: for analyzing bundle size
+import { pwaOptions } from './pwa.config'; // Import your separated PWA options
+
+// Optional: for analyzing bundle size. Install with `npm install -D rollup-plugin-visualizer`
 // import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig(({ mode }) => {
@@ -11,128 +12,124 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'], // Add other static assets if needed
-        manifest: {
-          name: 'Wakili app',
-          short_name: 'KeBest', // Consider a slightly more descriptive short name if space allows
-          description: 'Advocate and commissioner of oaths Progressive Web App',
-          theme_color: '#ffffff', // Ensure this matches your app's branding
-          background_color: '#ffffff',
-          display: 'standalone',
-          scope: '/', // Defines the navigation scope of this web application's context
-          start_url: '/', // Relative to the scope
-          icons: [
-            {
-              src: '/pwa-192x192.png', // Make sure these files exist in your public folder
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: '/pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-            },
-            {
-              src: '/pwa-512x512.png', // Consider a different sized maskable icon if you have one
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable',
-            },
-          ],
-        },
-        // Optional: Advanced PWA options
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'], // Cache more file types
-          // navigateFallback: '/index.html', // Useful for SPAs
-          // runtimeCaching: [ // Example for caching API calls
-          //   {
-          //     urlPattern: /^https:\/\/api\.example\.com\/.*/,
-          //     handler: 'NetworkFirst',
-          //     options: {
-          //       cacheName: 'api-cache',
-          //       expiration: {
-          //         maxEntries: 10,
-          //         maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
-          //       },
-          //       cacheableResponse: {
-          //         statuses: [0, 200]
-          //       }
-          //     }
-          //   }
-          // ]
-        },
-        devOptions: {
-          enabled: true, // Enable PWA in development if needed for testing
-          type: 'module',
-        },
-      }),
-      // Optional: Add visualizer for bundle analysis (run `npm run build` to see output)
+      VitePWA(pwaOptions),
+      splitVendorChunkPlugin(), // Automatically splits vendor code into a separate chunk
+
+      // --- Bundle Analyzer (Optional) ---
+      // Uncomment to use. Will generate stats.html in your dist folder after build.
       // isProduction && visualizer({
-      //   open: true, // Automatically open in browser
+      //   open: false, // Set to true to open automatically in browser
+      //   filename: 'dist/stats.html',
       //   gzipSize: true,
       //   brotliSize: true,
-      //   filename: "dist/stats.html", // Output file
       // }),
-    ].filter(Boolean), // Filter out falsy values like `false` from the visualizer in dev mode
+    ].filter(Boolean), // Filters out falsy values if visualizer is conditional
 
     build: {
-      // Increase the chunk size warning limit (default is 500 kB)
-      // While it's better to optimize chunks, this can reduce build noise if you have intentionally larger chunks.
-      chunkSizeWarningLimit: 1000, // in kB
+      // Increase warning limit for chunks. Default is 500KB.
+      // This is just a warning, not an error. Aim to keep chunks reasonably sized.
+      chunkSizeWarningLimit: 1600, // kB
 
-      // Sourcemap generation can be slow for large projects.
-      // 'true' or 'inline' are good for development.
-      // 'hidden' generates sourcemaps but doesn't link them (good for error reporting services).
-      // Sourcemap generation can be slow for large projects.
-      // true or 'inline' are good for development.
-      // 'hidden' generates sourcemaps but doesn't link them (good for error reporting services).
-      // false disables sourcemaps for smallest bundle and fastest build.
+      // Sourcemaps:
+      // 'hidden': Generates sourcemaps but doesn't link them (good for error reporting services).
+      // true: Generates and links (good for dev, can be large for prod).
+      // false: No sourcemaps (fastest build, smallest output, harder debugging in prod).
       sourcemap: isProduction ? 'hidden' : true,
-          // Manual chunks configuration:
-          // This is where you can get very specific about how your code is split.
-          // It requires understanding your application's structure and dependencies.
+
+      rollupOptions: {
+        output: {
+          // --- Manual Chunks ---
+          // This is highly project-specific. Analyze your bundle with visualizer
+          // and then decide how to split. Start without this and add as needed.
           manualChunks() {
-            // Example 1: Put all node_modules into a vendor chunk
-            // (splitVendorChunkPlugin often handles this well, but this is another way)
-          // You can define manualChunks here if needed for advanced code splitting.
-        // plugins: [
-          // You can add more Rollup plugins here if needed for advanced optimizations
-        // ]
+            // Example: Grouping specific large libraries
+            // if (id.includes('node_modules/chart.js')) {
+            //   return 'chartjs';
+            // }
+            // if (id.includes('node_modules/three')) {
+            //   return 'threejs';
+            // }
+            // if (id.includes('node_modules/@fullcalendar')) {
+            //  return 'fullcalendar-vendor';
+            // }
+
+            // Example: Grouping features (if you have clear feature folders)
+            // if (id.includes('src/features/admin/')) {
+            //   return 'feature-admin';
+            // }
+            // if (id.includes('src/features/reporting/')) {
+            //   return 'feature-reporting';
+            // }
+
+            // Default behavior if no manual chunk matches (Vite's auto splitting)
+            return undefined;
+          },
+        },
+        // Consider 'treeshake.preset: "recommended"' for more aggressive tree-shaking if needed
+        // treeshake: {
+        //   preset: 'recommended',
+        // },
       },
-      // Minification options (Terser is used by default)
-      minify: isProduction ? 'terser' : false, // 'esbuild' is faster but Terser offers better compression
+
+      // Minification:
+      // 'terser' usually gives better compression but is slower.
+      // 'esbuild' is much faster but might result in slightly larger bundles.
+      // For Vercel free tier where build time matters, 'esbuild' might be a good first try if 'terser' is too slow.
+      minify: isProduction ? 'terser' : false, // Set to 'esbuild' to test faster minification
       terserOptions: isProduction
         ? {
             compress: {
-              drop_console: true, // Remove console.log in production
-              passes: 2, // More passes can sometimes improve compression but increases build time
+              drop_console: true, // Remove console.* calls
+              passes: 1, // `1` is faster than `2`. `2` might give slightly better compression.
             },
-            mangle: true, // Mangle variable names
+            mangle: true, // Shorten variable names
+            format: {
+              comments: false, // Remove comments
+            },
           }
         : {},
+        
+      // If using esbuild for minification:
+      // esbuild: isProduction ? {
+      //   drop: ['console', 'debugger'],
+      //   pure: ['Math.random'], // Example of marking functions as pure
+      //   minifyIdentifiers: true,
+      //   minifySyntax: true,
+      //   minifyWhitespace: true,
+      // } : false,
+
+      // Set to false to disable generating Broti-compressed versions of assets.
+      // This can save a little build time if not needed (Vercel handles compression).
+      // reportCompressedSize: false, // Default is true
     },
 
-    // Server options (mostly for development, but some might indirectly affect build perception)
-    server: {
-      // open: true, // Automatically open app in browser on dev start
-      // fs: {
-      //   strict: true, // Enable strict file system checks
-      // },
-    },
-
-    // Preview options (for `vite preview` command)
-    preview: {
-      // open: true,
-    },
-
-    // Optimize dependencies
-    // Vite pre-bundles dependencies during development for speed.
-    // You might need to explicitly include or exclude some.
+    // --- Optimize Dependencies (for Dev Server Speed) ---
+    // Vite pre-bundles these for faster dev server startup and HMR.
+    // Add large or common CJS dependencies here.
     optimizeDeps: {
-      include: ['react', 'react-dom', 'react-router-dom', 'date-fns', '@reduxjs/toolkit', '@fullcalendar/react' /* add other key, large, or CJS dependencies */],
-      // exclude: ['some-problematic-dep'],
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        '@reduxjs/toolkit',
+        '@reduxjs/toolkit/query/react',
+        'date-fns',
+        '@fullcalendar/react',
+        '@fullcalendar/daygrid',
+        '@fullcalendar/timegrid',
+        '@fullcalendar/interaction',
+        '@fullcalendar/list',
+        // Add other major dependencies used throughout your app
+        // 'axios', 'lodash-es', 'framer-motion', 'sonner',
+      ],
+      // exclude: ['your-problematic-dependency'] // If a dep causes issues with pre-bundling
     },
+
+    // Consider enabling if you face issues with deep CJS dependencies
+    // build: {
+    //   commonjsOptions: {
+    //     transformMixedEsModules: true,
+    //   }
+    // }
   };
 });
