@@ -33,6 +33,10 @@ export const pwaOptions: Partial<VitePWAOptions> = {
   },
   workbox: {
     globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
+    // THIS IS THE QUICK FIX - NOT A GOOD LONG-TERM SOLUTION
+    maximumFileSizeToCacheInBytes: 11 * 1024 * 1024, // e.g., 11 MiB to allow your 10.3MB file
+    // ... other workbox options
+  
    // Example: To avoid caching large sourcemaps if 'hidden' isn't enough for your PWA caching
     globIgnores: ['**/*.map'],
     //If your app is an SPA and uses client-side routing for all paths
@@ -60,4 +64,5 @@ export const pwaOptions: Partial<VitePWAOptions> = {
     enabled: false, // Usually enable PWA features only for builds, not during dev for faster HMR
     type: 'module',
   },
+ 
 };
