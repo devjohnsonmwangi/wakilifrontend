@@ -50,7 +50,8 @@ const router = createBrowserRouter([
   { path: 'about', element: <About />, errorElement: <Error /> },
   { path: 'forgot-password', element: <RequestPasswordResetForm />, errorElement: <Error /> },
   { path: 'reset-password', element: <ResetPasswordForm token="someToken" mode="reset" />, errorElement: <Error /> }, // Ensure token is dynamic or placeholder
-
+  //account
+  {path: 'account', element: <Account />, errorElement: <Error />},
   // Dashboard nested routes
   {
     path: 'dashboard',
