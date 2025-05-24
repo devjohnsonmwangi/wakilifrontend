@@ -6,20 +6,24 @@ import { APIDomain } from "../../utils/APIDomain";
 export type PaymentStatus = "pending" | "paid" | "failed" | "completed";
 export type PaymentGateway = "stripe" | "mpesa" | "cash" | "other";
 
-// Payment Data Types (Minimal)
+// Payment Data Types - Updated for clarity
 export interface PaymentDataTypes {
-    payment_id?: number;
-    case_id: number;
-    user_id: number;
-    payment_amount: number;
-    payment_status?: PaymentStatus;
-    payment_gateway?: PaymentGateway;
-    payment_notes?: string | null;
-    transaction_id?: string | null;
-    payment_date?:string;
-    mpesa_message?:string;
+  payment_id: number;
+  case_id: number;
+  user_id: number;
+  payment_amount: string; // Backend stores as decimal (string), frontend might treat as number after parsing
+  payment_status: PaymentStatus; // Status of this specific payment transaction (e.g., pending, completed, failed)
+  payment_gateway: string; // Consider an enum: 'mpesa' | 'stripe' | 'cash' etc.
+  session_id?: string | null; // For Stripe
+  checkout_request_id?: string | null; // For M-Pesa
+  transaction_id?: string | null; // Actual transaction reference
+  payment_note?: string | null;
+  receipt_url?: string | null;
+  customer_email?: string | null;
+  payment_date: string; // ISO date string (from paymentTable.payment_date)
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
 }
-
 //M-Pesa callback
 export interface MpesaCallbackData {
     Body: {

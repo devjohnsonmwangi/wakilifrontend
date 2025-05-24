@@ -1,61 +1,73 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain";
+import { APIDomain } from "../../utils/APIDomain"; // Ensure this path is correct
 
-// Enums for Case Table
-// Enums for Case Table
+// --- Enums ---
+
+// Case Enums
 export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
-
-   
-
 export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolved";
 
-// Enums for Payment Table
-export type PaymentStatus = "pending" | "paid" | "failed";
+// Payment Enums (from backend paymentTable.payment_status and caseTable.payment_status)
+// These might be slightly different depending on your exact backend schema.
+// This `PaymentStatusOnCase` is for the caseTable's payment_status field.
+export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; // Matches caseTable.payment_status
+// This `PaymentTransactionStatus` is for the paymentTable's payment_status field.
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"; // Example for paymentTable.payment_status
 
-//Case Data Types
+// --- Data Types ---
+
 export interface UserDataType {
     user_id: number;
     full_name: string;
     email: string;
     phone_number: string;
-    role: string;
+    role: string; // Consider an enum if roles are fixed
     profile_picture: string | null;
-    location: string;
+    location: string; // Consider if this needs more structure
     is_active: boolean;
-    created_at: string;
+    created_at: string; // ISO date string
+    // updated_at: string; // Usually present
 }
 
-// Case Data Types
+// Case Data Types - Updated
 export interface CaseDataTypes {
   case_id: number;
   user_id: number;
-  user: UserDataType
+  user?: UserDataType; // Optional if not always populated, or make it mandatory if your backend always sends it
   case_type: CaseType;
   case_status: CaseStatus;
   case_description: string | null;
   case_number: string;
   case_track_number: string;
-  court:string;
-  station:string;
-  parties:string;
-  fee: number;
-  payment_status: PaymentStatus ;
-  created_at: string;
-  updated_at: string
+  court: string | null; // Allow null if optional
+  station: string | null; // Allow null if optional
+  parties: string | null; // Allow null if optional
+  fee: number; // Assuming backend sends as number or RTK parses string to number
+  payment_status: PaymentStatusOnCase; // Status of payment for the case (e.g., pending, partially_paid, paid)
+  payment_balance: number; // <<-- NEW FIELD -- Assuming backend sends as number or RTK parses string to number
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
 }
-// Payment Data Types
+
+// Payment Data Types - Updated for clarity
 export interface PaymentDataTypes {
   payment_id: number;
   case_id: number;
   user_id: number;
-  payment_amount: string | null;
-  payment_status: PaymentStatus;
-  payment_mode: string | null;
-  session_id: string | null;
-  transaction_id: string | null;
-  payment_date: string;
-  updated_at: string;
+  payment_amount: string; // Backend stores as decimal (string), frontend might treat as number after parsing
+  payment_status: PaymentStatus; // Status of this specific payment transaction (e.g., pending, completed, failed)
+  payment_gateway: string; // Consider an enum: 'mpesa' | 'stripe' | 'cash' etc.
+  session_id?: string | null; // For Stripe
+  checkout_request_id?: string | null; // For M-Pesa
+  transaction_id?: string | null; // Actual transaction reference
+  payment_note?: string | null;
+  receipt_url?: string | null;
+  customer_email?: string | null;
+  payment_date: string; // ISO date string (from paymentTable.payment_date)
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
 }
+
 
 // Combined API Slice
 export const caseAndPaymentAPI = createApi({
