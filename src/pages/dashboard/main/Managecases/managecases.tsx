@@ -407,7 +407,7 @@ const AllCases = () => {
                                     title="Filter by status"
                                     value={filters.status}
                                     onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                                    className="select select-bordered w-full select-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                    className="select select-bordered h-11 w-full select-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                                 >
                                     <option value="">All Statuses</option>
                                     <option value="open">Open</option>
