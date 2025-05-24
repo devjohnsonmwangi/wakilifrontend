@@ -1,5 +1,5 @@
 import {
-    FaTimes, FaUser, FaEnvelope, FaPhone, FaTag,
+    FaTimes,  FaTag,
     FaMoneyBill, FaReceipt, FaHashtag, FaFileAlt,
     FaBalanceScale, FaUniversity, FaBuilding, FaUsers,
     FaMoneyCheckAlt
@@ -44,9 +44,9 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
 
     const caseDetailsList = [
         { label: "Case ID", value: selectedCase.case_id ?? 'N/A', icon: FaHashtag },
-        { label: "Full Name", value: selectedCase.user?.full_name ?? 'N/A', icon: FaUser },
-        { label: "Email", value: selectedCase.user?.email ?? 'N/A', icon: FaEnvelope },
-        { label: "Phone", value: selectedCase.user?.phone_number ?? 'N/A', icon: FaPhone },
+        // { label: "Full Name", value: selectedCase.user?.full_name ?? 'N/A', icon: FaUser },
+        // { label: "Email", value: selectedCase.user?.email ?? 'N/A', icon: FaEnvelope },
+        // { label: "Phone", value: selectedCase.user?.phone_number ?? 'N/A', icon: FaPhone },
         { label: "Case Type", value: selectedCase.case_type ?? 'N/A', icon: FaTag },
         { label: "Case Status", value: formatCaseStatus(selectedCase.case_status), icon: FaBalanceScale },
         { label: "Case Number", value: selectedCase.case_number ?? 'N/A', icon: FaReceipt },
