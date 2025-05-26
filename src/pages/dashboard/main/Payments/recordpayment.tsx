@@ -216,6 +216,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
             const errMsg = err.data?.message || err.message || err.error || "Failed to record payment.";
             toast.error(errMsg);
         }
+        //
     };
 
     const handleClose = () => {
