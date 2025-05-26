@@ -269,7 +269,7 @@ const helpContent: HelpItem[] = [
     id: 'feat-mobile-access',
     category: "Platform Features In-Depth",
     question: "Is there a mobile app or mobile-friendly version of the site?",
-    answer: "[ICON:Smartphone] Our platform is designed to be responsive and accessible on modern mobile browsers. If a dedicated mobile app (iOS/Android) is available, you'll find links on our website or in app stores.",
+    answer: "[ICON:Smartphone] Our platform is designed to be responsive and accessible on modern mobile browsers.Click on   download app  button to  get  our  app.Our  application is  PWA designed  for  crossplatform  compactbility   . If a dedicated mobile app (iOS/Android) is available, you'll find links on our website or in app stores.",
     keywords: ["iphone app", "android app", "on the go", "responsive design"],
   },
   {
@@ -395,7 +395,7 @@ const helpContent: HelpItem[] = [
     id: 'general-contact-support',
     category: "General & Feedback",
     question: "What's the best way to contact support and what information should I provide?",
-    answer: "1. Via 'Contact Support' link (often includes diagnostic info). 2. Email: support@example.com. 3. Phone: 1-800-123-4567. Provide: Your account email, detailed description of issue, steps to reproduce, screenshots/videos, error messages, browser/OS details.",
+    answer: "1. Via 'Contact Support' link (often includes diagnostic info). 2. Email: support@example.com. 3. Phone: 0112810203. Provide: Your account email, detailed description of issue, steps to reproduce, screenshots/videos, error messages, browser/OS details.",
     keywords: ["help desk", "customer service", "assistance", "support ticket", "technical help"],
   },
   {
@@ -565,7 +565,7 @@ const HelpCenter: React.FC = () => {
           <h1 className="text-4xl font-bold text-slate-800 dark:text-white">Wakili App Help Center</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 mt-3 max-w-2xl mx-auto">
             We've gathered extensive information to help you. Search below or browse by category.
-            If you can't find Help, our support team is ready to assist.
+            If you can't find Help, our support team is ready to assist. Click  on  install  app  button  to  get  our  app  if  you  haven't
           </p>
         </header>
 

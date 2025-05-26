@@ -1,15 +1,52 @@
 // src/components/PaymentHistory.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import CashPaymentModal from './cash';
-import MpesaPayment from './mpesa';
-import StripePaymentModal from './stripe';
+import CashPaymentModal from './cash'; // Assuming this is for automated cash recording or a different flow
+import MpesaPayment from './mpesa';   // Assuming this is for automated M-Pesa STK push
+import StripePaymentModal from './stripe'; // Assuming this is for automated Stripe checkout
+import ManualPaymentEntryModal from './recordpayment'; // Import the new modal
+
 import {
     useFetchPaymentsQuery,
-    PaymentDataTypes,
     // useDeletePaymentMutation
 } from '../../../../features/payment/paymentAPI';
 // import { toast } from "sonner";
 import { format } from 'date-fns';
+import {
+    PlusCircle,
+    ListFilter,
+    RotateCcw,
+    ChevronDown,
+    X,
+    Search,
+    CalendarDays,
+    DollarSign,
+    Fingerprint,
+    User,
+    Briefcase,
+    Clock,
+    CheckCircle,
+    XCircle,
+    AlertTriangle,
+    CreditCard,
+    Activity,
+    Eye,
+    Download,
+    Edit3, // Icon for Manual Entry
+} from 'lucide-react';
+
+// Define the PaymentDataTypes interface - ENSURE THIS MATCHES YOUR ACTUAL DATA
+export interface PaymentDataTypes {
+    payment_id?: number;
+    user_id?: number;
+    case_id?: number;
+    payment_amount?: number | string;
+    payment_status?: 'pending' | 'completed' | 'failed' | string;
+    payment_gateway?: 'stripe' | 'mpesa' | 'cash' | 'other' | string; // Added 'other'
+    payment_date?: string;
+    transaction_id?: string | null;
+    mpesa_message?: string | null;
+    receipt_url?: string | null;
+}
 
 // Define the PaymentAPIResponse interface
 interface PaymentAPIResponse {
@@ -22,18 +59,42 @@ interface FetchPaymentsQueryResult {
     data?: PaymentAPIResponse;
     isLoading: boolean;
     isError: boolean;
-    error: unknown; // Or a more specific error type if you have one
+    error: unknown;
     refetch: () => void;
 }
 
-type PaymentMode = 'cash' | 'mpesa' | 'stripe' | '';
+type PaymentMode = 'cash' | 'mpesa' | 'stripe' | 'manual_entry' | ''; // Added 'manual_entry'
+
+// Enhanced Status Display
+interface StatusDisplayInfo {
+    badgeClass: string;
+    textClass: string;
+    icon: JSX.Element;
+    text: string;
+}
+
+const getStatusDisplayInfo = (status: string | undefined): StatusDisplayInfo => {
+    const safeStatus = (status || 'unknown').toLowerCase();
+    switch (safeStatus) {
+        case 'pending':
+            return { badgeClass: 'bg-yellow-100 dark:bg-yellow-700/30', textClass: 'text-yellow-700 dark:text-yellow-300', icon: <Clock size={16} className="mr-1.5" />, text: 'Pending' };
+        case 'completed': // 'paid' could also map here
+        case 'paid':
+            return { badgeClass: 'bg-green-100 dark:bg-green-700/30', textClass: 'text-green-700 dark:text-green-300', icon: <CheckCircle size={16} className="mr-1.5" />, text: 'Completed' };
+        case 'failed':
+            return { badgeClass: 'bg-red-100 dark:bg-red-700/30', textClass: 'text-red-700 dark:text-red-300', icon: <XCircle size={16} className="mr-1.5" />, text: 'Failed' };
+        default:
+            return { badgeClass: 'bg-gray-100 dark:bg-gray-700/30', textClass: 'text-gray-700 dark:text-gray-400', icon: <AlertTriangle size={16} className="mr-1.5" />, text: 'Unknown' };
+    }
+};
+
 
 const PaymentHistory: React.FC = () => {
     const [isPaymentModeSelectionOpen, setIsPaymentModeSelectionOpen] = useState(false);
-    const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode>('');
-    const [isCashModalOpen, setIsCashModalOpen] = useState(false);
-    const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);
-    const [isStripeModalOpen, setIsStripeModalOpen] = useState(false);
+    const [isCashModalOpen, setIsCashModalOpen] = useState(false); // For automated cash
+    const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false); // For STK push
+    const [isStripeModalOpen, setIsStripeModalOpen] = useState(false); // For Stripe Checkout
+    const [isManualEntryModalOpen, setIsManualEntryModalOpen] = useState(false); // New state for manual entry modal
 
     const [filterStatus, setFilterStatus] = useState<string>('');
     const [filterGateway, setFilterGateway] = useState<string>('');
@@ -42,22 +103,19 @@ const PaymentHistory: React.FC = () => {
     const [filterDateTo, setFilterDateTo] = useState<string>('');
     const [filterCaseId, setFilterCaseId] = useState<string>('');
     const [filterUser, setFilterUser] = useState<string>('');
-    const [filterTransactionId, setFilterTransactionId] = useState<string>(''); // New state for transaction ID filter
+    const [filterTransactionId, setFilterTransactionId] = useState<string>('');
 
     const { data, isLoading, isError, error, refetch } = useFetchPaymentsQuery() as FetchPaymentsQueryResult;
     const [filteredPayments, setFilteredPayments] = useState<PaymentDataTypes[]>([]);
-    // const [deletePayment, { isLoading: isDeleting }] = useDeletePaymentMutation();
+    const [isDownloading, setIsDownloading] = useState<number | null>(null);
 
     useEffect(() => {
         if (data?.success && Array.isArray(data.payments)) {
             setFilteredPayments(data.payments);
         } else {
             setFilteredPayments([]);
-            if (error) {
-                console.error("Error fetching payments:", error);
-            } else if (data && !data.success) {
-                console.error("API returned unsuccessful response:", data);
-            }
+            if (error) console.error("Error fetching payments:", error);
+            else if (data && !data.success) console.error("API returned unsuccessful response:", data);
         }
     }, [data, error]);
 
@@ -66,62 +124,24 @@ const PaymentHistory: React.FC = () => {
             setFilteredPayments([]);
             return;
         }
-
         let tempPayments = [...data.payments];
-
-        if (filterStatus) {
-            tempPayments = tempPayments.filter(payment => payment.payment_status === filterStatus);
-        }
-
-        if (filterGateway) {
-            tempPayments = tempPayments.filter(payment => payment.payment_gateway === filterGateway);
-        }
-
+        if (filterStatus) tempPayments = tempPayments.filter(p => p.payment_status?.toLowerCase() === filterStatus.toLowerCase());
+        if (filterGateway) tempPayments = tempPayments.filter(p => p.payment_gateway?.toLowerCase() === filterGateway.toLowerCase());
         if (filterAmount) {
             const amount = parseFloat(filterAmount);
-            if (!isNaN(amount)) {
-                tempPayments = tempPayments.filter(payment => Number(payment.payment_amount) === amount);
-            }
+            if (!isNaN(amount)) tempPayments = tempPayments.filter(p => Number(p.payment_amount) === amount);
         }
-
-        if (filterDateFrom) {
-            const fromDate = new Date(filterDateFrom);
-            tempPayments = tempPayments.filter(payment => new Date(payment.payment_date || '') >= fromDate);
-        }
-
-        if (filterDateTo) {
-            const toDate = new Date(filterDateTo);
-            tempPayments = tempPayments.filter(payment => new Date(payment.payment_date || '') <= toDate);
-        }
-
-        if (filterCaseId) {
-            tempPayments = tempPayments.filter(payment => String(payment.case_id) === filterCaseId);
-        }
-
-        if (filterUser) {
-            tempPayments = tempPayments.filter(payment => String(payment.user_id) === filterUser);
-        }
-
-        // Transaction ID Filter Logic:
+        if (filterDateFrom) tempPayments = tempPayments.filter(p => new Date(p.payment_date || '') >= new Date(filterDateFrom));
+        if (filterDateTo) tempPayments = tempPayments.filter(p => new Date(p.payment_date || '') <= new Date(filterDateTo));
+        if (filterCaseId) tempPayments = tempPayments.filter(p => String(p.case_id).includes(filterCaseId));
+        if (filterUser) tempPayments = tempPayments.filter(p => String(p.user_id).includes(filterUser));
         if (filterTransactionId) {
-            const transactionId = filterTransactionId.trim();
-            tempPayments = tempPayments.filter(payment => {
-                if (payment.transaction_id && payment.transaction_id.toLowerCase() === transactionId.toLowerCase()) {
-                    return true; // Direct match on transaction_id field
-                }
-
-                if (payment.payment_gateway === 'mpesa') {
-                    // Check if the transaction ID exists within the M-Pesa message
-                    const mpesaMessage = payment.mpesa_message || ''; // Assuming there's a field for the message
-                    return mpesaMessage.toLowerCase().includes(transactionId.toLowerCase());
-                }
-
-                return false;
-            });
+            const txId = filterTransactionId.trim().toLowerCase();
+            tempPayments = tempPayments.filter(p =>
+                (p.transaction_id && p.transaction_id.toLowerCase().includes(txId)) ||
+                (p.payment_gateway === 'mpesa' && (p.mpesa_message || '').toLowerCase().includes(txId))
+            );
         }
-
-
-
         setFilteredPayments(tempPayments);
     }, [filterStatus, filterGateway, filterAmount, filterDateFrom, filterDateTo, filterCaseId, filterUser, filterTransactionId, data]);
 
@@ -132,29 +152,11 @@ const PaymentHistory: React.FC = () => {
     const formatDate = (dateString: string | undefined): string => {
         if (!dateString) return "N/A";
         try {
-            const date = new Date(dateString);
-            return format(date, 'MMM dd, yyyy HH:mm');
-        } catch (error) {
-            console.error("Error formatting date:", error);
+            return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+        } catch (e) {
             return "Invalid Date";
         }
     };
-
-    // const handleDeletePayment = async (paymentId: number | undefined) => {
-    //     if (paymentId === undefined) {
-    //         toast.error('Invalid Payment ID.');
-    //         return;
-    //     }
-    //     try {
-    //         await deletePayment(paymentId).unwrap();
-    //         toast.success('Payment deleted successfully!');
-    //         setFilteredPayments(prevPayments => prevPayments.filter(payment => payment.payment_id !== paymentId));
-    //         refetch();
-    //     } catch (error) {
-    //         console.error('Failed to delete payment:', error);
-    //         toast.error('Failed to delete payment.');
-    //     }
-    // };
 
     const resetFilters = () => {
         setFilterStatus('');
@@ -164,308 +166,216 @@ const PaymentHistory: React.FC = () => {
         setFilterDateTo('');
         setFilterCaseId('');
         setFilterUser('');
-        setFilterTransactionId(''); // Clear Transaction ID filter
-        setFilteredPayments(data?.payments || []);
-        refetch();
+        setFilterTransactionId('');
+        // No need to call setFilteredPayments here, useEffect with handleFilter will do it
+        refetch(); // Refetch original data, then filter effect will apply
     };
 
     const handlePaymentModeSelect = (mode: PaymentMode) => {
-        setSelectedPaymentMode(mode);
         setIsPaymentModeSelectionOpen(false);
-
         switch (mode) {
-            case 'cash':
-                setIsCashModalOpen(true);
-                break;
-            case 'mpesa':
-                setIsMpesaModalOpen(true);
-                break;
-            case 'stripe':
-                setIsStripeModalOpen(true);
-                break;
-            default:
-                break;
+            case 'cash': setIsCashModalOpen(true); break;
+            case 'mpesa': setIsMpesaModalOpen(true); break;
+            case 'stripe': setIsStripeModalOpen(true); break;
+            case 'manual_entry': setIsManualEntryModalOpen(true); break; // Open manual entry modal
+            default: break;
         }
-        console.log(`Selected payment mode: ${selectedPaymentMode}`);
     };
 
-    const handleClosePayment = () => {
+    const handleClosePaymentModals = () => {
         setIsCashModalOpen(false);
         setIsMpesaModalOpen(false);
         setIsStripeModalOpen(false);
-        setSelectedPaymentMode('');
+        setIsManualEntryModalOpen(false); // Close manual entry modal
         refetch();
     };
 
-     const getStatusColor = (status: string | undefined): string => {
-        const safeStatus = status || ''; // Provide a default value
-        switch (safeStatus) {
-            case 'pending':
-                return 'text-yellow-500';
-            case 'completed':
-                return 'text-green-500';
-            case 'failed':
-                return 'text-red-500';
-            default:
-                return 'text-gray-500';
+    const handleDownloadReceipt = async (payment: PaymentDataTypes) => {
+        if (!payment.receipt_url || !payment.payment_id) {
+            alert("Receipt URL is not available.");
+            return;
+        }
+        setIsDownloading(payment.payment_id);
+        try {
+            const response = await fetch(payment.receipt_url);
+            if (!response.ok) throw new Error(`Failed to fetch receipt: ${response.statusText}`);
+            const blob = await response.blob();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            let fileName = `receipt_payment_${payment.payment_id}`;
+            const contentDisposition = response.headers.get('content-disposition');
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/i);
+                if (fileNameMatch && fileNameMatch.length === 2) fileName = fileNameMatch[1];
+            } else {
+                const urlParts = payment.receipt_url.split('/');
+                const lastPart = urlParts[urlParts.length - 1];
+                fileName = lastPart.split('?')[0] || fileName;
+            }
+            if (!fileName.match(/\.[0-9a-z]+$/i)) {
+                if (blob.type.includes('pdf')) fileName += '.pdf';
+                else if (blob.type.includes('jpeg') || blob.type.includes('jpg')) fileName += '.jpg';
+                else if (blob.type.includes('png')) fileName += '.png';
+            }
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        } catch (err) {
+            console.error("Download failed:", err);
+            alert("Failed to download receipt.");
+        } finally {
+            setIsDownloading(null);
         }
     };
-    
+
+    const renderFilterInput = (
+        id: string,
+        label: string,
+        value: string,
+        onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void,
+        type = "text",
+        placeholder = "",
+        options?: { value: string; label: string }[],
+        icon?: JSX.Element
+    ) => (
+        <div className="flex-1 min-w-[180px]">
+            <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {label}
+            </label>
+            <div className="relative">
+                {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">{React.cloneElement(icon, { size: 18 })}</div>}
+                {type === "select" ? (
+                    <select id={id} className={`w-full py-2.5 ${icon ? 'pl-10' : 'pl-3'} pr-8 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 dark:text-gray-100 transition duration-150 ease-in-out`} value={value} onChange={onChange}>
+                        {options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    </select>
+                ) : (
+                    <input type={type} id={id} className={`w-full py-2.5 ${icon ? 'pl-10' : 'pl-3'} pr-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 dark:text-gray-100 transition duration-150 ease-in-out`} placeholder={placeholder} value={value} onChange={onChange} />
+                )}
+            </div>
+        </div>
+    );
+
+    // Define payment modes for the dropdown
+    const paymentModes: { mode: PaymentMode; label: string; icon: JSX.Element }[] = [
+        { mode: 'mpesa', label: 'M-Pesa (STK)', icon: <CreditCard size={16} className="mr-2 opacity-70" /> },
+        { mode: 'stripe', label: 'Stripe (Card)', icon: <CreditCard size={16} className="mr-2 opacity-70" /> },
+        { mode: 'cash', label: 'Cash (Automated)', icon: <DollarSign size={16} className="mr-2 opacity-70" /> },
+        { mode: 'manual_entry', label: 'Manual Entry', icon: <Edit3 size={16} className="mr-2 opacity-70" /> },
+    ];
 
     return (
-        <div className="w-full p-2 font-sans"> {/* Enhanced Typography (font-sans) */}
-            <div className="bg-blue-100 dark:bg-blue-900 z-10 py-2 mb-2 flex items-center justify-between rounded shadow"> {/* Box Shadows and Rounded Borders */}
-                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-200 text-center">
+        <div className="w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 sm:mb-0">
                     Payment History
-                </h2>
-                <div>
-                    <div className="relative inline-block text-left">
-                        <div>
-                            <button
-                                type="button"
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                onClick={() => setIsPaymentModeSelectionOpen(true)}
-                                aria-expanded="true"
-                                aria-haspopup="true"
-                            >
-                                Initiate Payment
-                                <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {isPaymentModeSelectionOpen && (
-                            <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1}>
-                                <div className="py-1" role="none">
-                                    <button
-                                        onClick={() => handlePaymentModeSelect('cash')}
-                                        className="text-gray-700 dark:text-gray-300 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white"
-                                        role="menuitem" tabIndex={-1} id="menu-item-0"
-                                    >
-                                        Cash
+                </h1>
+                <div className="relative">
+                    <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition duration-150 ease-in-out" onClick={() => setIsPaymentModeSelectionOpen(prev => !prev)} aria-expanded={isPaymentModeSelectionOpen} aria-haspopup="true">
+                        <PlusCircle size={20} className="mr-2" /> Initiate Payment <ChevronDown size={20} className={`ml-2 transform transition-transform duration-200 ${isPaymentModeSelectionOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isPaymentModeSelectionOpen && (
+                        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
+                            <div className="py-1">
+                                {paymentModes.map(({ mode, label, icon }) => (
+                                    <button key={mode} onClick={() => handlePaymentModeSelect(mode)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
+                                        {icon} {label}
                                     </button>
-                                    <button
-                                        onClick={() => handlePaymentModeSelect('mpesa')}
-                                        className="text-gray-700 dark:text-gray-300 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white"
-                                        role="menuitem" tabIndex={-1} id="menu-item-1"
-                                    >
-                                        M-Pesa
-                                    </button>
-                                    <button
-                                        onClick={() => handlePaymentModeSelect('stripe')}
-                                        className="text-gray-700 dark:text-gray-300 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white"
-                                        role="menuitem" tabIndex={-1} id="menu-item-2"
-                                    >
-                                        Stripe
-                                    </button>
-                                </div>
-                                <div className="py-1" role="none">
-                                    <button
-                                        onClick={() => setIsPaymentModeSelectionOpen(false)}
-                                        className="text-red-700 dark:text-red-300 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-red-900 dark:hover:text-red-200"
-                                        role="menuitem" tabIndex={-1} id="menu-item-3"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
+                                ))}
                             </div>
-                        )}
-                    </div>
+                            <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                            <div className="py-1">
+                                <button onClick={() => setIsPaymentModeSelectionOpen(false)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-700/30 hover:text-red-700 dark:hover:text-red-300 transition duration-150 ease-in-out">
+                                    <X size={16} className="mr-2 opacity-70" /> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
-                {/* Status Filter */}
-                <div>
-                    <label htmlFor="statusFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Status:</label>
-                    <select
-                        id="statusFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                    >
-                        <option value="">All Statuses</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">completed</option>
-                        <option value="failed">Failed</option>
-                    </select>
+            {/* Filters Section */}
+            <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200 flex items-center"> <ListFilter size={20} className="mr-2 text-indigo-500" /> Filters </h3>
+                    <button onClick={resetFilters} className="inline-flex items-center px-3.5 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition duration-150 ease-in-out">
+                        <RotateCcw size={16} className="mr-1.5" /> Reset Filters
+                    </button>
                 </div>
-
-                {/* Gateway Filter */}
-                <div>
-                    <label htmlFor="gatewayFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Gateway:</label>
-                    <select
-                        id="gatewayFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterGateway}
-                        onChange={(e) => setFilterGateway(e.target.value)}
-                    >
-                        <option value="">All Gateways</option>
-                        <option value="stripe">Stripe</option>
-                        <option value="mpesa">M-Pesa</option>
-                        <option value="cash">Cash</option>
-                    </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {renderFilterInput("statusFilter", "Status", filterStatus, (e) => setFilterStatus(e.target.value), "select", "", [{ value: "", label: "All Statuses" }, { value: "pending", label: "Pending" }, { value: "completed", label: "Completed" }, { value: "paid", label: "Paid" },{ value: "failed", label: "Failed" }], <ListFilter />)}
+                    {renderFilterInput("gatewayFilter", "Gateway", filterGateway, (e) => setFilterGateway(e.target.value), "select", "", [{ value: "", label: "All Gateways" }, { value: "stripe", label: "Stripe" }, { value: "mpesa", label: "M-Pesa" }, { value: "cash", label: "Cash" }, {value: "other", label: "Other"}], <CreditCard />)}
+                    {renderFilterInput("amountFilter", "Amount", filterAmount, (e) => setFilterAmount(e.target.value), "number", "Enter amount", undefined, <DollarSign />)}
+                    {renderFilterInput("dateFromFilter", "Date From", filterDateFrom, (e) => setFilterDateFrom(e.target.value), "date", "", undefined, <CalendarDays />)}
+                    {renderFilterInput("dateToFilter", "Date To", filterDateTo, (e) => setFilterDateTo(e.target.value), "date", "", undefined, <CalendarDays />)}
+                    {renderFilterInput("caseIdFilter", "Case ID", filterCaseId, (e) => setFilterCaseId(e.target.value), "text", "Enter Case ID", undefined, <Briefcase />)}
+                    {renderFilterInput("userFilter", "User ID", filterUser, (e) => setFilterUser(e.target.value), "text", "Enter User ID", undefined, <User />)}
+                    {renderFilterInput("transactionIdFilter", "Transaction ID / M-Pesa", filterTransactionId, (e) => setFilterTransactionId(e.target.value), "text", "ID or M-Pesa message", undefined, <Activity />)}
                 </div>
-
-                {/* Amount Filter */}
-                <div>
-                    <label htmlFor="amountFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Amount:</label>
-                    <input
-                        type="number"
-                        id="amountFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter amount"
-                        value={filterAmount}
-                        onChange={(e) => setFilterAmount(e.target.value)}
-                    />
-                </div>
-
-                {/* Date From Filter */}
-                <div>
-                    <label htmlFor="dateFromFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Date From:</label>
-                    <input
-                        type="date"
-                        id="dateFromFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterDateFrom}
-                        onChange={(e) => setFilterDateFrom(e.target.value)}
-                    />
-                </div>
-
-                {/* Date To Filter */}
-                <div>
-                    <label htmlFor="dateToFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Date To:</label>
-                    <input
-                        type="date"
-                        id="dateToFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        value={filterDateTo}
-                        onChange={(e) => setFilterDateTo(e.target.value)}
-                    />
-                </div>
-
-                {/* Case ID Filter */}
-                <div>
-                    <label htmlFor="caseIdFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Case ID:</label>
-                    <input
-                        type="text"
-                        id="caseIdFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter Case ID"
-                        value={filterCaseId}
-                        onChange={(e) => setFilterCaseId(e.target.value)}
-                    />
-                </div>
-
-                {/* User Filter */}
-                <div>
-                    <label htmlFor="userFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">User ID:</label>
-                    <input
-                        type="number"
-                        id="userFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter User ID"
-                        value={filterUser}
-                        onChange={(e) => setFilterUser(e.target.value)}
-                    />
-                </div>
-
-                 {/* Transaction ID Filter */}
-                 <div>
-                    <label htmlFor="transactionIdFilter" className="block text-sm font-medium text-blue-700 dark:text-blue-300">Transaction ID / M-Pesa Message:</label>
-                    <input
-                        type="text"
-                        id="transactionIdFilter"
-                        className="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:text-white hover:border-indigo-500"
-                        placeholder="Enter Transaction ID or Paste M-Pesa Message"
-                        value={filterTransactionId}
-                        onChange={(e) => setFilterTransactionId(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            {/* Reset Filters Button */}
-            <div className="mb-4">
-                <button
-                    onClick={resetFilters}
-                    className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Reset Filters
-                </button>
             </div>
 
             {/* Payment Table */}
-            <div className="overflow-x-auto">
-                <table className="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
-                    <thead>
-                        <tr className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 uppercase text-sm">
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">ID</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Amount</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Status</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Gateway</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Date</th>
-                            <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Transaction ID</th>
-                            {/* <th className="px-3 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 dark:border-neutral-800 text-left font-semibold">Actions</th> */}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {isLoading ? (
-                            <tr><td colSpan={7} className="text-center py-4">Loading payments...</td></tr>
-                        ) : isError ? (
-                            <tr><td colSpan={7} className="text-center py-4 text-red-500">Error loading payments.please check your internet connection and reload the page. If connected to internet  and this error  persist contact support team</td></tr>
-                        ) : filteredPayments.length > 0 ? (
-                            filteredPayments.map((payment, index) => (
-                                <tr key={payment.payment_id} className={`hover:bg-gray-200 dark:hover:bg-neutral-700 ${index % 2 === 0 ? 'bg-gray-50 dark:bg-neutral-800' : 'bg-white dark:bg-neutral-900'} transition-colors duration-200`}> {/* Striped Rows and Hover Effects */}
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap font-semibold">{payment.payment_id}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap font-semibold">{payment.payment_amount}</p>
-                                    </td>
-                                    <td className={`px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm ${getStatusColor(payment.payment_status)}`}>
-                                        <p className=" whitespace-no-wrap font-semibold">{payment.payment_status}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap font-semibold">{payment.payment_gateway}</p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm">
-                                        <p className="text-gray-900 dark:text-white whitespace-no-wrap font-semibold">
-                                            {formatDate(payment.payment_date)}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm">
-                                        <p className="text-blue-500 dark:text-blue-400 whitespace-no-wrap font-semibold">{payment.transaction_id}</p>
-                                    </td>
-                                    {/* <td className="px-3 py-2 sm:px-5 sm:py-5 border-b border-gray-200 dark:border-neutral-800  text-sm text-right">
-                                        <button
-                                            onClick={() => handleDeletePayment(payment.payment_id)}
-                                            className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 font-bold py-1 px-3 rounded"
-                                            disabled={isDeleting}
-                                        >
-                                            {isDeleting ? 'Deleting...' : 'Delete'}
-                                        </button>
-                                    </td> */}
-                                </tr>
-                            ))
-                        ) : (
-                            <tr><td colSpan={7} className="text-center py-4">No payments found.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+            <div className="bg-white dark:bg-gray-800 shadow-xl rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full leading-normal">
+                        <thead>
+                            <tr className="bg-gray-100 dark:bg-gray-700/50 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th className="px-4 py-3.5">ID</th>
+                                <th className="px-4 py-3.5">Amount</th>
+                                <th className="px-4 py-3.5">Status</th>
+                                <th className="px-4 py-3.5">Gateway</th>
+                                <th className="px-4 py-3.5">Date</th>
+                                <th className="px-4 py-3.5">Transaction ID</th>
+                                <th className="px-4 py-3.5 text-center">Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-700 dark:text-gray-300 text-sm">
+                            {isLoading ? (
+                                <tr><td colSpan={7} className="text-center py-10"><div className="flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div><span className="ml-3">Loading payments...</span></div></td></tr>
+                            ) : isError ? (
+                                <tr><td colSpan={7} className="text-center py-10 text-red-500 dark:text-red-400"><div className="flex flex-col items-center"><AlertTriangle size={40} className="mb-2" /> Error loading payments. Please check connection and reload. Contact support if persistent.</div></td></tr>
+                            ) : filteredPayments.length > 0 ? (
+                                filteredPayments.map((payment) => {
+                                    const statusInfo = getStatusDisplayInfo(payment.payment_status);
+                                    const currentIsDownloading = isDownloading === payment.payment_id;
+                                    return (
+                                        <tr key={payment.payment_id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150 ease-in-out">
+                                            <td className="px-4 py-3.5 whitespace-nowrap"><div className="flex items-center"><Fingerprint size={16} className="mr-2 text-gray-400 dark:text-gray-500" /><span className="font-medium text-gray-900 dark:text-gray-100">{payment.payment_id}</span></div></td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap"><span className="font-medium text-gray-900 dark:text-gray-100">ksh{Number(payment.payment_amount).toFixed(2)}</span></td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap"><span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusInfo.badgeClass} ${statusInfo.textClass}`}>{statusInfo.icon}{statusInfo.text}</span></td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">{payment.payment_gateway}</td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">{formatDate(payment.payment_date)}</td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap"><span className="text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-[150px] block" title={payment.transaction_id || payment.mpesa_message || 'N/A'}>{payment.transaction_id || payment.mpesa_message || 'N/A'}</span></td>
+                                            <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                                                {payment.receipt_url ? (
+                                                    <div className="flex items-center justify-center space-x-2">
+                                                        <a href={payment.receipt_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium py-1 px-2 rounded-md inline-flex items-center text-sm hover:bg-blue-50 dark:hover:bg-blue-700/20 transition-colors duration-150" title="View Receipt">
+                                                            <Eye size={16} className="mr-1" /> View
+                                                        </a>
+                                                        <button onClick={() => handleDownloadReceipt(payment)} disabled={currentIsDownloading} className={`text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium py-1 px-2 rounded-md inline-flex items-center text-sm hover:bg-green-50 dark:hover:bg-green-700/20 transition-colors duration-150 ${currentIsDownloading ? 'opacity-50 cursor-not-allowed' : ''}`} title="Download Receipt">
+                                                            {currentIsDownloading ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-green-500 mr-1"></div> : <Download size={16} className="mr-1" />}
+                                                            {currentIsDownloading ? 'Downloading...' : 'Download'}
+                                                        </button>
+                                                    </div>
+                                                ) : (<span className="text-gray-400 dark:text-gray-500">N/A</span>)}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr><td colSpan={7} className="text-center py-10 text-gray-500 dark:text-gray-400"><div className="flex flex-col items-center"><Search size={40} className="mb-2 text-gray-400 dark:text-gray-500" />No payments found matching your criteria.</div></td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Modals */}
-            {isCashModalOpen && (
-                <CashPaymentModal isOpen={isCashModalOpen} onClose={handleClosePayment} />
-            )}
-            {isMpesaModalOpen && (
-                <MpesaPayment isOpen={isMpesaModalOpen} onClose={handleClosePayment} />
-            )}
-            {isStripeModalOpen && (
-                <StripePaymentModal isOpen={isStripeModalOpen} onClose={handleClosePayment} />
-            )}
+            {isCashModalOpen && <CashPaymentModal isOpen={isCashModalOpen} onClose={handleClosePaymentModals} />}
+            {isMpesaModalOpen && <MpesaPayment isOpen={isMpesaModalOpen} onClose={handleClosePaymentModals} />}
+            {isStripeModalOpen && <StripePaymentModal isOpen={isStripeModalOpen} onClose={handleClosePaymentModals} />}
+            {isManualEntryModalOpen && <ManualPaymentEntryModal isOpen={isManualEntryModalOpen} onClose={handleClosePaymentModals} />}
         </div>
     );
 };

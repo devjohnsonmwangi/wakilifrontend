@@ -4,7 +4,7 @@ import { APIDomain } from "../../utils/APIDomain";
 
 // Enums for Payment Table
 export type PaymentStatus = "pending" | "paid" | "failed" | "completed";
-export type PaymentGateway = "stripe" | "mpesa" | "cash" | "other";
+export type PaymentGateway = "stripe" | "mpesa" | "cash" | "other" | "manual"; // Added "manual"
 
 // Payment Data Types - Updated for clarity
 export interface PaymentDataTypes {
@@ -20,6 +20,7 @@ export interface PaymentDataTypes {
   payment_note?: string | null;
   receipt_url?: string | null;
   customer_email?: string | null;
+  mpesa_message ?:string | null; // M-Pesa specific message
   payment_date: string; // ISO date string (from paymentTable.payment_date)
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
@@ -55,7 +56,7 @@ export interface StripeWebhookData {
 // Interface for Mpesa STK Request
 export interface MpesaStkRequest {
     phoneNumber: string;
-    amount: number;     
+    amount: number;
     user_id: number;
     case_id: number;
 }
@@ -74,6 +75,20 @@ export interface CashPaymentRequest {
     case_id: number;
     payment_notes?: string;
 }
+
+// Interface for Manual Payment Request
+export interface ManualPaymentRequest {
+  case_id: number;
+  user_id: number;
+  payment_amount: number; // Frontend sends number, backend can parse/handle
+  payment_status: PaymentStatus;
+  payment_gateway: string; // e.g., "bank_transfer", "cheque", "manual_entry"
+  payment_date: string; // ISO date string for when the payment was made/recorded
+  transaction_id?: string | null;
+  payment_note?: string | null;
+  customer_email?: string | null;
+}
+
 
 // Payment API Slice
 export const paymentAPI = createApi({
@@ -136,6 +151,16 @@ export const paymentAPI = createApi({
             invalidatesTags: ["Payments"],
         }),
 
+        // Add Manual Payment
+        addManualPayment: builder.mutation<PaymentDataTypes, ManualPaymentRequest>({
+            query: (body) => ({
+                url: 'payments/manual', // New endpoint for manual payments
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ["Payments"],
+        }),
+
         // Handle Stripe Payment
         handleStripePayment: builder.mutation<{ success: boolean; sessionId: string }, StripePaymentRequest>({
             query: (body) => ({
@@ -186,6 +211,7 @@ export const {
     useInitiateMpesaStkPushMutation,
     useMpesaCallbackMutation,
     useCreateCashPaymentMutation,
+    useAddManualPaymentMutation, // Exported new hook
     useHandleStripePaymentMutation,
     useStripeWebhookMutation,
     useUpdatePaymentMutation,
