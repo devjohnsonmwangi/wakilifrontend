@@ -15,6 +15,7 @@ import EventTypeChip from './components/EventTypeChip';
 import ConfirmationDialog from './components/ConfirmationDialog';
 
 interface Props {
+  currentUserId?: number;
   open: boolean;
   onClose: () => void;
   event: EventDataTypes;

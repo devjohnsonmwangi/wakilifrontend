@@ -1,55 +1,42 @@
 // src/features/users/usersAPI.ts
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain"; // Ensure this points to your backend base URL
+import { APIDomain } from "../../utils/APIDomain";
+// Import RootState if you decide to switch to getting token from Redux state
+// import type { RootState } from '../../app/store'; // Adjust path as needed
 
-// Type for user data returned by API (Password typically excluded in responses)
+// ... (your existing interface definitions - UserApiResponse, UserDataTypes, etc. remain the same)
 export interface UserApiResponse {
   user_id: number;
   full_name: string;
   email: string;
-  phone_number?: string; // Make optional if it can be null/undefined from API
-  address?: string;    // Make optional if it can be null/undefined from API
+  phone_number?: string;
+  address?: string;
   role: "admin" | "user" | "lawyer" | "client" | "clerks" | "manager" | "supports";
   profile_picture?: string;
   created_at: string;
   updated_at: string;
 }
 
-// Type for full user data including password (used for registration or internal logic if needed)
 export interface UserDataTypes extends UserApiResponse {
-  password?: string; // Only for specific operations like registration
+  password?: string;
 }
 
-// Type for the payload when updating a user.
-// Excludes fields that shouldn't be updated via this general endpoint.
-export interface UserUpdatePayload extends Partial<Omit<UserApiResponse, 'user_id' | 'created_at' | 'updated_at'>> {
-  // Fields that can be updated:
-  // full_name?: string;
-  // email?: string;
-  // phone_number?: string;
-  // address?: string;
-  // role?: "admin" | "user" | "lawyer" | "client" | "clerk" | "manager" | "support";
-  // profile_picture?: string;
-}
+export interface UserUpdatePayload extends Partial<Omit<UserApiResponse, 'user_id' | 'created_at' | 'updated_at'>> {}
 
-// Type for the payload when requesting password reset
 export interface PasswordResetRequestPayload {
   email: string;
 }
 
-// Type for the payload when resetting/changing password with a token
 export interface ResetPasswordPayload {
   token: string;
   newPassword: string;
 }
 
-// Type for the generic success response from password endpoints
 export interface PasswordActionResponse {
   msg: string;
 }
 
-// Type for the delete user success response
 export interface DeleteUserResponse {
     msg: string;
 }
@@ -58,25 +45,38 @@ export interface DeleteUserResponse {
 export const usersAPI = createApi({
   reducerPath: "usersAPI",
   baseQuery: fetchBaseQuery({
-    baseUrl: APIDomain, // Example: "http://localhost:8000" or "http://localhost:8000/api"
-                        // Ensure this matches how your Hono backend is structured.
-    prepareHeaders: (headers /*, { getState } */) => { // getState can be used if token is in Redux store
-      const token = localStorage.getItem('authToken'); // Example: Get token from localStorage
-      // const token = (getState() as RootState).auth.token; // Example: Get token from Redux state
+    baseUrl: APIDomain,
+    prepareHeaders: (headers, {  endpoint }) => { // getState and endpoint are available
+      console.log(`[RTK Query] Preparing headers for endpoint: ${endpoint}`);
+
+      // Option 1: Get token from localStorage (your current method)
+      const tokenFromLocalStorage = localStorage.getItem('authToken');
+      console.log('[RTK Query] Token from localStorage:', tokenFromLocalStorage);
+
+      // Option 2: Example if token were in Redux state (e.g., in an 'auth' slice)
+      // const tokenFromReduxState = (getState() as RootState).auth.token;
+      // console.log('[RTK Query] Token from Redux state:', tokenFromReduxState);
+
+      // Choose your token source. For now, sticking with localStorage as per your code.
+      const token = tokenFromLocalStorage; // Or tokenFromReduxState if you switch
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
+        console.log('[RTK Query] Authorization header set.');
+      } else {
+        console.warn('[RTK Query] No token found. Authorization header NOT set.');
       }
       return headers;
     },
   }),
   refetchOnReconnect: true,
-  tagTypes: ["Users", "User"], // 'Users' for lists, 'User' for individual items
+  tagTypes: ["Users", "User"],
   endpoints: (builder) => ({
     // === User CRUD & Fetch Endpoints ===
 
     registerUser: builder.mutation<UserApiResponse, Omit<UserDataTypes, 'user_id' | 'created_at' | 'updated_at' | 'role'>>({
       query: (newUser) => ({
-        url: "auth/register", // Assuming registration endpoint
+        url: "auth/register",
         method: "POST",
         body: newUser,
       }),
@@ -100,67 +100,55 @@ export const usersAPI = createApi({
     }),
 
     fetchUsersByRole: builder.query<UserApiResponse[], void>({
-      query: () => "users/roles", // Endpoint for fetching users by specific roles
+      query: () => "users/roles",
       providesTags: (result) =>
         result
           ? [
               ...result.map(({ user_id }) => ({ type: 'User' as const, id: user_id })),
-              { type: 'Users', id: 'ROLES_LIST' }, // Specific tag for this list
-              { type: 'Users', id: 'LIST' },       // Also potentially invalidates general list
+              { type: 'Users', id: 'ROLES_LIST' },
+              { type: 'Users', id: 'LIST' },
             ]
           : [{ type: 'Users', id: 'ROLES_LIST' }, { type: 'Users', id: 'LIST' }],
     }),
 
     updateUser: builder.mutation<UserApiResponse, { user_id: number } & UserUpdatePayload>({
         query: ({ user_id, ...payloadToSend }) => {
-            // Debugging log to see what's being sent
-            console.log('RTK Query: Sending to updateUser API:', { url: `users/${user_id}`, method: "PUT", body: payloadToSend });
+            console.log('[RTK Query] updateUser query:', { url: `users/${user_id}`, method: "PUT", body: payloadToSend });
             return {
                 url: `users/${user_id}`,
-                method: "PUT", // Or "PATCH" if your API uses PATCH for partial updates
-                body: payloadToSend, // Contains fields like { role: "newRole" } or { full_name: "..." }
+                method: "PUT",
+                body: payloadToSend,
             };
         },
         async onQueryStarted({ user_id, ...patch }, { dispatch, queryFulfilled }) {
-            // Optimistic update for the list of users
             const optimisticListUpdate = dispatch(
                 usersAPI.util.updateQueryData('fetchUsers', undefined, (draftUsers) => {
                     const userIndex = draftUsers.findIndex(user => user.user_id === user_id);
-                    if (userIndex !== -1) {
-                        Object.assign(draftUsers[userIndex], patch); // Apply patch to the user in the list
-                    }
+                    if (userIndex !== -1) { Object.assign(draftUsers[userIndex], patch); }
                 })
             );
-            // Optimistic update for the individual user query, if cached
             const optimisticSingleUserUpdate = dispatch(
                 usersAPI.util.updateQueryData('getUserById', user_id, (draftUser) => {
-                    if (draftUser) {
-                        Object.assign(draftUser, patch); // Apply patch to the single user
-                    }
+                    if (draftUser) { Object.assign(draftUser, patch); }
                 })
             );
             try {
                 const { data: updatedUserFromServer } = await queryFulfilled;
-                // If successful, update caches with the authoritative response from the server
                 dispatch(
                     usersAPI.util.updateQueryData('fetchUsers', undefined, (draftUsers) => {
                         const userIndex = draftUsers.findIndex(user => user.user_id === user_id);
-                        if (userIndex !== -1) {
-                            draftUsers[userIndex] = updatedUserFromServer;
-                        }
-                        // Optionally, handle case where user might not be in list (e.g., after filtering)
+                        if (userIndex !== -1) { draftUsers[userIndex] = updatedUserFromServer; }
                     })
                 );
                 dispatch(
                     usersAPI.util.updateQueryData('getUserById', user_id, () => updatedUserFromServer)
                 );
-            } catch {
-                optimisticListUpdate.undo(); // Rollback list update on error
-                optimisticSingleUserUpdate.undo(); // Rollback single user update on error
+            } catch (error) {
+                console.error('[RTK Query] Error in updateUser onQueryStarted:', error);
+                optimisticListUpdate.undo();
+                optimisticSingleUserUpdate.undo();
             }
         },
-        // Fallback invalidation if not using onQueryStarted
-        // invalidatesTags: (_, __, { user_id }) => [{ type: "User", id: user_id }, { type: 'Users', id: 'LIST' }],
     }),
 
     deleteUser: builder.mutation<DeleteUserResponse, number>({
@@ -169,7 +157,6 @@ export const usersAPI = createApi({
         method: "DELETE",
       }),
       async onQueryStarted(userIdToDelete, { dispatch, queryFulfilled }) {
-          // Optimistic update: remove user from the list
           const patchResult = dispatch(
               usersAPI.util.updateQueryData('fetchUsers', undefined, (draftUsers) => {
                   return draftUsers.filter(user => user.user_id !== userIdToDelete);
@@ -177,50 +164,27 @@ export const usersAPI = createApi({
           );
           try {
               await queryFulfilled;
-              // If successful, also invalidate the specific user tag if it was fetched individually
               dispatch(usersAPI.util.invalidateTags([{ type: 'User', id: userIdToDelete }]));
-          } catch {
-              patchResult.undo(); // Rollback on error
+          } catch (error) {
+              console.error('[RTK Query] Error in deleteUser onQueryStarted:', error);
+              patchResult.undo();
           }
       },
-      // Fallback invalidation
-      // invalidatesTags: (_, __, id) => [{ type: "User", id }, { type: 'Users', id: 'LIST' }],
     }),
 
     // === Password Management Endpoints ===
-
     requestPasswordReset: builder.mutation<PasswordActionResponse, PasswordResetRequestPayload>({
-      query: (payload) => ({
-        url: `users/request-password-reset`,
-        method: "POST",
-        body: payload,
-      }),
+      query: (payload) => ({ url: `users/request-password-reset`, method: "POST", body: payload }),
     }),
-
     resetPassword: builder.mutation<PasswordActionResponse, ResetPasswordPayload>({
-      query: (payload) => ({
-        url: `users/reset-password`,
-        method: "POST",
-        body: payload,
-      }),
+      query: (payload) => ({ url: `users/reset-password`, method: "POST", body: payload }),
     }),
-
     requestPasswordChange: builder.mutation<PasswordActionResponse, void>({
-        query: () => ({
-          url: `users/request-password-change`,
-          method: "POST",
-          // Backend c.get('userId') gets user ID from auth token (from prepareHeaders)
-        }),
+        query: () => ({ url: `users/request-password-change`, method: "POST" }),
     }),
-
     changePassword: builder.mutation<PasswordActionResponse, ResetPasswordPayload>({
-      query: (payload) => ({
-        url: `users/change-password`,
-        method: "POST",
-        body: payload, // Sends { token, newPassword }
-      }),
+      query: (payload) => ({ url: `users/change-password`, method: "POST", body: payload }),
     }),
-
   }),
 });
 

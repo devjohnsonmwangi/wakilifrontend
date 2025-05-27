@@ -284,7 +284,7 @@ const UserPaymentRecords: React.FC = () => {
         <div className="w-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen font-sans">
             {/* Header: Only title, no "Initiate Payment" button */}
             <div className="flex flex-col sm:flex-row items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4 sm:mb-0">
+                <h1 className="text-2xl font-bold text-green-800 dark:text-gray-100 mb-4 sm:mb-0">
                     {pageTitle}
                 </h1>
                 {/* No payment initiation button or dropdown */}

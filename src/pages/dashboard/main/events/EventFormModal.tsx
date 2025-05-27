@@ -42,6 +42,7 @@ interface EventFormModalProps {
   open: boolean;
   onClose: () => void;
   eventToEdit?: Partial<EventDataTypes> | null;
+  currentUserId?: number;
 }
 
 const getValidEventType = (eventType?: string): AppEventType => {

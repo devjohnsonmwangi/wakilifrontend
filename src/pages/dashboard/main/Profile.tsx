@@ -1,24 +1,93 @@
-import { useState, useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+// src/pages/dashboard/main/ProfileWithModal.tsx
+import React, { ReactNode, useEffect, useState, ChangeEvent } from 'react';
+import { useForm, SubmitHandler, FieldError } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { usersAPI } from '../../../features/users/usersAPI';
+import { usersAPI } from '../../../features/users/usersAPI'; // Assuming this path is correct relative to the new file location
 import { Toaster, toast } from 'sonner';
 import axios from 'axios';
-import Footer from '../../landingPage/Footer';
+import Footer from '../../landingPage/Footer'; // Assuming this path is correct
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../app/store';
-import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaUserCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { RootState } from '../../../app/store'; // Assuming this path is correct
+import {
+    FaTimes,
+    FaPhoneAlt,
+    FaEnvelope,
+    FaMapMarkerAlt,
+    FaUserCircle,
+    FaEdit,
+    FaArrowLeft,
+    FaCamera,
+    FaSpinner,
+    FaExclamationCircle
+} from 'react-icons/fa';
 
+// ======= Modal Component (previously src/components/common/Modal.tsx) =======
+interface ModalProps {
+    title: string;
+    children: ReactNode;
+    onClose: () => void;
+    isOpen: boolean;
+}
+
+const Modal: React.FC<ModalProps> = ({ title, children, onClose, isOpen }) => {
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+        return () => {
+            window.removeEventListener('keydown', handleEsc);
+            document.body.style.overflow = 'auto';
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+            onClick={onClose} // Close on overlay click
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+        >
+            <div
+                className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-modalEnter p-6 sm:p-8"
+                onClick={(e) => e.stopPropagation()} // Prevent click inside modal from closing it
+            >
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                    <h3 id="modal-title" className="text-xl sm:text-2xl font-semibold text-gray-800">{title}</h3>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                        aria-label="Close modal"
+                    >
+                        <FaTimes className="h-5 w-5" />
+                    </button>
+                </div>
+                <div>{children}</div>
+            </div>
+        </div>
+    );
+};
+// ======= End of Modal Component =======
+
+
+// ======= Profile Component (previously src/pages/dashboard/main/Profile.tsx) =======
 type UserFormData = {
     full_name: string;
     email: string;
     phone_number: string;
     address: string;
     profile_picture?: string;
-    password?: string;
-
 };
 
 const schema = yup.object().shape({
@@ -26,64 +95,74 @@ const schema = yup.object().shape({
     email: yup.string().email('Invalid email address').required('Email is required'),
     phone_number: yup.string().required('Phone number is required'),
     address: yup.string().required('Address is required'),
-    password: yup.string().min(6, 'Password must be at least 6 characters'),
-
+    profile_picture: yup.string().optional(),
 });
 
-const privacyPolicyContent = (
-    <div className="mt-4 text-sm text-gray-700">
-        <h4 className="font-semibold">Privacy Policy</h4>
-        <p>
-            We are committed to protecting your privacy. This privacy policy explains how we collect, use, and safeguard your personal information when you use our services.
-        </p>
-        <ol className="list-decimal list-inside pl-4">
-            <li>
-                <span className="font-semibold">Information We Collect:</span> We collect your full name, email address, phone number, and address to manage your account and provide personalized services.
-            </li>
-            <li>
-                <span className="font-semibold">How We Use Your Information:</span> Your information is used to communicate with you, process transactions, and improve our services.
-            </li>
-            <li>
-                <span className="font-semibold">Data Security:</span> We implement security measures to protect your personal information from unauthorized access and misuse.
-            </li>
-            <li>
-                <span className="font-semibold">Sharing Your Information:</span> We do not share your personal information with third parties without your consent, except as required by law.
-            </li>
-        </ol>
-        <p>
-            By using our services, you agree to the terms of this privacy policy.
-        </p>
+// Helper function to render form fields
+const renderFormField = (
+    id: keyof UserFormData,
+    label: string,
+    type: string,
+    autoComplete: string,
+    error: FieldError | undefined,
+    register: ReturnType<typeof useForm<UserFormData>>['register'],
+    icon?: React.ReactNode,
+    inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+) => (
+    <div>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+            {label}
+        </label>
+        <div className="relative rounded-md shadow-sm">
+            {icon && (
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5 text-gray-400" })}
+                </div>
+            )}
+            <input
+                id={id}
+                type={type}
+                autoComplete={autoComplete}
+                className={`appearance-none block w-full px-3 py-2 border ${icon ? 'pl-10' : ''} ${
+                    error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-indigo-500 focus:border-indigo-500'
+                } rounded-md placeholder-gray-400 focus:outline-none sm:text-sm`}
+                placeholder={`Enter your ${label.toLowerCase()}`}
+                {...register(id)}
+                {...inputProps}
+            />
+        </div>
+        {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
     </div>
 );
 
+
 const Profile = () => {
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.user);
-    const user_id = user.user?.user_id ?? 0;
+    const userState = useSelector((state: RootState) => state.user);
+    const user_id = userState.user?.user_id ?? 0;
 
-    const { data: userData, isLoading, error, refetch } = usersAPI.useGetUserByIdQuery(user_id, {
-        pollingInterval: 6000,
+    const { data: userData, isLoading, error: queryError, refetch } = usersAPI.useGetUserByIdQuery(user_id, {
+        pollingInterval: 60000,
         refetchOnMountOrArgChange: true,
-        refetchOnFocus: true,
-        refetchOnReconnect: true
+        skip: !user_id,
     });
 
-    const [updateUser] = usersAPI.useUpdateUserMutation();
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [image, setImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [isChangePasswordMode, setIsChangePasswordMode] = useState(false);
-    const [isPasswordUpdating, setIsPasswordUpdating] = useState(false);
-    const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [updateUser, { isLoading: isUpdatingProfile }] = usersAPI.useUpdateUserMutation();
 
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isViewPicture, setIsViewPicture] = useState(false);
 
     const { register, handleSubmit, formState: { errors }, reset } = useForm<UserFormData>({
         resolver: yupResolver(schema),
-
+        defaultValues: {
+            full_name: '',
+            email: '',
+            phone_number: '',
+            address: '',
+            profile_picture: '',
+        }
     });
 
     useEffect(() => {
@@ -91,431 +170,288 @@ const Profile = () => {
             reset({
                 full_name: userData.full_name,
                 email: userData.email,
-                phone_number: userData.phone_number,
-                address: userData.address,
-                profile_picture: userData.profile_picture,
+                phone_number: userData.phone_number || '',
+                address: userData.address || '',
+                profile_picture: userData.profile_picture || '',
             });
+            if (!imageFile && userData.profile_picture) {
+                 setImagePreview(userData.profile_picture);
+            } else if (!imageFile && !userData.profile_picture) {
+                 setImagePreview(null);
+            }
         }
-    }, [userData, reset]);
+    }, [userData, reset, imageFile]);
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            setImage(file);
+            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         } else {
-            setImage(null);
-            setImagePreview(null);
+            setImageFile(null);
+            setImagePreview(userData?.profile_picture || null);
         }
     };
 
-    const onSubmit: SubmitHandler<UserFormData> = async (formData) => {
+    const onSubmitProfile: SubmitHandler<UserFormData> = async (formData) => {
         let toastId: string | number | undefined = undefined;
-
         try {
-            setIsUpdating(true);
             toastId = toast.loading('Updating profile...');
+            let imageUrlToUpdate = userData?.profile_picture || '';
 
-            let imageUrlToUpdate = formData.profile_picture || '';
-            if (image) {
+            if (imageFile) {
                 const formImageData = new FormData();
-                formImageData.append('file', image);
-                formImageData.append('upload_preset', 'upload');
+                formImageData.append('file', imageFile);
+                formImageData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'upload');
 
-                const response = await axios.post('https://api.cloudinary.com/v1_1/dl3ovuqjn/image/upload', formImageData);
-
+                const response = await axios.post(
+                    `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    formImageData
+                );
                 if (response.status === 200) {
                     imageUrlToUpdate = response.data.secure_url;
                 } else {
-                    throw new Error('Failed to upload image');
+                    throw new Error('Failed to upload image. Cloudinary status: ' + response.status);
                 }
             }
 
             await updateUser({ user_id: user_id, ...formData, profile_picture: imageUrlToUpdate }).unwrap();
+            
             setIsEditMode(false);
-            refetch();
-            toast.success('User updated successfully', { id: toastId });
-            setImagePreview(null); // Clear the temporary URL after upload
-
-        } catch (err) {
-            console.error('Error updating user', err);
-            toast.error('Error updating user', { id: toastId });
-        } finally {
-            setIsUpdating(false);
+            //setImageFile(null); // Clearing imageFile is good, imagePreview will update from refetch
+            await refetch(); 
+            toast.success('Profile updated successfully!', { id: toastId });
+        } catch (err: unknown) {
+            console.error('Error updating profile:', err);
+            let errorMessage = 'Failed to update profile.';
+            if (err && typeof err === 'object') {
+                const errorWithData = err as { data?: { message?: string }; message?: string };
+                if (errorWithData.data && typeof errorWithData.data.message === 'string') {
+                    errorMessage = errorWithData.data.message;
+                } else if (typeof errorWithData.message === 'string') {
+                    errorMessage = errorWithData.message;
+                }
+            }
+            toast.error(errorMessage, { id: toastId });
         }
     };
-
-    const onSubmitPassword: SubmitHandler<UserFormData> = async (formData) => {
-         let toastId: string | number | undefined = undefined;
-
-        if (!agreeToPrivacy) {
-            toast.error('You must agree to the privacy policy');
-            return;
+    
+    const openEditModal = () => {
+        setIsEditMode(true);
+        if (userData) {
+            reset({
+                full_name: userData.full_name,
+                email: userData.email,
+                phone_number: userData.phone_number || '',
+                address: userData.address || '',
+                profile_picture: userData.profile_picture || '',
+            });
+            setImagePreview(userData.profile_picture || null);
         }
-
-        try {
-            setIsPasswordUpdating(true);
-            toastId = toast.loading('Updating password...');
-            await updateUser({
-                user_id: user_id,
-                full_name: userData?.full_name,
-                email: userData?.email,
-                phone_number: userData?.phone_number,
-                address: userData?.address,
-                password: formData.password,
-            }).unwrap();
-
-            toast.success('Password updated successfully', { id: toastId });
-            setIsChangePasswordMode(false);
-        } catch (err) {
-            console.error('Error updating user', err);
-            toast.error('Error updating user', { id: toastId });
-        } finally {
-            setIsPasswordUpdating(false);
-        }
+        setImageFile(null); 
     };
 
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div className="flex justify-center items-center h-screen">
-    <div className="text-center text-xl text-red-600">
-        Error loading users data 😞. Please check your network and  refresh the page . if connected to  internet and  this error persists contact support team
-    </div>
-</div>;
-    if (!userData) return <div>No user data available.</div>;
+    const closeModalAndResetEditModal = () => {
+        setIsEditMode(false);
+        // Resetting form values or image preview on cancel can be done here if needed
+        // For now, form will reset with current userData when `openEditModal` is called again.
+        // If you want to revert preview immediately on cancel:
+        // setImageFile(null);
+        // setImagePreview(userData?.profile_picture || null);
+    };
+
+
+    if (isLoading && !userData) return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="p-6 bg-white rounded-lg shadow-lg text-center">
+                <FaSpinner className="animate-spin h-10 w-10 text-indigo-600 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-700">Loading your profile...</p>
+            </div>
+        </div>
+    );
+
+    type QueryErrorType = {
+        data?: { message?: string };
+        status?: string | number;
+    };
+
+    if (queryError) {
+        const err = queryError as QueryErrorType;
+        return (
+            <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4">
+                <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md">
+                    <FaExclamationCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-semibold text-red-700 mb-2">Oops! Something went wrong.</h2>
+                    <p className="text-gray-600 mb-4">
+                        We couldn't load your profile data. Error: {err?.data?.message || err?.status || 'Unknown error'}.
+                        Please check your network and try refreshing.
+                    </p>
+                    <button
+                        onClick={() => refetch()}
+                        className="mt-6 px-6 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
+    if (!userData) return (
+         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="p-6 bg-white rounded-lg shadow-lg text-center">
+                 <FaUserCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-lg font-medium text-gray-700">No user data available.</p>
+                <p className="text-sm text-gray-500">This might happen if the user ID is invalid or the user doesn't exist. Please try again later or contact support.</p>
+            </div>
+        </div>
+    );
+
+    const displayProfilePicSrc = imagePreview || userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg";
 
     return (
         <>
-            <Toaster position="top-right" />
-            <div className="card shadow-xl mx-auto p-6 text-green-500 rounded-md bg-slate-100 min-h-screen">
-                <div className="flex justify-between items-center">
+            <Toaster richColors position="top-center" />
+            <div className="bg-gray-100 min-h-screen py-8 sm:py-12 px-4">
+                <div className="max-w-3xl mx-auto">
                     <button
                         onClick={() => navigate(-1)}
-                        className="btn bg-blue-500 text-white hover:bg-blue-600 w-24 py-2 rounded-md">
-                        🔙 Back
+                        className="mb-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    >
+                        <FaArrowLeft className="mr-2 h-4 w-4" />
+                        Back
                     </button>
-                </div>
 
-                <div className="border-b-2 border-slate-600 pb-4 mt-8">
-                    <div className="flex justify-center">
-                        <img
-                            src={userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
-                            className="rounded-full h-32 w-32 object-cover border-4 border-white"
-                            alt="User Avatar"
-                        />
-                        <button
-                            onClick={() => setIsViewPicture(true)}
-                            className="btn bg-blue-500 text-white hover:bg-blue-600 ml-4">
-                            View Full Picture
-                        </button>
-                    </div>
-                    <div className="flex flex-col justify-center mt-4 text-center">
-                        <h1 className="text-3xl font-bold text-indigo-600">{userData.full_name} <FaUserCircle className="inline text-xl" /></h1>
-                        <p className="text-lg text-gray-700"><FaEnvelope className="inline mr-2" />{userData.email}</p>
-                        <p className="text-lg text-gray-700"><FaPhoneAlt className="inline mr-2" />{userData.phone_number}</p>
-                        <p className="text-lg text-gray-700"><FaMapMarkerAlt className="inline mr-2" />{userData.address}</p>
-                    </div>
-                </div>
-
-                <div className="flex justify-between mt-6 gap-6">
-                    <button
-                        onClick={() => setIsEditMode(true)}
-                        className="btn bg-green-500 text-white hover:bg-green-600 w-1/4 px-4 py-2 rounded-md">
-                        Update Profile
-                    </button>
-                    <button
-                        onClick={() => setIsChangePasswordMode(!isChangePasswordMode)}
-                        className="btn bg-yellow-500 text-white hover:bg-yellow-600 w-1/4 px-4 py-2 rounded-md">
-                        {isChangePasswordMode ? 'Cancel Password' : 'Change Password'}
-                    </button>
-                </div>
-
-                {isEditMode && (
-                    <div className="fixed top-0 left-0 w-full h-full md:relative bg-white z-50 overflow-auto  items-center justify-center">
-                        <div className=" min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-                            <div className="md:max-w-2xl w-full mx-auto p-4">
-                                {/* Added max-w-2xl */}
-                                <div className="w-full space-y-8">
-                                    <div>
-                                        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                                            Update Profile
-                                        </h2>
-                                    </div>
-                                    <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
-                                        <input type="hidden" value="true" />
-                                        <div className="rounded-md shadow-sm -space-y-px">
-                                            <div>
-                                                <label htmlFor="full_name" className="sr-only">Full Name</label>
-                                                <input
-                                                    id="full_name"
-                                                    type="text"
-                                                    autoComplete="name"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                                    placeholder="Full Name"
-                                                    {...register("full_name")}
-                                                />
-                                                {errors.full_name && <p className="text-red-500">{errors.full_name.message}</p>}
-                                            </div>
-                                            <div>
-                                                <label htmlFor="email" className="sr-only">Email address</label>
-                                                <input
-                                                    id="email"
-                                                    type="email"
-                                                    autoComplete="email"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900  focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                                    placeholder="Email address"
-                                                    {...register("email")}
-                                                />
-                                                {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-                                            </div>
-                                            <div>
-                                                <label htmlFor="phone_number" className="sr-only">Phone Number</label>
-                                                <input
-                                                    id="phone_number"
-                                                    type="text"
-                                                    autoComplete="tel"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                                    placeholder="Phone Number"
-                                                    {...register("phone_number")}
-                                                />
-                                                {errors.phone_number && <p className="text-red-500">{errors.phone_number.message}</p>}
-                                            </div>
-                                            <div>
-                                                <label htmlFor="address" className="sr-only">Address</label>
-                                                <input
-                                                    id="address"
-                                                    type="text"
-                                                    autoComplete="street-address"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                                    placeholder="Address"
-                                                    {...register("address")}
-                                                />
-                                                {errors.address && <p className="text-red-500">{errors.address.message}</p>}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Profile Picture
-                                            </label>
-                                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                                <div className="space-y-1 text-center">
-                                                    {/* Display the preview image */}
-                                                    {imagePreview ? (
-                                                        <img
-                                                            src={imagePreview}
-                                                            alt="Preview"
-                                                            className="mx-auto rounded-full h-24 w-24 object-cover"
-                                                        />
-                                                    ) : (
-                                                        <img
-                                                            src={userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
-                                                            alt="Current Profile"
-                                                            className="mx-auto rounded-full h-24 w-24 object-cover"
-                                                        />
-                                                    )}
-                                                    <svg
-                                                        className="mx-auto h-12 w-12 text-gray-400"
-                                                        stroke="currentColor"
-                                                        fill="none"
-                                                        viewBox="0 0 48 48"
-                                                        aria-hidden="true"
-                                                    >
-                                                        <path
-                                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L36 12"
-                                                            strokeWidth={2}
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
-                                                    <div className="flex text-sm text-gray-600">
-                                                        <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                            <span>Upload a file</span>
-                                                            <input
-                                                                id="file-upload"
-                                                                type="file"
-                                                                className="sr-only"
-                                                                accept="image/*"
-                                                                onChange={handleImageUpload}
-                                                            />
-                                                        </label>
-                                                        <p className="pl-1">or drag and drop</p>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500">
-                                                        PNG, JPG, GIF up to 10MB
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <button
-                                                type="submit"
-                                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                disabled={isUpdating}
-                                            >
-                                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-
-                                                </span>
-                                                {isUpdating ? 'Updating...' : 'Update Profile'}
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsEditMode(false)}
-                                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
+                    <div className="bg-white shadow-xl rounded-lg p-6 sm:p-10">
+                        <div className="flex flex-col items-center sm:flex-row sm:items-start mb-8 pb-8 border-b border-gray-200">
+                            <div className="relative mb-4 sm:mb-0 sm:mr-8">
+                                <img
+                                    src={displayProfilePicSrc}
+                                    className="rounded-full h-32 w-32 sm:h-36 sm:w-36 object-cover border-4 border-white shadow-lg cursor-pointer transition-transform hover:scale-105"
+                                    alt="User Avatar"
+                                    onClick={() => setIsViewPicture(true)}
+                                />
                             </div>
-                        </div>
-                    </div>
-                )}
 
-                {isChangePasswordMode && (
-                    <div className="fixed top-0 left-0 w-full h-full md:relative bg-white z-50 overflow-auto  items-center justify-center">
-                        <div className=" min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-                            <div className="md:max-w-2xl w-full mx-auto p-4"> {/* Added max-w-2xl */}
-                                <div className="w-full  space-y-8">
-                                    <div>
-                                        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                                            Change Password
-                                        </h2>
-                                    </div>
-                                    <form onSubmit={handleSubmit(onSubmitPassword)} className="mt-8 space-y-6">
-                                        <input type="hidden" value="true" />
-                                     
-                                        <div>
-                                            <label htmlFor="password" className="sr-only">New Password</label>
-                                            <div className="relative">
-                                                <input
-                                                    id="password"
-                                                    type={showPassword ? "text" : "password"}
-                                                    autoComplete="new-password"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                                    placeholder="New Password"
-                                                    {...register("password")}
-                                                />
-                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                                                    >
-                                                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            {errors.password && <p className="text-red-500">{errors.password.message}</p>}
-                                        </div>
-                                        <div>
-                                            <label htmlFor="confirm_password" className="sr-only">Confirm New Password</label>
-                                            <div className="relative">
-                                                <input
-                                                    id="confirm_password"
-                                                      placeholder="Confirm New Password"
-                                                    type={showConfirmPassword ? "text" : "password"}
-                                                    autoComplete="new-password"
-                                                    required
-                                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-
-
-                                                />
-                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                        className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                                                    >
-                                                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <input
-                                                    title="privacy"
-                                                    id="agreeToPrivacy"
-                                                    type="checkbox"
-                                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                                    checked={agreeToPrivacy}
-                                                    onChange={() => setAgreeToPrivacy(!agreeToPrivacy)}
-                                                />
-                                                <label className="ml-2 block text-sm text-gray-900">
-                                                    I agree to the privacy policy
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="rounded-md shadow-sm -space-y-px">
-
-
-                                        </div>
-                                        {privacyPolicyContent}
-
-                                        <div>
-                                            <button
-                                                type="submit"
-                                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                                disabled={isPasswordUpdating || !agreeToPrivacy}
-                                            >
-                                                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-
-                                                </span>
-                                                {isPasswordUpdating ? 'Updating...' : 'Change Password'}
-                                            </button>
-                                        </div>
-                                        <div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setIsChangePasswordMode(false)}
-                                                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
+                            <div className="text-center sm:text-left flex-grow">
+                                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">{userData.full_name}</h1>
+                                <div className="space-y-2 text-gray-600">
+                                    <p className="flex items-center justify-center sm:justify-start">
+                                        <FaEnvelope className="mr-3 text-indigo-500 flex-shrink-0" />
+                                        {userData.email}
+                                    </p>
+                                    <p className="flex items-center justify-center sm:justify-start">
+                                        <FaPhoneAlt className="mr-3 text-indigo-500 flex-shrink-0" />
+                                        {userData.phone_number || 'N/A'}
+                                    </p>
+                                    <p className="flex items-center justify-center sm:justify-start">
+                                        <FaMapMarkerAlt className="mr-3 text-indigo-500 flex-shrink-0" />
+                                        {userData.address || 'N/A'}
+                                    </p>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {isViewPicture && (
-                    <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-75 z-50">
-                        <div className="bg-white rounded-lg p-4 max-w-lg mx-auto"> {/* Increased max-w-lg */}
-                            <img
-                                src={userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
-                                alt="Full User Avatar"
-                                className="rounded-md object-cover w-full h-96" // Increased h-96
-                            />
-                            <div className="flex justify-end mt-4">
-                                <button
-                                    onClick={() => setIsViewPicture(false)}
-                                    className="btn bg-red-500 text-white hover:bg-red-600">
-                                    Close
+                                 <button
+                                    onClick={() => setIsViewPicture(true)}
+                                    className="mt-4 sm:hidden px-4 py-2 text-sm font-medium rounded-md text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition"
+                                >
+                                    View Picture
                                 </button>
                             </div>
+                             <button
+                                onClick={() => setIsViewPicture(true)}
+                                className="hidden sm:block sm:ml-auto self-start px-4 py-2 text-sm font-medium rounded-md text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition"
+                            >
+                                View Picture
+                            </button>
+                        </div>
+
+                        <div className="flex justify-center sm:justify-start">
+                            <button
+                                onClick={openEditModal}
+                                className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                            >
+                                <FaEdit className="mr-2 h-5 w-5" />
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* EDIT PROFILE MODAL using reusable Modal component */}
+                <Modal title="Update Your Profile" isOpen={isEditMode} onClose={closeModalAndResetEditModal}>
+                    <form onSubmit={handleSubmit(onSubmitProfile)} className="space-y-6">
+                        <div className="flex flex-col items-center space-y-3">
+                            <img
+                                src={imagePreview || userData.profile_picture || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"}
+                                alt="Avatar Preview"
+                                className="w-32 h-32 rounded-full object-cover shadow-md"
+                            />
+                            <label htmlFor="file-upload-modal" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <FaCamera className="mr-2 h-4 w-4 text-gray-500"/>
+                                <span>{imageFile ? imageFile.name.substring(0,20) + (imageFile.name.length > 20 ? '...':'') : "Change Picture"}</span>
+                                <input id="file-upload-modal" name="profile-picture-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />
+                            </label>
+                            <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+
+                        {renderFormField("full_name", "Full Name", "text", "name", errors.full_name, register, <FaUserCircle />)}
+                        {renderFormField("email", "Email Address", "email", "email", errors.email, register, <FaEnvelope />)}
+                        {renderFormField("phone_number", "Phone Number", "tel", "tel", errors.phone_number, register, <FaPhoneAlt />)}
+                        {renderFormField("address", "Address", "text", "street-address", errors.address, register, <FaMapMarkerAlt />)}
+
+                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={closeModalAndResetEditModal}
+                                className="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="w-full sm:w-auto inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-6 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                                disabled={isUpdatingProfile}
+                            >
+                                {isUpdatingProfile && <FaSpinner className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />}
+                                {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* VIEW PICTURE MODAL - Direct implementation */}
+                {isViewPicture && (
+                    <div // Backdrop
+                        className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
+                        onClick={() => setIsViewPicture(false)} // Close on backdrop click
+                    >
+                        <div // Modal Content Box
+                            className="bg-white rounded-lg shadow-xl p-2 sm:p-4 max-w-md sm:max-w-lg w-full transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-modalEnter relative"
+                            onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+                        >
+                            <img
+                                src={displayProfilePicSrc}
+                                alt="Full User Avatar"
+                                className="rounded-md object-contain w-full max-h-[80vh]"
+                            />
+                            <button
+                                onClick={() => setIsViewPicture(false)}
+                                className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-gray-700 bg-opacity-60 text-white rounded-full p-1.5 hover:bg-opacity-80 transition-colors z-10"
+                                aria-label="Close image view"
+                            >
+                                <FaTimes className="h-5 w-5" />
+                            </button>
                         </div>
                     </div>
                 )}
             </div>
-
             <Footer />
         </>
     );
 };
+// ======= End of Profile Component =======
 
 export default Profile;

@@ -1,3 +1,4 @@
+// tailwind.config.js (or .ts)
 import daisyui from "daisyui";
 import flowbitePlugin from 'flowbite/plugin';
 
@@ -50,7 +51,6 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
-        // Add this keyframes
         float: {
           '0%': {
             transform: 'translateY(0px)'
@@ -61,7 +61,12 @@ export default {
           '100%': {
             transform: 'translateY(0px)'
           }
-        }
+        },
+        // <<< --- ADDED THIS --- >>>
+        modalEnter: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         marquee: 'marquee 10s linear infinite',
@@ -72,8 +77,9 @@ export default {
         'spin-fast': 'spinFast 0.7s linear infinite',
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
         'bounce': 'bounce 0.5s infinite',
-        // Add this float animation
         float: 'float 3s ease-in-out infinite',
+        // <<< --- ADDED THIS --- >>>
+        modalEnter: 'modalEnter 0.3s ease-in-out forwards',
       },
       screens: {
         'xs': '250px',

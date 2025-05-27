@@ -17,6 +17,8 @@ export type DrawerData = {
 export const drawerData: DrawerData[] = [
     //navigating to  dashboard
     { id: 17, name: 'Dashboard Overview', icon: Folder, link: 'dashboard', adminOnly: false },
+        //dairy
+    {id: 20, name: 'My_Diary', icon: Calendar, link: 'mydiary', adminOnly: false },
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false },
     { id: 1, name: 'Appointments', icon: ClipboardList, link: 'appoint', adminOnly: false },
     { id: 2, name: 'Documents', icon: FileText, link: 'listdoc', adminOnly: false },
@@ -32,13 +34,14 @@ export const drawerData: DrawerData[] = [
 
     //user payment records
     { id: 19, name: ' Payments Records', icon: DollarSign, link: 'user-payments', adminOnly: false },
+    
 
 
     { id: 7, name: 'Reports', icon: Folder, link: 'reports', adminOnly: true },
     { id: 8, name: 'Profile', icon: User, link: 'profile', adminOnly: false },
-    { id: 9, name: 'Settings', icon: FileCheck, link: 'settings', adminOnly: true },
+    { id: 9, name: 'Settings', icon: FileCheck, link: 'profile', adminOnly: true },
     { id: 10, name: 'Events', icon: Calendar, link: 'events', adminOnly: false },
-    { id: 11, name: 'Event Reminders', icon: Calendar, link: 'event-reminders', adminOnly: false },
+    //{ id: 11, name: 'Event Reminders', icon: Calendar, link: 'event-reminders', adminOnly: false },
     { id: 12, name: 'Location', icon: MapPin, link: 'branch', adminOnly: false },
     { id: 13, name: 'Feedbacks', icon: MessageCircle, link: 'feedbacks', adminOnly: false },
     { id: 14, name: 'Logs_History', icon: File, link: 'activity-log', adminOnly: true },
