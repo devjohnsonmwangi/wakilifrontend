@@ -7,6 +7,7 @@ export interface User {
     role: string;
     user_id: number; // This is the ID we need
     address: string;
+    phone_number?: string; // Optional, if your API returns it
     profile_picture: string;
 }
 
