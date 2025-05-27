@@ -26,7 +26,9 @@ export const drawerData: DrawerData[] = [
 
 
    
-    { id: 6, name: 'Payments', icon: DollarSign, link: 'payments', adminOnly: false },
+    { id: 6, name: 'Payments', icon: DollarSign, link: 'payments', adminOnly: true },
+    //single user payment portal
+    { id: 18, name: 'Individual Payments ', icon: DollarSign, link: 'payment-portal', adminOnly: true },
 
 
     { id: 7, name: 'Reports', icon: Folder, link: 'reports', adminOnly: true },
@@ -44,7 +46,7 @@ export const drawerData: DrawerData[] = [
 
 // Role-based access control (RBAC) function
 export const filterDrawerByRole = (role: string): DrawerData[] => {
-    const adminRoles = ['admin', 'support', 'manager'];
+    const adminRoles = ['admin', 'support', 'manager','lawyer'];
     const lawyerRoles = ['lawyer'];
     const userRoles = ['user', 'client'];
 
@@ -52,7 +54,7 @@ export const filterDrawerByRole = (role: string): DrawerData[] => {
         if (item.link === 'logout') return true; // Logout is accessible to all roles
         if (adminRoles.includes(role)) return true; // Admin, support, and manager have full access
         if (lawyerRoles.includes(role)) return !item.adminOnly; // Lawyers have access to non-admin only items
-        if (userRoles.includes(role)) return !item.adminOnly && item.name !== 'Manage Cases' && item.name !== 'Manage Clients'; // Users and clients have limited access
+        if (userRoles.includes(role)) return !item.adminOnly && item.name !== 'Manage Cases' && item.name !== 'Manage Clients'&& item.name !=='individual payments '; // Users and clients have limited access
         return false; // Default to no access if role does not match any categories
     });
 };

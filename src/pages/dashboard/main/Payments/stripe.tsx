@@ -27,6 +27,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // --- End Custom useDebounce Hook ---
 
 interface StripePaymentModalProps {
+    userId?: number; // Optional userId prop if needed
     isOpen: boolean;
     onClose: () => void;
 }

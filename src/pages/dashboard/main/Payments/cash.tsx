@@ -36,6 +36,7 @@ const MAX_CASH_EMAIL_SUGGESTIONS = 5; // Max number of email suggestions for cas
 
 
 interface CashPaymentModalProps {
+    userId?: number; // Optional user ID prop for flexibility
     isOpen: boolean;
     onClose: () => void;
 }

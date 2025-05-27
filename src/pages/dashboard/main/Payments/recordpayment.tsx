@@ -30,6 +30,7 @@ const MANUAL_ENTRY_LAST_USED_MPESA_PHONES_KEY = 'manualPaymentEntry_lastUsedMpes
 const MAX_MANUAL_SUGGESTIONS = 5;
 
 interface ManualPaymentEntryModalProps {
+    userId?: number; // Optional userId prop if needed for context
     isOpen: boolean;
     onClose: () => void;
 }
