@@ -62,9 +62,9 @@ export const usersAPI = createApi({
 
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
-        console.log('[RTK Query] Authorization header set.');
+        ('[RTK Query] Authorization header set.');
       } else {
-        console.warn('[RTK Query] No token found. Authorization header NOT set.');
+        ('[RTK Query] No token found. Authorization header NOT set.');
       }
       return headers;
     },

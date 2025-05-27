@@ -1,4 +1,4 @@
-// src/pages/auth/Login.tsx (or similar path)
+// src/pages/auth/Login.tsx
 
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -34,8 +34,9 @@ interface LoginApiResponse {
 
 // Define a more specific type for your API error response
 interface LoginErrorData {
-    message?: string;
-    errors?: Array<{ message?: string }>;
+    message?: string; // Server's primary error message
+    error?: string;   // Alternative key for server's error message
+    errors?: Array<{ field?: string; message?: string }>; // For multiple validation errors
 }
 interface LoginApiError {
     data?: LoginErrorData;
@@ -69,24 +70,21 @@ const Login = () => {
 
       // --- Store Token and User Data in localStorage ---
       localStorage.setItem('authToken', response.token);
-      // Prepare the user data to be stored. This should match what your app needs
-      // from localStorage if it rehydrates state or uses it directly.
       const userPayloadForLocalStorageAndSlice: UserType = {
         user_id: Number(response.user.user_id),
         full_name: response.user.full_name,
         email: response.user.email,
-        role: response.user.role?.toLowerCase() as UserType['role'], // Ensure role matches UserType
+        role: response.user.role?.toLowerCase() as UserType['role'],
         address: response.user.address,
         profile_picture: response.user.profile_picture,
         phone_number: response.user.phone_number,
-        // Ensure all fields from UserType are included here
       };
       localStorage.setItem('currentUserData', JSON.stringify(userPayloadForLocalStorageAndSlice));
 
 
       // --- Dispatch to Redux Store ---
       const stateToDispatch: UserState = {
-        user: userPayloadForLocalStorageAndSlice, // Use the same prepared object
+        user: userPayloadForLocalStorageAndSlice,
         token: response.token,
       };
       dispatch(loginSuccess(stateToDispatch));
@@ -103,47 +101,72 @@ const Login = () => {
           case 'lawyer':
           case 'user':
           case 'client':
-          case 'clerks': // Changed 'clerk' to 'clerks' to match UserApiResponse definition
-            navigate('/dashboard'); // Or a more specific dashboard like /admin/dashboard
+          case 'clerks':
+            navigate('/dashboard');
             break;
-          // case 'receptionist': // This role was in your switch but not in UserApiResponse role union
-          //   navigate('/dashboard/reception');
-          //   break;
           default:
-            // Consider a default authenticated route or user-specific landing page
-            navigate('/'); // Fallback
+            navigate('/');
             break;
         }
       }, 1500);
 
     } catch (err: unknown) {
-      // Keep existing error logging for development, but it won't show in production if configured right
-      if (import.meta.env.DEV) { // Only log detailed errors in development
-        console.error("Error during login:", err);
+      if (import.meta.env.DEV) {
+        console.error("Login Error Details:", err); // Log the raw error in dev for inspection
       }
 
-      let errorMessage = "Login failed. Please check credentials or network connection.";
+      let errorMessageToShowOnToast = "Login failed. Please check your connection or try again later.";
 
-      if (typeof err === 'object' && err !== null && 'data' in err) {
+      if (typeof err === 'object' && err !== null) {
         const apiError = err as LoginApiError;
-        if (apiError.data) {
-            if (apiError.data.message) {
-                errorMessage = apiError.data.message;
+
+        // Prioritize server-sent message for typical login failure statuses (400, 401, 403)
+        if (apiError.status && (apiError.status === 400 || apiError.status === 401 || apiError.status === 403)) {
+          if (apiError.data) {
+            if (apiError.data.message) { // Server sends a specific 'message'
+              errorMessageToShowOnToast = apiError.data.message;
+            } else if (apiError.data.error) { // Server might send 'error' instead of 'message'
+              errorMessageToShowOnToast = apiError.data.error;
             } else if (Array.isArray(apiError.data.errors) && apiError.data.errors.length > 0) {
-                errorMessage = apiError.data.errors.map(e => e.message).filter(Boolean).join(', ')
-                                || "Multiple validation errors occurred.";
+              // Handle array of errors, often from validation
+              errorMessageToShowOnToast = apiError.data.errors
+                .map(e => e.message || `Error with field ${e.field || 'unknown'}`)
+                .filter(Boolean)
+                .join('\n') // Join with newline for readability on toast
+                || "Invalid input. Please check the fields.";
+            } else if (apiError.status === 401) {
+              // Fallback for 401 if no specific message from server
+              errorMessageToShowOnToast = "Invalid email or password. Please try again.";
+            } else {
+              // Generic message for 400/403 if no specific data.message or data.error
+              errorMessageToShowOnToast = "Login failed. Please check your password  .";
             }
-        } else if ('status' in err && (err as {status: number}).status === 0) {
-             errorMessage = "Network error. Please check your internet connection.";
-        } else if ('status' in err && (err as {status: number}).status === 401) {
-            errorMessage = "Invalid email or password.";
+          } else if (apiError.status === 401) {
+             // Fallback for 401 if no data object at all from server
+            errorMessageToShowOnToast = "Invalid email or password. Please try again.";
+          }
         }
-      } else if (err instanceof Error) {
-        // Avoid exposing raw error messages in production unless they are user-friendly
-        errorMessage = import.meta.env.PROD ? "An unexpected error occurred during login." : err.message;
+        // Handle network error (status 0 or undefined status but data is missing)
+        else if (apiError.status === 0 || (apiError.status === undefined && !apiError.data)) {
+             errorMessageToShowOnToast = "Network error. Unable to connect to the server.";
+        }
+        // For other server errors (e.g., 5xx), or if 'data.message' or 'data.error' is available for an unhandled status
+        else if (apiError.data) {
+            if (apiError.data.message) {
+                errorMessageToShowOnToast = apiError.data.message;
+            } else if (apiError.data.error) {
+                errorMessageToShowOnToast = apiError.data.error;
+            }
+        }
+        // Fallback for other structured API errors with a status but no specific message
+        else if (apiError.status) {
+            errorMessageToShowOnToast = `Login attempt failed (Status: ${apiError.status}). Please try again.`;
+        }
+      } else if (err instanceof Error) { // Fallback for generic JavaScript errors
+        errorMessageToShowOnToast = import.meta.env.PROD ? "An unexpected error occurred during login." : err.message;
       }
 
-      toast.error(errorMessage, { id: toastId });
+      toast.error(errorMessageToShowOnToast, { id: toastId });
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +174,6 @@ const Login = () => {
 
   const isLoading = isMutationLoading || isSubmitting;
 
-  // JSX for the component remains the same...
   return (
     <div className="pt-16 pb-16 lg:pb-0">
       <Toaster
@@ -233,7 +255,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Login;
