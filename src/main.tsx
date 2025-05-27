@@ -35,6 +35,7 @@ import DashboardOverviewLoader from './pages/dashboard/overviewloader.tsx';
 import FullActivityHistory from './pages/dashboard/FullActivityHistory.tsx';
 import HelpCenter from './pages/dashboard/helpcenter.tsx';
 import UserPaymentPortal from './pages/dashboard/main/Payments/singleuserpayments.tsx';
+import UserPaymentRecords from './pages/dashboard/main/Payments/userpayments.tsx';
 
 // NOTE: We are NOT importing RouteChangeTracker here globally anymore.
 // It will be imported and used within Dashboard.tsx
@@ -80,6 +81,8 @@ const router = createBrowserRouter([
       {path:'dashboard',element:<DashboardOverviewLoader/>},
       //single user payment portal
       {path: 'payment-portal', element: <UserPaymentPortal  />}, // Replace 1 with dynamic userId as needed
+      //user payment records
+      {path: 'user-payments', element: <UserPaymentRecords/>}, // This can be a list of all payments for the user
     ],
   },
   // Remove duplicate top-level routes that are meant to be under /dashboard

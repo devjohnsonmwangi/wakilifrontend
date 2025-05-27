@@ -30,6 +30,9 @@ export const drawerData: DrawerData[] = [
     //single user payment portal
     { id: 18, name: 'Individual Payments ', icon: DollarSign, link: 'payment-portal', adminOnly: true },
 
+    //user payment records
+    { id: 19, name: ' Payments Records', icon: DollarSign, link: 'user-payments', adminOnly: false },
+
 
     { id: 7, name: 'Reports', icon: Folder, link: 'reports', adminOnly: true },
     { id: 8, name: 'Profile', icon: User, link: 'profile', adminOnly: false },
