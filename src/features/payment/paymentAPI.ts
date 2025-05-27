@@ -4,7 +4,7 @@ import { APIDomain } from "../../utils/APIDomain";
 
 // Enums for Payment Table
 export type PaymentStatus = "pending" | "paid" | "failed" | "completed";
-export type PaymentGateway = "stripe" | "mpesa" | "cash" | "other" | "manual"; // Added "manual"
+export type PaymentGateway = "stripe" | "mpesa" | "cash" | "bank_transfer" | "manual"; // Added "manual"
 
 // Payment Data Types - Updated for clarity
 export interface PaymentDataTypes {

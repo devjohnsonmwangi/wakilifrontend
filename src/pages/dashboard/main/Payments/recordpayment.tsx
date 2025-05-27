@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import {
     useFetchCasesQuery,
-    CaseDataTypes as Case, // Ensure this Case type includes 'payment_balance' and 'user_id'
+    CaseDataTypes as Case, // Ensure this Case type includes 'payment_balance', 'fee', and 'user_id'
     CaseStatus,
     CaseType,
 } from '../../../../features/case/caseAPI';
@@ -53,7 +53,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
     const [selectedGateway, setSelectedGateway] = useState<PaymentGateway | ''>('');
     const [customerEmail, setCustomerEmail] = useState('');
 
-    const [transactionId, setTransactionId] = useState(''); // This state already exists for the transaction ID
+    const [transactionId, setTransactionId] = useState('');
     const [mpesaPhoneNumber, setMpesaPhoneNumber] = useState('');
     const [paymentNotes, setPaymentNotes] = useState('');
 
@@ -130,6 +130,15 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                 (c.station ?? '').toLowerCase().includes(term)
             );
         }
+
+        // START OF CHANGE: Filter for cases with a positive balance
+        tempFilteredCases = tempFilteredCases.filter(c => {
+            // Use payment_balance, fallback to fee, default to 0 if neither exists
+            const balance = parseFloat(String(c.payment_balance ?? c.fee ?? 0));
+            return !isNaN(balance) && balance > 0;
+        });
+        // END OF CHANGE
+
         return tempFilteredCases;
     }, [
         cases,
@@ -139,30 +148,31 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
         debouncedStationFilter,
         debouncedCaseNumberFilter,
         debouncedSearchTerm
+        // No new dependencies needed for the balance filter as it uses properties of 'c' from 'cases'
     ]);
 
     useEffect(() => {
         if (selectedCase) {
-            const balanceValue = selectedCase.payment_balance;
-            let currentBalance = 0;
-            if (balanceValue !== null && balanceValue !== undefined) {
-                const parsed = parseFloat(String(balanceValue));
-                if (!isNaN(parsed)) currentBalance = parsed;
-            }
-            setAmount(currentBalance > 0 ? currentBalance.toFixed(2) : '');
+            // Use the same logic for balance calculation as in the filter and table display
+            const balanceValue = parseFloat(String(selectedCase.payment_balance ?? selectedCase.fee ?? 0));
+            setAmount(balanceValue > 0 ? balanceValue.toFixed(2) : '');
         } else {
             setAmount('');
         }
+        // Reset other fields only when selectedCase changes, not every time amount might change due to other reasons
         setTransactionId('');
         setMpesaPhoneNumber('');
         setPaymentNotes('');
+        // Note: customerEmail and paymentDate are generally not reset when just selecting a different case,
+        // unless specific business logic requires it. The current handleClose resets them.
     }, [selectedCase]);
+
 
     const handleGatewayChange = (gateway: PaymentGateway | '') => {
         setSelectedGateway(gateway);
-        setTransactionId(''); // Reset transaction ID when gateway changes
-        setMpesaPhoneNumber(''); // Reset Mpesa phone if it was Mpesa
-        setPaymentNotes(gateway === 'cash' ? paymentNotes : ''); // Keep notes if switching to cash, otherwise clear
+        setTransactionId('');
+        setMpesaPhoneNumber('');
+        setPaymentNotes(gateway === 'cash' ? paymentNotes : '');
     };
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -188,21 +198,19 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
 
         const payload: ManualPaymentRequest = {
             case_id: selectedCase.case_id,
-            user_id: selectedCase.user_id,
+            user_id: selectedCase.user_id, // Ensure selectedCase.user_id is populated
             payment_amount: numericAmount,
             payment_gateway: selectedGateway,
             payment_date: paymentDate,
             customer_email: customerEmail || undefined,
-            transaction_id: transactionId || undefined, // transactionId is included here, optional
+            transaction_id: transactionId || undefined,
             payment_note: paymentNotes || undefined,
-            payment_status: 'completed', // Assuming manual entries are completed
+            payment_status: 'completed',
         };
 
-        // // If Mpesa, include mpesa_phone_number if provided
         // if (selectedGateway === 'mpesa' && mpesaPhoneNumber) {
-        //     payload.mpesa_phone_number = mpesaPhoneNumber;
+        // //    payload.mpesa_phone_number = mpesaPhoneNumber; // Assuming your backend expects this
         // }
-
 
         try {
             await createManualPayment(payload).unwrap();
@@ -216,7 +224,6 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
             const errMsg = err.data?.message || err.message || err.error || "Failed to record payment.";
             toast.error(errMsg);
         }
-        //
     };
 
     const handleClose = () => {
@@ -295,6 +302,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                             <tr key={c.case_id} className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${selectedCase?.case_id === c.case_id ? 'bg-blue-100 dark:bg-blue-900' : ''}`}>
                                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">{c.case_number}</td>
                                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-700 dark:text-gray-200">
+                                                    {/* Ensure Case type has 'fee' if used as fallback */}
                                                     {parseFloat(String(c.payment_balance ?? c.fee ?? 0)).toFixed(2)}
                                                 </td>
                                                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{c.parties}</td>
@@ -302,7 +310,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                             </tr>
                                         ))}
                                         {filteredCases.length === 0 && !isLoadingCases && (
-                                            <tr><td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">No cases match filters.</td></tr>
+                                            <tr><td colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">No cases match filters or have an outstanding balance.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -321,7 +329,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                     <option value="mpesa">M-Pesa</option>
                                     <option value="stripe">Stripe</option>
                                     <option value="cash">Cash</option>
-                                    <option value="other">Other (Bank, etc.)</option>
+                                    <option value="bank_transfer">Other (Bank, etc.)</option>
                                 </select>
                             </div>
                             <div>
@@ -340,13 +348,12 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                 </datalist>
                             </div>
 
-                            {/* Transaction ID Field - THIS IS THE FIELD IN QUESTION */}
-                            {(selectedGateway === 'mpesa' || selectedGateway === 'stripe' || selectedGateway === 'other') && (
+                            {(selectedGateway === 'mpesa' || selectedGateway === 'stripe' || selectedGateway === 'bank_transfer') && (
                                 <div className="md:col-span-1">
                                     <label htmlFor="manualTransactionId" className={labelClassName}>
                                         {selectedGateway === 'mpesa' ? 'M-Pesa Conf. Code:' :
                                          selectedGateway === 'stripe' ? 'Stripe Txn ID:' :
-                                         'Transaction/Ref ID:'} {/* Label for Bank Ref No. when 'other' */}
+                                         'Transaction/Ref ID:'}
                                     </label>
                                     <input
                                         type="text"
@@ -354,12 +361,11 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                         value={transactionId}
                                         onChange={e => setTransactionId(e.target.value)}
                                         className={inputClassName}
-                                        // MODIFIED PLACEHOLDER
                                         placeholder={
                                             selectedGateway === 'mpesa' ? "e.g. RG830P81AA" :
                                             selectedGateway === 'stripe' ? "e.g. pi_... or ch_..." :
-                                            selectedGateway === 'other' ? "Bank Ref No. / Cheque No. / etc." : // Specific for 'other' (banks)
-                                            "Transaction ID" // Generic fallback
+                                            selectedGateway === 'bank_transfer' ? "Bank Ref No. / Cheque No. / etc." :
+                                            "Transaction ID"
                                         }
                                     />
                                 </div>
@@ -374,7 +380,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                     </datalist>
                                 </div>
                             )}
-                            {(selectedGateway === 'cash' || selectedGateway === 'other') && (
+                            {(selectedGateway === 'cash' || selectedGateway === 'bank_transfer') && (
                                  <div className="md:col-span-2">
                                     <label htmlFor="manualPaymentNotes" className={labelClassName}>Payment Notes (Optional):</label>
                                     <textarea
@@ -385,7 +391,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
                                         rows={2}
                                         placeholder={
                                             selectedGateway === 'cash' ? "Details about cash payment (e.g., received by)" :
-                                            selectedGateway === 'other' ? "Notes for this payment (e.g., Bank Name, Cheque details)" :
+                                            selectedGateway === 'bank_transfer' ? "Notes for this payment (e.g., Bank Name, Cheque details)" :
                                             "Payment notes"
                                         }
                                     />
