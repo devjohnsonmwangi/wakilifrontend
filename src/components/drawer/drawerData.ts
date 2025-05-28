@@ -39,7 +39,7 @@ export const drawerData: DrawerData[] = [
 
     { id: 7, name: 'Reports', icon: Folder, link: 'reports', adminOnly: true },
     { id: 8, name: 'Profile', icon: User, link: 'profile', adminOnly: false },
-    { id: 9, name: 'Settings', icon: FileCheck, link: 'profile', adminOnly: true },
+    { id: 9, name: 'Settings', icon: FileCheck, link: 'settings', adminOnly: true },
     { id: 10, name: 'Events', icon: Calendar, link: 'events', adminOnly: false },
     //{ id: 11, name: 'Event Reminders', icon: Calendar, link: 'event-reminders', adminOnly: false },
     { id: 12, name: 'Location', icon: MapPin, link: 'branch', adminOnly: false },
