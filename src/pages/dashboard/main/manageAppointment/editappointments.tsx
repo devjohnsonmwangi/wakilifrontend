@@ -1,223 +1,379 @@
-// EditAppointment.tsx
-
 import React, { useState, useEffect } from 'react';
 import {
   useUpdateAppointmentMutation,
   AppointmentDataTypes,
 } from '../../../../features/appointment/appointmentapi'; // Adjust path
-import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
-import { useFetchUsersQuery } from '../../../../features/users/usersAPI'; // Adjust path
-import { Toaster, toast } from 'sonner';
+import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
+import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; // Adjust path
+import { toast } from 'sonner'; // Toaster component assumed to be global
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, CalendarCheck2, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2 } from 'lucide-react'; // Using CalendarCheck2 for Edit
 
 interface EditAppointmentProps {
-  appointment: AppointmentDataTypes; // Pass the appointment data to edit
-  onAppointmentUpdated?: () => void; // Callback after successful update
+  isDarkMode?: boolean; // To be passed from parent
+  appointment: AppointmentDataTypes;
+  onAppointmentUpdated?: () => void;
   onClose: () => void;
 }
 
-const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppointmentUpdated, onClose }) => {
-  const [updateAppointment, { isLoading: isUpdateLoading, isError: isUpdateError }] = useUpdateAppointmentMutation();
-  const { data: branches, isLoading: isBranchesLoading, isError: isBranchesError } = useFetchBranchLocationsQuery();
-  const { data: users, isLoading: isUsersLoading, isError: isUsersError } = useFetchUsersQuery();
+// Define a more specific type for the error data from the backend if known
+interface ApiErrorData {
+  error?: string;
+  message?: string;
+  // Add other potential error fields from your backend
+}
 
-  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(appointment.branch_id);
+interface RtkQueryErrorShape {
+  data?: ApiErrorData | string;
+  error?: string; // For FetchBaseQueryError string
+  // other RTK Query error fields
+}
+
+// Helper function to format date to YYYY-MM-DD for input[type="date"]
+const formatDateForInput = (dateString: string | Date): string => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) { // Check if date is valid
+        // Try to parse if it's already in YYYY-MM-DD and might have time part
+        let parts: string[] = [];
+        if (typeof dateString === 'string') {
+            parts = dateString.split('T')[0].split('-');
+        }
+        if (parts.length === 3 && typeof dateString === 'string') {
+            return dateString.split('T')[0];
+        }
+        console.warn("Invalid date string for input:", dateString);
+        return ''; // Return empty or a default if invalid
+    }
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  } catch (e) {
+    console.error("Error formatting date:", dateString, e);
+    return ''; // Fallback
+  }
+};
+
+
+const EditAppointment: React.FC<EditAppointmentProps> = ({  appointment, onAppointmentUpdated, onClose }) => {
+  const [updateAppointment, { isLoading: isUpdateLoading }] = useUpdateAppointmentMutation();
+  const { data: branches, isLoading: isBranchesLoading, isError: isBranchesError, error: branchesApiError } = useFetchBranchLocationsQuery();
+  const { data: users, isLoading: isUsersLoading, isError: isUsersError, error: usersApiError } = useFetchUsersQuery();
+
+  const [selectedBranchId, setSelectedBranchId] = useState<string>(appointment.branch_id.toString());
   const [party, setParty] = useState(appointment.party);
-  const [appointmentDate, setAppointmentDate] = useState(appointment.appointment_date);
+  const [appointmentDate, setAppointmentDate] = useState(formatDateForInput(appointment.appointment_date));
   const [appointmentTime, setAppointmentTime] = useState(appointment.appointment_time);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(appointment.user_id);
-  const [reason, setReason] = useState(appointment.reason || ''); // Use empty string if reason is undefined
+  const [selectedUserId, setSelectedUserId] = useState<string>(appointment.user_id.toString());
+  const [reason, setReason] = useState(appointment.reason || '');
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Initialize state with appointment data when the component mounts or when the appointment prop changes
-    setSelectedBranchId(appointment.branch_id);
+    setSelectedBranchId(appointment.branch_id.toString());
     setParty(appointment.party);
-    setAppointmentDate(appointment.appointment_date);
+    setAppointmentDate(formatDateForInput(appointment.appointment_date));
     setAppointmentTime(appointment.appointment_time);
-    setSelectedUserId(appointment.user_id);
+    setSelectedUserId(appointment.user_id.toString());
     setReason(appointment.reason || '');
-  }, [appointment]); // Run when 'appointment' prop changes
+  }, [appointment]);
+
+  const getApiErrorMessage = (error: unknown): string => {
+    // Basic error message extraction, can be enhanced like previous examples
+    if (typeof error === 'object' && error !== null) {
+        const errorShape = error as RtkQueryErrorShape;
+        if (errorShape.data && typeof errorShape.data === 'object' && (errorShape.data as ApiErrorData).message) {
+            return (errorShape.data as ApiErrorData).message!;
+        }
+        if (errorShape.data && typeof errorShape.data === 'string') return errorShape.data;
+        if (errorShape.error) return errorShape.error;
+        if ((error as Error).message) return (error as Error).message;
+    }
+    return 'An unknown error occurred.';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
 
-    if (!selectedBranchId || !party || !appointmentDate || !appointmentTime || !selectedUserId || !reason) {
-      toast.error('Please fill in all fields.');
+    if (!selectedBranchId || !party.trim() || !appointmentDate || !appointmentTime || !selectedUserId || !reason.trim()) {
+      setFormError('Please fill in all required fields.');
+      toast.error('Please fill in all required fields.');
       return;
     }
 
-    const updatedAppointment: Omit<AppointmentDataTypes, 'created_at' | 'updated_at' | 'appointment_id'> = {
-      user_id: selectedUserId,
-      branch_id: selectedBranchId,
-      party: party,
-      appointment_date: appointmentDate,
+    // Ensure appointmentDate is a valid date string before converting
+    let isoDateString = appointment.appointment_date; // default to original
+    try {
+        const dateObj = new Date(appointmentDate);
+        if (!isNaN(dateObj.getTime())) { // Check if date is valid
+            isoDateString = dateObj.toISOString();
+        } else {
+            toast.error("Invalid date selected. Please check the appointment date.");
+            return;
+        }
+    } catch (e) {
+        toast.error("Error processing date. Please check the appointment date format.");
+        return;
+    }
+
+
+    const updatedAppointmentPayload: Omit<AppointmentDataTypes, 'created_at' | 'updated_at'> & { appointment_id: number } = {
+      appointment_id: appointment.appointment_id,
+      user_id: Number(selectedUserId),
+      branch_id: Number(selectedBranchId),
+      party: party.trim(),
+      appointment_date: isoDateString, // Send as ISO string
       appointment_time: appointmentTime,
-      status: appointment.status, // Keep the original status
-      reason: reason,
+      status: appointment.status, // Retain original status, or provide UI to change it
+      reason: reason.trim(),
     };
 
     try {
-      await updateAppointment({
-        appointment_id: appointment.appointment_id,
-        ...updatedAppointment,
-        appointment_date: new Date(appointmentDate).toISOString(), // Convert to ISO string
-        appointment_time: appointmentTime //Make sure the date is string
-      }).unwrap();
+      await updateAppointment(updatedAppointmentPayload).unwrap();
       toast.success('Appointment updated successfully!');
       if (onAppointmentUpdated) {
         onAppointmentUpdated();
       }
-      onClose(); // Close the modal after successful update
+      onClose();
     } catch (error) {
       console.error('Failed to update appointment:', error);
-      toast.error('Failed to update appointment. Please try again.');
+      const message = getApiErrorMessage(error);
+      toast.error(`Failed to update appointment: ${message}`);
     }
   };
 
-  if (isBranchesLoading) {
-    return <div className="text-center py-4">Loading branches...</div>;
-  }
+  const modalVariants = { /* ... same as Create modal ... */ };
+  const backdropVariants = { /* ... same as Create modal ... */ };
 
-  if (isBranchesError) {
-    return <div className="text-center py-4 text-red-500">Error loading branches.</div>;
-  }
-
-  if (isUsersLoading) {
-    return <div className="text-center py-4">Loading users...</div>;
-  }
-
-  if (isUsersError) {
-    return <div className="text-center py-4 text-red-500">Error loading users.</div>;
-  }
+  const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 
+                              rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 
+                              focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-emerald-500 focus:border-transparent 
+                              transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
+    
+  const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
 
   const filteredUsers = users ? users.filter(user => user.role !== "client" && user.role !== "user") : [];
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center"> {/* Center the modal */}
-      <div className="relative p-4 sm:p-6 border shadow-lg rounded-xl bg-white w-full max-w-4xl mx-auto"> {/* Full width with max width */}
-        <div className="mt-3 text-center">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 tracking-tight">
-              Edit Appointment
-            </h3>
-            <button
-              title="close modal"
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <div className="px-4 py-3">
-            <Toaster richColors closeButton />
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="branch" className="block text-blue-500 text-sm font-bold mb-1">Branch:</label>
-                <select
-                  id="branch"
-                  value={selectedBranchId || ''}
-                  onChange={(e) => setSelectedBranchId(parseInt(e.target.value))}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  disabled={isBranchesLoading}
-                >
-                  <option value="">Select a Branch</option>
-                  {branches && branches.map((branch) => (
-                    <option key={branch.branch_id} value={branch.branch_id}>
-                      {branch.name} - {branch.address}
-                    </option>
-                  ))}
-                </select>
-              </div>
+    <motion.div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4"
+      variants={backdropVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <motion.div
+        className={`relative p-6 sm:p-8 border w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl
+                   text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700`}
+        variants={modalVariants}
+        initial="hidden" 
+        animate="visible"
+        exit="exit" 
+      >
+        <button
+          title='Close Modal'
+          className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full p-1.5 transition-colors duration-200"
+          onClick={onClose}
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-              <div>
-                <label htmlFor="userId" className="block text-blue-500 text-sm font-bold mb-1">Appointment Administer:</label>
-                <select
-                  id="userId"
-                  value={selectedUserId || ''}
-                  onChange={(e) => setSelectedUserId(parseInt(e.target.value))}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  disabled={isUsersLoading}
-                >
-                  <option value="">Appointment Administer:</option>
-                  {filteredUsers && filteredUsers.map((user) => (
-                    <option key={user.user_id} value={user.user_id}>
-                      {user.full_name} ({user.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="party" className="block text-blue-500 text-sm font-bold mb-1">Party:</label>
-                <input
-                  type="text"
-                  id="party"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  value={party}
-                  onChange={(e) => setParty(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="appointmentDate" className="block text-blue-500 text-sm font-bold mb-1">Date:</label>
-                <input
-                  type="date"
-                  id="appointmentDate"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  value={appointmentDate}
-                  onChange={(e) => setAppointmentDate(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="appointmentTime" className="block text-blue-500 text-sm font-bold mb-1">Time:</label>
-                <input
-                  type="time"
-                  id="appointmentTime"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="reason" className="block text-blue-500 text-sm font-bold mb-1">Reason:</label>
-                <textarea
-                  id="reason"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-sm"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div className="mt-4 flex flex-col sm:flex-row justify-between">
-                <button
-                  onClick={onClose}
-                  className="bg-red-200 hover:bg-red-300 text-red-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm ${isUpdateLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={isUpdateLoading}
-                >
-                  {isUpdateLoading ? 'Updating...' : 'Update Appointment'}
-                </button>
-              </div>
-
-              {isUpdateError && <div className="text-red-500 text-sm italic">Error updating appointment.</div>}
-            </form>
-          </div>
+        <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-green-500 to-teal-600 dark:from-emerald-500 dark:to-cyan-600">
+                <CalendarCheck2 className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-1 tracking-tight">
+                Edit Appointment
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+                Modify the details for this scheduled appointment.
+            </p>
         </div>
-      </div>
-    </div>
+
+        <AnimatePresence mode="wait">
+            {isBranchesLoading || isUsersLoading ? (
+                <motion.div
+                    key="loading-data-edit" // Unique key
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center py-10 min-h-[200px]"
+                >
+                    <Loader2 className="h-12 w-12 animate-spin text-green-500 dark:text-emerald-400 mb-3" />
+                    <p className="text-slate-600 dark:text-slate-400">
+                        {isBranchesLoading ? "Loading branch data..." : "Loading user data..."}
+                    </p>
+                </motion.div>
+            ) : isBranchesError || isUsersError ? (
+                <motion.div 
+                    key="loading-error-edit" // Unique key
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center text-center py-10 min-h-[200px] p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg"
+                >
+                    <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mb-3" />
+                    <p className="font-semibold text-red-700 dark:text-red-300">
+                        {isBranchesError ? "Error loading branches." : "Error loading users."}
+                    </p>
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        {getApiErrorMessage(isBranchesError ? branchesApiError : usersApiError)}
+                    </p>
+                    <button 
+                        onClick={onClose}
+                        className="mt-4 text-sm bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Close
+                    </button>
+                </motion.div>
+            ) : (
+                <motion.form 
+                    key="appointment-form-edit" // Unique key
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onSubmit={handleSubmit} className="space-y-5"
+                >
+                    <div>
+                        <label htmlFor="edit-branch" className={labelBaseClasses}> {/* Unique id for label */}
+                            <MapPin size={16} className="mr-2 opacity-70" /> Branch Location
+                        </label>
+                        <select
+                            id="edit-branch"
+                            value={selectedBranchId}
+                            onChange={(e) => setSelectedBranchId(e.target.value)}
+                            className={`${inputBaseClasses} ${!selectedBranchId ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                            required
+                        >
+                            <option value="" disabled>Select a Branch</option>
+                            {branches?.map((branch: BranchLocationDataTypes) => (
+                                <option key={branch.branch_id} value={branch.branch_id.toString()}>
+                                    {branch.name} - {branch.address}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="edit-userId" className={labelBaseClasses}> {/* Unique id for label */}
+                            <UserCheck size={16} className="mr-2 opacity-70" /> Assign To (Admin/Staff)
+                        </label>
+                        <select
+                            id="edit-userId"
+                            value={selectedUserId}
+                            onChange={(e) => setSelectedUserId(e.target.value)}
+                            className={`${inputBaseClasses} ${!selectedUserId ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                            required
+                        >
+                            <option value="" disabled>Select Staff Member</option>
+                            {filteredUsers.map((user: UserDataTypes) => (
+                                <option key={user.user_id} value={user.user_id.toString()}>
+                                    {user.full_name} ({user.role})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="edit-party" className={labelBaseClasses}> {/* Unique id for label */}
+                            <Users size={16} className="mr-2 opacity-70" /> Involved Party / Client Name
+                        </label>
+                        <input
+                            type="text"
+                            id="edit-party"
+                            className={inputBaseClasses}
+                            value={party}
+                            onChange={(e) => setParty(e.target.value)}
+                            placeholder="e.g., John Doe"
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label htmlFor="edit-appointmentDate" className={labelBaseClasses}> {/* Unique id for label */}
+                                <CalendarCheck2 size={16} className="mr-2 opacity-70" /> Date
+                            </label>
+                            <input
+                                type="date"
+                                id="edit-appointmentDate"
+                                className={inputBaseClasses}
+                                value={appointmentDate}
+                                min={new Date().toISOString().split('T')[0]} // Optional: Allow past dates for editing historic data, or keep to prevent
+                                onChange={(e) => setAppointmentDate(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="edit-appointmentTime" className={labelBaseClasses}> {/* Unique id for label */}
+                                <Clock size={16} className="mr-2 opacity-70" /> Time
+                            </label>
+                            <input
+                                type="time"
+                                id="edit-appointmentTime"
+                                className={inputBaseClasses}
+                                value={appointmentTime}
+                                onChange={(e) => setAppointmentTime(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label htmlFor="edit-reason" className={labelBaseClasses}> {/* Unique id for label */}
+                            <MessageSquare size={16} className="mr-2 opacity-70" /> Reason / Purpose
+                        </label>
+                        <textarea
+                            id="edit-reason"
+                            className={`${inputBaseClasses} resize-none`}
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            rows={3}
+                            placeholder="Briefly describe the purpose of the appointment"
+                            required
+                        />
+                    </div>
+                    
+                    {formError && (
+                        <p className="text-xs text-red-500 dark:text-red-400 text-center">{formError}</p>
+                    )}
+
+                    <div className="pt-3 flex flex-col sm:flex-row-reverse sm:justify-start gap-3">
+                        <motion.button
+                            type="submit"
+                            className={`w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg text-white
+                                        bg-gradient-to-r from-green-500 to-teal-600 dark:from-emerald-500 dark:to-cyan-600
+                                        hover:from-green-600 hover:to-teal-700 dark:hover:from-emerald-600 dark:hover:to-cyan-700
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-cyan-500 
+                                        dark:focus:ring-offset-slate-800
+                                        transition-all duration-300 ease-in-out shadow-md hover:shadow-lg
+                                        disabled:opacity-60 disabled:cursor-not-allowed text-sm`}
+                            disabled={isUpdateLoading}
+                            whileHover={{ scale: isUpdateLoading ? 1 : 1.03 }}
+                            whileTap={{ scale: isUpdateLoading ? 1 : 0.98 }}
+                        >
+                            {isUpdateLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                                    Updating...
+                                </div>
+                            ) : 'Save Changes'}
+                        </motion.button>
+                        <motion.button
+                            type="button"
+                            className="w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg 
+                                        bg-slate-100 hover:bg-slate-200 text-slate-700 
+                                        dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-200
+                                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-slate-500
+                                        dark:focus:ring-offset-slate-800
+                                        transition-all duration-300 ease-in-out shadow-sm hover:shadow-md text-sm"
+                            onClick={onClose}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            Cancel
+                        </motion.button>
+                    </div>
+                </motion.form>
+            )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 };
 

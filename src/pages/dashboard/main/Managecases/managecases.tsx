@@ -289,9 +289,9 @@ const AllCases = () => {
                 <tr className="text-left">
                     <th className="p-3 w-12"> {/* Checkbox */} </th>
                     <th className="p-3 whitespace-nowrap min-w-[100px]"><FaIdCard className="inline mr-1.5" />Case ID</th>
-                    <th className="p-3 whitespace-nowrap min-w-[180px]"><FaUser className="inline mr-1.5" />Client Name</th>
-                    <th className="p-3 whitespace-nowrap min-w-[200px]"><FaEnvelope className="inline mr-1.5" />Client Email</th>
-                    <th className="p-3 whitespace-nowrap min-w-[150px]"><FaPhone className="inline mr-1.5" />Client Phone</th>
+                    <th className="p-3 whitespace-nowrap min-w-[180px]"><FaUser className="inline mr-1.5" /> Name</th>
+                    <th className="p-3 whitespace-nowrap min-w-[200px]"><FaEnvelope className="inline mr-1.5" /> Email</th>
+                    <th className="p-3 whitespace-nowrap min-w-[150px]"><FaPhone className="inline mr-1.5" /> Phone</th>
                     <th className="p-3 whitespace-nowrap min-w-[150px]"><FaFileAlt className="inline mr-1.5" />Case Type</th>
                     <th className="p-3 whitespace-nowrap min-w-[120px]"><FaInfoCircle className="inline mr-1.5" />Status</th>
                     <th className="p-3 whitespace-nowrap min-w-[120px]"><FaMoneyBillAlt className="inline mr-1.5" />Fee</th>

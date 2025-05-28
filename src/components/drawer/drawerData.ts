@@ -68,7 +68,7 @@ export const drawerData: DrawerData[] = [
     { id: 9, name: 'Settings', icon: SettingsIcon, link: 'settings', adminOnly: true },
     { id: 10, name: 'Events', icon: CalendarDays, link: 'events', adminOnly: false },
     //{ id: 11, name: 'Event Reminders', icon: Calendar, link: 'event-reminders', adminOnly: false }, // Consider BellRing for reminders
-    { id: 12, name: 'Location', icon: MapPin, link: 'branch', adminOnly: false },
+    { id: 12, name: 'Branch Location', icon: MapPin, link: 'branch', adminOnly: false },
     { id: 13, name: 'Feedbacks', icon: MessageSquareText, link: 'feedbacks', adminOnly: false },
     { id: 14, name: 'Logs_History', icon: FileClock, link: 'activity-log', adminOnly: true },
 
