@@ -37,6 +37,7 @@ interface FormData {
 interface CreateCaseFormProps {
     isOpen: boolean;
     onClose: () => void;
+    isDarkMode?: boolean; // Optional prop for dark mode
 }
 
 const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose }) => {

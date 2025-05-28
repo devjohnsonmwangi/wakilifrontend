@@ -3,12 +3,21 @@ import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
 import {
   FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt,
+  FaPhoneAlt,
+  FaMapMarkedAlt,
   FaTrash,
-  FaUsersSlash, // For no users in system
-  FaFilter,     // For no users matching filters
-  FaExclamationCircle // For general API error
+  FaUsersSlash,
+  FaFilter,
+  FaExclamationCircle,
+  FaSun,
+  FaMoon,
+  FaFingerprint,
+  FaUserCircle,
+  FaUser,
+  FaUserTag,
+  FaCogs,
+  FaPhone,
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +27,7 @@ type UserRole = "user" | "admin" | "lawyer" | "client" | "clerks" | "manager" | 
 // Define a type for API error responses from your backend's JSON payload
 interface ApiErrorResponse {
   message?: string;
-  error?: string ; // Can be a string or an object with more details
+  error?: string ;
   detail?: string;
 }
 
@@ -46,6 +55,30 @@ function Account() {
     phone_number: '',
     address: '',
   });
+
+  // Dark Mode State
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('theme');
+      return savedMode === 'dark' || (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
 
   useEffect(() => {
     if (usersData) {
@@ -149,16 +182,32 @@ function Account() {
     );
   }) || [];
 
-  // Reusable component for stylish empty/error states
+  const HeaderCell = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
+    <th className="p-4">
+      <div className="flex items-center">
+        <Icon className="mr-2" /> {text}
+      </div>
+    </th>
+  );
+  
+  const HeaderCellCenter = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
+    <th className="p-4 text-center">
+      <div className="flex items-center justify-center">
+        <Icon className="mr-2" /> {text}
+      </div>
+    </th>
+  );
+
+
   const StylishMessage = ({ icon, title, message, children }: { icon: React.ReactNode; title: string; message?: string; children?: React.ReactNode }) => (
-    <div className="text-center py-12 px-6 my-8 bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl shadow-lg border border-slate-200">
-      <div className="text-6xl mb-6 text-indigo-400 flex justify-center">
+    <div className="text-center py-12 px-6 my-8 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+      <div className="text-6xl mb-6 text-indigo-500 dark:text-indigo-400 flex justify-center">
         {icon}
       </div>
-      <h3 className="text-3xl font-semibold text-slate-700 mb-3">
+      <h3 className="text-3xl font-semibold text-slate-700 dark:text-slate-100 mb-3">
         {title}
       </h3>
-      {message && <p className="text-slate-500 text-lg">{message}</p>}
+      {message && <p className="text-slate-500 dark:text-slate-400 text-lg">{message}</p>}
       {children && <div className="mt-6">{children}</div>}
     </div>
   );
@@ -168,8 +217,8 @@ function Account() {
     if (usersLoading) {
       return (
         <div className="text-center py-20">
-          <div role="status" className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
-          <p className="text-lg text-indigo-700 mt-4 font-semibold">🚀 Loading user data... Please wait.</p>
+          <div role="status" className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-indigo-600 dark:border-indigo-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+          <p className="text-lg text-indigo-700 dark:text-indigo-300 mt-4 font-semibold">🚀 Loading user data... Please wait.</p>
         </div>
       );
     }
@@ -192,14 +241,14 @@ function Account() {
         const displayError = getApiErrorMessage(usersError);
         return (
           <StylishMessage
-            icon={<FaExclamationCircle className="text-red-500" />}
+            icon={<FaExclamationCircle className="text-red-500 dark:text-red-400" />}
             title="Oops! Something Went Wrong"
             message={displayError}
           >
-            <p className="text-slate-500 mb-4">Please check your network connection. If the problem persists, contact support.</p>
+            <p className="text-slate-500 dark:text-slate-400 mb-4">Please check your network connection. If the problem persists, contact support.</p>
             <button
               onClick={() => refetchUsers()}
-              className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md"
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition duration-150 shadow-md"
             >
               🔄 Retry
             </button>
@@ -208,7 +257,6 @@ function Account() {
       }
     }
 
-    // Handles API 200 OK with empty array
     if (!usersData || usersData.length === 0) {
       return (
         <StylishMessage
@@ -228,7 +276,7 @@ function Account() {
         >
           <button
             onClick={handleResetFilters}
-            className="mt-4 px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md"
+            className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition duration-150 shadow-md"
           >
             🔄 Reset Filters
           </button>
@@ -237,82 +285,95 @@ function Account() {
     }
 
     return (
-      <div className="overflow-x-auto shadow-xl rounded-lg">
-        <table className="table table-zebra w-full">
-          <thead className="bg-indigo-700 text-white">
+      <div className="overflow-x-auto shadow-xl dark:shadow-black/20 rounded-lg">
+        <table className="table w-full">
+          <thead className="bg-indigo-700 text-white dark:bg-slate-700 dark:text-slate-200">
             <tr>
-              <th className="p-4">ID</th>
-              <th className="p-4">Profile</th>
-              <th className="p-4">Full Name</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Phone</th>
-              <th className="p-4">Address</th>
-              <th className="p-4">Role</th>
-              <th className="p-4 text-center">Actions</th>
+              <HeaderCell icon={FaFingerprint} text="ID" />
+              <HeaderCell icon={FaUserCircle} text="Profile" />
+              <HeaderCell icon={FaUser} text="Full Name" />
+              <HeaderCell icon={FaEnvelope} text="Email" />
+              <HeaderCell icon={FaPhoneAlt} text="Phone" />
+              <HeaderCell icon={FaMapMarkedAlt} text="Address" />
+              <HeaderCell icon={FaUserTag} text="Role" />
+              <HeaderCellCenter icon={FaCogs} text="Actions" />
             </tr>
           </thead>
-          <tbody>
+          <tbody className="text-slate-700 dark:text-slate-300">
             {filteredUsers.map((user: UserDataTypes) => (
-              <tr key={user.user_id} className="hover:bg-indigo-100 transition-colors duration-150">
-                <td className="p-3 border-b border-gray-200">{user.user_id}</td>
-                <td className="p-3 border-b border-gray-200">
+              <tr 
+                key={user.user_id} 
+                className="hover:bg-gray-200 dark:hover:bg-slate-600 
+                           odd:bg-gray-100 even:bg-gray-50
+                           dark:odd:bg-slate-800 dark:even:bg-slate-700 
+                           transition-colors duration-150"
+              >
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">{/* Adjusted dark border for better contrast with slate-700/800 */}
+                    <div className="flex items-center">
+                        <FaFingerprint className="inline mr-1.5 text-slate-400 dark:text-slate-500" />
+                        {user.user_id}
+                    </div>
+                </td>
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
                   {user.profile_picture ? (
                     <img src={user.profile_picture} alt={`${user.full_name}'s Profile`} className="w-12 h-12 rounded-full object-cover shadow-sm" />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 text-sm font-semibold shadow-sm">
                       {user.full_name?.substring(0, 2).toUpperCase() || 'N/A'}
                     </div>
                   )}
                 </td>
-                <td className="p-3 border-b border-gray-200 font-medium">{user.full_name}</td>
-                <td className="p-3 border-b border-gray-200">
-                  <a href={`mailto:${user.email}`} className="text-indigo-600 hover:text-indigo-800 hover:underline flex items-center">
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-800 dark:text-slate-100">{user.full_name}</td>
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
+                  <a href={`mailto:${user.email}`} className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline flex items-center">
                     <FaEnvelope className="inline mr-2" />
                     {user.email}
                   </a>
                 </td>
-                <td className="p-3 border-b border-gray-200">
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
                   {user.phone_number ? (
-                    <a href={`tel:${user.phone_number}`} className="text-green-600 hover:text-green-800 hover:underline flex items-center">
+                    <a href={`tel:${user.phone_number}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:underline flex items-center">
                       <FaPhone className="inline mr-2" />
                       {user.phone_number}
                     </a>
                   ) : (
-                    <span className="text-gray-400">N/A</span>
+                    <span className="text-slate-400 dark:text-slate-500">N/A</span>
                   )}
                 </td>
-                <td className="p-3 border-b border-gray-200">
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
                   {user.address ? (
-                    <span className="flex items-center"><FaMapMarkerAlt className="inline mr-2 text-red-500" />{user.address}</span>
+                    <span className="flex items-center"><FaMapMarkerAlt className="inline mr-2 text-red-500 dark:text-red-400" />{user.address}</span>
                   ) : (
-                     <span className="text-gray-400">N/A</span>
+                     <span className="text-slate-400 dark:text-slate-500">N/A</span>
                   )}
                 </td>
-                <td className="p-3 border-b border-gray-200">
-                  
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
                 <select
                   title="Change Role"
-                  className="select select-bordered select-sm h-11 w-37 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="select select-bordered select-sm h-11 w-37 
+                             bg-white dark:bg-slate-700 
+                             border-slate-300 dark:border-slate-600 
+                             text-slate-700 dark:text-slate-200 
+                             focus:ring-indigo-500 focus:border-indigo-500 
+                             dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
                   value={user.role}
                   onChange={(e) => handleRoleChangeFromSelect(user.user_id, e.target.value as UserRole)}
                   disabled={updatingSelectRoleId === user.user_id}
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="manager">Manager</option>
-                  <option value="lawyer">Lawyer</option>
-                  <option value="clerks">Clerk</option>
-                  <option value="client">Client</option>
-                  <option value="supports">Support</option>
+                  <option value="user" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">User</option>
+                  <option value="admin" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Admin</option>
+                  <option value="manager" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Manager</option>
+                  <option value="lawyer" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Lawyer</option>
+                  <option value="clerks" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Clerk</option>
+                  <option value="client" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Client</option>
+                  <option value="supports" className="bg-white dark:bg-slate-700 text-black dark:text-slate-300">Support</option>
                 </select>
                 </td>
-                <td className="p-3 border-b border-gray-200">
-               
+                <td className="p-3 border-b border-slate-200 dark:border-slate-600">
                   <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
-                    
                     <button
                       onClick={() => handleToggleUserAdminRole(user.user_id, user.role as UserRole)}
-                      className="btn btn-sm bg-sky-500 text-white hover:bg-sky-600 w-full sm:w-auto px-3"
+                      className="btn btn-sm bg-sky-500 text-white hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 w-full sm:w-auto px-3"
                       disabled={togglingUserAdminRoleId === user.user_id}
                       title={user.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
                     >
@@ -320,7 +381,7 @@ function Account() {
                     </button>
                     <button
                       onClick={() => handleDeleteUser(user.user_id)}
-                      className="btn btn-sm bg-red-500 text-white hover:bg-red-600 w-full sm:w-auto px-3 flex items-center justify-center"
+                      className="btn btn-sm bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 w-full sm:w-auto px-3 flex items-center justify-center"
                       title="Delete User"
                     >
                       <FaTrash />
@@ -338,25 +399,35 @@ function Account() {
 
   return (
     <>
-      <Toaster richColors position="top-right" />
-      <div className="p-4 md:p-6 bg-gradient-to-br from-slate-100 to-gray-200 min-h-screen">
-        <div className="mb-4 flex justify-start">
-            <button onClick={() => navigate(-1)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md transition duration-150">
+      <Toaster richColors theme={isDarkMode ? 'dark' : 'light'} position="top-right" />
+      <div className="p-4 md:p-6 bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 transition-colors duration-300">
+        <div className="mb-4 flex justify-between items-center">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 shadow-md transition duration-150"
+            >
             🔙 Back
             </button>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
+            </button>
         </div>
-        <h1 className="text-center text-3xl md:text-4xl font-extrabold text-indigo-700 mb-6 tracking-tight">
+        <h1 className="text-center text-3xl md:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400 mb-6 tracking-tight">
           🚀 User Management Dashboard
         </h1>
 
-        <div className="mb-6 p-4 bg-white shadow-lg rounded-lg">
-            <h2 className="text-xl font-semibold text-gray-700 mb-3">Filter Users</h2>
+        <div className="mb-6 p-4 bg-white dark:bg-slate-800 shadow-lg rounded-lg">
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-100 mb-3">Filter Users</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="🔍 Filter by name" className="input input-bordered w-full focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="✉️ Filter by email" className="input input-bordered w-full focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="phone_number" value={filters.phone_number} onChange={handleInputChange} placeholder="📞 Filter by phone" className="input input-bordered w-full focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="address" value={filters.address} onChange={handleInputChange} placeholder="📍 Filter by address" className="input input-bordered w-full focus:ring-indigo-500 focus:border-indigo-500" />
-            <button onClick={handleResetFilters} className="btn bg-indigo-500 text-white hover:bg-indigo-600 w-full sm:w-auto sm:col-span-2 lg:col-span-1">
+            <input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="🔍 Filter by name" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+            <input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="✉️ Filter by email" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+            <input type="text" name="phone_number" value={filters.phone_number} onChange={handleInputChange} placeholder="📞 Filter by phone" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+            <input type="text" name="address" value={filters.address} onChange={handleInputChange} placeholder="📍 Filter by address" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+            <button onClick={handleResetFilters} className="btn bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 w-full sm:w-auto sm:col-span-2 lg:col-span-1">
                 🔄 Reset Filters
             </button>
             </div>

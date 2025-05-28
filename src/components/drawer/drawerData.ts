@@ -48,7 +48,9 @@ export const drawerData: DrawerData[] = [
     //diary
     { id: 20, name: 'My_Diary', icon: BookOpenText, link: 'mydiary', adminOnly: false },
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false },
-    { id: 1, name: 'Appointments', icon: CalendarCheck, link: 'appoint', adminOnly: false },
+    { id: 1, name: 'Appointments', icon: CalendarCheck, link: 'appoint', adminOnly: true },
+    {id: 21, name: 'My Appointments', icon: CalendarCheck, link: 'myappointments', adminOnly: false }, // Added for clarity
+    {id:22,name:'Branch Appointments',icon:CalendarCheck,link:'branchappointments',adminOnly:true}, // Added for branch-specific appointments
     { id: 2, name: 'Documents', icon: FileText, link: 'listdoc', adminOnly: false },
     { id: 3, name: 'Manage users', icon: Users, link: 'account', adminOnly: true },
     { id: 4, name: 'Manage Cases', icon: FolderKanban, link: 'cases', adminOnly: true }, // Or BriefcaseBusiness

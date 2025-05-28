@@ -7,6 +7,7 @@ import { useFetchUsersQuery } from '../../../../features/users/usersAPI';
 import { Toaster, toast } from 'sonner';
 
 interface CreateAppointmentProps {
+    forBranchId: string | number; 
     onAppointmentCreated?: () => void;
     onClose: () => void; // Add onClose props
 }

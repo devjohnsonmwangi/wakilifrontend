@@ -14,6 +14,7 @@ interface BranchLocationDataTypes {
 }
 
 interface EditBranchLocationProps {
+  isDarkMode?: boolean; // Optional prop for dark mode
   branch: BranchLocationDataTypes;
   onClose: () => void;
 }

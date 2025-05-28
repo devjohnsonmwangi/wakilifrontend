@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa';
 
 interface EditCaseFormProps {
+    isDarkMode?: boolean;
     caseItem: CaseDataTypes | null;
     isOpen: boolean;
     onClose: () => void;

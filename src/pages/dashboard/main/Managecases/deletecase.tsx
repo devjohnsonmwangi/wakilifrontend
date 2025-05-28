@@ -5,6 +5,7 @@ import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa'; // Import ic
 interface DeleteCaseFormProps {
     caseItem: CaseDataTypes | null;
     isOpen: boolean;
+    isDarkMode?: boolean; // Optional prop for dark mode
     onClose: () => void;
     refetch: () => void;
 }

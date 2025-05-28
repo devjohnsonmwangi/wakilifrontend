@@ -9,6 +9,7 @@ import {  toast } from 'sonner'; // Ensure toast is imported
 import { useEffect } from "react"; // Import useEffect for on-open toast
 
 interface ViewCaseDetailsModalProps {
+    isDarkMode?: boolean; // Optional prop for dark mode
     selectedCase: CaseDataTypes | null;
     closeModal: () => void;
 }

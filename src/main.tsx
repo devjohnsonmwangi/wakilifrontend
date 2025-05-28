@@ -38,6 +38,8 @@ import UserPaymentPortal from './pages/dashboard/main/Payments/singleuserpayment
 import UserPaymentRecords from './pages/dashboard/main/Payments/userpayments.tsx';
 import MyDiary from './pages/dashboard/main/events/diary.tsx';
 import SettingsPage from './pages/dashboard/main/settings.tsx';
+import UserAppointments from './pages/dashboard/main/manageAppointment/myappointments.tsx';
+import BranchAppointments from './pages/dashboard/main/manageAppointment/branchappointments.tsx';
 
 // NOTE: We are NOT importing RouteChangeTracker here globally anymore.
 // It will be imported and used within Dashboard.tsx
@@ -88,7 +90,11 @@ const router = createBrowserRouter([
       //dairy
       {path:'mydiary',element :<MyDiary/>},
       //setting
-      {path: 'settings',element:<SettingsPage/>}
+      {path: 'settings',element:<SettingsPage/>},
+      //singer  user appointment portal
+      {path:'myappointments',element:<UserAppointments/>}, // This can be a list of all appointments for the user
+      //branch appointments
+      {path: 'branchappointments', element: < BranchAppointments/>}, // This can be a list of all appointments for the user at a specific branch
     ],
   },
   // Remove duplicate top-level routes that are meant to be under /dashboard
