@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import {
   useCreateBranchLocationMutation,
 } from '../../../../features/branchlocation/branchlocationapi'; // Adjust the path as needed
-import { Toaster, toast } from 'sonner';
-import { motion } from 'framer-motion'; // Import framer-motion
-import { X } from 'lucide-react'; // Import close Icon
+import { toast } from 'sonner'; // Toaster component itself is likely at a higher level
+import { motion } from 'framer-motion';
+import { X, Building, MapPin, Phone, Briefcase } from 'lucide-react';
 
 interface BranchLocationDataTypes {
   branch_id?: number;
@@ -13,12 +13,30 @@ interface BranchLocationDataTypes {
   contact_phone: string;
 }
 
+// Define a more specific type for the error data from the backend if known
+// For now, keeping it somewhat generic but avoiding 'any' where possible
+interface ApiErrorData {
+  error?: string;
+  message?: string;
+  // Add other potential error fields from your backend
+}
+
+interface RtkQueryErrorShape {
+    data?: ApiErrorData | string; // Can be an object or a string
+    error?: string; // For FetchBaseQueryError string
+    // other RTK Query error fields
+  }
+
 interface CreateBranchLocationProps {
-  isDarkMode?: boolean; // Optional prop for dark mode
+  isDarkMode?: boolean; // Prop for dark mode, parent will set it
   onClose: () => void;
 }
 
 const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) => {
+  // isDarkMode is received as a prop to potentially influence non-Tailwind logic if needed,
+  // or to be passed to deeper child components. Tailwind's dark: prefixes work
+  // based on the class on the <html> tag, so isDarkMode might not be directly
+  // used for className concatenation in this specific component for Tailwind styles.
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -36,31 +54,47 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
 
     try {
       await createBranchLocation(newBranch).unwrap();
-
       toast.success('Branch location created successfully!', {
-        duration: 4000,
+        duration: 3000,
       });
       
-
       setName('');
       setAddress('');
       setContactPhone('');
-
       onClose();
     } catch (err: unknown) {
       console.error('Failed to create branch location:', err);
 
       let errorMessage = 'Failed to create branch location. Please try again.';
+      
+      // Type guard for RTK Query error structure
+      if (typeof err === 'object' && err !== null) {
+        const errorShape = err as RtkQueryErrorShape; // Assert to our defined shape
 
-      if (typeof err === 'object' && err !== null && 'data' in err && typeof err.data === 'string' && err.data.includes('Branch with this address already exists')) {
-        toast.error('A  branch  with  simmilar  address exists. Please enter a different address branches  must  have different  addresses.', {
+        if (errorShape.data) {
+          if (typeof errorShape.data === 'object' && errorShape.data !== null) {
+            const errorData = errorShape.data as ApiErrorData; // Assert data part
+            if (errorData.error) {
+              errorMessage = errorData.error;
+            } else if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } else if (typeof errorShape.data === 'string' && errorShape.data.length > 0) {
+            errorMessage = errorShape.data;
+          }
+        } else if (errorShape.error && typeof errorShape.error === 'string') {
+          errorMessage = errorShape.error; // For RTK Query FetchBaseQueryError string
+        } else if (err instanceof Error) { // Fallback for general JS Error
+          errorMessage = err.message;
+        }
+      }
+      
+      if (errorMessage.toLowerCase().includes('branch with this address already exists') || 
+          errorMessage.toLowerCase().includes('similar address exists')) {
+        toast.error('A branch with a similar address already exists. Please use a different address.', {
           duration: 5000,
         });
         return;
-      }
-
-      if (err instanceof Error) {
-        errorMessage = err.message;
       }
 
       toast.error(errorMessage, {
@@ -69,77 +103,105 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
     }
   };
 
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: "easeIn" } },
+  };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.2 } },
+  };
+
   return (
     <motion.div
-      className="fixed inset-0 bg-black bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4"
+      variants={backdropVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
     >
       <motion.div
-        className="relative p-8 border w-full max-w-md bg-white rounded-3xl shadow-2xl"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ duration: 0.3 }}
+        className={`relative p-6 sm:p-8 border w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl
+                   text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700`}
+        variants={modalVariants}
+        initial="hidden" 
+        animate="visible"
+        exit="exit" 
       >
         <button
           title='Close Modal'
-          className="absolute top-4 right-4 hover:bg-gray-200 rounded-full p-2 transition-colors duration-200"
+          className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full p-2 transition-colors duration-200"
           onClick={onClose}
         >
-          <X className="h-6 w-6 text-gray-700" />
+          <X className="h-6 w-6" />
         </button>
 
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500 mb-4 tracking-tight">
-            Create Branch Location
+        <div className="text-center mb-8">
+           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 dark:from-sky-500 dark:to-indigo-600">
+                <Briefcase className="w-8 h-8 text-white" />
+            </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">
+            New Branch Location
           </h2>
-          <p className="mt-2 text-lg text-gray-700 italic">
-            Unleash the potential of our firm with a brand new, strategically placed branch location!
+          <p className="text-sm sm:text-md text-slate-600 dark:text-slate-400">
+            Expand our reach by establishing a new strategic location.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="name" className="block text-gray-700 text-lg font-semibold mb-2">
-              Name:
+            <label htmlFor="name" className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <Building size={16} className="mr-2 opacity-70" />
+              Branch Name
             </label>
             <input
               type="text"
               id="name"
-              className="shadow-sm appearance-none border rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow duration-300"
+              className="w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 
+                         rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent 
+                         transition-shadow duration-200 shadow-sm hover:shadow-md"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Wakili Branch Name"
+              placeholder="e.g., Downtown Central Branch"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="address" className="block text-gray-700 text-lg font-semibold mb-2">
-              Address:
+            <label htmlFor="address" className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <MapPin size={16} className="mr-2 opacity-70" />
+              Full Address
             </label>
             <textarea
               id="address"
-              className="shadow-sm appearance-none border rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow duration-300"
+              className="w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 
+                         rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent 
+                         transition-shadow duration-200 shadow-sm hover:shadow-md resize-none"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="123 Justice Lane, Cityville"
+              placeholder="123 Justice Lane, Suite 100, Cityville, ST 12345"
               required
               rows={3}
             />
           </div>
 
           <div>
-            <label htmlFor="contactPhone" className="block text-gray-700 text-lg font-semibold mb-2">
-              Contact Phone:
+            <label htmlFor="contactPhone" className="flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              <Phone size={16} className="mr-2 opacity-70" />
+              Contact Phone
             </label>
             <input
               type="tel"
               id="contactPhone"
-              className="shadow-sm appearance-none border rounded-xl w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow duration-300"
+              className="w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 
+                         rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent 
+                         transition-shadow duration-200 shadow-sm hover:shadow-md"
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               placeholder="(555) 123-4567"
@@ -147,18 +209,34 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <button
+          <div className="pt-2">
+            <motion.button
               type="submit"
-              className="bg-gradient-to-br from-blue-600 to-purple-600 hover:bg-gradient-to-bl text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-400 transition-transform duration-300 hover:scale-105 tracking-wide shadow-md"
+              className={`w-full font-semibold py-3 px-6 rounded-lg text-white
+                          bg-gradient-to-r from-blue-600 to-purple-600 dark:from-sky-500 dark:to-indigo-600
+                          hover:from-blue-700 hover:to-purple-700 dark:hover:from-sky-600 dark:hover:to-indigo-700
+                          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-sky-500 
+                          dark:focus:ring-offset-slate-800
+                          transition-all duration-300 ease-in-out shadow-md hover:shadow-lg
+                          disabled:opacity-60 disabled:cursor-not-allowed`}
               disabled={isLoading}
+              whileHover={{ scale: isLoading ? 1 : 1.03 }}
+              whileTap={{ scale: isLoading ? 1 : 0.98 }}
             >
-              {isLoading ? 'Creating...' : 'Create Branch'}
-            </button>
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2" />
+                  Creating...
+                </div>
+              ) : 'Create Branch Location'}
+            </motion.button>
           </div>
         </form>
       </motion.div>
-      <Toaster richColors />
+      {/* The <Toaster /> component should be placed at a higher level in your application,
+          typically in your main App.tsx or layout component, to handle all toasts globally.
+          It's not needed within each modal if a global one is present.
+      */}
     </motion.div>
   );
 };
