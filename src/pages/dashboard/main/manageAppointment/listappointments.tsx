@@ -11,6 +11,7 @@ import { useFetchBranchLocationsQuery } from '../../../../features/branchlocatio
 import { Toaster, toast } from 'sonner';
 import CreateAppointment from './createappointment'; // Adjust path
 import EditAppointment from './editappointments'; // Adjust path
+import ConfirmationModal from './deletion'; // IMPORT THE NEW MODAL (adjust path)
 
 import {
   PlusCircle,
@@ -34,13 +35,10 @@ interface ApiError {
   error?: string;
 }
 
-// Type for the specific "message" response from the API (e.g., on 200 OK)
 interface ApiMessageResponse {
   message: string;
-  // Add other potential fields if your API sends more in this structure
 }
 
-// Type guard to check if an object is an ApiMessageResponse
 function isApiMessageResponse(data: unknown): data is ApiMessageResponse {
   return data !== null && typeof data === 'object' && 'message' in data && typeof (data as ApiMessageResponse).message === 'string';
 }
@@ -85,6 +83,11 @@ const ListAppointments: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
+
+  // State for the confirmation modal
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<AppointmentDataTypes | null>(null);
+
 
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
   const [searchParty, setSearchParty] = useState('');
@@ -132,12 +135,12 @@ const ListAppointments: React.FC = () => {
         currentError = typedQueryError;
       }
     } else if (!isLoadingAppointments && appointmentsData) { 
-      // Check for 200 OK with "no appointments" message
       if (isApiMessageResponse(appointmentsData) && appointmentsData.message === NO_APPOINTMENTS_FOUND_MESSAGE) {
         noAppointmentsSignal = true;
+      } else if (Array.isArray(appointmentsData) && appointmentsData.length === 0 && !isFetchAppointmentsError) {
+        // If API successfully returns an empty array, it's also a "no appointments" scenario for initial display
+        noAppointmentsSignal = true;
       }
-      // Note: An empty array `[]` from API is a valid success, not `isBackendNoAppointments`.
-      // `isBackendNoAppointments` is for when the backend *explicitly signals* "no items" via message.
     }
     
     setIsBackendNoAppointments(noAppointmentsSignal);
@@ -179,31 +182,49 @@ const ListAppointments: React.FC = () => {
     }
   };
 
-  const handleDeleteAppointment = async (appointmentId: number) => {
-    if (window.confirm('Are you sure you want to delete this appointment?')) {
-      try {
-        await deleteAppointment(appointmentId).unwrap();
-        toast.success('Appointment deleted successfully!');
-      } catch (err) {
-        console.error('Failed to delete appointment:', err);
-        const errorMessage = getErrorMessage(err as ApiError);
-        toast.error(`Failed to delete appointment: ${errorMessage}`);
-      }
+  const requestDeleteAppointment = (appointment: AppointmentDataTypes) => {
+    setAppointmentToDelete(appointment);
+    setIsConfirmDeleteModalOpen(true);
+  };
+
+  const confirmDeleteAppointment = async () => {
+    if (!appointmentToDelete) return;
+
+    try {
+      await deleteAppointment(appointmentToDelete.appointment_id).unwrap();
+      toast.success(`Appointment for ${appointmentToDelete.party} deleted successfully!`);
+      setAppointmentToDelete(null);
+      setIsConfirmDeleteModalOpen(false);
+      // refetch(); // RTK Query's tag invalidation should handle this
+    } catch (err) {
+      console.error('Failed to delete appointment:', err);
+      const errorMessage = getErrorMessage(err as ApiError);
+      toast.error(`Failed to delete appointment: ${errorMessage}`);
+      // Optionally keep modal open on error, or close it
+      // setIsConfirmDeleteModalOpen(false); 
     }
   };
+
+  const cancelDeleteAppointment = () => {
+    setAppointmentToDelete(null);
+    setIsConfirmDeleteModalOpen(false);
+  };
   
-  const safeAppointmentsData = useMemo(() => {
+  const actualAppointmentsArray = useMemo(() => {
     if (Array.isArray(appointmentsData)) {
-      return appointmentsData;
+        return appointmentsData;
     }
-    // If backend signaled "no appointments" (via error or 200 OK message object),
-    // or if there's a displayable error, treat data as empty for filtering.
+    return [];
+  }, [appointmentsData]);
+
+  const safeAppointmentsData = useMemo(() => {
+    // Use actualAppointmentsArray which is guaranteed to be an array or empty
+    // The conditions for isBackendNoAppointments handle API specific "no data" messages.
     if (isBackendNoAppointments || displayableError) {
         return [];
     }
-    // Default for other cases (e.g., appointmentsData is undefined before first load completes without error)
-    return []; 
-  }, [appointmentsData, isBackendNoAppointments, displayableError]);
+    return actualAppointmentsArray;
+  }, [actualAppointmentsArray, isBackendNoAppointments, displayableError]);
 
 
   const filteredAppointments = useMemo(() => {
@@ -226,9 +247,11 @@ const ListAppointments: React.FC = () => {
   );
 
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null }> = ({ errorToDisplay }) => {
-    // displayableError will be null if the "error" was NO_APPOINTMENTS_FOUND_MESSAGE
     if (!errorToDisplay) return null; 
     const message = getErrorMessage(errorToDisplay);
+     // Do not display if it's the special "no appointments" message, as that's handled by NoAppointmentsMessage
+    if (message === NO_APPOINTMENTS_FOUND_MESSAGE) return null;
+
 
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
@@ -241,7 +264,6 @@ const ListAppointments: React.FC = () => {
         </div>
         <button
             onClick={() => {
-              // Clear displayableError; isBackendNoAppointments is handled by useEffect
               setDisplayableError(null); 
               refetch();
             }}
@@ -280,16 +302,11 @@ const ListAppointments: React.FC = () => {
   const isActuallyLoading = isLoadingAppointments || isLoadingBranchLocations;
   const isFilteringActive = !!(searchParty || searchLocation || searchStatus);
 
-  // This determines if the reason for no appointments is truly because the source was empty
-  // (either backend said so, or API returned empty array) AND no filters are applied.
   const isEffectivelyInitialEmpty =
     !isActuallyLoading &&
-    !displayableError && // No actual error being shown
-    !isFilteringActive && // No filters currently applied
-    (
-      isBackendNoAppointments || // Backend explicitly signaled "no appointments"
-      (Array.isArray(appointmentsData) && appointmentsData.length === 0 && !isFetchAppointmentsError) // Or API successfully returned an empty array
-    );
+    !displayableError &&
+    !isFilteringActive &&
+    (isBackendNoAppointments || (actualAppointmentsArray.length === 0 && !isFetchAppointmentsError));
 
   const showNoAppointmentsMessage = 
     !isActuallyLoading &&
@@ -426,9 +443,9 @@ const ListAppointments: React.FC = () => {
                               <FilePenLine className="h-5 w-5" />
                             </button>
                             <button
-                              onClick={() => handleDeleteAppointment(appointment.appointment_id)}
+                              onClick={() => requestDeleteAppointment(appointment)}
                               className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 rounded-md hover:bg-rose-100 dark:hover:bg-slate-700 disabled:opacity-50"
-                              disabled={isDeletingAppointment}
+                              disabled={isDeletingAppointment && appointmentToDelete?.appointment_id === appointment.appointment_id}
                               title="Delete Appointment"
                             >
                               <Trash2 className="h-5 w-5" />
@@ -447,14 +464,11 @@ const ListAppointments: React.FC = () => {
 
       {isCreateModalOpen && (
         <CreateAppointment
-          forBranchId={
-            // Use the first branch location's ID if available, otherwise fallback to an empty string or a default value
-            branchLocations && branchLocations.length > 0
-              ? branchLocations[0].branch_id
-              : ''
-          }
+          // Pass a default branchId if needed, or make CreateAppointment handle empty forBranchId
+          forBranchId={branchLocations && branchLocations.length > 0 ? branchLocations[0].branch_id : ''}
           onAppointmentCreated={handleAppointmentCreated}
           onClose={closeCreateModal}
+          isDarkMode={isDarkMode} // Pass dark mode to CreateAppointment
         />
       )}
 
@@ -463,8 +477,32 @@ const ListAppointments: React.FC = () => {
           appointment={selectedAppointment}
           onAppointmentUpdated={handleAppointmentUpdated}
           onClose={closeEditModal}
+          isDarkMode={isDarkMode} // Pass dark mode to EditAppointment
         />
       )}
+
+      <ConfirmationModal
+        isOpen={isConfirmDeleteModalOpen}
+        onClose={cancelDeleteAppointment}
+        onConfirm={confirmDeleteAppointment}
+        title="Confirm Deletion"
+        message={
+          appointmentToDelete ? (
+            <>
+              Are you sure you want to delete the appointment for{' '}
+              <strong className="font-semibold">{appointmentToDelete.party}</strong> on{' '}
+              {new Date(appointmentToDelete.appointment_date).toLocaleDateString()} at{' '}
+              {appointmentToDelete.appointment_time}? This action cannot be undone.
+            </>
+          ) : (
+            "Are you sure you want to delete this appointment? This action cannot be undone."
+          )
+        }
+        confirmText="Yes, Delete Appointment"
+        cancelText="No, Keep It"
+        isLoading={isDeletingAppointment}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 };

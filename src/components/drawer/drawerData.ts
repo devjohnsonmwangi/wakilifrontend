@@ -39,6 +39,9 @@ export type DrawerData = {
     icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Specify type for icon
     link: string;
     adminOnly: boolean;
+    iconBgColor?: string;
+    iconTextColor?: string;
+    borderColor?: string;
 }
 
 // Drawer data with roles and permissions

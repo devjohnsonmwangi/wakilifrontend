@@ -3,6 +3,9 @@ import { Toaster, toast } from 'sonner';
 import { TypeTickets } from "../../../../features/Tickets/AllTickets";
 
 interface DeleteUserTicketProps {
+    userFullName?: string;
+    userProfilePicture?: string;
+    useremail?: string;
     ticket: TypeTickets | null;
     modalId: string;
 }

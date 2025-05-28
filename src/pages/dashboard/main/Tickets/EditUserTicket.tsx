@@ -1,13 +1,17 @@
-import { useForm } from 'react-hook-form';
+// src/features/Tickets/components/MyTickets/EditUserTicket.tsx (or your path)
+import { useForm, SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { TicketAPI } from "../../../../features/Tickets/AllTickets";
 import { Toaster, toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { TypeTickets } from '../../../../features/Tickets/AllTickets';
-import { FaEdit } from 'react-icons/fa'; // Importing an edit icon from react-icons
+import { FileEdit, Loader2, Save, UserCircle, XCircle } from 'lucide-react'; // Modern Lucide icons
 
 interface EditTicketFormProps {
+    userFullName?: string;
+    userProfilePicture?: string;
+    useremail?: string; // Kept for potential future use
     ticket: TypeTickets | null;
     modalId: string;
 }
@@ -16,21 +20,28 @@ interface EditTicketFormProps {
 interface FormData {
     subject: string;
     description: string;
-    status: string;
+    status: "Open" | "Closed";
 }
 
 const validationSchema = yup.object().shape({
-    subject: yup.string().required('Subject is required'),
-    description: yup.string().required('Description is required'),
-    status: yup.string().required('Status is required'),
+    subject: yup.string().required('Subject is required').min(5, 'Subject must be at least 5 characters long'),
+    description: yup.string().required('Description is required').min(10, 'Description must be at least 10 characters long'),
+    status: yup.string().oneOf(['Open', 'Closed'], 'Invalid status').required('Status is required'),
 });
 
-const EditUserTicket = ({ ticket, modalId }: EditTicketFormProps) => {
-    const id = Number(ticket?.ticket_id);
-    const userID = ticket?.user_id;
-    const [updateTicket] = TicketAPI.useUpdateTicketMutation();
-    const [isLoading, setIsLoading] = useState(false); // Add loading state
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
+const EditUserTicket: React.FC<EditTicketFormProps> = ({
+    userFullName,
+    userProfilePicture,
+    ticket,
+    modalId
+}) => {
+    const ticket_id = Number(ticket?.ticket_id);
+    const user_id = ticket?.user_id; // This seems correct as it's the user who owns the ticket
+
+    // Use the isLoading state directly from the mutation hook
+    const [updateTicketApi, { isLoading: isUpdatingTicket }] = TicketAPI.useUpdateTicketMutation();
+
+    const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<FormData>({
         resolver: yupResolver(validationSchema),
     });
 
@@ -38,106 +49,198 @@ const EditUserTicket = ({ ticket, modalId }: EditTicketFormProps) => {
         if (ticket) {
             setValue('subject', ticket.subject);
             setValue('description', ticket.description);
-            setValue('status', ticket.status);
+            // Ensure status is either "Open" or "Closed" before setting
+            const validStatus = ticket.status === "Open" || ticket.status === "Closed" ? ticket.status : "Open";
+            setValue('status', validStatus);
+        } else {
+            // If ticket becomes null (e.g. modal reopens without a ticket), reset form
+            reset({ subject: '', description: '', status: 'Open' });
         }
-    }, [ticket, setValue]);
+    }, [ticket, setValue, reset]);
 
-    const onSubmit = async (data: FormData) => { // Use the FormData type here
-        if (!id) {
-            toast.error('Ticket ID is undefined.');
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        if (!ticket_id || user_id === undefined) { // Check user_id as well
+            toast.error('Ticket information is incomplete.');
             return;
         }
 
-        setIsLoading(true); // Set loading state to true when the update starts
+        // Define a type for the error object
+        type ApiError = {
+            data?: { message?: string };
+            message?: string;
+        };
 
         try {
-            await updateTicket({ ticket_id: id, user_id: userID, ...data }).unwrap();
+            await updateTicketApi({ ticket_id, user_id, ...data }).unwrap();
             toast.success('Ticket updated successfully!');
             setTimeout(() => {
-                (document.getElementById(modalId) as HTMLDialogElement)?.close();
-            }, 1000);
-        } catch (err) {
-            toast.error('Failed to update ticket.');
-        } finally {
-            setIsLoading(false); // Set loading state back to false after the update is finished
+                const dialogElement = document.getElementById(modalId) as HTMLDialogElement;
+                if (dialogElement) dialogElement.close();
+            }, 1200); // Slightly longer for user to read success toast
+        } catch (err: unknown) {
+            console.error('Failed to update ticket:', err);
+            let errorMessage = 'Failed to update ticket. Please try again.';
+            if (typeof err === 'object' && err !== null) {
+                const apiErr = err as ApiError;
+                if ('data' in apiErr && typeof apiErr.data?.message === 'string') {
+                    errorMessage = apiErr.data!.message!;
+                } else if ('message' in apiErr && typeof apiErr.message === 'string') {
+                    errorMessage = apiErr.message;
+                }
+            }
+            toast.error(`❌ ${errorMessage}`);
         }
     };
 
-    const handleCloseModal = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        toast.warning('Update cancelled');
-        setTimeout(() => {
-            (document.getElementById(modalId) as HTMLDialogElement)?.close();
-        }, 1000);
+    const handleCloseModal = (event?: React.MouseEvent<HTMLButtonElement>) => {
+        event?.preventDefault(); // Prevent form submission if it's a button inside a form
+        // No "Update Cancelled" toast unless explicitly requested, as user might just be closing
+        const dialogElement = document.getElementById(modalId) as HTMLDialogElement;
+        if (dialogElement) {
+            dialogElement.close();
+        }
     };
 
+    if (!ticket) {
+        // Optionally, render a placeholder or null if the ticket is not yet available
+        // This helps prevent errors if the modal opens before 'ticket' prop is populated
+        return (
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+                Loading ticket details...
+            </div>
+        );
+    }
+
     return (
-        <>
+        <div className="p-2 sm:p-4 space-y-6 text-gray-800 dark:text-gray-200">
             <Toaster
+                position="top-right"
+                richColors
                 toastOptions={{
-                    classNames: {
-                        error: 'bg-red-400 text-white p-3 rounded-md shadow-md',
-                        success: 'bg-green-400 text-white p-3 rounded-md shadow-md',
-                        warning: 'bg-yellow-400 text-white p-3 rounded-md shadow-md',
-                        info: 'bg-blue-400 text-white p-3 rounded-md shadow-md',
-                    },
+                    className: 'font-sans',
                 }}
             />
-            {/* Header Section */}
-            <div className="bg-green-800 text-white text-lg font-semibold p-4 flex items-center space-x-2 rounded-t-lg">
-                <FaEdit className="text-white text-2xl" /> {/* Edit Icon */}
-                <span>You are updating your ticket ✏️</span>
-            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-6 bg-white rounded-b-lg shadow-lg">
-                <div className="flex flex-col w-full space-y-4">
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="subject">
-                            Subject 📚
-                        </label>
-                        <input
-                            id="subject"
-                            type="text"
-                            {...register('subject')}
-                            className={`shadow-lg border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 ${errors.subject ? 'border-red-500' : ''}`}
+            {/* User Info Header */}
+            {(userFullName || userProfilePicture) && (
+                <div className="flex items-center gap-3 p-1 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    {userProfilePicture ? (
+                        <img
+                            src={userProfilePicture}
+                            alt={userFullName || 'User Profile'}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
                         />
-                        {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject.message}</p>}
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="description">
-                            Description ✍️
-                        </label>
-                        <textarea
-                            id="description"
-                            {...register('description')}
-                            className={`shadow-lg border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none ${errors.description ? 'border-red-500' : ''}`}
-                        />
-                        {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+                    ) : (
+                        <UserCircle className="w-10 h-10 sm:w-12 sm:h-12 text-sky-500 dark:text-sky-400" />
+                    )}
+                    <div>
+                        {userFullName && (
+                            <p className="font-semibold text-md sm:text-lg">
+                                {userFullName}
+                            </p>
+                        )}
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            Editing Ticket #{ticket.ticket_id}
+                        </p>
                     </div>
                 </div>
+            )}
 
-                {/* Action buttons */}
-                <div className="flex items-center justify-between mt-6">
-                    <button
-                        className="btn btn-sm bg-red-600 text-white hover:bg-red-900 font-semibold py-2 px-4 rounded-lg"
-                        onClick={handleCloseModal}
+            {/* Form Title */}
+            <div className="flex items-center space-x-2">
+                <FileEdit className="w-7 h-7 text-sky-600 dark:text-sky-400" />
+                <h3 className="text-xl sm:text-2xl font-semibold">
+                    Update Ticket Details
+                </h3>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {/* Subject Input */}
+                <div>
+                    <label
+                        htmlFor="edit-subject" // Unique ID for label
+                        className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
                     >
-                        ✖ Discard Changes
+                        Subject
+                    </label>
+                    <input
+                        id="edit-subject"
+                        type="text"
+                        {...register('subject')}
+                        placeholder="e.g., Issue with login"
+                        className={`input input-bordered w-full bg-white dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-sky-500 focus:border-sky-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.subject ? 'input-error focus:border-red-500 dark:focus:border-red-400' : ''}`}
+                    />
+                    {errors.subject && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.subject.message}</p>}
+                </div>
+
+                {/* Description Input */}
+                <div>
+                    <label
+                        htmlFor="edit-description" // Unique ID
+                        className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
+                    >
+                        Description
+                    </label>
+                    <textarea
+                        id="edit-description"
+                        rows={5}
+                        {...register('description')}
+                        placeholder="Please describe your issue in detail..."
+                        className={`textarea textarea-bordered w-full bg-white dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-sky-500 focus:border-sky-500 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${errors.description ? 'textarea-error focus:border-red-500 dark:focus:border-red-400' : ''}`}
+                    />
+                    {errors.description && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.description.message}</p>}
+                </div>
+
+                {/* Status Select */}
+                <div>
+                    <label
+                        htmlFor="edit-status" // Unique ID
+                        className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
+                    >
+                        Status
+                    </label>
+                    <select
+                        id="edit-status"
+                        {...register('status')}
+                        className={`select select-bordered w-full bg-white dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:ring-sky-500 focus:border-sky-500 ${errors.status ? 'select-error focus:border-red-500 dark:focus:border-red-400' : ''}`}
+                    >
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                    {errors.status && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.status.message}</p>}
+                </div>
+
+
+                <div className="flex justify-end pt-2 gap-3">
+                    <button
+                        type="button"
+                        onClick={() => handleCloseModal()}
+                        className="btn btn-ghost dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        disabled={isUpdatingTicket}
+                    >
+                        <XCircle className="w-5 h-5 mr-1 sm:mr-2" />
+                        Cancel
                     </button>
                     <button
-                        className={`btn bg-blue-600 text-white hover:bg-blue-700 font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center space-x-2 ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                         type="submit"
-                        disabled={isLoading} // Disable button while loading
+                        className="btn bg-sky-600 hover:bg-sky-700 text-white dark:bg-sky-500 dark:hover:bg-sky-600 border-none"
+                        disabled={isUpdatingTicket}
                     >
-                        {isLoading ? (
-                            <div className="animate-spin border-4 border-t-4 border-white w-5 h-5 rounded-full"></div> // Loader spinner
+                        {isUpdatingTicket ? (
+                            <>
+                                <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                                Saving...
+                            </>
                         ) : (
-                            <span>💾 Save Changes</span>
+                            <>
+                                <Save className="w-5 h-5 mr-1 sm:mr-2" />
+                                Save Changes
+                            </>
                         )}
                     </button>
                 </div>
             </form>
-        </>
+        </div>
     );
 };
 

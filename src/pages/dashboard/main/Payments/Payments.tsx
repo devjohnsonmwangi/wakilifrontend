@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaMobileAlt, FaTimes, FaCheckCircle, FaLock } from 'react-icons/fa';
+import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI'; // Ensure this path is correct
+import { motion, AnimatePresence }from 'framer-motion';
+import {
+  FaMobileAlt,
+  FaTimes,
+  FaCheckCircle,
+  FaLock,
+  FaExclamationCircle,
+} from 'react-icons/fa';
 import { BiLoaderAlt } from 'react-icons/bi';
 
 interface SingleCaseMpesaPaymentProps {
@@ -44,13 +50,21 @@ interface ApiError {
   message?: string;
 }
 
-const modalVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeInOut" } },
-  exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2, ease: "easeInOut" } }
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.3, ease: "easeInOut" } },
+  exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } },
 };
 
-const MPESA_LOGO_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
+const modalPanelVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2, ease: "easeIn" } },
+};
+
+// Using a known M-PESA logo URL. Consider hosting this asset locally if possible.
+const MPESA_LOGO_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/2560px-M-PESA_LOGO-01.svg.png"; // Switched to a more common SVG version
+
 
 const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
   caseId,
@@ -58,8 +72,8 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
   fee,
   isOpen,
   onClose,
-  onPaymentSuccess,
-  onPaymentFailure,
+  onPaymentSuccess: onParentPaymentSuccess, // Renamed to avoid conflict
+  onPaymentFailure: onParentPaymentFailure, // Renamed to avoid conflict
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paymentAmount, setPaymentAmount] = useState<number>(fee);
@@ -67,235 +81,289 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [internalPaymentSuccess, setInternalPaymentSuccess] = useState(false); // Renamed
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
 
   useEffect(() => {
-    if (paymentSuccess) {
+    // Reset form state when modal opens/closes or fee changes
+    if (isOpen) {
+      setPhoneNumber('');
+      setPaymentAmount(fee);
+      setIsLoading(false);
+      setPaymentError(null);
+      setPhoneNumberError(null);
+      setAmountError(null);
+      setInternalPaymentSuccess(false);
+      setShowSuccessMessage(false);
+    }
+  }, [isOpen, fee]);
+
+  useEffect(() => {
+    if (internalPaymentSuccess) {
       setShowSuccessMessage(true);
       const timer = setTimeout(() => {
         setShowSuccessMessage(false);
-        onClose();
-        if (onPaymentSuccess) {
-          onPaymentSuccess();
+        onClose(); // Close modal first
+        if (onParentPaymentSuccess) {
+          onParentPaymentSuccess(); // Then call parent callback
         }
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [paymentSuccess, onClose, onPaymentSuccess]);
+  }, [internalPaymentSuccess, onClose, onParentPaymentSuccess]);
+
+  const validatePhoneNumber = (number: string): boolean => {
+    // Kenyan phone numbers: 07xxxxxxxx, 01xxxxxxxx, or 2547xxxxxxxx, 2541xxxxxxxx
+    // For STK push, it's often preferred in 254 format, but let's be flexible for input
+    // and convert later if necessary. The current regex handles 01/07.
+    const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/;
+    return phoneRegex.test(number);
+  };
+  
+  // Function to format phone number to 254xxxxxxxxx if backend expects it
+  // For this example, we assume backend handles 07/01 format based on original code
+  // const formatPhoneNumberForApi = (number: string): string => {
+  //   if (number.startsWith('0')) {
+  //     return `254${number.substring(1)}`;
+  //   }
+  //   return number;
+  // };
 
   const handlePayment = async () => {
-    if (!phoneNumber) {
-      toast.error("Phone number is required.");
-      setPhoneNumberError("Phone number is required.");
-      return;
-    }
+    let hasError = false;
+    setPhoneNumberError(null);
+    setAmountError(null);
+    setPaymentError(null);
 
-    const isValid = isValidPhoneNumber(phoneNumber);
-    if (!isValid) {
-      toast.error("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
+    if (!phoneNumber) {
       setPhoneNumberError("Phone number is required.");
-      return;
+      hasError = true;
+    } else if (!validatePhoneNumber(phoneNumber)) {
+      setPhoneNumberError("Enter a valid 10-digit Kenyan number (07xx or 01xx).");
+      hasError = true;
     }
 
     if (!paymentAmount || paymentAmount <= 0) {
-      toast.error("Please enter a valid payment amount.");
       setAmountError("Please enter a valid payment amount.");
-      return;
+      hasError = true;
+    } else if (paymentAmount > fee) {
+      setAmountError(`Amount cannot exceed KES ${fee.toLocaleString()}.`);
+      hasError = true;
+    }
+    
+    if (hasError) {
+        toast.error("Please correct the errors in the form.");
+        return;
     }
 
-    if (paymentAmount > fee) {
-      toast.error("Payment amount cannot be greater than the total fee.");
-      setAmountError("Payment amount cannot be greater than the total fee.");
-      return;
-    }
 
     setIsLoading(true);
-    setPaymentError(null);
-    setPhoneNumberError(null);
-    setAmountError(null);
 
     try {
       const paymentData: CreateMpesaPaymentVariables = {
         case_id: caseId,
         user_id: userId,
         amount: paymentAmount,
-        phoneNumber: phoneNumber,
+        phoneNumber: phoneNumber, // Use as is, or formatPhoneNumberForApi(phoneNumber) if needed
       };
 
       const response = await initiateMpesaStkPush(paymentData).unwrap() as MpesaTransactionDetails;
 
       if (response.success) {
-        toast.success(response.message);
-        setPaymentSuccess(true);
+        toast.success(response.message || "STK push initiated successfully. Check your phone.");
+        setInternalPaymentSuccess(true);
       } else {
-        const rawErrorMessage = response.message || "Payment Failed";
-        const errorMessage = rawErrorMessage;
+        const errorMessage = response.message || "Payment initiation failed. Please try again.";
         toast.error(errorMessage);
         setPaymentError(errorMessage);
-        if (onPaymentFailure) {
-          onPaymentFailure();
+        if (onParentPaymentFailure) {
+          onParentPaymentFailure();
         }
       }
     } catch (error) {
       const err = error as ApiError;
-
       console.error("M-Pesa Payment Error:", error);
 
-      let rawErrorMessage = "Failed to initiate M-Pesa payment.";
-
+      let parsedErrorMessage = "Failed to initiate M-Pesa payment. Please try again later.";
       if (err.response?.data?.message) {
-        rawErrorMessage = err.response.data.message;
-      } else if (err.message) {
-        rawErrorMessage = err.message;
-      } else {
-        rawErrorMessage = JSON.stringify(err);
+        parsedErrorMessage = err.response.data.message;
+      } else if (typeof err.message === 'string' && err.message.length < 200) { // Avoid overly long/generic messages
+         parsedErrorMessage = err.message;
       }
+      // Attempt to parse if message is JSON string (common with some RTK Query error structures)
       try {
-        const parsedError = JSON.parse(rawErrorMessage);
-        rawErrorMessage = parsedError?.data?.message || parsedError.message || rawErrorMessage;
-      } catch (parseError) {
-        console.error("Error parsing error message:", parseError);
+        const nestedError = JSON.parse(parsedErrorMessage);
+        if (nestedError?.data?.message) parsedErrorMessage = nestedError.data.message;
+        else if (nestedError?.message) parsedErrorMessage = nestedError.message;
+      } catch (e) {
+        // Not a JSON string, use as is
       }
 
-      const errorMessage = rawErrorMessage;
-      toast.error(errorMessage);
-      setPaymentError(errorMessage);
-      if (onPaymentFailure) {
-        onPaymentFailure();
+      toast.error(parsedErrorMessage);
+      setPaymentError(parsedErrorMessage);
+      if (onParentPaymentFailure) {
+        onParentPaymentFailure();
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  function isValidPhoneNumber(phoneNumber: string): boolean {
-    const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/;
-    return phoneRegex.test(phoneNumber);
-  }
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-75 z-50"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4"
+          variants={overlayVariants}
           initial="hidden"
           animate="visible"
           exit="exit"
-          variants={modalVariants}
+          aria-labelledby="mpesa-payment-modal-title"
+          role="dialog"
+          aria-modal="true"
         >
-          <motion.div className="relative p-6 w-full max-w-md h-auto bg-gray-100 rounded-xl shadow-lg">
-            <div className="relative bg-white rounded-lg shadow dark:bg-gray-700 overflow-hidden">
-              <div className="flex justify-between items-center p-5 rounded-t border-b dark:border-gray-600 bg-blue-50">
-                <h3 className="flex items-center text-xl font-semibold text-green-600 dark:text-white">
-                  <img src={MPESA_LOGO_URL} className="w-6 h-6 mr-2" alt="M-Pesa Logo" />
-                  M-Pesa Payment
-                  <FaLock className="inline-block ml-1 text-gray-500" />
-                </h3>
-                <button
-                  type="button"
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                  onClick={onClose}
-                  aria-label="Close"
-                >
-                  <FaTimes className="w-5 h-5" />
-                </button>
-              </div>
+          <motion.div
+            className="relative w-full max-w-md overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-2xl"
+            variants={modalPanelVariants}
+            // initial, animate, exit are inherited from parent AnimatePresence context if not specified
+            // but explicit declaration is fine for clarity or specific overrides.
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h3 id="mpesa-payment-modal-title" className="flex items-center text-lg font-semibold text-slate-800 dark:text-white">
+                <img 
+                  src={MPESA_LOGO_URL} 
+                  className="h-6 mr-2.5 dark:invert-[0.05] dark:brightness-[3] " // invert for dark mode, adjust brightness
+                  alt="M-Pesa Logo" 
+                />
+                M-Pesa Payment
+                <FaLock className="ml-2 h-4 w-4 text-slate-400 dark:text-slate-500" aria-label="Secure payment"/>
+              </h3>
+              <button
+                type="button"
+                className="p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-slate-800"
+                onClick={onClose}
+                aria-label="Close payment modal"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
+            </div>
 
-              <div className="p-6 space-y-4">
-                {showSuccessMessage ? (
-                  <div className="bg-green-100 text-green-800 border border-green-200 rounded p-4 flex items-center">
-                    <FaCheckCircle className="mr-2 text-xl" />
-                    Payment successful!
+            {/* Modal Content */}
+            <div className="p-6 space-y-5">
+              {showSuccessMessage ? (
+                <div className="flex items-center space-x-3 rounded-lg border border-green-500/30 bg-green-50 dark:bg-green-500/10 p-4 text-green-700 dark:text-green-300">
+                  <FaCheckCircle className="h-6 w-6 flex-shrink-0 text-green-500 dark:text-green-400" />
+                  <div>
+                    <p className="font-medium">Payment Initiated!</p>
+                    <p className="text-sm">Please check your phone to complete the transaction.</p>
                   </div>
-                ) : (
-                  <>
-                    <div className="mb-4">
-                      <label htmlFor="phoneNumber" className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">
-                        Phone Number: <FaMobileAlt className="inline-block ml-1 text-gray-500" />
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="tel"
-                          id="phoneNumber"
-                          value={phoneNumber}
-                          onChange={(e) => {
-                            setPhoneNumber(e.target.value);
-                            setPhoneNumberError(null);
-                          }}
-                          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${phoneNumberError ? 'border-red-500' : ''}`}
-                          placeholder="07XXXXXXXX"
-                          aria-label="Phone Number"
-                        />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Safaricom Phone Number
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                        <FaMobileAlt className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                       </div>
-                      {phoneNumberError && (
-                        <p className="text-red-500 text-xs italic">{phoneNumberError}</p>
-                      )}
+                      <input
+                        type="tel"
+                        id="phoneNumber"
+                        value={phoneNumber}
+                        onChange={(e) => {
+                          setPhoneNumber(e.target.value);
+                          if (phoneNumberError) setPhoneNumberError(null);
+                        }}
+                        className={`block w-full rounded-lg border py-2.5 pl-11 pr-4 text-slate-900 dark:text-slate-50 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:outline-none sm:text-sm
+                          ${phoneNumberError 
+                            ? 'border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-red-500' 
+                            : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 focus:border-green-500 focus:ring-green-500'
+                          }`}
+                        placeholder="07XX XXX XXX"
+                        aria-label="Safaricom Phone Number"
+                        aria-describedby={phoneNumberError ? "phoneNumber-error" : undefined}
+                        aria-invalid={!!phoneNumberError}
+                      />
                     </div>
-
-                    <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300">
-                        Amount:
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          id="paymentAmount"
-                          value={paymentAmount}
-                          onChange={(e) => {
-                            const value = parseFloat(e.target.value);
-                            setPaymentAmount(value);
-                            setAmountError(null);
-                          }}
-                          className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${amountError ? 'border-red-500' : ''}`}
-                          placeholder="Enter amount"
-                          aria-label="Amount"
-                        />
-                        {amountError && (
-                          <p className="text-red-500 text-xs italic">{amountError}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {paymentError && (
-                      <div className="bg-red-100 text-red-800 border border-red-200 rounded p-4 flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.834 1 1 0 01-1.995.282c-.244-.472-.598-.985-.985-1.532a1 1 0 01.4-1.067l3-3z" clipRule="evenodd"></path>
-                        </svg>
-                        {paymentError}
-                      </div>
+                    {phoneNumberError && (
+                      <p id="phoneNumber-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400">{phoneNumberError}</p>
                     )}
+                  </div>
 
-                    <div className="flex items-center justify-between">
-                      <button
-                        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        type="button"
-                        onClick={handlePayment}
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <>
-                            Processing...
-                            <BiLoaderAlt className="inline-block ml-2 animate-spin" />
-                          </>
-                        ) : (
-                          'Make Payment'
-                        )}
-                      </button>
-                      <button
-                        className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                        type="button"
-                        onClick={onClose}
-                      >
-                        Cancel
-                      </button>
+                  <div>
+                    <label htmlFor="paymentAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Amount to Pay (KES)
+                    </label>
+                    <input
+                      type="number"
+                      id="paymentAmount"
+                      value={paymentAmount}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        setPaymentAmount(isNaN(value) ? 0 : value);
+                        if(amountError) setAmountError(null);
+                      }}
+                      className={`block w-full rounded-lg border py-2.5 px-4 text-slate-900 dark:text-slate-50 shadow-sm placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:outline-none sm:text-sm
+                        ${amountError 
+                          ? 'border-red-500 dark:border-red-500 focus:border-red-500 focus:ring-red-500' 
+                          : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700/50 focus:border-green-500 focus:ring-green-500'
+                        }`}
+                      placeholder="Enter amount"
+                      aria-label="Amount to Pay"
+                      aria-describedby={amountError ? "amount-error" : undefined}
+                      aria-invalid={!!amountError}
+                    />
+                     {amountError && (
+                      <p id="amount-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400">{amountError}</p>
+                    )}
+                  </div>
+
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Total Fee: <span className="font-semibold">KES {fee.toLocaleString()}</span>
+                  </div>
+
+                  {paymentError && (
+                    <div className="flex items-start space-x-3 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-red-700 dark:text-red-400">
+                      <FaExclamationCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-red-500 dark:text-red-400" />
+                      <p className="text-sm">{paymentError}</p>
                     </div>
-                  </>
-                )}
-              </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 pt-3">
+                    <button
+                      className="mt-3 sm:mt-0 inline-flex w-full justify-center rounded-lg bg-white dark:bg-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-200 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-offset-slate-800"
+                      type="button"
+                      onClick={onClose}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className={`inline-flex w-full justify-center items-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-green-500 dark:hover:bg-green-600 dark:focus-visible:outline-green-500`}
+                      type="button"
+                      onClick={handlePayment}
+                      disabled={isLoading || !phoneNumber || !paymentAmount || paymentAmount <= 0 || !!phoneNumberError || !!amountError}
+                    >
+                      {isLoading ? (
+                        <>
+                          <BiLoaderAlt className="mr-2 h-5 w-5 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        `Pay KES ${paymentAmount.toLocaleString()}`
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         </motion.div>
