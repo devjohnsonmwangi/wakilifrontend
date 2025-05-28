@@ -560,7 +560,7 @@ const SettingsPage = () => {
         if (err.data) {
             displayQueryErrorMessage = err.data.message || err.data.error || err.data.msg || `Server error: ${err.status || 'Details unavailable'}`;
         } else if (err.status) {
-            displayQueryErrorMessage = `Error fetching data: Status ${err.status}`;
+            displayQueryErrorMessage = `Error fetching data please check your  network connection: Status ${err.status}`;
         }
     }
 
