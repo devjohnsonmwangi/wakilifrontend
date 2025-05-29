@@ -4,10 +4,12 @@ import flowbitePlugin from 'flowbite/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', // Crucial for the manual dark mode toggling in React
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     'node_modules/flowbite-react/lib/esm/**/*.js',
+    'node_modules/flowbite/**/*.js' // Recommended by Flowbite docs to ensure all JS-triggered classes are picked up
   ],
   theme: {
     extend: {
@@ -47,7 +49,7 @@ export default {
           '0%, 100%': { opacity: 0 },
           '50%': { opacity: 1 },
         },
-        bounce: {
+        bounce: { // Note: Tailwind has a built-in 'bounce' animation, this will override it if you use `animate-bounce`
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
@@ -62,10 +64,10 @@ export default {
             transform: 'translateY(0px)'
           }
         },
-        // <<< --- ADDED THIS --- >>>
-        modalEnter: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+        // Updated/Added for the modern modal
+        modalShow: {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' }, // Added translateY
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
       },
       animation: {
@@ -73,26 +75,29 @@ export default {
         twinkle: 'twinkle 3s ease-in-out infinite',
         'slide-in-right': 'slideInRight 0.5s ease-out',
         'slide-in-left': 'slideInLeft 0.5s ease-out',
-        'spin-slow': 'spin 3s linear infinite',
+        'spin-slow': 'spin 3s linear infinite', // Note: Tailwind has 'animate-spin', this allows for 'animate-spin-slow'
         'spin-fast': 'spinFast 0.7s linear infinite',
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
-        'bounce': 'bounce 0.5s infinite',
+        'bounce': 'bounce 0.5s infinite', // This will be used by `animate-bounce`
         float: 'float 3s ease-in-out infinite',
-        // <<< --- ADDED THIS --- >>>
-        modalEnter: 'modalEnter 0.3s ease-in-out forwards',
+        // Updated/Added for the modern modal
+        modalShow: 'modalShow 0.3s ease-out forwards', // Changed from ease-in-out to ease-out for a snappier feel
       },
       screens: {
         'xs': '250px',
         'sm': '640px',
         'md': '768px',
         'lg': '1024px',
-        'xl': '2000px',
+        'xl': '2000px', // Keep your custom screen size
       },
     },
   },
-  plugins: [daisyui, flowbitePlugin],
+  plugins: [
+    daisyui, 
+    flowbitePlugin
+  ],
   daisyui: {
-    themes: [
+    themes: [ // Your existing themes are good
       "light",
       "dark",
       "cupcake",
@@ -117,6 +122,10 @@ export default {
       "dim",
       "nord",
       "sunset",
-    ], // Or any other themes you prefer
+    ],
+    // You can also specify if DaisyUI should automatically add the 'dark' class
+    // based on prefers-color-scheme, but since you're handling it manually,
+    // this might not be strictly necessary.
+    // darkTheme: "dark", // (Optional) Explicitly set the dark theme DaisyUI uses
   },
 };
