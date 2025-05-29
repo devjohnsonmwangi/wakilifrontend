@@ -9,7 +9,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     'node_modules/flowbite-react/lib/esm/**/*.js',
-    'node_modules/flowbite/**/*.js' // Recommended by Flowbite docs to ensure all JS-triggered classes are picked up
+    'node_modules/flowbite/**/*.js' // Recommended by Flowbite docs
   ],
   theme: {
     extend: {
@@ -19,8 +19,8 @@ export default {
         'button-gradient-start': '#FFA500',
         'button-gradient-end': '#FF4500',
       },
-      
       keyframes: {
+        // --- Your existing keyframes ---
         marquee: {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(-100%)' },
@@ -41,7 +41,7 @@ export default {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
         },
-        spinSlow: {
+        spinSlow: { // Note: you have 'spinSlow' for keyframes but 'spin' for animation. I'll keep 'spinSlow' for keyframe name.
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(-360deg)' },
         },
@@ -49,83 +49,83 @@ export default {
           '0%, 100%': { opacity: 0 },
           '50%': { opacity: 1 },
         },
-        bounce: { // Note: Tailwind has a built-in 'bounce' animation, this will override it if you use `animate-bounce`
+        bounce: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-5px)' },
         },
         float: {
-          '0%': {
-            transform: 'translateY(0px)'
-          },
-          '50%': {
-            transform: 'translateY(-5px)'
-          },
-          '100%': {
-            transform: 'translateY(0px)'
-          }
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-5px)' },
+          '100%': { transform: 'translateY(0px)' },
         },
-        // Updated/Added for the modern modal
         modalShow: {
-          '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' }, // Added translateY
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' },
           '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        // --- New keyframes for logout component ---
+        blob: {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
+        },
+        logoutProgress: {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' },
         },
       },
       animation: {
+        // --- Your existing animations ---
         marquee: 'marquee 10s linear infinite',
         twinkle: 'twinkle 3s ease-in-out infinite',
         'slide-in-right': 'slideInRight 0.5s ease-out',
         'slide-in-left': 'slideInLeft 0.5s ease-out',
-        'spin-slow': 'spin 3s linear infinite', // Note: Tailwind has 'animate-spin', this allows for 'animate-spin-slow'
+        'spin-slow': 'spinSlow 3s linear infinite', // Changed to use 'spinSlow' keyframe
         'spin-fast': 'spinFast 0.7s linear infinite',
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
-        'bounce': 'bounce 0.5s infinite', // This will be used by `animate-bounce`
+        'bounce': 'bounce 0.5s infinite',
         float: 'float 3s ease-in-out infinite',
-        // Updated/Added for the modern modal
-        modalShow: 'modalShow 0.3s ease-out forwards', // Changed from ease-in-out to ease-out for a snappier feel
+        modalShow: 'modalShow 0.3s ease-out forwards',
+        // --- New animations for logout component ---
+        blob: "blob 7s infinite",
+        'logout-progress': 'logoutProgress 2s ease-out forwards', // Duration should match your setTimeout
+      },
+      // --- For direct class usage like `animation-delay-1000` ---
+      animationDelay: {
+        '1000': '1000ms',
+        '2000': '2000ms',
+        '4000': '4000ms',
       },
       screens: {
         'xs': '250px',
         'sm': '640px',
         'md': '768px',
         'lg': '1024px',
-        'xl': '2000px', // Keep your custom screen size
+        'xl': '2000px',
       },
     },
   },
   plugins: [
-    daisyui, 
-    flowbitePlugin
+    daisyui,
+    flowbitePlugin,
+    // --- Plugin for generating .animation-delay-xxxx utilities ---
+    function ({ addUtilities, theme, e }) {
+      const animationDelay = theme('animationDelay');
+      if (animationDelay) {
+        const utilities = Object.entries(animationDelay).map(([key, value]) => ({
+          [`.${e(`animation-delay-${key}`)}`]: { 'animation-delay': value },
+        }));
+        addUtilities(utilities);
+      }
+    }
   ],
   daisyui: {
-    themes: [ // Your existing themes are good
-      "light",
-      "dark",
-      "cupcake",
-      "retro",
-      "forest",
-      "aqua",
-      "lofi",
-      "pastel",
-      "fantasy",
-      "wireframe",
-      "black",
-      "luxury",
-      "dracula",
-      "cmyk",
-      "autumn",
-      "business",
-      "acid",
-      "lemonade",
-      "night",
-      "coffee",
-      "winter",
-      "dim",
-      "nord",
-      "sunset",
+    themes: [
+      "light", "dark", "cupcake", "retro", "forest", "aqua", "lofi",
+      "pastel", "fantasy", "wireframe", "black", "luxury", "dracula",
+      "cmyk", "autumn", "business", "acid", "lemonade", "night",
+      "coffee", "winter", "dim", "nord", "sunset",
     ],
-    // You can also specify if DaisyUI should automatically add the 'dark' class
-    // based on prefers-color-scheme, but since you're handling it manually,
-    // this might not be strictly necessary.
-    // darkTheme: "dark", // (Optional) Explicitly set the dark theme DaisyUI uses
+    // darkTheme: "dark", // Optional
   },
 };
