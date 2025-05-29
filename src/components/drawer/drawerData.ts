@@ -49,6 +49,8 @@ export const drawerData: DrawerData[] = [
     //navigating to dashboard
     { id: 17, name: 'Dashboard Overview', icon: LayoutDashboard, link: 'dashboard', adminOnly: false },
     //diary
+    //our services
+    { id: 23, name: 'our services', icon: BookOpenText, link: 'ourservices', adminOnly: false }, // Added for legal news section
     { id: 20, name: 'My_Diary', icon: BookOpenText, link: 'mydiary', adminOnly: false },
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false },
     { id: 1, name: 'Appointments', icon: CalendarCheck, link: 'appoint', adminOnly: true },
