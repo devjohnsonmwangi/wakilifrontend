@@ -40,6 +40,7 @@ import MyDiary from './pages/dashboard/main/events/diary.tsx';
 import SettingsPage from './pages/dashboard/main/settings.tsx';
 import UserAppointments from './pages/dashboard/main/manageAppointment/myappointments.tsx';
 import BranchAppointments from './pages/dashboard/main/manageAppointment/branchappointments.tsx';
+import LegalNewsSection from './pages/updates.tsx';
 
 // NOTE: We are NOT importing RouteChangeTracker here globally anymore.
 // It will be imported and used within Dashboard.tsx
@@ -58,6 +59,8 @@ const router = createBrowserRouter([
   { path: 'reset-password', element: <ResetPasswordForm token="someToken" mode="reset" />, errorElement: <Error /> }, // Ensure token is dynamic or placeholder
   //account
   {path: 'account', element: <Account />, errorElement: <Error />},
+  // Legal news section
+  {path:'updates', element: <LegalNewsSection />, errorElement: <Error />},
   // Dashboard nested routes
   {
     path: 'dashboard',
@@ -66,6 +69,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardOverviewLoader /> }, // Default for /dashboard
       { path: 'supporttickets', element: <SupportTickets /> },
+      {path:'ourservices',element:<Services/>},
       { path: 'account', element: <Account /> },
       { path: 'appoint', element: <AppointmentList /> },
       { path: 'events', element: <EventsPage /> },
@@ -91,11 +95,17 @@ const router = createBrowserRouter([
       {path:'mydiary',element :<MyDiary/>},
       //setting
       {path: 'settings',element:<SettingsPage/>},
+
+      //getupdates news
+      {path:'updates',element:<LegalNewsSection/>},
       //singer  user appointment portal
       {path:'myappointments',element:<UserAppointments/>}, // This can be a list of all appointments for the user
       //branch appointments
+    
       {path: 'branchappointments', element: < BranchAppointments/>}, // This can be a list of all appointments for the user at a specific branch
     ],
+
+
   },
   // Remove duplicate top-level routes that are meant to be under /dashboard
   // For example, if /profile is only meant to be /dashboard/profile, remove the top-level one.

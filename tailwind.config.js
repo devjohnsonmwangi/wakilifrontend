@@ -41,7 +41,7 @@ export default {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
         },
-        spinSlow: { // Note: you have 'spinSlow' for keyframes but 'spin' for animation. I'll keep 'spinSlow' for keyframe name.
+        spinSlow: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(-360deg)' },
         },
@@ -49,9 +49,9 @@ export default {
           '0%, 100%': { opacity: 0 },
           '50%': { opacity: 1 },
         },
-        bounce: {
+        bounce: { // Standard bounce
           '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
+          '50%': { transform: 'translateY(-25%)' }, // Adjusted for more noticeable bounce
         },
         float: {
           '0%': { transform: 'translateY(0px)' },
@@ -73,6 +73,15 @@ export default {
           '0%': { width: '0%' },
           '100%': { width: '100%' },
         },
+        // --- Keyframes for Hero component animations ---
+        fadeInDown: {
+          '0%': { opacity: '0', transform: 'translateY(-20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         // --- Your existing animations ---
@@ -80,42 +89,51 @@ export default {
         twinkle: 'twinkle 3s ease-in-out infinite',
         'slide-in-right': 'slideInRight 0.5s ease-out',
         'slide-in-left': 'slideInLeft 0.5s ease-out',
-        'spin-slow': 'spinSlow 3s linear infinite', // Changed to use 'spinSlow' keyframe
+        'spin-slow': 'spinSlow 3s linear infinite',
         'spin-fast': 'spinFast 0.7s linear infinite',
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
-        'bounce': 'bounce 0.5s infinite',
+        'bounce': 'bounce 1s infinite', // Using standard bounce keyframe
         float: 'float 3s ease-in-out infinite',
         modalShow: 'modalShow 0.3s ease-out forwards',
         // --- New animations for logout component ---
         blob: "blob 7s infinite",
-        'logout-progress': 'logoutProgress 2s ease-out forwards', // Duration should match your setTimeout
+        'logout-progress': 'logoutProgress 2s ease-out forwards',
+        // --- Animations for Hero component ---
+        'fade-in-down': 'fadeInDown 0.6s ease-out forwards', // Added 'forwards' to keep final state
+        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',   // Added 'forwards' to keep final state
       },
       // --- For direct class usage like `animation-delay-1000` ---
+      // Define values that you will actually use for delays
       animationDelay: {
+        '100': '100ms',
+        '200': '200ms',
+        '300': '300ms',
+        '400': '400ms',
+        '500': '500ms',
+        '700': '700ms',
         '1000': '1000ms',
-        '2000': '2000ms',
-        '4000': '4000ms',
+        // Add more as needed
       },
       screens: {
         'xs': '250px',
         'sm': '640px',
         'md': '768px',
         'lg': '1024px',
-        'xl': '2000px',
+        'xl': '2000px', // This is quite large for xl, usually it's around 1280px or 1536px
       },
     },
   },
   plugins: [
     daisyui,
     flowbitePlugin,
-    // --- Plugin for generating .animation-delay-xxxx utilities ---
+    // Plugin for generating .animation-delay-xxxx utilities
     function ({ addUtilities, theme, e }) {
-      const animationDelay = theme('animationDelay');
-      if (animationDelay) {
-        const utilities = Object.entries(animationDelay).map(([key, value]) => ({
+      const delays = theme('animationDelay');
+      if (delays) {
+        const utilities = Object.entries(delays).map(([key, value]) => ({
           [`.${e(`animation-delay-${key}`)}`]: { 'animation-delay': value },
         }));
-        addUtilities(utilities);
+        addUtilities(utilities, ['responsive', 'hover']); // Added variants if needed
       }
     }
   ],
@@ -126,6 +144,7 @@ export default {
       "cmyk", "autumn", "business", "acid", "lemonade", "night",
       "coffee", "winter", "dim", "nord", "sunset",
     ],
-    // darkTheme: "dark", // Optional
+    // darkTheme: "dark", // Set this if you want DaisyUI to automatically apply 'dark' based on its logic or OS.
+                        // Since you have `darkMode: 'class'`, you control this via the class on <html>.
   },
 };

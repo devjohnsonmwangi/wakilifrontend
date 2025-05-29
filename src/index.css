@@ -3,6 +3,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- Hero Animated Background Styles --- */
+.hero-animated-bg {
+  position: relative;
+  overflow: hidden; /* Keep animations contained */
+}
+
+/* Animated Gradient Layer */
+.hero-animated-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0; /* Behind content, but in front of actual bg color/image */
+  background: linear-gradient( /* Light mode gradient */
+    45deg,
+    rgba(25, 25, 112, 0.25), /* Midnight Blue like - slightly less opaque */
+    rgba(0, 128, 128, 0.15),  /* Teal like */
+    rgba(72, 61, 139, 0.25),  /* Dark Slate Blue like */
+    rgba(0, 100, 0, 0.15)     /* Dark Green like */
+  );
+  background-size: 400% 400%;
+  animation: gradientDrift 25s ease infinite;
+}
+
+/* Dark mode specific gradient for the hero background */
+.dark .hero-animated-bg::before {
+  background: linear-gradient(
+    45deg,
+    rgba(10, 10, 50, 0.45),  /* Darker Midnight Blue like for dark mode */
+    rgba(0, 70, 70, 0.35),   /* Darker Teal like */
+    rgba(30, 20, 80, 0.45),   /* Darker Slate Blue like */
+    rgba(0, 50, 0, 0.35)      /* Darker Green like */
+  );
+  /* background-size and animation are inherited, no need to repeat unless different */
+}
+
+@keyframes gradientDrift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Optional: Subtle Moving Shapes Layer */
+.hero-animated-bg::after {
+  content: "";
+  position: absolute;
+  width: 200vw; /* Large to allow for smooth movement */
+  height: 200vh;
+  top: -50vh;
+  left: -50vw;
+  z-index: 1; /* On top of gradient, behind image/overlay */
+  background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.025) 0%, transparent 30%),
+                    radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02) 0%, transparent 25%),
+                    radial-gradient(circle at 50% 90%, rgba(200,200,255,0.02) 0%, transparent 20%); /* Added a third subtle shape */
+  animation: subtleMove 70s linear infinite alternate; /* Slower animation */
+  opacity: 0.6; /* Kept it subtle */
+}
+
+/* Dark mode subtle shapes - can be the same or slightly different if desired */
+.dark .hero-animated-bg::after {
+  background-image: radial-gradient(circle at 20% 20%, rgba(180,180,220,0.03) 0%, transparent 30%), /* Slightly cooler for dark */
+                    radial-gradient(circle at 80% 70%, rgba(150,180,200,0.025) 0%, transparent 25%),
+                    radial-gradient(circle at 50% 90%, rgba(170,170,220,0.02) 0%, transparent 20%);
+  opacity: 0.7; /* Can slightly increase opacity in dark mode if it looks better */
+}
+
+
+@keyframes subtleMove {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(-25px, 35px) rotate(12deg); } /* Slightly more movement */
+}
+/* --- End Hero Animated Background Styles --- */
+
+
 @layer components {
   /* Styles for react-datepicker, heavily using @apply */
   .custom-datepicker-popper { /* You could rename the popper if you want to control its class */
@@ -277,11 +353,17 @@
 .dark .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle::before {
     border-bottom-color: theme('colors.slate.600');
 }
+/* Note: This was duplicated, ensure .custom-datepicker-popper is defined once, preferably in @layer components */
+/*
 .react-datepicker-popper {
   z-index: 55 !important;
 }
+*/
 
-/* ----- NEW STYLES FOR FANCY LOGOUT ----- */
+/* ----- STYLES FOR FANCY LOGOUT & ANIMATION DELAYS ----- */
+/* These were already in @layer utilities, which is fine. */
+/* If you remove the plugin from tailwind.config.js for animation delays, keep the manual definitions here. */
+/* If you keep the plugin, these manual .animation-delay-xxxx can be removed from here. */
 @layer utilities {
   @keyframes blob {
     0% {
@@ -311,21 +393,15 @@
     animation: logoutProgress 2s ease-out forwards; /* Ensure duration matches JS setTimeout */
   }
 
-  /* Animation Delay Utilities */
-  .animation-delay-1000 {
-    animation-delay: 1s; /* 1000ms */
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s; /* 2000ms */
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s; /* 4000ms */
-  }
-  /* Add more as needed */
-  .animation-delay-500 {
-    animation-delay: 0.5s; /* 500ms */
-  }
-  .animation-delay-1500 {
-    animation-delay: 1.5s; /* 1500ms */
-  }
+  /* Animation Delay Utilities (keep if not using the Tailwind plugin for this) */
+  .animation-delay-100 { animation-delay: 0.1s; }
+  .animation-delay-200 { animation-delay: 0.2s; }
+  .animation-delay-300 { animation-delay: 0.3s; }
+  .animation-delay-400 { animation-delay: 0.4s; }
+  .animation-delay-500 { animation-delay: 0.5s; }
+  .animation-delay-700 { animation-delay: 0.7s; }
+  .animation-delay-1000 { animation-delay: 1s; }
+  .animation-delay-1500 { animation-delay: 1.5s; }
+  .animation-delay-2000 { animation-delay: 2s; }
+  .animation-delay-4000 { animation-delay: 4s; }
 }
