@@ -95,6 +95,7 @@ const router = createBrowserRouter([
       {path:'mydiary',element :<MyDiary/>},
       //setting
       {path: 'settings',element:<SettingsPage/>},
+      
 
       //getupdates news
       {path:'updates',element:<LegalNewsSection/>},
