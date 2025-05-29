@@ -1,7 +1,7 @@
 // src/features/events/components/ConfirmationDialog.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, CheckCircle, Loader2, X } from 'lucide-react'; // Import icons
+import { AlertTriangle, CheckCircle, Info, Loader2, X as XIcon } from 'lucide-react'; // Replaced X with XIcon for clarity
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -12,7 +12,7 @@ interface ConfirmationDialogProps {
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
-  dialogType?: 'warning' | 'info' | 'success' | 'danger'; // Added for theming
+  dialogType?: 'warning' | 'info' | 'success' | 'danger';
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -24,104 +24,119 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   isLoading = false,
-  dialogType = 'warning', // Default to warning for confirmation
+  dialogType = 'warning',
 }) => {
 
-  const getThemeClasses = () => {
+  const getThemeStyling = () => {
+    // Common button base for confirm action
+    const confirmButtonBase = "inline-flex w-full justify-center items-center rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+    const iconWrapperBase = "mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10";
+
     switch (dialogType) {
       case 'danger':
         return {
-          icon: <AlertTriangle size={28} className="text-red-500" />,
-          confirmButton: 'bg-red-600 hover:bg-red-700 focus-visible:outline-red-600',
-          titleText: 'text-red-700',
+          icon: <AlertTriangle size={24} className="text-red-600 dark:text-red-400" />,
+          iconWrapper: `${iconWrapperBase} bg-red-100 dark:bg-red-500/10`,
+          confirmButton: `${confirmButtonBase} bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus-visible:outline-red-600 dark:focus-visible:outline-red-500`,
+          titleText: 'text-red-700 dark:text-red-300',
         };
       case 'success':
         return {
-          icon: <CheckCircle size={28} className="text-green-500" />,
-          confirmButton: 'bg-green-600 hover:bg-green-700 focus-visible:outline-green-600',
-          titleText: 'text-green-700',
+          icon: <CheckCircle size={24} className="text-green-600 dark:text-green-400" />,
+          iconWrapper: `${iconWrapperBase} bg-green-100 dark:bg-green-500/10`,
+          confirmButton: `${confirmButtonBase} bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus-visible:outline-green-600 dark:focus-visible:outline-green-500`,
+          titleText: 'text-green-700 dark:text-green-300',
         };
       case 'info':
         return {
-          icon: <AlertTriangle size={28} className="text-blue-500" />, // Or Info icon
-          confirmButton: 'bg-blue-600 hover:bg-blue-700 focus-visible:outline-blue-600',
-          titleText: 'text-blue-700',
+          icon: <Info size={24} className="text-blue-600 dark:text-blue-400" />,
+          iconWrapper: `${iconWrapperBase} bg-blue-100 dark:bg-blue-500/10`,
+          confirmButton: `${confirmButtonBase} bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus-visible:outline-blue-600 dark:focus-visible:outline-blue-500`,
+          titleText: 'text-blue-700 dark:text-blue-300',
         };
       case 'warning':
       default:
         return {
-          icon: <AlertTriangle size={28} className="text-yellow-500" />,
-          confirmButton: 'bg-yellow-500 hover:bg-yellow-600 focus-visible:outline-yellow-500 text-yellow-900',
-          titleText: 'text-yellow-700',
+          icon: <AlertTriangle size={24} className="text-amber-600 dark:text-amber-400" />,
+          iconWrapper: `${iconWrapperBase} bg-amber-100 dark:bg-amber-500/10`,
+          // Warning confirm button might have dark text on light bg for better contrast
+          confirmButton: `${confirmButtonBase} bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white focus-visible:outline-amber-600 dark:focus-visible:outline-amber-500`,
+          titleText: 'text-amber-700 dark:text-amber-300',
         };
     }
   };
 
-  const theme = getThemeClasses();
+  const theme = getThemeStyling();
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.9 },
+    hidden: { opacity: 0, scale: 0.95, y: -10 },
+    visible: { opacity: 1, scale: 1, y: 0 },
+    exit: { opacity: 0, scale: 0.95, y: -10 },
   };
+
+  // Base for cancel button
+  const cancelButtonBase = "mt-3 inline-flex w-full justify-center rounded-md px-4 py-2.5 text-sm font-semibold shadow-sm ring-1 ring-inset sm:mt-0 sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150";
+  const lightCancel = "bg-white text-slate-900 ring-slate-300 hover:bg-slate-50 focus:ring-slate-400";
+  const darkCancel = "dark:bg-slate-700 dark:text-slate-200 dark:ring-slate-600 dark:hover:bg-slate-600 dark:focus:ring-slate-500";
+
 
   return (
     <AnimatePresence>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          // onClick={isLoading ? undefined : onClose} // Allow close on overlay if not loading
-          // The below onClick on the div will close if overlay is clicked.
-          // The motion.div has stopPropagation.
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm p-4 transition-opacity"
+          onClick={isLoading ? undefined : onClose} // Close on backdrop click if not loading
         >
           <motion.div
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ type: 'spring', damping: 18, stiffness: 200 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 250 }}
             role="alertdialog"
             aria-labelledby="confirmation-dialog-title"
             aria-describedby="confirmation-dialog-description"
-            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
+            className="relative transform overflow-hidden rounded-xl bg-white dark:bg-slate-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
             onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
           >
-            <div className="absolute top-0 right-0 pt-4 pr-4 sm:block">
+            {/* Close button positioned inside the panel for better accessibility */}
+            <div className="absolute top-0 right-0 pt-3 pr-3 hidden sm:block">
                 <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="p-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-colors"
                     onClick={isLoading ? undefined : onClose}
                     disabled={isLoading}
                     aria-label="Close"
                 >
-                    <X className="h-6 w-6" aria-hidden="true" />
+                    <XIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
             </div>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+
+            <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-5">
               <div className="sm:flex sm:items-start">
-                <div className={`mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${dialogType === 'danger' ? 'bg-red-100' : dialogType === 'success' ? 'bg-green-100' : dialogType === 'info' ? 'bg-blue-100' : 'bg-yellow-100'} sm:mx-0 sm:h-10 sm:w-10`}>
+                <div className={theme.iconWrapper}>
                   {theme.icon}
                 </div>
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 className={`text-lg font-semibold leading-6 text-gray-900 ${theme.titleText}`} id="confirmation-dialog-title">
+                  <h3 className={`text-lg font-semibold leading-6 text-slate-900 dark:text-slate-100 ${theme.titleText}`} id="confirmation-dialog-title">
                     {title}
                   </h3>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500" id="confirmation-dialog-description">
+                    <p className="text-sm text-slate-600 dark:text-slate-400" id="confirmation-dialog-description">
                       {description}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+
+            <div className="bg-slate-50 dark:bg-slate-800/60 px-4 py-4 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
               <button
                 type="button"
-                className={`inline-flex w-full justify-center items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto transition-colors
-                            ${theme.confirmButton}
-                            ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                className={`${theme.confirmButton} ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 onClick={onConfirm}
                 disabled={isLoading}
+                autoFocus // Auto-focus the confirm button
               >
                 {isLoading ? (
                   <>
@@ -134,7 +149,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               </button>
               <button
                 type="button"
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto disabled:opacity-75 disabled:cursor-not-allowed transition-colors"
+                className={`${cancelButtonBase} ${lightCancel} ${darkCancel}`}
                 onClick={isLoading ? undefined : onClose}
                 disabled={isLoading}
               >

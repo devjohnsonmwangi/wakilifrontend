@@ -15,6 +15,7 @@ import { Toaster, toast } from 'sonner';
 import CreateAppointment from './createappointment'; // Adjust path
 import EditAppointment from './editappointments';   // Adjust path
 import ConfirmationModal from './deletion'; // IMPORT THE CONFIRMATION MODAL
+import ReasonDisplayModal from './ReasonDisplayModal'; // IMPORT THE REASON MODAL (adjust path if needed)
 
 import {
   PlusCircle,
@@ -28,6 +29,8 @@ import {
   Moon,
   MapPin,
   ListFilter,
+  Eye, // For View Reason button
+ // For Reason Modal (icon)
 } from 'lucide-react';
 
 interface ApiError {
@@ -42,13 +45,13 @@ function isApiMessageResponse(data: unknown): data is ApiMessageResponse {
   return data !== null && typeof data === 'object' && 'message' in data && typeof (data as ApiMessageResponse).message === 'string';
 }
 
-const NO_APPOINTMENTS_FOUND_MESSAGE = "❌ No appointments found for this branch.";
+const NO_APPOINTMENTS_FOUND_MESSAGE = "❌ No appointments found for this branch."; // Specific message for this component
 
 const getErrorMessage = (error: ApiError | null | undefined): string => {
   if (!error) return 'An unknown error occurred. Please try again.';
   const dataMessage = (error.data as { message?: string })?.message;
   if (typeof dataMessage === 'string') {
-    if (dataMessage === NO_APPOINTMENTS_FOUND_MESSAGE) {
+    if (dataMessage === NO_APPOINTMENTS_FOUND_MESSAGE) { // Check for this specific message
       return NO_APPOINTMENTS_FOUND_MESSAGE;
     }
     return dataMessage;
@@ -57,6 +60,31 @@ const getErrorMessage = (error: ApiError | null | undefined): string => {
   if (typeof error.message === 'string') return error.message;
   return 'Failed to load. Please check network and try refreshing.';
 };
+
+// Helper to get a display-friendly status name (copied from ListAppointments)
+const getStatusDisplayName = (status: string): string => {
+  switch (status) {
+    case 'pending': return 'Pending';
+    case 'confirmed': return 'Confirmed';
+    case 'completed': return 'Completed';
+    case 'cancelled': return 'Cancelled';
+    default:
+      if (typeof status === 'string' && status.length > 0) {
+        return status.charAt(0).toUpperCase() + status.slice(1);
+      }
+      return String(status);
+  }
+};
+
+// Helper to truncate text (copied from ListAppointments)
+const truncateText = (text: string, maxLength: number): string => {
+  if (!text) return ''; 
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength) + '...';
+};
+
 
 interface NoAppointmentsMessageProps {
   isInitialEmptyState: boolean;
@@ -93,9 +121,13 @@ const BranchAppointments: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
 
-  // State for the confirmation modal
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState<AppointmentDataTypes | null>(null);
+
+  // State for Reason Display Modal
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [reasonToDisplay, setReasonToDisplay] = useState('');
+  const [reasonPartyName, setReasonPartyName] = useState('');
 
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
   const [searchParty, setSearchParty] = useState('');
@@ -130,8 +162,8 @@ const BranchAppointments: React.FC = () => {
 
     if (isFetchAppointmentsError && queryError) {
       const typedQueryError = queryError as ApiError;
-      const errorMessage = getErrorMessage(typedQueryError);
-      if (errorMessage === NO_APPOINTMENTS_FOUND_MESSAGE) {
+      const errorMessageText = getErrorMessage(typedQueryError); // Use the local getErrorMessage
+      if (errorMessageText === NO_APPOINTMENTS_FOUND_MESSAGE) {
         noAppointmentsSignal = true;
       } else {
         currentError = typedQueryError;
@@ -155,6 +187,9 @@ const BranchAppointments: React.FC = () => {
     if (newBranchId) {
       const branch = allBranches?.find(b => String(b.branch_id) === newBranchId);
       setSelectedBranchName(branch?.name || 'Unknown Branch');
+      // Reset filters when branch changes
+      setSearchParty('');
+      setSearchStatus('');
     } else {
       setSelectedBranchName(null);
     }
@@ -172,6 +207,18 @@ const BranchAppointments: React.FC = () => {
     setIsEditModalOpen(false); 
   };
   
+  // Functions for Reason Display Modal
+  const openReasonModal = (reason: string, partyName: string) => {
+    setReasonToDisplay(reason);
+    setReasonPartyName(partyName);
+    setIsReasonModalOpen(true);
+  };
+  const closeReasonModal = () => {
+    setIsReasonModalOpen(false);
+    setReasonToDisplay('');
+    setReasonPartyName('');
+  };
+  
   const handleAppointmentCreated = () => { 
     if (selectedBranchId) refetchBranchAppointments(); 
     toast.success('Appointment created successfully!'); 
@@ -184,14 +231,13 @@ const BranchAppointments: React.FC = () => {
   const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
     try {
       await updateAppointment({ appointment_id: appointmentId, status: newStatus }).unwrap();
-      toast.success(`Appointment status updated to ${newStatus}!`);
+      toast.success(`Status updated to ${getStatusDisplayName(newStatus)}!`); // Use display name
     } catch (err) {
       const errorMessage = getErrorMessage(err as ApiError);
       toast.error(`Failed to update status: ${errorMessage}`);
     }
   };
 
-  // --- MODIFIED DELETE LOGIC ---
   const requestDeleteAppointment = (appointment: AppointmentDataTypes) => {
     setAppointmentToDelete(appointment);
     setIsConfirmDeleteModalOpen(true);
@@ -205,7 +251,6 @@ const BranchAppointments: React.FC = () => {
       toast.success(`Appointment for ${appointmentToDelete.party} (Branch: ${selectedBranchName || 'N/A'}) deleted!`);
       setAppointmentToDelete(null);
       setIsConfirmDeleteModalOpen(false);
-      // refetchBranchAppointments(); // RTK Query tag invalidation should handle this
     } catch (err) {
       console.error('Failed to delete appointment:', err);
       const errorMessage = getErrorMessage(err as ApiError);
@@ -217,7 +262,6 @@ const BranchAppointments: React.FC = () => {
     setAppointmentToDelete(null);
     setIsConfirmDeleteModalOpen(false);
   };
-  // --- END MODIFIED DELETE LOGIC ---
 
   const actualAppointmentsArray = useMemo(() => {
     if (Array.isArray(appointmentsData)) {
@@ -227,9 +271,9 @@ const BranchAppointments: React.FC = () => {
   }, [appointmentsData]);
 
   const safeAppointmentsData = useMemo(() => {
-    if (!selectedBranchId) return [];
+    if (!selectedBranchId || isBackendNoAppointments || displayableError) return []; // Added conditions
     return actualAppointmentsArray;
-  }, [actualAppointmentsArray, selectedBranchId]);
+  }, [actualAppointmentsArray, selectedBranchId, isBackendNoAppointments, displayableError]);
   
   const filteredAppointments = useMemo(() => {
     return safeAppointmentsData.filter(appointment => {
@@ -247,8 +291,9 @@ const BranchAppointments: React.FC = () => {
   );
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onTryAgain?: () => void }> = ({ errorToDisplay, onTryAgain }) => { 
     if (!errorToDisplay) return null;
-    const message = getErrorMessage(errorToDisplay);
-    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onTryAgain) return null;
+    const message = getErrorMessage(errorToDisplay); // Use local getErrorMessage
+    // Don't show error if it's the "no appointments" message and no try again button (handled by NoAppointmentsMessage)
+    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onTryAgain) return null; 
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
         <div className="flex items-center"> <AlertTriangle className="h-8 w-8 mr-3" /> <div> <p className="font-bold text-lg">Error</p> <p className="text-sm">{message}</p> </div> </div>
@@ -262,7 +307,7 @@ const BranchAppointments: React.FC = () => {
   const NoAppointmentsMessage: React.FC<NoAppointmentsMessageProps> = ({ isInitialEmptyState }) => ( 
     <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6">
       <CalendarDays className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" />
-      <p className="text-xl font-semibold mb-2">{isInitialEmptyState ? `No appointments yet for ${selectedBranchName || 'this branch'}` : "No appointments match your filters"}</p>
+      <p className="text-xl font-semibold mb-2">{isInitialEmptyState ? `${NO_APPOINTMENTS_FOUND_MESSAGE} for ${selectedBranchName || 'this branch'}` : "No appointments match your filters"}</p>
       <p className="text-sm text-center">{isInitialEmptyState ? "Be the first to add one!" : "Try adjusting your search criteria or clearing some filters."}</p>
       {isInitialEmptyState && selectedBranchId && (<button onClick={openCreateModal} className="mt-6 flex items-center bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-500 focus:ring-opacity-75"> <PlusCircle className="h-5 w-5 mr-2" /> Create Appointment </button>)}
     </div>
@@ -292,7 +337,6 @@ const BranchAppointments: React.FC = () => {
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
       <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl">
         <header className="p-6 md:p-8 border-b border-slate-200 dark:border-slate-700">
-          {/* ... Header content ... */}
            <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="flex items-center">
               <MapPin className="h-8 w-8 mr-3 text-sky-600 dark:text-sky-400" />
@@ -303,14 +347,13 @@ const BranchAppointments: React.FC = () => {
             <div className="flex items-center space-x-3 mt-4 sm:mt-0">
               <button onClick={toggleDarkMode} className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Toggle Dark Mode"> {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />} </button>
               {selectedBranchId && (
-                <button onClick={openCreateModal} className="flex items-center bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md"> <PlusCircle className="h-5 w-5 mr-2" /> New Appointment </button>
+                <button onClick={openCreateModal} className="flex items-center bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md"> <PlusCircle className="h-5 w-5 mr-2" /> New Appointment </button>
               )}
             </div>
           </div>
         </header>
 
         <section className="p-6 md:p-8">
-          {/* ... Branch Selector ... */}
           <div className="mb-8 p-4 sm:p-6 bg-sky-50/70 dark:bg-sky-700/30 rounded-lg shadow-sm border border-sky-200 dark:border-sky-700">
             <label htmlFor="branch-select" className="block text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3">
               Select a Branch:
@@ -336,11 +379,10 @@ const BranchAppointments: React.FC = () => {
               </select>
             )}
             {allBranches?.length === 0 && !isLoadingBranches && !isErrorBranches && (
-                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No branches available to select.</p>
+                 <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">No branches available to select. Add one in settings.</p>
             )}
           </div>
 
-          {/* ... Filters (conditionally rendered) ... */}
           {selectedBranchId && (
             <div className="mb-6 p-4 sm:p-6 bg-slate-50/70 dark:bg-slate-700/30 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <Search className="h-5 w-5 mr-2" /> Filter Appointments in {selectedBranchName || 'Selected Branch'} </h2>
@@ -348,17 +390,16 @@ const BranchAppointments: React.FC = () => {
                 <input type="text" placeholder="Filter by party name..." value={searchParty} onChange={(e) => setSearchParty(e.target.value)} className={inputClass} />
                 <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={inputClass}> 
                     <option value="">All Statuses</option> 
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+                    <option value="pending">{getStatusDisplayName('pending')}</option>
+                    <option value="confirmed">{getStatusDisplayName('confirmed')}</option>
+                    <option value="completed">{getStatusDisplayName('completed')}</option>
+                    <option value="cancelled">{getStatusDisplayName('cancelled')}</option>
                 </select>
               </div>
             </div>
           )}
           
           <main className="mt-2">
-            {/* ... Main content logic for no branch selected, loading, error, no appointments, or table ... */}
             {!selectedBranchId && !isLoadingBranches && !isErrorBranches && !isLoadingAppointments && (
                  <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6">
                     <ListFilter className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" />
@@ -376,7 +417,8 @@ const BranchAppointments: React.FC = () => {
                     <thead className="bg-sky-600 dark:bg-sky-700">
                       <tr>
                         {['ID', 'Party', 'Date', 'Time', 'Reason', 'Status', 'Actions'].map(header => (
-                          <th key={header} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white dark:text-sky-100 uppercase tracking-wider">
+                          <th key={header} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white dark:text-sky-100 uppercase tracking-wider whitespace-nowrap">
+                            {/* Added whitespace-nowrap */}
                             {header}
                           </th>
                         ))}
@@ -389,28 +431,44 @@ const BranchAppointments: React.FC = () => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.party}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.appointment_time}</td>
-                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 max-w-xs">
-                            <textarea title='Reason' readOnly value={appointment.reason} rows={2} className="w-full h-auto read-only:bg-transparent read-only:border-none p-0 focus:ring-0 resize-none text-sm text-slate-700 dark:text-slate-300 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent"/>
+                          
+                          {/* MODIFIED REASON COLUMN */}
+                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 max-w-xs whitespace-nowrap">
+                            {appointment.reason ? (
+                              <button
+                                onClick={() => openReasonModal(appointment.reason, appointment.party)}
+                                className="flex items-center text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700 text-xs"
+                                title="View Full Reason"
+                              >
+                                <Eye className="h-4 w-4 mr-1 flex-shrink-0" />
+                                <span>{truncateText(appointment.reason, 25)}</span>
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 dark:text-slate-500 italic text-xs">No reason</span>
+                            )}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+
+                          {/* MODIFIED STATUS COLUMN */}
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 min-w-[130px]">
                             <select
                               title="Change Status"
                               value={appointment.status}
                               onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)}
-                              className={`${inputClass} p-1.5 sm:p-2 text-xs sm:text-sm disabled:opacity-70`}
+                              className="block text-sm bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 w-full p-2 shadow-sm transition-colors disabled:opacity-70"
                               disabled={isStatusUpdating}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="confirmed">Confirmed</option>
-                              <option value="completed">Completed</option>
-                              <option value="cancelled">Cancelled</option>
+                              <option value="pending">{getStatusDisplayName('pending')}</option>
+                              <option value="confirmed">{getStatusDisplayName('confirmed')}</option>
+                              <option value="completed">{getStatusDisplayName('completed')}</option>
+                              <option value="cancelled">{getStatusDisplayName('cancelled')}</option>
                             </select>
                           </td>
+
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
                               <button onClick={() => openEditModal(appointment)} className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700" title="Edit Appointment"> <FilePenLine className="h-5 w-5" /> </button>
                               <button 
-                                onClick={() => requestDeleteAppointment(appointment)} // Use requestDeleteAppointment
+                                onClick={() => requestDeleteAppointment(appointment)}
                                 className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 rounded-md hover:bg-rose-100 dark:hover:bg-slate-700 disabled:opacity-50" 
                                 disabled={isDeletingAppointment && appointmentToDelete?.appointment_id === appointment.appointment_id} 
                                 title="Delete Appointment"
@@ -447,7 +505,6 @@ const BranchAppointments: React.FC = () => {
         />
       )}
 
-      {/* --- CONFIRMATION MODAL USAGE --- */}
       <ConfirmationModal
         isOpen={isConfirmDeleteModalOpen}
         onClose={cancelDeleteAppointment}
@@ -469,6 +526,15 @@ const BranchAppointments: React.FC = () => {
         confirmText="Yes, Delete It"
         cancelText="No, Keep It"
         isLoading={isDeletingAppointment}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* REASON DISPLAY MODAL RENDER */}
+      <ReasonDisplayModal
+        isOpen={isReasonModalOpen}
+        onClose={closeReasonModal}
+        reason={reasonToDisplay}
+        partyName={reasonPartyName}
         isDarkMode={isDarkMode}
       />
     </div>

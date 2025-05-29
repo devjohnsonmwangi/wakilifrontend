@@ -1,7 +1,21 @@
 import React, { useMemo, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { toast } from 'sonner';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns'; // Added isValid
+import {
+  X as XIcon,
+  Info,
+  CalendarDays,
+  Clock,
+  FileText,
+  Tag,
+  BellRing,
+  PlusCircle,
+  Edit3,
+  Trash2,
+  Loader2, // For loading states on buttons
+  AlertCircle, // For error states
+} from 'lucide-react'; // Added more icons
 
 import {
   EventDataTypes,
@@ -10,30 +24,31 @@ import {
   useDeleteReminderMutation,
 } from '../../../../features/events/events'; // Path should be correct
 
-import ReminderFormModal from './ReminderFormModal';
-import EventTypeChip from './components/EventTypeChip';
-import ConfirmationDialog from './components/ConfirmationDialog';
+import ReminderFormModal from './ReminderFormModal'; // Assumed to be dark-mode ready
+import EventTypeChip from './components/EventTypeChip'; // Assumed to be dark-mode ready
+import ConfirmationDialog from './components/ConfirmationDialog'; // Assumed to be dark-mode ready
 
 interface Props {
-  currentUserId?: number;
+  currentUserId?: number; // Not currently used, but kept
   open: boolean;
   onClose: () => void;
   event: EventDataTypes;
-  onEditEvent: (event: EventDataTypes) => void; // This prop is present but not used in the provided modal code
-  onDeleteEvent: (eventId: number) => void;   // This prop is present but not used in the provided modal code
-  onSuccess: (message: string) => void; // Likely for reminder operations
-  onError: (message: string) => void;   // Likely for reminder operations
+  onEditEvent?: (event: EventDataTypes) => void; // Optional, if you add UI for it
+  onDeleteEvent?: (eventId: number) => void;   // Optional, if you add UI for it
+  // onSuccess/onError are passed to ReminderFormModal. Delete in this modal uses toast directly.
+  onSuccess?: (message: string) => void;
+  onError?: (message: string) => void;
 }
 
 const EventDetailsModal: React.FC<Props> = ({
   open,
   onClose,
   event,
-  // onEditEvent, // Not used in this component's current rendering logic
-  // onDeleteEvent, // Not used in this component's current rendering logic
+  onSuccess, // Passed to ReminderFormModal
+  onError,   // Passed to ReminderFormModal
 }) => {
-  const { data: allReminders, isLoading, isError, error } = useFetchRemindersQuery(undefined, { skip: !open });
-  const [deleteReminder, { isLoading: isDeleting }] = useDeleteReminderMutation();
+  const { data: allReminders, isLoading: isLoadingReminders, isError: isRemindersError, error: remindersErrorObj } = useFetchRemindersQuery(undefined, { skip: !open || !event?.event_id });
+  const [deleteReminder, { isLoading: isDeletingReminder }] = useDeleteReminderMutation();
 
   const reminders = useMemo(
     () => allReminders?.filter(r => r.event_id === event.event_id) || [],
@@ -42,7 +57,7 @@ const EventDetailsModal: React.FC<Props> = ({
 
   const [isReminderFormOpen, setIsReminderFormOpen] = useState(false);
   const [reminderToEdit, setReminderToEdit] = useState<EventReminderDataTypes | null>(null);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmDeleteReminderOpen, setConfirmDeleteReminderOpen] = useState(false);
   const [reminderToDeleteId, setReminderToDeleteId] = useState<number | null>(null);
 
   const handleOpenCreateReminder = () => {
@@ -55,12 +70,12 @@ const EventDetailsModal: React.FC<Props> = ({
     setIsReminderFormOpen(true);
   };
 
-  const handleDeleteRequest = (id: number) => {
+  const handleDeleteReminderRequest = (id: number) => {
     setReminderToDeleteId(id);
-    setConfirmDeleteOpen(true);
+    setConfirmDeleteReminderOpen(true);
   };
 
-  const confirmDelete = async () => {
+  const confirmDeleteReminderAction = async () => {
     if (!reminderToDeleteId) return;
     try {
       await deleteReminder(reminderToDeleteId).unwrap();
@@ -68,144 +83,203 @@ const EventDetailsModal: React.FC<Props> = ({
     } catch (err: unknown) {
       toast.error((err as { data?: { msg?: string } })?.data?.msg || 'Failed to delete reminder.');
     } finally {
-      setConfirmDeleteOpen(false);
+      setConfirmDeleteReminderOpen(false);
       setReminderToDeleteId(null);
     }
   };
 
-  // UPDATED: Combined function to display event start date and time from ISO string
   const displayEventStart = (startTimeISO: string) => {
     if (!startTimeISO) return 'N/A';
     try {
       const dateObj = parseISO(startTimeISO);
-      // Check if the original ISO string likely represented an all-day event (e.g., "YYYY-MM-DD")
+      if (!isValid(dateObj)) return "Invalid date";
       if (startTimeISO.length === 10 && !startTimeISO.includes('T')) {
-        return `${format(dateObj, 'PPP')} (All-day)`; // e.g., "Oct 26, 2023 (All-day)"
+        return `${format(dateObj, 'PPP')} (All-day)`;
       }
-      return format(dateObj, 'PPp'); // e.g., "Oct 26, 2023, 2:30 PM"
+      return format(dateObj, 'PPP p'); // e.g., "Oct 26, 2023, 2:30 PM" - using 'p' for locale-friendly time
     } catch (e) {
       console.error("Error parsing event start_time:", e);
       return "Invalid date";
     }
   };
 
-  // Kept for created_at, updated_at, reminder_time
   const formatDisplayDateTime = (dt?: string) => {
     if (!dt) return 'N/A';
     try {
-      return format(parseISO(dt), 'PPpp'); // e.g., "Oct 26, 2023, 2:30:00 PM"
+      const dateObj = parseISO(dt);
+      if (!isValid(dateObj)) return "Invalid date";
+      return format(dateObj, 'MMM d, yyyy, h:mm a'); // More readable format
     } catch (e) {
       console.error("Error parsing datetime:", e);
       return "Invalid date";
     }
-  }
+  };
 
+  const DetailItem: React.FC<{ icon: React.ElementType; label: string; value?: string | React.ReactNode; className?: string }> = ({
+    icon: Icon,
+    label,
+    value,
+    className = ''
+  }) => (
+    value ? (
+      <div className={`flex items-start ${className}`}>
+        <Icon className="w-4 h-4 mr-2.5 mt-1 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
+        <div>
+          <span className="font-medium text-slate-700 dark:text-slate-300">{label}:</span>
+          <div className="text-slate-600 dark:text-slate-400 ml-1 inline-block">{value}</div>
+        </div>
+      </div>
+    ) : null
+  );
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} className="fixed z-50 inset-0 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen px-4">
-          <Dialog.Panel className="bg-white rounded-lg w-full max-w-4xl shadow-lg border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{event.event_title}</h2>
-              <button onClick={onClose} className="text-gray-500 hover:text-black">×</button>
+      <Dialog open={open} onClose={onClose} className="relative z-50">
+        {/* Backdrop */}
+        <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm transition-opacity" aria-hidden="true" />
+
+        {/* Modal Panel */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-xl bg-white dark:bg-slate-800 text-left align-middle shadow-2xl transition-all">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <Dialog.Title as="h3" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {event.event_title}
+              </Dialog.Title>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 transition-colors"
+                aria-label="Close"
+              >
+                <XIcon className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Event Info */}
-              <div className="border p-4 rounded-md">
-                <h3 className="text-lg font-semibold mb-2">Event Details</h3>
-                <p><strong>Type:</strong> <EventTypeChip eventType={event.event_type} /></p>
-                {/* UPDATED: Display for event start time */}
-                <p><strong>Starts:</strong> {displayEventStart(event.start_time)}</p>
-                {/* REMOVED: Separate Date and Time fields */}
-                {event.case_id && <p><strong>Case ID:</strong> {event.case_id}</p>}
-                {event.event_description && (
-                  <div>
-                    <strong>Description:</strong>
-                    <p className="whitespace-pre-wrap">{event.event_description}</p>
-                  </div>
-                )}
-                <p className="text-sm text-gray-400 mt-2">
-                  Created: {formatDisplayDateTime(event.created_at)} | Updated: {formatDisplayDateTime(event.updated_at)}
-                </p>
-              </div>
+            {/* Content */}
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
+              {/* Event Info Section */}
+              <section className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center">
+                  <Info className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" /> Event Details
+                </h4>
+                <div className="space-y-3">
+                  <DetailItem icon={Tag} label="Type" value={<EventTypeChip eventType={event.event_type} />} />
+                  <DetailItem icon={CalendarDays} label="Starts" value={displayEventStart(event.start_time)} />
+                  {event.case_id && <DetailItem icon={FileText} label="Case ID" value={String(event.case_id)} />}
+                  {event.event_description && (
+                    <div className="flex items-start">
+                       <FileText className="w-4 h-4 mr-2.5 mt-1 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
+                       <div>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">Description:</span>
+                        <p className="whitespace-pre-wrap text-slate-600 dark:text-slate-400 mt-0.5">{event.event_description}</p>
+                       </div>
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-400 dark:text-slate-500 pt-2">
+                    Created: {formatDisplayDateTime(event.created_at)} | Updated: {formatDisplayDateTime(event.updated_at)}
+                  </p>
+                </div>
+              </section>
 
-              {/* Reminders */}
-              <div className="border p-4 rounded-md">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-semibold">Reminders</h3>
+              {/* Reminders Section */}
+              <section className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 flex items-center">
+                    <BellRing className="w-5 h-5 mr-2 text-indigo-500 dark:text-indigo-400" /> Reminders
+                  </h4>
                   <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-sm rounded"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition-colors"
                     onClick={handleOpenCreateReminder}
                   >
-                    + Add
+                    <PlusCircle className="w-4 h-4" /> Add Reminder
                   </button>
                 </div>
 
-                {isLoading && <p className="text-center text-gray-500">Loading reminders...</p>}
-                {isError && <p className="text-red-500">Error: {(error as { data?: { msg?: string } })?.data?.msg || 'Could not load reminders.'}</p>}
-                {!isLoading && !isError && reminders.length === 0 && (
-                  <p className="text-gray-500">No reminders set for this event.</p>
+                {isLoadingReminders && (
+                  <div className="flex items-center justify-center text-slate-500 dark:text-slate-400 py-4">
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Loading reminders...
+                  </div>
                 )}
-                {!isLoading && reminders.length > 0 && (
-                  <ul className="space-y-2 mt-2">
+                {isRemindersError && (
+                  <div className="flex items-center text-red-600 dark:text-red-400 py-4 bg-red-50 dark:bg-red-900/20 p-3 rounded-md">
+                     <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0"/> 
+                     {(remindersErrorObj as { data?: { msg?: string } })?.data?.msg || 'Could not load reminders.'}
+                  </div>
+                )}
+                {!isLoadingReminders && !isRemindersError && reminders.length === 0 && (
+                  <p className="text-slate-500 dark:text-slate-400 text-center py-4">No reminders set for this event.</p>
+                )}
+                {!isLoadingReminders && reminders.length > 0 && (
+                  <ul className="space-y-3">
                     {reminders.map(reminder => (
-                      <li key={reminder.reminder_id} className="flex justify-between items-start border-b pb-1">
-                        <div>
-                          <p className="font-medium">{reminder.reminder_message || 'General Reminder'}</p>
-                          <p className="text-sm text-gray-600">Notify at: {formatDisplayDateTime(reminder.reminder_time)}</p>
+                      <li key={reminder.reminder_id} className="p-3 bg-white dark:bg-slate-700/50 rounded-md shadow-sm border border-slate-200 dark:border-slate-600/80 flex justify-between items-start gap-3">
+                        <div className="flex-grow">
+                          <p className="font-medium text-slate-800 dark:text-slate-100">{reminder.reminder_message || 'General Reminder'}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center mt-0.5">
+                            <Clock className="w-3.5 h-3.5 mr-1.5" /> {formatDisplayDateTime(reminder.reminder_time)}
+                          </p>
                         </div>
-                        <div className="flex space-x-2">
+                        <div className="flex-shrink-0 flex items-center space-x-2">
                           <button
                             onClick={() => handleEditReminder(reminder)}
-                            className="text-blue-500 text-sm hover:underline"
+                            className="p-1.5 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 rounded-md hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors"
+                            aria-label="Edit reminder"
                           >
-                            Edit
+                            <Edit3 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteRequest(reminder.reminder_id)}
-                            className="text-red-500 text-sm hover:underline"
-                            disabled={isDeleting && reminderToDeleteId === reminder.reminder_id}
+                            onClick={() => handleDeleteReminderRequest(reminder.reminder_id)}
+                            className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                            disabled={isDeletingReminder && reminderToDeleteId === reminder.reminder_id}
+                            aria-label="Delete reminder"
                           >
-                            {isDeleting && reminderToDeleteId === reminder.reminder_id ? 'Deleting...' : 'Delete'}
+                            {isDeletingReminder && reminderToDeleteId === reminder.reminder_id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </li>
                     ))}
                   </ul>
                 )}
-              </div>
+              </section>
             </div>
           </Dialog.Panel>
         </div>
       </Dialog>
 
-      {/* Reminder form modal */}
-      {isReminderFormOpen && (
+      {/* Reminder Form Modal */}
+      {isReminderFormOpen && event && (
         <ReminderFormModal
           open={isReminderFormOpen}
           onClose={() => setIsReminderFormOpen(false)}
           reminderToEdit={reminderToEdit}
           eventId={event.event_id}
           eventTitle={event.event_title}
-          onSuccess={() => {
+          onSuccess={(message) => {
             setIsReminderFormOpen(false);
-            toast.success('Reminder saved successfully!');
+            toast.success(message || 'Reminder saved successfully!');
+            if (onSuccess) onSuccess(message || 'Reminder saved successfully!');
           }}
           onError={(msg?: string) => {
             toast.error(msg || 'Failed to save reminder.');
+            if (onError) onError(msg || 'Failed to save reminder.');
           }}
         />
       )}
 
-      {/* Confirmation Dialog */}
+      {/* Confirmation Dialog for Reminder Deletion */}
       <ConfirmationDialog
-        open={confirmDeleteOpen}
-        onClose={() => setConfirmDeleteOpen(false)}
-        onConfirm={confirmDelete}
+        open={confirmDeleteReminderOpen}
+        onClose={() => setConfirmDeleteReminderOpen(false)}
+        onConfirm={confirmDeleteReminderAction}
         title="Delete Reminder"
-        description="Are you sure you want to delete this reminder?"
+        description="Are you sure you want to delete this reminder? This action cannot be undone."
+        isLoading={isDeletingReminder} // Pass loading state to confirmation dialog
+        // Ensure ConfirmationDialog is also styled for dark mode
       />
     </>
   );

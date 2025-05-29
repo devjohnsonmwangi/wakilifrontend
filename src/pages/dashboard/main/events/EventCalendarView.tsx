@@ -13,6 +13,7 @@ interface EventCalendarViewProps {
   events: EventDataTypes[];
   onEventClick: (event: EventDataTypes) => void;
   onDateSelect: (selectInfo: { start: Date; end: Date; allDay: boolean }) => void;
+  isDarkMode?: boolean;
 }
 
 const getEventColorClasses = (eventType: EventType): { backgroundColor: string; borderColor: string; textColor?: string } => {
@@ -36,6 +37,7 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
   events,
   onEventClick,
   onDateSelect,
+  isDarkMode,
 }) => {
   const calendarRef = useRef<FullCalendar | null>(null);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 640);
@@ -61,7 +63,7 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
         colorClasses.borderColor,
         colorClasses.textColor || 'text-white',
         'border',
-        '!p-1', // Base padding for events (0.25rem), will be overridden by more specific CSS below for mobile month view
+        '!p-1',
       ],
       extendedProps: event,
     };
@@ -108,10 +110,7 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
           right: 'dayGridMonth,timeGridDay,listWeek',
         });
         if (currentViewType === 'dayGridMonth' || calendarApi.view.type === preferredMobileGridView) {
-          // For mobile month view, limit displayed events.
-          // Adjust 'dayMaxEvents' (e.g., 2 or 3) to control how many events are shown
-          // before a "+more" link. Fewer events mean each can appear wider.
-          calendarApi.setOption('dayMaxEvents', 2); // Example: show up to 2 events
+          calendarApi.setOption('dayMaxEvents', 2);
         } else {
           calendarApi.setOption('dayMaxEvents', true);
         }
@@ -125,17 +124,35 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
         });
-        calendarApi.setOption('dayMaxEvents', true); // Or a higher number for desktop
+        calendarApi.setOption('dayMaxEvents', true);
       }
     }
   }, [isMobileView, calendarRef]);
 
   const initialCalendarView = 'dayGridMonth';
 
+  // Helper class for the main div to ensure index.css dark styles are applied
+  // by FullCalendar if your app's dark mode is activated by a class on <html> or <body>
+  const calendarWrapperClass = `p-2 sm:p-4 md:p-6 event-calendar-wrapper ${isDarkMode ? 'fc-dark-manual-trigger' : ''} max-h-[70vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible`;
+  // If your global dark mode is triggered by adding 'dark' class to <html>,
+  // then FullCalendar's own CSS variables for `.dark` in index.css should activate automatically.
+  // The `isDarkMode` prop passed to this component is now primarily for any component-specific logic
+  // that *isn't* handled by FC's own .dark CSS.
+
   return (
-    <div className="p-2 sm:p-4 md:p-6 event-calendar-wrapper max-h-[70vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible">
+    <div className={calendarWrapperClass}>
+      {/*
+        NOTE: The 'fc-dark' class on the wrapper was for component-level dark mode styles.
+        If your index.css uses a class like '.dark' on the <html> or <body> tag to activate
+        FullCalendar's dark mode variables, you might not need to manually add a class here
+        for FullCalendar's own dark styling.
+        The component-level dark mode styles below are being reduced.
+      */}
       <style>{`
+        /* Component-level styles that are NOT primarily for dark mode colors,
+           or are overrides that index.css doesn't cover. */
         .event-calendar-wrapper .fc-button {
+          /* These might be fine if they don't conflict with index.css variables or if you prefer these */
           background-color: #4f46e5;
           color: white;
           border: none;
@@ -150,21 +167,22 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
         .event-calendar-wrapper .fc-button-primary:disabled {
             opacity: 0.65;
         }
-        .event-calendar-wrapper .fc-event { /* General event styling */
+        .event-calendar-wrapper .fc-event {
           cursor: pointer;
           font-size: 0.85em;
-          /* Default padding is applied via Tailwind's !p-1 on the event itself */
         }
         .event-calendar-wrapper .fc-event:hover {
             opacity: 0.85;
         }
         .event-calendar-wrapper .fc-today-button {
+            /* This is likely overridden by index.css .dark .fc .fc-button if that's more specific */
             background-color: #10b981;
         }
         .event-calendar-wrapper .fc-today-button:hover {
             background-color: #059669;
         }
         .event-calendar-wrapper .fc-toolbar-title {
+            /* Default light mode title color, index.css handles dark mode */
             font-size: 1.25em;
             font-weight: 600;
             color: #1f2937;
@@ -173,41 +191,68 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
             min-height: 400px;
         }
 
-        @media (max-width: 639px) { /* Below Tailwind 'sm' breakpoint */
+        @media (max-width: 639px) {
           .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-frame {
-            min-height: 85px; /* Increased height for day cells in mobile month view. Adjust as needed. */
-            /* Width is implicitly 1/7th of calendar width. */
+            min-height: 85px;
           }
           .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-top {
             flex-direction: row;
           }
           .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-day-number {
+            /* Default light mode, index.css handles dark mode */
             font-size: 0.8em;
             padding: 2px 4px;
           }
-          /* Event styling specific to mobile month view for better text fit */
           .event-calendar-wrapper .fc-dayGridMonth-view .fc-event {
-            font-size: 0.70em; /* Slightly smaller font for events on mobile month view */
-            line-height: 1.25; /* Adjust line height for the smaller font */
-            /* Override Tailwind's !p-1 for finer control on mobile month view */
-            /* This provides less padding than default p-1 (0.25rem or ~4px) */
+            font-size: 0.70em;
+            line-height: 1.25;
             padding-top: 2px !important;
             padding-bottom: 2px !important;
-            padding-left: 3px !important;  /* Slightly more horizontal space for text */
+            padding-left: 3px !important;
             padding-right: 3px !important;
-            margin-bottom: 2px; /* Add a little space between stacked events */
+            margin-bottom: 2px;
           }
           .event-calendar-wrapper .fc-dayGridMonth-view .fc-daygrid-more-link {
             font-size: 0.7em;
-            margin-top: 1px; /* Adjust if it overlaps with events */
+            margin-top: 1px;
           }
         }
 
-        @media (min-width: 640px) { /* sm breakpoint and up */
+        @media (min-width: 640px) {
             .event-calendar-wrapper .fc {
                  min-height: 550px;
             }
         }
+
+        /* --- Dark Mode Styles (REDUCED - Deferring to index.css) --- */
+        /* The following dark mode specific color rules previously here are
+           now expected to be handled by src/index.css using CSS variables
+           and the .dark class on a parent element (e.g., <html> or <body>). */
+
+        /*
+          REMOVED/COMMENTED OUT:
+          .event-calendar-wrapper.fc-dark .fc-toolbar-title { color: #E5E7EB; }
+          .event-calendar-wrapper.fc-dark .fc-col-header-cell-cushion,
+          .event-calendar-wrapper.fc-dark .fc-daygrid-day-number,
+          .event-calendar-wrapper.fc-dark .fc-list-day-text,
+          .event-calendar-wrapper.fc-dark .fc-list-day-side-text { color: #D1D5DB !important; }
+          .event-calendar-wrapper.fc-dark .fc-daygrid-day-number { color: #D1D5DB !important; }
+          .event-calendar-wrapper.fc-dark .fc-timegrid-axis { color: #FFFFFF !important; }
+          .event-calendar-wrapper.fc-dark .fc-list-event-time { color: #22c55e !important; }
+          .event-calendar-wrapper.fc-dark .fc-list-event-title a { color: #E5E7EB !important; }
+          .event-calendar-wrapper.fc-dark .fc-list-event.text-black .fc-list-event-title a { color: #E5E7EB !important; }
+          .event-calendar-wrapper.fc-dark .fc-list-event-dot { border-color: #E5E7EB !important; }
+          .event-calendar-wrapper.fc-dark .fc-theme-standard td,
+          .event-calendar-wrapper.fc-dark .fc-theme-standard th,
+          .event-calendar-wrapper.fc-dark .fc-list { border-color: #4B5563; }
+          .event-calendar-wrapper.fc-dark .fc-day-today { background-color: rgba(55, 65, 81, 0.5) !important; }
+          .event-calendar-wrapper.fc-dark .fc-list-empty { color: #9CA3AF; }
+        */
+
+        /* If you have structural dark mode styles (not color) specific to the component, keep them.
+           For example, if a border style changes beyond just color.
+           Most color-related dark mode styles should now be managed by index.css.
+        */
       `}</style>
       <FullCalendar
         ref={calendarRef}
@@ -233,7 +278,6 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
         }}
         eventTimeFormat={{ hour: 'numeric', minute: '2-digit', meridiem: false }}
         slotLabelFormat={{ hour: 'numeric', minute: '2-digit', omitZeroMinute: false, meridiem: false }}
-        // dayMaxEvents is now dynamically set in useEffect
       />
     </div>
   );

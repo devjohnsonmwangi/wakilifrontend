@@ -255,6 +255,9 @@ const AllTicket = () => {
         // Main container now has `position: relative`
         <div className="p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200 transition-colors duration-300 relative">
             {/* Dark Mode Toggle Button - Positioned absolutely within this component */}
+            <h1 className="text-3xl font-semibold text-green-800 dark:text-green-100 mb-4 sm:mb-0">
+                  Ticket portal, Manage Users  Concerns  Here
+                </h1>
             <button
                 onClick={toggleDarkMode}
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
@@ -268,13 +271,13 @@ const AllTicket = () => {
             <nav className="mb-6 text-sm text-gray-500 dark:text-gray-400" aria-label="Breadcrumb">
                 <ol className="list-none p-0 inline-flex space-x-2 items-center">
                     <li className="flex items-center">
-                        <Link to="/dashboard/profile" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
+                        <Link to="/dashboard" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
                             <FaHome className="mr-1.5 h-4 w-4" />Dashboard
                         </Link>
                     </li>
                     <li><span className="mx-2 text-gray-400 dark:text-gray-500">/</span></li>
                     <li className="flex items-center">
-                        <Link to="/dashboard/account" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
+                        <Link to="/dashboard/settings" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
                             <FaUsers className="mr-1.5 h-4 w-4" />Admin
                         </Link>
                     </li>

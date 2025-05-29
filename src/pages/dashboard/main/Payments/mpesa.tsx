@@ -49,6 +49,7 @@ const MAX_SUGGESTIONS = 5; // Max number of suggestions to store and display
 interface MpesaPaymentProps {
   userId?:number;
   isOpen: boolean;
+  isDarkMode?: boolean; // Optional prop for dark mode
   onClose: () => void;
 }
 

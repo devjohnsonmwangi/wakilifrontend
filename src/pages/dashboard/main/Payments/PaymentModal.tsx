@@ -9,7 +9,7 @@ import {
     useFetchPaymentsQuery,
     // useDeletePaymentMutation
 } from '../../../../features/payment/paymentAPI';
-import { toast } from "sonner"; // <<--- IMPORTED TOAST
+import { toast } from "sonner";
 import { format } from 'date-fns';
 import {
     PlusCircle,
@@ -32,6 +32,8 @@ import {
     Eye,
     Download,
     Edit3, // Icon for Manual Entry
+    Sun,   // <-- ADDED for Theme Toggle
+    Moon,  // <-- ADDED for Theme Toggle
 } from 'lucide-react';
 
 // Define the PaymentDataTypes interface - ENSURE THIS MATCHES YOUR ACTUAL DATA
@@ -88,8 +90,43 @@ const getStatusDisplayInfo = (status: string | undefined): StatusDisplayInfo => 
     }
 };
 
+// Helper function to get initial theme
+const getInitialTheme = (): 'light' | 'dark' => {
+    if (typeof window === 'undefined') return 'light'; // Default for SSR or non-browser environments
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+        return storedTheme;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+};
+
 
 const PaymentHistory: React.FC = () => {
+    // Theme toggle state and logic
+    const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme);
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => {
+            const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('theme', newTheme);
+            }
+            return newTheme;
+        });
+    };
+
+    useEffect(() => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [theme]);
+
+
     const [isPaymentModeSelectionOpen, setIsPaymentModeSelectionOpen] = useState(false);
     const [isCashModalOpen, setIsCashModalOpen] = useState(false);
     const [isMpesaModalOpen, setIsMpesaModalOpen] = useState(false);
@@ -108,14 +145,13 @@ const PaymentHistory: React.FC = () => {
     const { data, isLoading, isError, error, refetch } = useFetchPaymentsQuery() as FetchPaymentsQueryResult;
     const [filteredPayments, setFilteredPayments] = useState<PaymentDataTypes[]>([]);
     const [isDownloading, setIsDownloading] = useState<number | null>(null);
-    // const [isViewingReceipt, setIsViewingReceipt] = useState<number | null>(null); // Optional: for per-button loading state
 
     useEffect(() => {
         if (data?.success && Array.isArray(data.payments)) {
             setFilteredPayments(data.payments);
         } else {
             setFilteredPayments([]);
-            if (isError) { // Using isError flag from the query
+            if (isError) {
                 toast.error("Error fetching payments. Please check your connection.");
                 console.error("Error fetching payments:", error);
             } else if (data && !data.success) {
@@ -123,7 +159,7 @@ const PaymentHistory: React.FC = () => {
                 console.error("API returned unsuccessful response:", data);
             }
         }
-    }, [data, error, isError]); // Added isError to dependency array
+    }, [data, error, isError]);
 
     const handleFilter = useCallback(() => {
         if (!data?.success || !Array.isArray(data.payments)) {
@@ -193,13 +229,12 @@ const PaymentHistory: React.FC = () => {
         setIsMpesaModalOpen(false);
         setIsStripeModalOpen(false);
         setIsManualEntryModalOpen(false);
-        refetch(); // Consider adding a success toast here if a payment was made and modal is closing
-        // For example: toast.success("Payment data refreshed.");
+        refetch();
     };
 
     const handleDownloadReceipt = async (payment: PaymentDataTypes) => {
         if (!payment.receipt_url || !payment.payment_id) {
-            toast.error("Receipt URL is not available for download."); // <<--- REPLACED ALERT
+            toast.error("Receipt URL is not available for download.");
             return;
         }
         setIsDownloading(payment.payment_id);
@@ -236,7 +271,7 @@ const PaymentHistory: React.FC = () => {
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(link.href);
-                    return { fileName }; // Return some value for the success case
+                    return { fileName };
                 } finally {
                     setIsDownloading(null);
                 }
@@ -254,10 +289,9 @@ const PaymentHistory: React.FC = () => {
 
     const handleViewReceipt = async (receiptUrl: string) => {
         if (!receiptUrl) {
-            toast.warning("Receipt URL is not available."); // <<--- REPLACED ALERT
+            toast.warning("Receipt URL is not available.");
             return;
         }
-        // if (paymentId) setIsViewingReceipt(paymentId);
 
         toast.promise(
             (async () => {
@@ -280,12 +314,11 @@ const PaymentHistory: React.FC = () => {
 
                 if (newWindow) {
                     newWindow.focus();
-                    // Optional: newWindow.onunload = () => URL.revokeObjectURL(blobUrl);
                 } else {
-                    URL.revokeObjectURL(blobUrl); // Clean up
-                    throw new Error("popup_blocked"); // Custom error to handle specifically
+                    URL.revokeObjectURL(blobUrl);
+                    throw new Error("popup_blocked");
                 }
-                return "Receipt opened in a new tab."; // Success message for promise
+                return "Receipt opened in a new tab.";
             })(),
             {
                 loading: 'Loading receipt...',
@@ -300,9 +333,6 @@ const PaymentHistory: React.FC = () => {
                 },
             }
         );
-        // finally {
-        // if (paymentId) setIsViewingReceipt(null);
-        // }
     };
 
 
@@ -346,28 +376,40 @@ const PaymentHistory: React.FC = () => {
                 <h1 className="text-3xl font-semibold text-green-800 dark:text-green-100 mb-4 sm:mb-0">
                   Payment portal with All  Payment Records
                 </h1>
-                <div className="relative">
-                    <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition duration-150 ease-in-out" onClick={() => setIsPaymentModeSelectionOpen(prev => !prev)} aria-expanded={isPaymentModeSelectionOpen} aria-haspopup="true">
-                        <PlusCircle size={20} className="mr-2" /> Initiate Payment <ChevronDown size={20} className={`ml-2 transform transition-transform duration-200 ${isPaymentModeSelectionOpen ? 'rotate-180' : ''}`} />
+                {/* --- MODIFIED PART: Added Theme Toggle Button --- */}
+                <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 transition-colors duration-150"
+                        aria-label="Toggle theme"
+                    >
+                        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                     </button>
-                    {isPaymentModeSelectionOpen && (
-                        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
-                            <div className="py-1">
-                                {paymentModes.map(({ mode, label, icon }) => (
-                                    <button key={mode} onClick={() => handlePaymentModeSelect(mode)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
-                                        {icon} {label}
+
+                    <div className="relative">
+                        <button type="button" className="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition duration-150 ease-in-out" onClick={() => setIsPaymentModeSelectionOpen(prev => !prev)} aria-expanded={isPaymentModeSelectionOpen} aria-haspopup="true">
+                            <PlusCircle size={20} className="mr-2" /> Initiate Payment <ChevronDown size={20} className={`ml-2 transform transition-transform duration-200 ${isPaymentModeSelectionOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {isPaymentModeSelectionOpen && (
+                            <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
+                                <div className="py-1">
+                                    {paymentModes.map(({ mode, label, icon }) => (
+                                        <button key={mode} onClick={() => handlePaymentModeSelect(mode)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition duration-150 ease-in-out">
+                                            {icon} {label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="border-t border-gray-200 dark:border-gray-700"></div>
+                                <div className="py-1">
+                                    <button onClick={() => setIsPaymentModeSelectionOpen(false)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-700/30 hover:text-red-700 dark:hover:text-red-300 transition duration-150 ease-in-out">
+                                        <X size={16} className="mr-2 opacity-70" /> Cancel
                                     </button>
-                                ))}
+                                </div>
                             </div>
-                            <div className="border-t border-gray-200 dark:border-gray-700"></div>
-                            <div className="py-1">
-                                <button onClick={() => setIsPaymentModeSelectionOpen(false)} className="flex items-center w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-700/30 hover:text-red-700 dark:hover:text-red-300 transition duration-150 ease-in-out">
-                                    <X size={16} className="mr-2 opacity-70" /> Cancel
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
+                 {/* --- END OF MODIFIED PART --- */}
             </div>
 
             <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
@@ -406,13 +448,12 @@ const PaymentHistory: React.FC = () => {
                         <tbody className="text-gray-700 dark:text-gray-300 text-sm">
                             {isLoading ? (
                                 <tr><td colSpan={7} className="text-center py-10"><div className="flex justify-center items-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div><span className="ml-3">Loading payments...</span></div></td></tr>
-                            ) : isError && !data?.payments?.length ? ( // Show error only if no data is present from a previous successful fetch
+                            ) : isError && !data?.payments?.length ? (
                                 <tr><td colSpan={7} className="text-center py-10 text-red-500 dark:text-red-400"><div className="flex flex-col items-center"><AlertTriangle size={40} className="mb-2" /> Error loading payments. Please check connection and reload. Contact support if persistent.</div></td></tr>
                             ) : filteredPayments.length > 0 ? (
                                 filteredPayments.map((payment) => {
                                     const statusInfo = getStatusDisplayInfo(payment.payment_status);
                                     const currentIsDownloading = isDownloading === payment.payment_id;
-                                    // const currentIsViewing = isViewingReceipt === payment.payment_id; // Optional
                                     return (
                                         <tr key={payment.payment_id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150 ease-in-out">
                                             <td className="px-4 py-3.5 whitespace-nowrap"><div className="flex items-center"><Fingerprint size={16} className="mr-2 text-gray-400 dark:text-gray-500" /><span className="font-medium text-gray-900 dark:text-gray-100">{payment.payment_id}</span></div></td>

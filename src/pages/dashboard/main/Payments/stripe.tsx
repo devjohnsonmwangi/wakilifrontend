@@ -29,6 +29,7 @@ function useDebounce<T>(value: T, delay: number): T {
 interface StripePaymentModalProps {
     userId?: number; // Optional userId prop if needed
     isOpen: boolean;
+    isDarkMode?: boolean; // Optional dark mode prop
     onClose: () => void;
 }
 

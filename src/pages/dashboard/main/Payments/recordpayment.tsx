@@ -32,6 +32,7 @@ const MAX_MANUAL_SUGGESTIONS = 5;
 interface ManualPaymentEntryModalProps {
     userId?: number; // Optional userId prop if needed for context
     isOpen: boolean;
+    isDarkMode?: boolean; // Optional prop to handle dark mode styles
     onClose: () => void;
 }
 

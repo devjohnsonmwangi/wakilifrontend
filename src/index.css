@@ -52,3 +52,268 @@
 .event-calendar-wrapper .fc-toolbar-title {
     @apply text-xl font-semibold text-gray-800; /* text-lg or text-2xl might also fit */
 }
+.event-calendar-wrapper .fc-daygrid-day-top {
+  @apply text-gray-700; /* For day names like Mon, Tue */
+}
+/* Light mode (default FullCalendar variables or your overrides) */
+:root {
+  --fc-border-color: #e5e7eb; /* gray-200 */
+  --fc-daygrid-day-bg-color: transparent;
+  --fc-day-today-bg-color: rgba(255, 220, 40, 0.15); /* Example for today */
+  --fc-event-bg-color: #3b82f6; /* blue-500 */
+  --fc-event-border-color: #3b82f6;
+  --fc-event-text-color: white;
+  --fc-list-event-hover-bg-color: #f3f4f6; /* gray-100 */
+  --fc-page-bg-color: white; /* For the overall calendar background */
+
+  /* Text colors */
+  --fc-col-header-cell-cushion-text-color: #4b5563; /* gray-600 for day names like Mon, Tue */
+  --fc-daygrid-day-number-color: #374151; /* gray-700 for day numbers */
+  --fc-list-event-title-text-color: #1e40af; /* blue-800 */
+  --fc-list-day-text-color: #1f2937; /* gray-800 */
+  --fc-list-day-side-text-color: #1f2937; /* gray-800 */
+
+  /* Toolbar colors */
+  --fc-button-text-color: #374151; /* gray-700 */
+  --fc-button-bg-color: #f9fafb; /* gray-50 */
+  --fc-button-border-color: #d1d5db; /* gray-300 */
+  --fc-button-hover-bg-color: #f3f4f6; /* gray-100 */
+  --fc-button-hover-border-color: #9ca3af; /* gray-400 */
+  --fc-button-active-bg-color: #e5e7eb; /* gray-200 */
+  --fc-button-active-border-color: #9ca3af; /* gray-400 */
+  --fc-toolbar-title-text-color: #111827; /* gray-900 */
+}
+
+.dark {
+  --fc-border-color: #4b5563; /* gray-600 */
+  --fc-daygrid-day-bg-color: transparent;
+  --fc-day-today-bg-color: rgba(250, 204, 21, 0.2); /* yellow-400 with opacity */
+  --fc-event-bg-color: #60a5fa; /* blue-400 */
+  --fc-event-border-color: #60a5fa;
+  --fc-event-text-color: #111827; /* gray-900 (dark text on lighter blue) or keep white if contrast is good */
+  --fc-list-event-hover-bg-color: #374151; /* gray-700 */
+  --fc-page-bg-color: #1f2937; /* gray-800 - Calendar container background */
+
+
+  /* Text colors for dark mode */
+  --fc-col-header-cell-cushion-text-color: #d1d5db; /* gray-300 for day names */
+  --fc-daygrid-day-number-color: #9ca3af; /* gray-400 for day numbers */
+  --fc-list-event-title-text-color: #93c5fd; /* blue-300 */
+  --fc-list-day-text-color: #e5e7eb; /* gray-200 */
+  --fc-list-day-side-text-color: #e5e7eb; /* gray-200 */
+
+  /* Toolbar colors for dark mode */
+  --fc-button-text-color: #e5e7eb; /* gray-200 */
+  --fc-button-bg-color: #374151; /* gray-700 */
+  --fc-button-border-color: #4b5563; /* gray-600 */
+  --fc-button-hover-bg-color: #4b5563; /* gray-600 */
+  --fc-button-hover-border-color: #6b7280; /* gray-500 */
+  --fc-button-active-bg-color: #6b7280; /* gray-500 */
+  --fc-button-active-border-color: #6b7280; /* gray-500 */
+  --fc-toolbar-title-text-color: #f9fafb; /* gray-50 */
+}
+
+/* Ensure the calendar container itself picks up the page background if needed */
+.dark .fc {
+  background-color: var(--fc-page-bg-color);
+}
+.fc {
+   background-color: var(--fc-page-bg-color);
+}
+
+/* Specific overrides if variables are not enough for some elements */
+.dark .fc .fc-col-header-cell-cushion { /* Day names: Mon, Tue */
+  color: var(--fc-col-header-cell-cushion-text-color) !important; /* Use !important cautiously */
+}
+.dark .fc .fc-daygrid-day-number { /* Day numbers: 1, 2, 3 */
+  color: var(--fc-daygrid-day-number-color) !important;
+}
+.dark .fc .fc-event-main .fc-event-title { /* Event titles */
+   color: var(--fc-event-text-color) !important;
+}
+/* For list view items */
+.dark .fc-theme-standard .fc-list-day-text,
+.dark .fc-theme-standard .fc-list-day-side-text {
+  color: var(--fc-list-day-text-color) !important;
+}
+.dark .fc .fc-list-event-title a {
+  color: var(--fc-list-event-title-text-color) !important;
+}
+/* Toolbar title */
+.dark .fc .fc-toolbar-title {
+  color: var(--fc-toolbar-title-text-color) !important;
+}
+/* Toolbar buttons */
+.dark .fc .fc-button {
+  background-color: var(--fc-button-bg-color) !important;
+  border-color: var(--fc-button-border-color) !important;
+  color: var(--fc-button-text-color) !important;
+}
+.dark .fc .fc-button:hover {
+  background-color: var(--fc-button-hover-bg-color) !important;
+  border-color: var(--fc-button-hover-border-color) !important;
+}
+.dark .fc .fc-button-primary:disabled {
+  background-color: #4b5563 !important; /* gray-600 */
+  border-color: #4b5563 !important;
+  color: #9ca3af !important; /* gray-400 */
+}
+.dark .fc .fc-button-primary:not(:disabled).fc-button-active,
+.dark .fc .fc-button-primary:not(:disabled):active {
+  background-color: var(--fc-button-active-bg-color) !important;
+  border-color: var(--fc-button-active-border-color) !important;
+}
+/* Ensure the calendar container itself picks up the page background if needed */
+.dark .fc {
+  background-color: var(--fc-page-bg-color);
+}
+/* In your global CSS file (e.g., index.css or a new datepicker-theme.css) */
+
+/* react-datepicker overrides for Dark Mode */
+.dark .react-datepicker {
+  font-family: inherit; /* Inherit from your app's font */
+  border: 1px solid theme('colors.slate.600');
+  background-color: theme('colors.slate.800'); /* Dark background */
+  color: theme('colors.slate.200');
+  border-radius: theme('borderRadius.lg'); /* Softer rounding */
+  box-shadow: theme('boxShadow.lg');
+}
+
+.dark .react-datepicker__header {
+  background-color: theme('colors.slate.700'); /* Slightly lighter header */
+  border-bottom: 1px solid theme('colors.slate.600');
+  padding-top: 10px; /* Adjust padding as needed */
+  padding-bottom: 10px;
+}
+
+.dark .react-datepicker__current-month,
+.dark .react-datepicker-time__header,
+.dark .react-datepicker-year-header {
+  color: theme('colors.slate.100');
+  font-weight: theme('fontWeight.semibold');
+}
+
+.dark .react-datepicker__day-name,
+.dark .react-datepicker__day,
+.dark .react-datepicker__time-name {
+  color: theme('colors.slate.300');
+  width: 2rem; /* Adjust for consistent sizing */
+  line-height: 2rem;
+  margin: 0.1rem;
+}
+
+.dark .react-datepicker__day:hover,
+.dark .react-datepicker__month-text:hover,
+.dark .react-datepicker__quarter-text:hover,
+.dark .react-datepicker__year-text:hover {
+  background-color: theme('colors.slate.700');
+  border-radius: theme('borderRadius.md');
+}
+
+.dark .react-datepicker__day--selected,
+.dark .react-datepicker__day--in-selecting-range,
+.dark .react-datepicker__day--in-range,
+.dark .react-datepicker__month-text--selected,
+.dark .react-datepicker__month-text--in-selecting-range,
+.dark .react-datepicker__month-text--in-range,
+.dark .react-datepicker__quarter-text--selected,
+.dark .react-datepicker__quarter-text--in-selecting-range,
+.dark .react-datepicker__quarter-text--in-range,
+.dark .react-datepicker__year-text--selected,
+.dark .react-datepicker__year-text--in-selecting-range,
+.dark .react-datepicker__year-text--in-range {
+  background-color: theme('colors.indigo.600');
+  color: theme('colors.white');
+  border-radius: theme('borderRadius.md');
+  font-weight: theme('fontWeight.medium');
+}
+
+.dark .react-datepicker__day--selected:hover,
+.dark .react-datepicker__day--in-selecting-range:hover,
+.dark .react-datepicker__day--in-range:hover,
+.dark .react-datepicker__month-text--selected:hover,
+.dark .react-datepicker__month-text--in-selecting-range:hover,
+.dark .react-datepicker__month-text--in-range:hover,
+.dark .react-datepicker__quarter-text--selected:hover,
+.dark .react-datepicker__quarter-text--in-selecting-range:hover,
+.dark .react-datepicker__quarter-text--in-range:hover,
+.dark .react-datepicker__year-text--selected:hover,
+.dark .react-datepicker__year-text--in-selecting-range:hover,
+.dark .react-datepicker__year-text--in-range:hover {
+  background-color: theme('colors.indigo.500'); /* Slightly lighter on hover */
+}
+
+.dark .react-datepicker__day--keyboard-selected {
+  background-color: theme('colors.indigo.500');
+  color: theme('colors.white');
+  border-radius: theme('borderRadius.md');
+}
+
+.dark .react-datepicker__day--disabled,
+.dark .react-datepicker__month-text--disabled,
+.dark .react-datepicker__quarter-text--disabled,
+.dark .react-datepicker__year-text--disabled {
+  color: theme('colors.slate.500');
+  cursor: default;
+}
+.dark .react-datepicker__day--disabled:hover {
+  background-color: transparent;
+}
+
+.dark .react-datepicker__navigation {
+  top: 12px; /* Adjust position */
+}
+.dark .react-datepicker__navigation-icon::before {
+  border-color: theme('colors.slate.300');
+  border-width: 2px 2px 0 0; /* Slightly thicker arrows */
+  height: 8px;
+  width: 8px;
+}
+.dark .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: theme('colors.slate.100');
+}
+.dark .react-datepicker__navigation--previous {
+    border-right-color: theme('colors.slate.300');
+}
+.dark .react-datepicker__navigation--next {
+    border-left-color: theme('colors.slate.300');
+}
+
+/* Time Picker Specific */
+.dark .react-datepicker__time-container {
+  border-left: 1px solid theme('colors.slate.600');
+}
+.dark .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list {
+  padding-left: 0;
+  padding-right: 0;
+}
+.dark .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item {
+  color: theme('colors.slate.300');
+  height: auto; /* Allow content to determine height */
+  padding: 8px 12px; /* Adjust padding */
+}
+.dark .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+  background-color: theme('colors.slate.700') !important; /* Important may be needed */
+}
+.dark .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+  background-color: theme('colors.indigo.600') !important;
+  color: white !important;
+  font-weight: theme('fontWeight.semibold');
+}
+.dark .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--disabled {
+  color: theme('colors.slate.500') !important;
+}
+
+/* Popper Arrow - already disabled with showPopperArrow={false}, but if you enable it: */
+.dark .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle {
+    border-bottom-color: theme('colors.slate.700'); /* Match header or panel bg */
+}
+.dark .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle::before {
+    border-bottom-color: theme('colors.slate.600'); /* Match border color */
+}
+/* ... similar for top placement ... */
+
+/* Adjust react-datepicker portal styling if you use it */
+.react-datepicker-popper {
+  z-index: 55 !important; /* Ensure it's above the modal backdrop but potentially below nested modals if any */
+}

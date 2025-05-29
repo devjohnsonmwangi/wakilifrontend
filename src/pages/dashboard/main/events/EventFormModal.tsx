@@ -1,21 +1,23 @@
 // src/pages/dashboard/main/events/EventFormModal.tsx
-import React, { useState, useEffect, forwardRef, useMemo } from 'react'; // Added useMemo
-import { useSelector } from 'react-redux'; // Import useSelector
-import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay } from 'date-fns';
+import React, { useState, useEffect, forwardRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns'; // Added parseISO
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datepicker/dist/react-datepicker.css'; // Base styles
+// import '../styles/datepicker-theme.css'; // IF YOU CREATED A SEPARATE CSS FILE FOR DATEPICKER, IMPORT IT
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Calendar as CalendarIcon,
   Clock,
-  Type,
+  Type as TypeIcon, // Renamed to avoid conflict with type keyword
   FileText,
   Briefcase,
   Save,
-  X,
+  X as XIcon,
   Tag,
   Loader2,
+  User, // Icon for User ID (though not directly editable)
 } from 'lucide-react';
 
 import {
@@ -24,10 +26,7 @@ import {
   EventDataTypes,
   EventType as RawEventType,
 } from '../../../../features/events/events';
-// Adjust this import path to your actual auth slice location
 import { selectCurrentUserId } from '../../../../features/users/userSlice';
-// Import RootState if you need to type the selector directly, or rely on inference
-// import { RootState } from '../../../../app/store'; // Adjust path
 
 type AppEventType = RawEventType | 'meeting' | 'hearing' | 'consultation' | 'reminder' | 'court_date';
 
@@ -42,7 +41,8 @@ interface EventFormModalProps {
   open: boolean;
   onClose: () => void;
   eventToEdit?: Partial<EventDataTypes> | null;
-  currentUserId?: number;
+  //currentUserId: number;
+  // currentUserId prop is removed as we get it from Redux
 }
 
 const getValidEventType = (eventType?: string): AppEventType => {
@@ -50,28 +50,26 @@ const getValidEventType = (eventType?: string): AppEventType => {
   if (eventType && validTypes.includes(eventType as AppEventType)) {
     return eventType as AppEventType;
   }
-  return 'meeting';
+  return 'meeting'; // Default event type
 };
 
-// Updated to accept userId from the hook
 const getInitialFormState = (
   eventToEdit?: Partial<EventDataTypes> | null,
-  currentUserId?: number | null // Accept currentUserId
+  currentUserId?: number | null
 ) => {
   let initialDateStr = '';
   let initialTimeStr = '';
 
   if (eventToEdit?.start_time) {
     try {
-      // parseISO is generally more robust for ISO strings
-      const dt = new Date(eventToEdit.start_time); // Or use parseISO from date-fns
+      const dt = parseISO(eventToEdit.start_time); // Use parseISO for reliability
       if (isValid(dt)) {
         initialDateStr = format(dt, 'yyyy-MM-dd');
-        // Check if the original start_time was date-only (all-day event)
+        // Check if original was all-day (time part can be omitted or set to 00:00:00)
         if (eventToEdit.start_time.length === 10 && !eventToEdit.start_time.includes('T')) {
-          initialTimeStr = '00:00:00'; // Default time for all-day, or can be empty
+          initialTimeStr = '00:00:00'; // Or '00:00' if you prefer HH:mm for time picker
         } else {
-          initialTimeStr = format(dt, 'HH:mm:ss');
+          initialTimeStr = format(dt, 'HH:mm:ss'); // Or 'HH:mm'
         }
       }
     } catch (e) { console.error("Error parsing eventToEdit.start_time for form", e); }
@@ -84,33 +82,38 @@ const getInitialFormState = (
     form_time_part: initialTimeStr,
     event_description: eventToEdit?.event_description || '',
     case_id: eventToEdit?.case_id ? String(eventToEdit.case_id) : '',
-    user_id: eventToEdit?.user_id || currentUserId || 0, // Use currentUserId, fallback to 0 or handle error
+    user_id: eventToEdit?.user_id || currentUserId || 0,
   };
 };
 
-
-const inputBaseClasses = "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm read-only:bg-gray-50";
-const labelBaseClasses = "block text-sm font-medium text-gray-700 mb-1";
+// Enhanced base classes
+const baseInputStyles = "block w-full text-sm rounded-md shadow-sm placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-150";
+const labelBaseClasses = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center";
+const formFieldWrapperClasses = "space-y-1"; // For consistent spacing around label and input
 
 interface CustomDateInputProps {
   value?: string;
   onClick?: () => void;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  // onChange is not typically needed here as DatePicker controls it
   hasError?: boolean;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
-  ({ value, onClick, onChange, hasError, placeholder }, ref) => (
+  ({ value, onClick, hasError, placeholder, disabled }, ref) => (
     <input
       type="text"
-      className={`${inputBaseClasses} ${hasError ? 'border-red-500' : ''}`}
+      className={`${baseInputStyles} px-3 py-2.5 border ${ // Consistent padding
+        hasError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                 : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'
+      } focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 cursor-pointer read-only:bg-slate-100 dark:read-only:bg-slate-600`}
       onClick={onClick}
       value={value}
       ref={ref}
       readOnly
       placeholder={placeholder}
-      onChange={onChange} // Added onChange here if CustomDateInput needs to manage its own input changes, though DatePicker usually handles this
+      disabled={disabled}
     />
   )
 );
@@ -122,33 +125,32 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   onClose,
   eventToEdit,
 }) => {
-  // Get current user ID from Redux store
-  const currentUserId = useSelector(selectCurrentUserId); // Type for currentUserId will be inferred from selector
+  const currentUserIdFromStore = useSelector(selectCurrentUserId);
+  const currentUserId = typeof currentUserIdFromStore === 'number' ? currentUserIdFromStore : null;
 
-  // Use useMemo for initial form state to depend on currentUserId
-  const initialFormState = useMemo(() => getInitialFormState(eventToEdit, currentUserId as number | null), [eventToEdit, currentUserId]);
+
+  const initialFormState = useMemo(() => getInitialFormState(eventToEdit, currentUserId), [eventToEdit, currentUserId]);
 
   const [formData, setFormData] = useState(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
-  const isLoading = isCreating || isUpdating;
+  const anyOperationLoading = isCreating || isUpdating;
 
   useEffect(() => {
     if (open) {
-      // Re-initialize form data when modal opens or eventToEdit/currentUserId changes
-      setFormData(getInitialFormState(eventToEdit, currentUserId as number | null));
+      setFormData(getInitialFormState(eventToEdit, currentUserId));
       setErrors({});
     }
-  }, [eventToEdit, open, currentUserId]); // Add currentUserId to dependency array
+  }, [eventToEdit, open, currentUserId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: name === 'event_type' ? getValidEventType(value) : value }));
-    if (errors[name]) {
+    if (errors[name] && value.trim()) {
       setErrors(prev => { const newErrors = { ...prev }; delete newErrors[name]; return newErrors; });
     }
   };
@@ -162,7 +164,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
   };
 
   const handleTimePartChange = (time: Date | null) => {
-    const newTimeString = time && isValid(time) ? format(time, 'HH:mm:ss') : '';
+    // Using HH:mm for user display/input, backend will get full ISO.
+    const newTimeString = time && isValid(time) ? format(time, 'HH:mm') : '';
     setFormData(prev => ({ ...prev, form_time_part: newTimeString }));
     if (errors.start_time && newTimeString && formData.form_date_part) {
       setErrors(prev => { const newErrors = { ...prev }; delete newErrors.start_time; return newErrors; });
@@ -173,36 +176,36 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!formData.event_title.trim()) newErrors.event_title = "Title is required.";
     if (!formData.form_date_part) newErrors.start_time = "Date is required.";
-    if (!formData.form_time_part) newErrors.start_time = (newErrors.start_time || "") + " Time is required.";
-    if (!formData.case_id) newErrors.case_id = "Case ID is required.";
-    if (!formData.user_id) newErrors.user_id = "User ID is missing. Please re-login."; // Add validation for user_id
+    if (!formData.form_time_part) {
+        newErrors.start_time = (newErrors.start_time || "") + (newErrors.start_time ? " and Time are required." : "Time is required.");
+    }
+    if (!formData.case_id || isNaN(Number(formData.case_id))) newErrors.case_id = "A valid Case ID is required.";
+    if (!formData.user_id) newErrors.user_id = "User information is missing. Please re-login or refresh.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-        toast.error("Please fill in all required fields.");
+        toast.error("Please check the form for errors.");
         return;
     }
 
-    // Ensure user_id is present before submission
-    if (!formData.user_id) {
+    if (!formData.user_id) { // Double check, though validateForm should catch it
         toast.error("User information is missing. Cannot save event.");
-        setErrors(prev => ({ ...prev, user_id: "User ID is missing. Please re-login." }));
         return;
     }
 
     let combinedStartDateTime: Date | null = null;
     try {
-        const datePart = parse(formData.form_date_part, 'yyyy-MM-dd', new Date());
-        const timePart = parse(formData.form_time_part, 'HH:mm:ss', new Date());
+        const datePartDate = parse(formData.form_date_part, 'yyyy-MM-dd', new Date());
+        const timePartDate = parse(formData.form_time_part, 'HH:mm', new Date()); // Parsed from HH:mm
 
-        if (isValid(datePart) && isValid(timePart)) {
-            let tempDate = startOfDay(datePart);
-            tempDate = setHours(tempDate, timePart.getHours());
-            tempDate = setMinutes(tempDate, timePart.getMinutes());
-            tempDate = setSeconds(tempDate, timePart.getSeconds());
+        if (isValid(datePartDate) && isValid(timePartDate)) {
+            let tempDate = startOfDay(datePartDate);
+            tempDate = setHours(tempDate, timePartDate.getHours());
+            tempDate = setMinutes(tempDate, timePartDate.getMinutes());
+            tempDate = setSeconds(tempDate, 0); // Explicitly set seconds to 0
             combinedStartDateTime = tempDate;
         }
     } catch (e) { console.error("Error combining date and time for submission", e); }
@@ -213,33 +216,26 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
         return;
     }
 
-    // Payload type should match what RTK Query createEvent/updateEvent expects
-    // Ensure your RTK Query endpoint definitions for CreateEventPayload and UpdateEventPayload
-    // include user_id and don't include event_date.
-    interface CreateEventPayloadForApi {
+    interface EventPayloadForApi {
         event_title: string;
         event_type: AppEventType;
-        start_time: string; // ISO String
+        start_time: string;
         event_description?: string;
         case_id: number;
         user_id: number;
-        // event_date is removed
     }
 
-    const payload: CreateEventPayloadForApi = {
-      event_title: formData.event_title,
+    const payload: EventPayloadForApi = {
+      event_title: formData.event_title.trim(),
       event_type: formData.event_type,
       start_time: combinedStartDateTime.toISOString(),
-      event_description: formData.event_description,
+      event_description: formData.event_description?.trim() || undefined, // Send undefined if empty
       case_id: Number(formData.case_id),
-      user_id: Number(formData.user_id), // Use formData.user_id which should be set
+      user_id: Number(formData.user_id),
     };
 
     try {
       if (eventToEdit?.event_id) {
-        // For update, the payload type might be Partial of the creation payload plus the event_id
-        // The RTK Query updateEvent mutation expects: { event_id: number } & UpdateEventPayload
-        // where UpdateEventPayload is Partial<CreateEventPayloadForApi>
         await updateEvent({ event_id: eventToEdit.event_id, ...payload }).unwrap();
         toast.success("Event updated successfully!");
       } else {
@@ -258,146 +254,160 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
     }
   };
 
-  // Memoize selectedDateForPicker and selectedTimeForPicker for performance
   const selectedDateForPicker = useMemo(() =>
     formData.form_date_part ? parse(formData.form_date_part, 'yyyy-MM-dd', new Date()) : null,
     [formData.form_date_part]
   );
 
   const selectedTimeForPicker = useMemo(() =>
-    formData.form_time_part ? parse(formData.form_time_part, 'HH:mm:ss', new Date()) : null,
+    formData.form_time_part ? parse(formData.form_time_part, 'HH:mm', new Date()) : null, // Expects HH:mm
     [formData.form_time_part]
   );
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: { opacity: 1, scale: 1 },
-    exit: { opacity: 0, scale: 0.9 },
+    hidden: { opacity: 0, scale: 0.95, y: -20 },
+    visible: { opacity: 1, scale: 1, y: 0 },
+    exit: { opacity: 0, scale: 0.95, y: -20 },
   };
+
+  const buttonBaseClasses = "px-4 py-2.5 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-60 transition-all duration-150 flex items-center justify-center gap-2";
 
   return (
     <AnimatePresence>
       {open && (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4"
-          onClick={onClose} // Close on backdrop click
+          className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 p-4"
+          onClick={() => !anyOperationLoading && onClose()}
         >
           <motion.div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{ type: 'spring', damping: 18, stiffness: 200 }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+            transition={{ type: 'spring', damping: 20, stiffness: 220 }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-5 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {eventToEdit?.event_id ? 'Edit Event' : 'Create New Event'}
               </h2>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Close modal">
-                <X size={24} />
+              <button 
+                onClick={() => !anyOperationLoading && onClose()} 
+                disabled={anyOperationLoading}
+                className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 transition-colors" 
+                aria-label="Close modal">
+                <XIcon size={20} />
               </button>
             </div>
 
             <form
               onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
-              className="p-6 space-y-5" // Increased spacing for better readability
+              className="p-6 space-y-5 max-h-[75vh] overflow-y-auto"
             >
-              {/* Event Title */}
-              <div>
+              <div className={formFieldWrapperClasses}>
                 <label htmlFor="event_title" className={labelBaseClasses}>
-                  <Type size={14} className="inline mr-1 mb-0.5" /> Title *
+                  <TypeIcon size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Title *
                 </label>
-                <input id="event_title" name="event_title" value={formData.event_title} onChange={handleChange}
-                  className={`${inputBaseClasses} ${errors.event_title ? 'border-red-500' : ''}`} placeholder="e.g., Client Meeting" />
-                {errors.event_title && <p className="mt-1 text-xs text-red-600">{errors.event_title}</p>}
+                <input id="event_title" name="event_title" value={formData.event_title} onChange={handleChange} disabled={anyOperationLoading}
+                  className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_title ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`} 
+                  placeholder="e.g., Client Meeting" />
+                {errors.event_title && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_title}</p>}
               </div>
 
-              {/* Event Type */}
-              <div>
-                <label htmlFor="event_type" className={labelBaseClasses}>
-                  <Tag size={14} className="inline mr-1 mb-0.5" /> Event Type *
-                </label>
-                <select id="event_type" name="event_type" value={formData.event_type} onChange={handleChange}
-                  className={`${inputBaseClasses} ${errors.event_type ? 'border-red-500' : ''}`}>
-                  <option value="meeting">Meeting</option>
-                  <option value="hearing">Hearing</option>
-                  <option value="consultation">Consultation</option>
-                  <option value="reminder">General Event/Reminder</option>
-                  <option value="court_date">Court Date</option>
-                </select>
-                {errors.event_type && <p className="mt-1 text-xs text-red-600">{errors.event_type}</p>}
-              </div>
-
-              {/* Case ID */}
-              <div>
-                <label htmlFor="case_id" className={labelBaseClasses}>
-                  <Briefcase size={14} className="inline mr-1 mb-0.5" /> Case ID *
-                </label>
-                <input id="case_id" name="case_id" type="number" value={formData.case_id} onChange={handleChange}
-                  className={`${inputBaseClasses} ${errors.case_id ? 'border-red-500' : ''}`} placeholder="e.g., 123" />
-                {errors.case_id && <p className="mt-1 text-xs text-red-600">{errors.case_id}</p>}
-              </div>
-
-              {/* Date and Time Pickers */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="form_date_part" className={labelBaseClasses}>
-                    <CalendarIcon size={14} className="inline mr-1 mb-0.5" /> Date *
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
+                <div className={formFieldWrapperClasses}>
+                  <label htmlFor="event_type" className={labelBaseClasses}>
+                    <Tag size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Event Type *
                   </label>
-                  <DatePicker
-                    id="form_date_part"
-                    selected={selectedDateForPicker && isValid(selectedDateForPicker) ? selectedDateForPicker : null}
-                    onChange={handleDatePartChange}
-                    dateFormat="yyyy-MM-dd"
-                    placeholderText="Select date" // Simplified placeholder
-                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Date")} placeholder="YYYY-MM-DD"/>}
-                    wrapperClassName="w-full"
-                    isClearable showPopperArrow={false} />
+                  <select id="event_type" name="event_type" value={formData.event_type} onChange={handleChange} disabled={anyOperationLoading}
+                    className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_type ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none`}>
+                    <option value="meeting">Meeting</option>
+                    <option value="hearing">Hearing</option>
+                    <option value="consultation">Consultation</option>
+                    <option value="reminder">General Event/Reminder</option>
+                    <option value="court_date">Court Date</option>
+                  </select>
+                  {errors.event_type && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_type}</p>}
                 </div>
-                <div>
-                  <label htmlFor="form_time_part" className={labelBaseClasses}>
-                    <Clock size={14} className="inline mr-1 mb-0.5" /> Time *
+                <div className={formFieldWrapperClasses}>
+                  <label htmlFor="case_id" className={labelBaseClasses}>
+                    <Briefcase size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Case ID *
                   </label>
-                  <DatePicker
-                    id="form_time_part"
-                    selected={selectedTimeForPicker && isValid(selectedTimeForPicker) ? selectedTimeForPicker : null}
-                    onChange={handleTimePartChange}
-                    showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time"
-                    dateFormat="HH:mm:ss" timeFormat="HH:mm" // Changed timeFormat to HH:mm for user input convenience, still submits HH:mm:ss
-                    placeholderText="Select time" // Simplified placeholder
-                    customInput={<CustomDateInput hasError={!!errors.start_time && errors.start_time.includes("Time")} placeholder="HH:MM"/>}
-                    wrapperClassName="w-full"
-                    isClearable showPopperArrow={false} />
+                  <input id="case_id" name="case_id" type="number" value={formData.case_id} onChange={handleChange} disabled={anyOperationLoading}
+                    className={`${baseInputStyles} px-3 py-2.5 border ${errors.case_id ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`} 
+                    placeholder="e.g., 123" />
+                  {errors.case_id && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.case_id}</p>}
                 </div>
               </div>
-              {errors.start_time && <p className="mt-1 text-xs text-red-600">{errors.start_time}</p>}
-              {errors.user_id && <p className="mt-1 text-xs text-red-600">{errors.user_id}</p>} {/* Display user_id error */}
 
+              <div className={formFieldWrapperClasses}> {/* Group for Date/Time and their shared error */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
+                    <div>
+                        <label htmlFor="form_date_part" className={labelBaseClasses}>
+                            <CalendarIcon size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Date *
+                        </label>
+                        <DatePicker
+                            id="form_date_part"
+                            selected={selectedDateForPicker && isValid(selectedDateForPicker) ? selectedDateForPicker : null}
+                            onChange={handleDatePartChange}
+                            dateFormat="yyyy-MM-dd"
+                            customInput={<CustomDateInput hasError={!!errors.start_time?.includes("Date")} placeholder="YYYY-MM-DD" disabled={anyOperationLoading}/>}
+                            wrapperClassName="w-full"
+                            disabled={anyOperationLoading}
+                            isClearable showPopperArrow={false} popperPlacement="bottom-start"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="form_time_part" className={labelBaseClasses}>
+                            <Clock size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Time *
+                        </label>
+                        <DatePicker
+                            id="form_time_part"
+                            selected={selectedTimeForPicker && isValid(selectedTimeForPicker) ? selectedTimeForPicker : null}
+                            onChange={handleTimePartChange}
+                            showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time"
+                            dateFormat="HH:mm" // User sees HH:mm
+                            customInput={<CustomDateInput hasError={!!errors.start_time?.includes("Time")} placeholder="HH:MM" disabled={anyOperationLoading}/>}
+                            wrapperClassName="w-full"
+                            disabled={anyOperationLoading}
+                            isClearable showPopperArrow={false} popperPlacement="bottom-start"
+                        />
+                    </div>
+                </div>
+                {errors.start_time && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.start_time}</p>}
+              </div>
 
-              {/* Event Description */}
-              <div>
+              <div className={formFieldWrapperClasses}>
                 <label htmlFor="event_description" className={labelBaseClasses}>
-                  <FileText size={14} className="inline mr-1 mb-0.5" /> Description
+                  <FileText size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Description
                 </label>
-                <textarea id="event_description" name="event_description" value={formData.event_description}
-                  onChange={handleChange} rows={3}
-                  className={`${inputBaseClasses} ${errors.event_description ? 'border-red-500' : ''}`}
+                <textarea id="event_description" name="event_description" value={formData.event_description} disabled={anyOperationLoading}
+                  onChange={handleChange} rows={4}
+                  className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_description ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`}
                   placeholder="Add any relevant details..." />
-                {errors.event_description && <p className="mt-1 text-xs text-red-600">{errors.event_description}</p>}
+                {errors.event_description && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_description}</p>}
               </div>
+              
+              {/* User ID Info - Non-editable, for info/debugging or if there's an error */}
+              {errors.user_id && (
+                 <div className={`${formFieldWrapperClasses} p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-700`}>
+                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center">
+                        <User size={14} className="mr-2" /> {errors.user_id}
+                    </p>
+                 </div>
+              )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={onClose} disabled={isLoading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors">
-                  <X size={16} className="inline mr-1.5" /> Cancel
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700 mt-6">
+                <button type="button" onClick={() => !anyOperationLoading && onClose()} disabled={anyOperationLoading}
+                  className={`${buttonBaseClasses} text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-500 focus:ring-slate-400`}>
+                  <XIcon size={16} /> Cancel
                 </button>
-                <button type="submit" disabled={isLoading || !formData.user_id} // Disable if no user_id
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-colors flex items-center">
-                  {isLoading ? (<Loader2 size={16} className="inline mr-1.5 animate-spin" />) : (<Save size={16} className="inline mr-1.5" />)}
-                  {isLoading ? 'Saving...' : (eventToEdit?.event_id ? 'Update Event' : 'Create Event')}
+                <button type="submit" disabled={anyOperationLoading || !formData.user_id}
+                  className={`${buttonBaseClasses} text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 disabled:bg-indigo-400 dark:disabled:bg-indigo-700/50 disabled:cursor-not-allowed`}>
+                  {anyOperationLoading ? (<Loader2 size={16} className="animate-spin" />) : (<Save size={16} />)}
+                  {anyOperationLoading ? 'Saving...' : (eventToEdit?.event_id ? 'Update Event' : 'Create Event')}
                 </button>
               </div>
             </form>

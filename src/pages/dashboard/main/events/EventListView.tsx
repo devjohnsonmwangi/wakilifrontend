@@ -1,10 +1,15 @@
 // src/features/events/EventListView.tsx
 import React, { useState } from 'react';
-// Assuming EventListView.tsx is in src/features/events/ and events.ts is also in src/features/events/
-import { EventDataTypes } from '../../../../features/events/events';
-import EventTypeChip from './components/EventTypeChip';
-import { format, parseISO } from 'date-fns'; // Changed 'parse' to 'parseISO'
-import { Eye, Edit3, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { EventDataTypes } from '../../../../features/events/events'; // Assuming events.ts is in the same folder
+import EventTypeChip from './components/EventTypeChip'; // Ensure this is dark mode ready
+import { format, parseISO, isValid } from 'date-fns'; // Added isValid
+import {
+  Eye, Edit3, Trash2,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+   // A more descriptive icon for Date/Time
+  ListFilter, // For "Rows per page"
+  SearchX // For empty state
+} from 'lucide-react';
 
 interface EventListViewProps {
   events: EventDataTypes[];
@@ -28,116 +33,111 @@ const EventListView: React.FC<EventListViewProps> = ({
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    setPage(0); // Reset to first page when rows per page changes
   };
 
-  // UPDATED: Takes full ISO string from event.start_time
-  const formatEventDate = (isoString?: string) => {
+  const formatEventDateTime = (isoString?: string, timeOnly: boolean = false) => {
     if (!isoString) return 'N/A';
     try {
-      const parsedDate = parseISO(isoString); // parseISO handles various ISO formats
-      return format(parsedDate, 'MMM d, yyyy'); // e.g., Jan 1, 2023
-    } catch (e) {
-      console.error("Error formatting date from ISO string:", isoString, e);
-      return 'Invalid Date';
-    }
-  };
-
-  // UPDATED: Takes full ISO string from event.start_time
-  const formatEventTime = (isoString?: string) => {
-    if (!isoString) return 'N/A';
-    try {
-      // Check if the original ISO string likely represented an all-day event
-      // A common format for all-day is "YYYY-MM-DD" (length 10 and no 'T' character)
-      if (isoString.length === 10 && !isoString.includes('T')) {
-        return 'All-day';
-      }
       const parsedDate = parseISO(isoString);
-      return format(parsedDate, 'p'); // e.g., 12:00 PM
+      if (!isValid(parsedDate)) return 'Invalid Date/Time';
+
+      // Check for all-day event (common format "YYYY-MM-DD")
+      if (isoString.length === 10 && !isoString.includes('T')) {
+        return timeOnly ? 'All-day' : `${format(parsedDate, 'MMM d, yyyy')} (All-day)`;
+      }
+      
+      return timeOnly ? format(parsedDate, 'p') : format(parsedDate, 'MMM d, yyyy, p'); // e.g., Jan 1, 2023, 12:00 PM
     } catch (e) {
-      console.error("Error formatting time from ISO string:", isoString, e);
-      return 'Invalid Time';
+      console.error("Error formatting date/time from ISO string:", isoString, e);
+      return 'Invalid Date/Time';
     }
   };
+
 
   const paginatedEvents = events.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const totalPages = Math.ceil(events.length / rowsPerPage);
 
   if (events.length === 0) {
-    return <p className="text-center text-gray-600 my-8">No events found matching your criteria.</p>;
+    return (
+      <div className="flex flex-col items-center justify-center text-center text-slate-500 dark:text-slate-400 my-12 p-6 bg-white dark:bg-slate-800 shadow-lg rounded-lg">
+        <SearchX size={48} className="mb-4 text-slate-400 dark:text-slate-500" />
+        <h3 className="text-xl font-semibold mb-2 text-slate-700 dark:text-slate-300">No Events Found</h3>
+        <p className="text-sm">There are no events matching your current filters or search criteria.</p>
+      </div>
+    );
   }
 
+  const thClasses = "px-6 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider";
+  const tdClasses = "px-6 py-4 whitespace-nowrap text-sm";
+  const actionButtonBaseClasses = "p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-800 transition-all duration-150";
+
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-300">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+          <thead className="bg-slate-50 dark:bg-slate-700/50 sticky top-0 z-10"> {/* Sticky header */}
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className={`${thClasses}`}>
                 Title
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className={`${thClasses}`}>
                 Type
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+              <th scope="col" className={`${thClasses}`}>
+                Date & Time
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Time
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className={`${thClasses}`}>
                 Case ID
               </th>
-              <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className={`${thClasses} text-center`}>
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
             {paginatedEvents.map((event) => (
-              <tr key={event.event_id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer" onClick={() => onViewEventDetails(event)}>
-                  {event.event_title}
+              <tr key={event.event_id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors duration-150">
+                <td 
+                  className={`${tdClasses} font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer group`}
+                  onClick={() => onViewEventDetails(event)}
+                >
+                  <span className="group-hover:underline">{event.event_title}</span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className={`${tdClasses} text-slate-800 dark:text-slate-200`}>
                   <EventTypeChip eventType={event.event_type} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {/* UPDATED: Use event.start_time for date formatting */}
-                  {formatEventDate(event.start_time)}
+                <td className={`${tdClasses} text-slate-600 dark:text-slate-400`}>
+                  {formatEventDateTime(event.start_time)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {/* UPDATED: Use event.start_time for time formatting */}
-                  {formatEventTime(event.start_time)}
+                <td className={`${tdClasses} text-slate-600 dark:text-slate-400`}>
+                  {event.case_id || <span className="italic text-slate-400 dark:text-slate-500">N/A</span>}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {event.case_id || 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  <div className="flex items-center justify-center space-x-2">
+                <td className={`${tdClasses} text-center`}>
+                  <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
                     <button
                       onClick={() => onViewEventDetails(event)}
                       title="View Details"
                       aria-label={`View details for ${event.event_title}`}
-                      className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded-full hover:bg-blue-100"
+                      className={`${actionButtonBaseClasses} text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-500/20 focus:ring-sky-500`}
                     >
-                      <Eye size={20} />
+                      <Eye size={18} />
                     </button>
                     <button
                       onClick={() => onEditEvent(event)}
                       title="Edit Event"
                       aria-label={`Edit ${event.event_title}`}
-                      className="text-yellow-600 hover:text-yellow-800 transition-colors p-1 rounded-full hover:bg-yellow-100"
+                      className={`${actionButtonBaseClasses} text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 focus:ring-amber-500`}
                     >
-                      <Edit3 size={20} />
+                      <Edit3 size={18} />
                     </button>
                     <button
                       onClick={() => onDeleteEvent(event.event_id)}
                       title="Delete Event"
                       aria-label={`Delete ${event.event_title}`}
-                      className="text-red-600 hover:text-red-800 transition-colors p-1 rounded-full hover:bg-red-100"
+                      className={`${actionButtonBaseClasses} text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 focus:ring-red-500`}
                     >
-                      <Trash2 size={20} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </td>
@@ -149,82 +149,85 @@ const EventListView: React.FC<EventListViewProps> = ({
 
       {/* Custom Pagination Controls */}
       {events.length > 0 && (
-        <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-          <div className="flex-1 flex justify-between sm:hidden">
+        <div className="px-4 py-3.5 flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 dark:border-slate-700 sm:px-6 bg-slate-50 dark:bg-slate-800/50">
+          {/* Mobile Pagination (Simplified) */}
+          <div className="flex-1 flex justify-between sm:hidden w-full mb-3 sm:mb-0">
             <button
               onClick={() => handleChangePage(page - 1)}
               disabled={page === 0}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors"
             >
               Previous
             </button>
             <button
               onClick={() => handleChangePage(page + 1)}
               disabled={page >= totalPages - 1}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-md text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors"
             >
               Next
             </button>
           </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700">
-                Showing <span className="font-medium">{events.length > 0 ? page * rowsPerPage + 1 : 0}</span> to{' '}
-                <span className="font-medium">{Math.min((page + 1) * rowsPerPage, events.length)}</span> of{' '}
-                <span className="font-medium">{events.length}</span> results
+          
+          {/* Desktop Pagination */}
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between w-full">
+            <div className="flex items-center gap-2">
+              <ListFilter size={16} className="text-slate-500 dark:text-slate-400" />
+              <label htmlFor="rowsPerPage" className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">Rows:</label>
+              <select
+                  id="rowsPerPage"
+                  name="rowsPerPage"
+                  className="block pl-3 pr-8 py-2 text-sm border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none"
+                  value={rowsPerPage}
+                  onChange={handleChangeRowsPerPage}
+              >
+                  {[5, 10, 15, 25].map(rpp => (
+                      <option key={rpp} value={rpp} className="dark:bg-slate-700 dark:text-slate-200">{rpp}</option>
+                  ))}
+              </select>
+              <p className="text-sm text-slate-700 dark:text-slate-300 ml-4 whitespace-nowrap">
+                <span className="font-semibold text-slate-800 dark:text-slate-100">{page * rowsPerPage + 1}</span>
+                -
+                <span className="font-semibold text-slate-800 dark:text-slate-100">{Math.min((page + 1) * rowsPerPage, events.length)}</span>
+                {' '}of{' '}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">{events.length}</span>
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">Rows per page:</span>
-                <select
-                    id="rowsPerPage"
-                    name="rowsPerPage"
-                    className="mt-1 block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    value={rowsPerPage}
-                    onChange={handleChangeRowsPerPage}
-                >
-                    {[5, 10, 25, 50].map(rpp => (
-                        <option key={rpp} value={rpp}>{rpp}</option>
-                    ))}
-                </select>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              {[
+                { icon: ChevronsLeft, action: () => handleChangePage(0), disabled: page === 0, title: 'First page' },
+                { icon: ChevronLeft, action: () => handleChangePage(page - 1), disabled: page === 0, title: 'Previous page' },
+              ].map((item, idx) => (
                 <button
-                  onClick={() => handleChangePage(0)}
-                  disabled={page === 0}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  title="First page"
+                  key={`nav-start-${idx}`}
+                  onClick={item.action}
+                  disabled={item.disabled}
+                  className={`relative inline-flex items-center px-2 py-2 ${idx === 0 ? 'rounded-l-md' : ''} border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors`}
+                  title={item.title}
                 >
-                  <ChevronsLeft className="h-5 w-5" aria-hidden="true" />
+                  <item.icon className="h-5 w-5" aria-hidden="true" />
                 </button>
+              ))}
+
+              <span className="relative inline-flex items-center px-3.5 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200">
+                {page + 1} / {totalPages}
+              </span>
+
+              {[
+                { icon: ChevronRight, action: () => handleChangePage(page + 1), disabled: page >= totalPages - 1, title: 'Next page' },
+                { icon: ChevronsRight, action: () => handleChangePage(totalPages - 1), disabled: page >= totalPages - 1, title: 'Last page' },
+              ].map((item, idx) => (
                 <button
-                  onClick={() => handleChangePage(page - 1)}
-                  disabled={page === 0}
-                  className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  title="Previous page"
+                  key={`nav-end-${idx}`}
+                  onClick={item.action}
+                  disabled={item.disabled}
+                  className={`relative inline-flex items-center px-2 py-2 ${idx === 1 ? 'rounded-r-md' : ''} border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-colors`}
+                  title={item.title}
                 >
-                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  <item.icon className="h-5 w-5" aria-hidden="true" />
                 </button>
-                <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <button
-                  onClick={() => handleChangePage(page + 1)}
-                  disabled={page >= totalPages - 1}
-                  className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  title="Next page"
-                >
-                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                </button>
-                <button
-                  onClick={() => handleChangePage(totalPages - 1)}
-                  disabled={page >= totalPages - 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  title="Last page"
-                >
-                  <ChevronsRight className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </nav>
-            </div>
+              ))}
+            </nav>
           </div>
         </div>
       )}

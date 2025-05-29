@@ -13,6 +13,7 @@ import { Toaster, toast } from 'sonner';
 import CreateAppointment from './createappointment'; // Adjust path
 import EditAppointment from './editappointments';   // Adjust path
 import ConfirmationModal from './deletion'; // IMPORT THE CONFIRMATION MODAL (ensure path is correct)
+import ReasonDisplayModal from './ReasonDisplayModal'; // IMPORT THE REASON MODAL (ensure path is correct)
 
 // Correctly importing selectors
 import { 
@@ -33,6 +34,8 @@ import {
   User, 
   LogIn,
   ImageOff,
+  Eye, // For View Reason button
+ // For Reason Modal (icon)
 } from 'lucide-react';
 
 interface ApiError {
@@ -66,11 +69,35 @@ const getErrorMessage = (error: ApiError | null | undefined): string => {
   return 'Failed to load. Please check network and try refreshing.';
 };
 
+// Helper to get a display-friendly status name
+const getStatusDisplayName = (status: string): string => {
+  switch (status) {
+    case 'pending': return 'Pending';
+    case 'confirmed': return 'Confirmed';
+    case 'completed': return 'Completed';
+    case 'cancelled': return 'Cancelled';
+    default:
+      if (typeof status === 'string' && status.length > 0) {
+        return status.charAt(0).toUpperCase() + status.slice(1);
+      }
+      return String(status);
+  }
+};
+
+// Helper to truncate text
+const truncateText = (text: string, maxLength: number): string => {
+  if (!text) return ''; 
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength) + '...';
+};
+
+
 const UserAppointments: React.FC = () => {
   const userId = useSelector(selectCurrentUserId);
   const currentUser = useSelector(selectCurrentUser); 
   const userFullName = currentUser?.full_name || null;
-  // Ensure this matches the actual property name in your currentUser object from Redux
   const profilePictureUrl = currentUser?.profile_picture || currentUser?.profile_picture || null; 
 
   const [imgError, setImgError] = useState(false);
@@ -100,9 +127,13 @@ const UserAppointments: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
 
-  // State for the confirmation modal
   const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState<AppointmentDataTypes | null>(null);
+
+  // State for Reason Display Modal
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [reasonToDisplay, setReasonToDisplay] = useState('');
+  const [reasonPartyName, setReasonPartyName] = useState('');
 
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
   const [searchParty, setSearchParty] = useState('');
@@ -162,13 +193,26 @@ const UserAppointments: React.FC = () => {
   const closeCreateModal = () => setIsCreateModalOpen(false);
   const openEditModal = (appointment: AppointmentDataTypes) => { setSelectedAppointment(appointment); setIsEditModalOpen(true); };
   const closeEditModal = () => { setSelectedAppointment(null); setIsEditModalOpen(false); };
+  
+  // Functions for Reason Display Modal
+  const openReasonModal = (reason: string, partyName: string) => {
+    setReasonToDisplay(reason);
+    setReasonPartyName(partyName);
+    setIsReasonModalOpen(true);
+  };
+  const closeReasonModal = () => {
+    setIsReasonModalOpen(false);
+    setReasonToDisplay('');
+    setReasonPartyName('');
+  };
+
   const handleAppointmentCreated = () => { if (userId) refetch(); toast.success('Appointment created successfully!'); };
   const handleAppointmentUpdated = () => { if (userId) refetch(); toast.success('Appointment updated successfully!'); };
   
   const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
     try {
       await updateAppointment({ appointment_id: appointmentId, status: newStatus }).unwrap();
-      toast.success(`Appointment status updated to ${newStatus}!`);
+      toast.success(`Appointment status updated to ${getStatusDisplayName(newStatus)}!`); // Use display name
     } catch (err) {
       const errorMessage = getErrorMessage(err as ApiError);
       toast.error(`Failed to update status: ${errorMessage}`);
@@ -188,12 +232,10 @@ const UserAppointments: React.FC = () => {
       toast.success(`Your appointment for ${appointmentToDelete.party} has been deleted.`);
       setAppointmentToDelete(null);
       setIsConfirmDeleteModalOpen(false);
-      // refetch(); // Tag invalidation from RTK Query should handle data refresh
     } catch (err) {
       console.error('Failed to delete appointment:', err);
       const errorMessage = getErrorMessage(err as ApiError);
       toast.error(`Failed to delete appointment: ${errorMessage}`);
-      // Optionally keep the modal open or provide specific feedback
     }
   };
 
@@ -236,6 +278,7 @@ const UserAppointments: React.FC = () => {
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null }> = ({ errorToDisplay }) => { 
     if (!errorToDisplay) return null;
     const message = getErrorMessage(errorToDisplay);
+    // Don't show error if it's the specific "no appointments" message, as NoAppointmentsMessage will handle it.
     if (message === NO_APPOINTMENTS_FOUND_MESSAGE) return null; 
 
     return (
@@ -248,7 +291,7 @@ const UserAppointments: React.FC = () => {
   const NoAppointmentsMessage: React.FC<{ isInitialEmptyState: boolean }> = ({ isInitialEmptyState }) => ( 
     <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6">
       <CalendarDays className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" />
-      <p className="text-xl font-semibold mb-2">{isInitialEmptyState ? "You have no appointments yet" : "No appointments match your filters"}</p>
+      <p className="text-xl font-semibold mb-2">{isInitialEmptyState ? NO_APPOINTMENTS_FOUND_MESSAGE : "No appointments match your filters"}</p>
       <p className="text-sm text-center">{isInitialEmptyState ? "Get started by creating a new appointment for yourself!" : "Try adjusting your search criteria or clearing some filters."}</p>
       {isInitialEmptyState && (<button onClick={openCreateModal} className="mt-6 flex items-center bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-500 focus:ring-opacity-75"> <PlusCircle className="h-5 w-5 mr-2" /> Create Appointment </button>)}
     </div>
@@ -344,7 +387,13 @@ const UserAppointments: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <input type="text" placeholder="Filter by party name..." value={searchParty} onChange={(e) => setSearchParty(e.target.value)} className="block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500" />
               <input type="text" placeholder="Filter by location name..." value={searchLocation} onChange={(e) => setSearchLocation(e.target.value)} className="block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500" disabled={isLoadingBranchLocations} />
-              <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className="block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors"> <option value="">All Statuses</option> <option value="pending">Pending</option> <option value="confirmed">Confirmed</option> <option value="completed">Completed</option> <option value="cancelled">Cancelled</option> </select>
+              <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className="block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors"> 
+                <option value="">All Statuses</option> 
+                <option value="pending">{getStatusDisplayName('pending')}</option> {/* Use display name */}
+                <option value="confirmed">{getStatusDisplayName('confirmed')}</option>
+                <option value="completed">{getStatusDisplayName('completed')}</option>
+                <option value="cancelled">{getStatusDisplayName('cancelled')}</option>
+              </select>
             </div>
           </div>
 
@@ -354,7 +403,16 @@ const UserAppointments: React.FC = () => {
              showNoAppointmentsMessage ? ( <NoAppointmentsMessage isInitialEmptyState={isEffectivelyInitialEmpty} /> ) : (
               <div className="overflow-x-auto shadow-lg rounded-lg border border-slate-200 dark:border-slate-700">
                 <table className="min-w-full leading-normal">
-                  <thead className="bg-sky-600 dark:bg-sky-700"><tr>{['ID', 'Party', 'Date', 'Time', 'Reason', 'Status', 'Location', 'Actions'].map(header => (<th key={header} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white dark:text-sky-100 uppercase tracking-wider">{header}</th>))}</tr></thead>
+                  <thead className="bg-sky-600 dark:bg-sky-700">
+                    <tr>
+                      {['ID', 'Party', 'Date', 'Time', 'Reason', 'Status', 'Location', 'Actions'].map(header => (
+                        <th key={header} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white dark:text-sky-100 uppercase tracking-wider whitespace-nowrap">
+                          {/* Added whitespace-nowrap */}
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
                   <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredAppointments.map((appointment, index) => (
                       <tr key={appointment.appointment_id} className={`${index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/70 dark:bg-slate-900/50'} hover:bg-sky-50 dark:hover:bg-slate-700/60 transition-colors`}>
@@ -362,9 +420,42 @@ const UserAppointments: React.FC = () => {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.party}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{new Date(appointment.appointment_date).toLocaleDateString()}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.appointment_time}</td>
-                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 max-w-xs"><textarea title='Reason' readOnly value={appointment.reason} rows={2} className="w-full h-auto read-only:bg-transparent read-only:border-none p-0 focus:ring-0 resize-none text-sm text-slate-700 dark:text-slate-300 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent"/></td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300"><select title="Change Status" value={appointment.status} onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)} className="text-xs sm:text-sm bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 block w-full p-1.5 sm:p-2 shadow-sm transition-colors disabled:opacity-70" disabled={isStatusUpdating}> <option value="pending">Pending</option> <option value="confirmed">Confirmed</option> <option value="completed">Completed</option> <option value="cancelled">Cancelled</option> </select></td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{isLoadingBranchLocations ? 'Loading...' : (branchLocations?.find(location => location.branch_id === appointment.branch_id)?.name || 'N/A')}</td>
+                        
+                        {/* MODIFIED REASON COLUMN */}
+                        <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 max-w-xs whitespace-nowrap">
+                          {appointment.reason ? (
+                            <button
+                              onClick={() => openReasonModal(appointment.reason, appointment.party)}
+                              className="flex items-center text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700 text-xs"
+                              title="View Full Reason"
+                            >
+                              <Eye className="h-4 w-4 mr-1 flex-shrink-0" />
+                              <span>{truncateText(appointment.reason, 25)}</span>
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-500 italic text-xs">No reason</span>
+                          )}
+                        </td>
+
+                        {/* MODIFIED STATUS COLUMN */}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 min-w-[130px]">
+                          <select 
+                            title="Change Status" 
+                            value={appointment.status} 
+                            onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)} 
+                            className="block text-sm bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 w-full p-2 shadow-sm transition-colors disabled:opacity-70" 
+                            disabled={isStatusUpdating}
+                          > 
+                            <option value="pending">{getStatusDisplayName('pending')}</option> 
+                            <option value="confirmed">{getStatusDisplayName('confirmed')}</option> 
+                            <option value="completed">{getStatusDisplayName('completed')}</option> 
+                            <option value="cancelled">{getStatusDisplayName('cancelled')}</option> 
+                          </select>
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                          {isLoadingBranchLocations ? 'Loading...' : (branchLocations?.find(location => location.branch_id === appointment.branch_id)?.name || 'N/A')}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
                                 <button onClick={() => openEditModal(appointment)} className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700" title="Edit Appointment"><FilePenLine className="h-5 w-5" /></button>
@@ -391,12 +482,9 @@ const UserAppointments: React.FC = () => {
       {isCreateModalOpen && (
         <CreateAppointment
           isDarkMode={isDarkMode}
-          // Example: Pass first branch if available, or ensure CreateAppointment handles no forBranchId
           forBranchId={branchLocations && branchLocations.length > 0 ? branchLocations[0].branch_id : undefined} 
           onAppointmentCreated={handleAppointmentCreated}
           onClose={closeCreateModal}
-          // If your CreateAppointment also needs userId explicitly (though often derived from auth by backend)
-          // forUserId={userId} 
         />
       )}
 
@@ -429,6 +517,15 @@ const UserAppointments: React.FC = () => {
         confirmText="Yes, Delete My Appointment"
         cancelText="No, Keep It"
         isLoading={isDeletingAppointment}
+        isDarkMode={isDarkMode}
+      />
+
+      {/* REASON DISPLAY MODAL RENDER */}
+      <ReasonDisplayModal
+        isOpen={isReasonModalOpen}
+        onClose={closeReasonModal}
+        reason={reasonToDisplay}
+        partyName={reasonPartyName}
         isDarkMode={isDarkMode}
       />
     </div>
