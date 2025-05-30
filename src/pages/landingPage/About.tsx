@@ -107,15 +107,15 @@ const About = () => {
     ];
 
     const testimonialVideos: TestimonialVideo[] = [
-        { id: 'dQw4w9WgXcQ', title: 'A Game Changer for My Business!', clientName: 'Sarah L., Entrepreneur', description: "Wakili's team provided invaluable insights that helped us navigate complex contracts. Highly recommended!" },
-        { id: 'oHg5SJYRHA0', title: 'Peace of Mind Achieved', clientName: 'Michael B., Homeowner', description: "Facing a property dispute was stressful, but Wakili handled everything with professionalism and care." },
-        { id: 'L_LUpnjgPso', title: 'Expert Guidance When I Needed It Most', clientName: 'Aisha K., Freelancer', description: "Their advice on intellectual property was clear, concise, and exactly what I needed to protect my work." },
+        { id: 's7upA30yZBs', title: 'A Game Changer for My Business!', clientName: 'Sarah L., Entrepreneur', description: "Wakili's team provided invaluable insights that helped us navigate complex contracts. Highly recommended!" },
+        { id: 'Gb6RK32q4Qg', title: 'Peace of Mind Achieved', clientName: 'Michael B., Homeowner', description: "Facing a property dispute was stressful, but Wakili handled everything with professionalism and care." },
+        { id: 'fp85zRg2cwg', title: 'Expert Guidance When I Needed It Most', clientName: 'Aisha K., Freelancer', description: "Their advice on intellectual property was clear, concise, and exactly what I needed to protect my work." },
     ];
 
     const lawyerInsightVideos: LawyerInsightVideo[] = [
-        { id: 'yPYZpwSpKmA', title: 'Understanding Contract Basics', lawyerName: 'Jane Doe, Senior Counsel', topic: 'Contract Law', description: 'A quick overview of essential elements every business owner should know about contracts.' },
-        { id: 'sBws8MSXN7A', title: 'Navigating IP for Startups', lawyerName: 'John Smith, IP Specialist', topic: 'Intellectual Property', description: 'Key considerations for protecting your innovative ideas and brand identity from day one.' },
-        { id: '3tmd-ClpJxA', title: 'Real Estate Due Diligence Tips', lawyerName: 'Alice Brown, Real Estate Attorney', topic: 'Real Estate Law', description: 'Learn what to look for before purchasing a commercial or residential property.' },
+        { id: 'tOqUC5Yb3g4', title: 'Understanding Law Basics', lawyerName: ' Prof Githu Muigai, Senior Counsel', topic: 'Discussion on Law', description: 'A quick overview of essential elements of  Law.' },
+        { id: '29uaoq0UCKw', title: 'PLO  Submission on  African leadership', lawyerName: 'John Smith, PLO PanAfricanist', topic: 'Intellectual leadership', description: 'Key considerations for protecting Africa innovative ideas and History of  Africa.' },
+        { id: 'W0qEq8sy-Ws', title: 'Theory  in Law', lawyerName: 'Prof Githu Muigai, Senior Counsel', topic: 'Decerning Theory In Law', description: 'BBI  in   court  of  appeal,   Many  Prof   titles  were  cited.' },
         // Add more lawyer insight videos here
     ];
 

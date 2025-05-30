@@ -3,12 +3,12 @@ import { Cookie, Settings, Info, CheckCircle, BarChart2, Zap, Globe } from 'luci
 
 // --- Navbar Import (Optional) ---
 import Navbar from '../components/navbar/Navbar'; // Adjust path if needed
-import { Link } from 'react-router-dom';
+//import { Link } from 'react-router-dom';
 
 const CookiePolicyPage: FC = () => {
   const lastUpdatedDate = "Always  updated for  your   safety cookies policy  are  optional"; // CHANGE THIS TO THE ACTUAL DATE
   const appName = "Wakili Application";
-  const companyWebsite = "https://www.wakiliapp.com"; // CHANGE THIS
+  //const companyWebsite = "https://www.wakiliapp.com"; // CHANGE THIS
   const supportEmail = "privacy@wakiliapp.com"; // CHANGE THIS
 
   // Helper component for sections
@@ -145,7 +145,7 @@ const CookiePolicyPage: FC = () => {
               </p>
               <address className="not-italic">
                 By email: <a href={`mailto:${supportEmail}`} className="text-amber-600 dark:text-amber-400 hover:underline">{supportEmail}</a><br />
-                By visiting this page on our website: <Link to={`/contactus`} target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">{companyWebsite}/contact</Link> {/* Adjust link */}
+                
               </address>
             </Section>
           </div>
