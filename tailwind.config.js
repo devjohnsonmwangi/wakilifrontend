@@ -58,8 +58,13 @@ export default {
           '50%': { transform: 'translateY(-5px)' },
           '100%': { transform: 'translateY(0px)' },
         },
-        modalShow: {
+        modalShow: { // You already have this, very similar to what's needed
           '0%': { opacity: '0', transform: 'scale(0.95) translateY(20px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        // --- ADDED/MODIFIED FOR `animate-modalEnter` class ---
+        modalEnter: { // This is for the `animate-modalEnter` class used in Profile.tsx
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' }, // Starts slightly down
           '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
         // --- New keyframes for logout component ---
@@ -94,7 +99,9 @@ export default {
         'fade-in-out': 'fadeInOut 2s ease-in-out infinite',
         'bounce': 'bounce 1s infinite', // Using standard bounce keyframe
         float: 'float 3s ease-in-out infinite',
-        modalShow: 'modalShow 0.3s ease-out forwards',
+        modalShow: 'modalShow 0.3s ease-out forwards', // Connects to modalShow keyframes
+        // --- ADDED/MODIFIED FOR `animate-modalEnter` class ---
+        modalEnter: 'modalEnter 0.3s ease-in-out forwards', // Connects to modalEnter keyframes. 'forwards' is key.
         // --- New animations for logout component ---
         blob: "blob 7s infinite",
         'logout-progress': 'logoutProgress 2s ease-out forwards',
@@ -102,9 +109,7 @@ export default {
         'fade-in-down': 'fadeInDown 0.6s ease-out forwards', // Added 'forwards' to keep final state
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',   // Added 'forwards' to keep final state
       },
-      // --- For direct class usage like `animation-delay-1000` ---
-      // Define values that you will actually use for delays
-      animationDelay: {
+      animationDelay: { // This is for the custom plugin generating .animation-delay-xxxx
         '100': '100ms',
         '200': '200ms',
         '300': '300ms',
@@ -112,28 +117,26 @@ export default {
         '500': '500ms',
         '700': '700ms',
         '1000': '1000ms',
-        // Add more as needed
       },
       screens: {
         'xs': '250px',
         'sm': '640px',
         'md': '768px',
         'lg': '1024px',
-        'xl': '2000px', // This is quite large for xl, usually it's around 1280px or 1536px
+        'xl': '2000px',
       },
     },
   },
   plugins: [
     daisyui,
     flowbitePlugin,
-    // Plugin for generating .animation-delay-xxxx utilities
     function ({ addUtilities, theme, e }) {
       const delays = theme('animationDelay');
       if (delays) {
         const utilities = Object.entries(delays).map(([key, value]) => ({
           [`.${e(`animation-delay-${key}`)}`]: { 'animation-delay': value },
         }));
-        addUtilities(utilities, ['responsive', 'hover']); // Added variants if needed
+        addUtilities(utilities, ['responsive', 'hover']);
       }
     }
   ],
@@ -144,7 +147,5 @@ export default {
       "cmyk", "autumn", "business", "acid", "lemonade", "night",
       "coffee", "winter", "dim", "nord", "sunset",
     ],
-    // darkTheme: "dark", // Set this if you want DaisyUI to automatically apply 'dark' based on its logic or OS.
-                        // Since you have `darkMode: 'class'`, you control this via the class on <html>.
   },
 };

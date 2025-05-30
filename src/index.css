@@ -353,17 +353,8 @@
 .dark .react-datepicker-popper[data-placement^="bottom"] .react-datepicker__triangle::before {
     border-bottom-color: theme('colors.slate.600');
 }
-/* Note: This was duplicated, ensure .custom-datepicker-popper is defined once, preferably in @layer components */
-/*
-.react-datepicker-popper {
-  z-index: 55 !important;
-}
-*/
 
 /* ----- STYLES FOR FANCY LOGOUT & ANIMATION DELAYS ----- */
-/* These were already in @layer utilities, which is fine. */
-/* If you remove the plugin from tailwind.config.js for animation delays, keep the manual definitions here. */
-/* If you keep the plugin, these manual .animation-delay-xxxx can be removed from here. */
 @layer utilities {
   @keyframes blob {
     0% {
@@ -384,6 +375,24 @@
     0% { width: 0%; }
     100% { width: 100%; }
   }
+
+  /* ++ ADDED MODAL ANIMATION ++ */
+  @keyframes modalEnter {
+    from { /* or 0% */
+      opacity: 0;
+      transform: scale(0.95) translateY(10px); /* Example: come from slightly down */
+    }
+    to { /* or 100% */
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-modalEnter {
+    animation: modalEnter 0.3s ease-in-out forwards; /* 'forwards' is key */
+  }
+  /* -- END ADDED MODAL ANIMATION -- */
+
 
   .animate-blob {
     animation: blob 7s infinite;
