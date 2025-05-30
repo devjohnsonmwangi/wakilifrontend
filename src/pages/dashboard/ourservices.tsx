@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard,
     FileText, Users, ArrowRight, Search, LucideProps, XCircle,
-    Filter, ChevronDown, Star, Zap, Info, Briefcase, // Added Briefcase for more icon variety
-    Landmark, Scale, GanttChartSquare // Added more for variety
+    Filter, ChevronDown, Star, Zap, Info, Briefcase,
+    Landmark, Scale, GanttChartSquare,
+    // Icons used in the data structure defined in this file (for processSteps)
+    UsersRound, Puzzle, Target, Settings, MessageSquare, CheckCircle // Added CheckCircle, removed Package & HelpCircle
 } from 'lucide-react';
 
 // (Optional) If you have a shared Navbar for the dashboard
@@ -15,97 +17,186 @@ interface ServiceItem {
     slug: string;
     icon: React.ComponentType<LucideProps>;
     title: string;
-    description: string;
+    description: string; // Short description for list view
     category: string;
     tags?: string[];
     isNew?: boolean;
     isPopular?: boolean;
-    status?: 'Available' | 'Active' | 'Requires Action' | 'Coming Soon' | 'Archived'; // Added 'Archived'
+    status?: 'Available' | 'Active' | 'Requires Action' | 'Coming Soon' | 'Archived';
     lastUsed?: string;
+    // Fields for ServiceDetails page
+    detailedDescription?: string;
+    whoIsThisFor?: string[];
+    processSteps?: { title: string, description: string, icon: React.ComponentType<LucideProps> }[];
+    expertBlurb?: string;
+    pricingModel?: string;
+    faqs?: { question: string, answer: string }[];
 }
 
-// Expanded and diversified sample service data, ensuring icon usage
-const allDashboardServices: ServiceItem[] = [
+// --- START: DETAILED DATA DEFINITION ---
+// This structure should ideally be in a shared file and imported by both
+// DashboardServices.tsx and ServiceDetails.tsx
+
+const initialServicesData: Omit<ServiceItem, 'detailedDescription' | 'whoIsThisFor' | 'processSteps' | 'expertBlurb' | 'pricingModel' | 'faqs'>[] = [
     {
         id: 'svc001', slug: 'legal-consultation', icon: Clipboard, title: 'Legal Consultation',
         description: 'Book a consultation with our expert legal advisors for personalized advice for any matter.',
-        category: 'Advisory', tags: ['consultation', 'advice'], isPopular: true, status: 'Active', lastUsed: '5 days ago'
+        category: 'Advisory', tags: ['consultation', 'advice', 'expert'], isPopular: true, status: 'Active', lastUsed: '5 days ago'
     },
     {
         id: 'svc002', slug: 'contract-drafting-review', icon: ShieldCheck, title: 'Contract Drafting & Review',
         description: 'Ensure your contracts are legally sound and protect your interests effectively. Covers all contract types.',
-        category: 'Documentation', tags: ['contracts', 'review', 'legal docs'], status: 'Available',
+        category: 'Documentation', tags: ['contracts', 'review', 'legal docs', 'drafting'], status: 'Active',
     },
     {
-        id: 'svc003', slug: 'corporate-law-services', icon: Briefcase, title: 'Corporate Law & Business Setup', // Used Briefcase
+        id: 'svc003', slug: 'corporate-law-services', icon: Briefcase, title: 'Corporate Law & Business Setup',
         description: 'Comprehensive services including company formation, M&A, compliance, and shareholder agreements.',
-        category: 'Business', tags: ['corporate', 'formation', 'mergers', 'compliance'], isNew: true, status: 'Available',
+        category: 'Business', tags: ['corporate', 'formation', 'mergers', 'compliance'], isNew: true, status: 'Active',
     },
     {
-        id: 'svc004', slug: 'litigation-dispute-resolution', icon: Scale, title: 'Litigation & Dispute Resolution', // Used Scale
+        id: 'svc004', slug: 'litigation-dispute-resolution', icon: Scale, title: 'Litigation & Dispute Resolution',
         description: 'Expert representation in mediation, arbitration, and complex court proceedings. We fight for you.',
-        category: 'Disputes', tags: ['litigation', 'court', 'arbitration', 'mediation'], status: 'Requires Action', lastUsed: '1 month ago'
+        category: 'Disputes', tags: ['litigation', 'court', 'arbitration', 'mediation'], status: 'Active', lastUsed: '1 month ago'
     },
     {
-        id: 'svc005', slug: 'employment-law-support', icon: Users, title: 'Employment & Labor Law', // Users icon
+        id: 'svc005', slug: 'employment-law-support', icon: Users, title: 'Employment & Labor Law',
         description: 'Guidance on employment contracts, workplace disputes, HR policies, and labor compliance.',
-        category: 'Business', tags: ['employment', 'hr', 'labor', 'workplace'], isPopular: true, status: 'Available'
+        category: 'Business', tags: ['employment', 'hr', 'labor', 'workplace'], isPopular: true, status: 'Active'
     },
     {
-        id: 'svc006', slug: 'intellectual-property-protection', icon: Truck, title: 'Intellectual Property Protection', // Truck for IP delivery/protection
+        id: 'svc006', slug: 'intellectual-property-protection', icon: Truck, title: 'Intellectual Property Protection',
         description: 'Secure your trademarks, patents, copyrights, and trade secrets with our expert IP team.',
-        category: 'Protection', tags: ['ip', 'trademark', 'patent', 'copyright', 'trade secret'], status: 'Available'
+        category: 'Protection', tags: ['ip', 'trademark', 'patent', 'copyright', 'trade secret'], status: 'Active'
     },
     {
-        id: 'svc007', slug: 'oaths-commissioning-notary', icon: FileText, title: 'Oaths & Notary Services', // FileText for documents
+        id: 'svc007', slug: 'oaths-commissioning-notary', icon: FileText, title: 'Oaths & Notary Services',
         description: 'Official witnessing for affidavits, statutory declarations, and notarization of legal documents.',
-        category: 'Official Services', tags: ['notary', 'affidavit', 'declaration', 'commissioner'], isNew: true, status: 'Coming Soon'
+        category: 'Official Services', tags: ['notary', 'affidavit', 'declaration', 'commissioner'], isNew: true, status: 'Active'
     },
     {
-        id: 'svc008', slug: 'family-law-divorce', icon: Users, title: 'Family Law & Divorce', // Users for family
+        id: 'svc008', slug: 'family-law-divorce', icon: Users, title: 'Family Law & Divorce',
         description: 'Compassionate support for divorce, child custody, spousal support, adoption, and related matters.',
-        category: 'Personal', tags: ['family', 'divorce', 'custody', 'adoption', 'support'], status: 'Available', lastUsed: 'Not used yet'
+        category: 'Personal', tags: ['family', 'divorce', 'custody', 'adoption', 'support'], status: 'Active', lastUsed: 'Not used yet'
     },
     {
-        id: 'svc009', slug: 'real-estate-law', icon: Landmark, title: 'Real Estate Law', // Used Landmark
+        id: 'svc009', slug: 'real-estate-law', icon: Landmark, title: 'Real Estate Law',
         description: 'Navigating property transactions, leasing, zoning, and land use regulations. For buyers and sellers.',
-        category: 'Property', tags: ['real estate', 'property', 'conveyancing', 'leasing', 'zoning'], isPopular: true, status: 'Available'
+        category: 'Property', tags: ['real estate', 'property', 'conveyancing', 'leasing', 'zoning'], isPopular: true, status: 'Active'
     },
     {
-        id: 'svc010', slug: 'financial-legal-services', icon: DollarSign, title: 'Financial & Banking Law', // DollarSign
+        id: 'svc010', slug: 'financial-legal-services', icon: DollarSign, title: 'Financial & Banking Law',
         description: 'Advice on financial regulations, loan agreements, investment compliance, and fintech law.',
-        category: 'Finance', tags: ['finance', 'banking', 'investment', 'fintech', 'regulation'], status: 'Available'
+        category: 'Finance', tags: ['finance', 'banking', 'investment', 'fintech', 'regulation'], status: 'Active'
     },
     {
-        id: 'svc011', slug: 'startup-legal-package', icon: Car, title: 'Startup Legal Kickstarter', // Car as a vehicle for new ventures
+        id: 'svc011', slug: 'startup-legal-kickstarter', icon: Car, title: 'Startup Legal Kickstarter',
         description: 'Essential legal services for new businesses, from incorporation to initial funding rounds.',
-        category: 'Business', tags: ['startup', 'new business', 'incorporation', 'funding'], isNew: true, status: 'Available'
+        category: 'Business', tags: ['startup', 'new business', 'incorporation', 'funding'], isNew: true, status: 'Active'
     },
     {
-        id: 'svc012', slug: 'estate-planning-wills', icon: GanttChartSquare, title: 'Estate Planning & Wills', // Used GanttChartSquare for planning
+        id: 'svc012', slug: 'estate-planning-wills', icon: GanttChartSquare, title: 'Estate Planning & Wills',
         description: 'Secure your legacy with comprehensive estate planning, will drafting, and trust formation.',
-        category: 'Personal', tags: ['estate planning', 'wills', 'trusts', 'probate'], status: 'Available'
+        category: 'Personal', tags: ['estate planning', 'wills', 'trusts', 'probate'], status: 'Active'
     },
     {
-        id: 'svc013', slug: 'immigration-law-services', icon: Users, title: 'Immigration Law', // Users for people moving
+        id: 'svc013', slug: 'immigration-law-services', icon: Users, title: 'Immigration Law',
         description: 'Assistance with visa applications, residency permits, citizenship, and immigration appeals.',
         category: 'Immigration', tags: ['immigration', 'visa', 'residency', 'citizenship'], isPopular: true, status: 'Active', lastUsed: '2 weeks ago'
     },
     {
-        id: 'svc014', slug: 'dispute-mediation-service', icon: Wrench, title: 'Alternative Dispute Resolution (ADR)', // Wrench for 'fixing' disputes alternatively
+        id: 'svc014', slug: 'dispute-mediation-service', icon: Wrench, title: 'Alternative Dispute Resolution (ADR)',
         description: 'Facilitating resolutions outside of court through expert mediation and negotiation services.',
-        category: 'Disputes', tags: ['adr', 'mediation', 'negotiation', 'settlement'], status: 'Available',
+        category: 'Disputes', tags: ['adr', 'mediation', 'negotiation', 'settlement'], status: 'Active',
     },
     {
         id: 'svc015', slug: 'archived-legacy-service', icon: Clipboard, title: 'Legacy Data Archival (Old)',
         description: 'Access to archived records from our previous data management system. Read-only access.',
-        category: 'Archived', tags: ['legacy', 'archive', 'old records'], status: 'Archived', lastUsed: '1 year ago'
+        category: 'Archived', tags: ['legacy', 'archive', 'old records'], status: 'Active', lastUsed: '1 year ago'
     }
 ];
 
+const specificDetailedContentMap: Record<string, Partial<ServiceItem>> = {
+    'svc001': {
+        detailedDescription: "Our Legal Consultation service provides direct access to experienced attorneys who can offer clarity on complex legal issues. Whether you're facing a specific challenge or seeking preventative advice, we tailor our guidance to your unique situation, empowering you to make informed decisions. We cover a wide range of legal fields, ensuring you get the specific guidance you need.",
+        whoIsThisFor: [ /* ... */ ],
+        processSteps: [
+            { title: "Initial Inquiry", description: "Contact us with your query. We'll assess if we're the right fit.", icon: MessageSquare },
+            { title: "Information Gathering", description: "We may request relevant documents or details beforehand.", icon: FileText }, // FileText is used
+            { title: "Consultation Session", description: "A dedicated session with an expert to discuss your case.", icon: UsersRound }, // UsersRound is used
+            { title: "Actionable Advice", description: "Receive clear, practical advice and potential next steps.", icon: CheckCircle } // CheckCircle is used
+        ],
+        expertBlurb: "Our advisory team comprises seasoned lawyers with specializations across diverse legal domains, ensuring you receive advice that is both comprehensive and current.",
+        pricingModel: "Consultations are typically billed on an hourly basis. Package rates may be available for ongoing advisory needs. Please inquire for a specific quote.",
+        faqs: [ /* ... */ ]
+    },
+    'svc002': {
+        detailedDescription: "Protect your interests with meticulously drafted and thoroughly reviewed contracts. Our service covers everything from simple agreements to complex multi-party commercial contracts, ensuring clarity, enforceability, and risk mitigation. Ensure your contracts are legally sound and protect your interests effectively.",
+        whoIsThisFor: [ /* ... */ ],
+        processSteps: [
+            { title: "Scope Definition", description: "Understand the purpose and key terms of the contract.", icon: Target }, // Target is used
+            { title: "Drafting/Review", description: "Our experts draft or meticulously review your document.", icon: Wrench }, // Wrench is used
+            { title: "Revisions & Feedback", description: "Incorporate your feedback and make necessary adjustments.", icon: Settings }, // Settings is used
+            { title: "Finalization", description: "Deliver a polished, legally sound contract ready for execution.", icon: ShieldCheck } // ShieldCheck is used
+        ],
+        expertBlurb: "Our contract law specialists have extensive experience across various industries, adept at crafting and analyzing agreements that stand up to scrutiny.",
+        pricingModel: "Services are offered on a fixed-fee basis for standard contracts or hourly for complex/custom work. We provide transparent quotes upfront.",
+        faqs: [ /* ... */ ]
+    },
+    'svc003': {
+        detailedDescription: "From inception to expansion, our corporate law services provide the backbone for your business success. We assist with formation, governance, mergers, acquisitions, and ongoing compliance, ensuring your operations are legally sound and strategically positioned. Navigate the complexities of corporate governance with ease.",
+        whoIsThisFor: [ /* ... */ ],
+        processSteps: [
+            { title: "Needs Assessment", description: "Understand your business goals and legal requirements.", icon: Briefcase }, // Briefcase is used
+            { title: "Strategic Planning", description: "Develop a legal strategy for formation, M&A, or compliance.", icon: GanttChartSquare }, // GanttChartSquare is used
+            { title: "Execution & Filing", description: "Handle all necessary documentation and filings.", icon: FileText },
+            { title: "Ongoing Support", description: "Provide continued advice on corporate governance.", icon: UsersRound }
+        ],
+        expertBlurb: "Our corporate lawyers are strategic partners, offering deep expertise in navigating the intricate world of business law and corporate transactions.",
+        pricingModel: "We offer tailored packages for business setup and fixed or retainer fees for ongoing corporate counsel. M&A services are typically project-based.",
+        faqs: [ /* ... */ ]
+    },
+};
+
+const genericDetailedContentDefaults: Omit<ServiceItem, 'id' | 'slug' | 'icon' | 'title' | 'description' | 'category' | 'status' | 'tags' | 'isNew' | 'isPopular' | 'lastUsed' > = {
+    whoIsThisFor: ["Individuals and businesses seeking expert assistance.", "Clients requiring specialized knowledge in this area.", "Those looking for reliable and effective solutions."],
+    processSteps: [
+        { title: "Initial Consultation", description: "We start by understanding your specific needs and objectives.", icon: MessageSquare }, // MessageSquare is used
+        { title: "Strategy Development", description: "A tailored plan is created to address your requirements.", icon: Puzzle }, // Puzzle is used
+        { title: "Service Execution", description: "Our experts implement the plan with diligence and precision.", icon: Settings },
+        { title: "Review & Follow-up", description: "We ensure your satisfaction and provide ongoing support if needed.", icon: CheckCircle }
+    ],
+    expertBlurb: "Our dedicated team of professionals brings years of experience and a commitment to excellence in delivering this service.",
+    pricingModel: "Pricing is customized based on the scope of work. We offer transparent quotes and flexible engagement models. Contact us for details.",
+    faqs: [
+        { question: "How do I get started?", answer: "Simply contact us to schedule an initial discussion about your needs." },
+        { question: "What makes your service different?", answer: "Our commitment to personalized service, expert knowledge, and client satisfaction sets us apart." }
+    ]
+};
+
+const allDashboardServices: ServiceItem[] = initialServicesData.map(baseService => {
+    const specificDetails = specificDetailedContentMap[baseService.id];
+    const detailedDescription = specificDetails?.detailedDescription || baseService.description + " Our team provides in-depth support and guidance for all aspects related to this service, ensuring your needs are met with professionalism and expertise.";
+
+    if (specificDetails) {
+        return {
+            ...baseService,
+            ...specificDetails,
+            detailedDescription
+        };
+    }
+    return {
+        ...baseService,
+        ...genericDetailedContentDefaults,
+        detailedDescription,
+    };
+});
+// --- END: DETAILED DATA DEFINITION ---
+
+
 type SortOption = 'title-asc' | 'title-desc' | 'popularity' | 'newest' | 'category';
 
-const DashboardServices: React.FC = () => {
+// Renaming component to OurServices as per the file path in the error
+const OurServices: React.FC = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -115,7 +206,7 @@ const DashboardServices: React.FC = () => {
 
     const categories = useMemo(() => {
         const uniqueCategories = ['all', ...new Set(allDashboardServices.map(s => s.category))];
-        return uniqueCategories.sort((a, b) => a === 'all' ? -1 : b === 'all' ? 1 : a.localeCompare(b)); // Keep 'all' at top
+        return uniqueCategories.sort((a, b) => a === 'all' ? -1 : b === 'all' ? 1 : a.localeCompare(b));
     }, []);
 
     const processedServices = useMemo(() => {
@@ -190,14 +281,14 @@ const DashboardServices: React.FC = () => {
     }, [visibleServices]);
 
     const handleServiceNavigation = (slug: string) => {
-        navigate(`/dashboard/services/${slug}`);
+        navigate(`/dashboard/servicesdetails/${slug}`);
     };
 
     const getStatusColor = (status?: ServiceItem['status']) => {
         switch (status) {
             case 'Active': return 'bg-green-100 dark:bg-green-500/30 text-green-700 dark:text-green-300';
             case 'Requires Action': return 'bg-yellow-100 dark:bg-yellow-500/30 text-yellow-700 dark:text-yellow-300';
-            case 'Coming Soon': return 'bg-sky-100 dark:bg-sky-500/30 text-sky-700 dark:text-sky-300'; // Changed from blue for differentiation
+            case 'Coming Soon': return 'bg-sky-100 dark:bg-sky-500/30 text-sky-700 dark:text-sky-300';
             case 'Archived': return 'bg-gray-200 dark:bg-slate-600/40 text-gray-600 dark:text-slate-400';
             case 'Available':
             default: return 'bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300';
@@ -206,12 +297,12 @@ const DashboardServices: React.FC = () => {
 
     return (
         <div className="flex-1 p-4 sm:p-6 md:p-8 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-300">
-            <header className="mb-6 md:mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-800 dark:text-white">
-                    Our Legal Services
+            <header className="mb-8 md:mb-12 p-6 sm:p-8 md:p-10 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 dark:from-purple-700 dark:via-indigo-700 dark:to-blue-800 rounded-xl shadow-xl text-center">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
+                    Explore Our Premier Legal Services
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1">
-                    Browse, filter, and access a wide range of legal services.
+                <p className="text-md sm:text-lg text-purple-100 dark:text-purple-200 max-w-3xl mx-auto">
+                    Discover tailored solutions for all your legal needs. Expertise and dedication, at your service.
                 </p>
             </header>
 
@@ -323,11 +414,11 @@ const DashboardServices: React.FC = () => {
                                             </span>
                                         )}
                                     </div>
-                                _</div>
+                                </div>
                                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed line-clamp-3">
                                     {service.description}
                                 </p>
-                                {service.lastUsed && service.status !== 'Archived' && ( // Don't show lastUsed for archived items
+                                {service.lastUsed && (
                                     <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
                                         <Info size={12} className="inline mr-1" />
                                         Last used: {service.lastUsed}
@@ -337,11 +428,10 @@ const DashboardServices: React.FC = () => {
                             <div className="p-4 bg-gray-50 dark:bg-slate-800/60 border-t border-gray-200 dark:border-slate-700/50">
                                 <button
                                     onClick={() => handleServiceNavigation(service.slug)}
-                                    className="w-full flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/10 py-2.5 px-4 rounded-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={service.status === 'Coming Soon' || service.status === 'Archived'} // Disable button for certain statuses
+                                    className="w-full flex items-center justify-center text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/10 py-2.5 px-4 rounded-md transition-all duration-300"
                                 >
-                                    {service.status === 'Coming Soon' ? 'Coming Soon' : service.status === 'Archived' ? 'View Archive' : 'View Details'}
-                                    {service.status !== 'Coming Soon' && service.status !== 'Archived' && <ArrowRight size={16} className="ml-2 transform transition-transform duration-300 group-hover:translate-x-1" />}
+                                    View Details
+                                    <ArrowRight size={16} className="ml-2 transform transition-transform duration-300 group-hover:translate-x-1" />
                                 </button>
                             </div>
                         </div>
@@ -360,4 +450,4 @@ const DashboardServices: React.FC = () => {
     );
 };
 
-export default DashboardServices;
+export default OurServices; // Changed export name

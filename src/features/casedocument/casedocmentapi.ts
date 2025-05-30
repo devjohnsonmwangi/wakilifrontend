@@ -4,7 +4,7 @@ import { APIDomain } from "../../utils/APIDomain";
 // Define Case Document Types
 export interface CaseDocumentDataTypes {
     document_id: number;
-    case_id: number;
+    case_id: number| null; // Case ID if the document is associated with a case, otherwise null
     document_name: string; // Name of the file
     document_url: string; // URL or path to the file
     mime_type: string; // MIME type of the file (e.g., "application/pdf", "text/plain")

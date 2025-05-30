@@ -58,6 +58,7 @@
     "recharts": "^2.12.7",
     "redux-persist": "^6.0.0",
     "restaurant-client": "link:",
+    "rss-parser": "^3.13.0",
     "socket.io-client": "^4.8.1",
     "sonner": "^1.5.0",
     "tsparticles-engine": "^2.12.0",

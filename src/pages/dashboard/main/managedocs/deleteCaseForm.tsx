@@ -1,127 +1,170 @@
 import { Toaster, toast } from 'sonner';
+// Assuming caseDocumentAPI and CaseDocumentDataTypes are correctly defined and exported
 import { caseDocumentAPI, CaseDocumentDataTypes } from '../../../../features/casedocument/casedocmentapi';
 import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa';
 
 interface DeleteCaseFormProps {
-    caseItem: CaseDocumentDataTypes | null;
+    caseItem: CaseDocumentDataTypes | null; // This type should allow case_id to be null/undefined
     onClose: () => void;
     refetch: () => void;
     isDarkMode?: boolean;
+    isLibraryItem?: boolean; // New prop to distinguish document type
 }
 
-const DeleteCaseForm = ({ caseItem, onClose, refetch, isDarkMode = false }: DeleteCaseFormProps) => {
-    const [deleteCase] = caseDocumentAPI.useDeleteCaseDocumentMutation();
+export const DeleteCaseForm = ({
+    caseItem,
+    onClose,
+    refetch,
+    isDarkMode = false,
+    isLibraryItem = false // Default to false if not provided
+}: DeleteCaseFormProps) => {
+    // Assuming this mutation can delete any document by its ID
+    // If not, you'll need another mutation for library items and conditional logic
+    const [deleteDocument, { isLoading: isDeleting }] = caseDocumentAPI.useDeleteCaseDocumentMutation();
 
     const handleDelete = async () => {
         if (caseItem) {
             try {
-                await deleteCase(caseItem.document_id).unwrap();
+                await deleteDocument(caseItem.document_id).unwrap();
                 toast.success('Document deleted successfully!', { duration: 3000 });
                 onClose();
                 refetch();
             } catch (err) {
-                console.error(err);
-                toast.error('Failed to delete document. Please check your network and try again.', { duration: 5000 });
+                console.error("Error deleting document:", err);
+                // Define a type for the error object
+                type APIError = {
+                    data?: {
+                        detail?: string;
+                        message?: string;
+                    };
+                    message?: string;
+                };
+                const errorObj = err as APIError;
+                const errorMessage =
+                    errorObj?.data?.detail ||
+                    errorObj?.data?.message ||
+                    errorObj?.message ||
+                    'Failed to delete document.';
+                toast.error(`${errorMessage} Please check your network and try again.`, { duration: 5000 });
             }
         } else {
             toast.error('No document selected for deletion. Please select a document and try again.', { duration: 5000 });
         }
     };
 
-    const toastStyles = {
-        error: 'bg-red-500 text-white',
-        success: 'bg-green-500 text-white',
-        warning: 'bg-yellow-500 text-white',
-        info: 'bg-blue-500 text-white',
-    };
+    // Toast styles can be defined globally or per-toast if preferred
+    // const toastStyles = {
+    //     error: 'bg-red-500 text-white',
+    //     success: 'bg-green-500 text-white',
+    // };
+
+    const displayCaseId = caseItem?.case_id !== null && caseItem?.case_id !== undefined;
 
     return (
-        // Main modal container:
-        // - max-h-[70vh]: Limits height to 70% of viewport height.
-        // - flex flex-col: Allows separation of content and footer.
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-auto max-h-[70vh] flex flex-col">
-            {/* Toaster is generally portalled, so its position here is mostly for component organization */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-auto max-h-[80vh] sm:max-h-[70vh] flex flex-col">
+            {/* Toaster can be at a higher level in your app, but if here, ensure it's configured */}
             <Toaster
+                position="top-center" // More common to set position on the Toaster instance
+                richColors
                 theme={isDarkMode ? 'dark' : 'light'}
-                toastOptions={{ classNames: toastStyles }}
+                // toastOptions={{ classNames: toastStyles }} // Sonner handles richColors styling well
             />
 
-            {/* Scrollable Content Area:
-                - flex-grow: Takes available vertical space.
-                - overflow-y-auto: Enables vertical scroll if content exceeds space.
-                - p-6: Padding for the content.
-            */}
             <div className="flex-grow overflow-y-auto p-6">
                 <div className="text-center">
                     <FaExclamationTriangle className="text-red-500 text-5xl mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                        <span className="text-red-600 dark:text-red-400">Warning!</span> Deleting Document?
+                        <span className="text-red-600 dark:text-red-400">Confirm Deletion</span>
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        You are about to delete the following document. This action cannot be undone.
-                        Please confirm that you want to proceed.
+                        You are about to permanently delete the document:
+                        <br />
+                        <strong className="text-gray-700 dark:text-gray-200">
+                            {caseItem?.document_name || 'N/A'}
+                        </strong>.
+                        <br />
+                        This action cannot be undone.
                     </p>
+                    {isLibraryItem && (
+                        <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-3">
+                            This document is part of the general library.
+                        </p>
+                    )}
                     <p className="text-red-700 dark:text-red-400 font-bold mb-2">
                         <FaExclamationTriangle className="inline-block mr-1" />
-                        All associated data will be permanently lost!
-                    </p>
-                    <p className="text-orange-700 dark:text-orange-400 font-semibold mb-4">
-                        <FaExclamationTriangle className="inline-block mr-1" />
-                        Are you absolutely sure you want to continue? Take Caution!
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400 italic mb-4">
-                        This process is irreversible. There is no going back!
+                        All associated data for this document entry will be lost!
                     </p>
                 </div>
 
                 {caseItem && (
-                    // mb-4 remains to give space below the table within the scrollable content
-                    <div className="mb-4">
-                        <table className="table-auto m-auto w-full">
+                    <div className="mb-4 mt-4 border-t border-b border-gray-200 dark:border-gray-700 py-4">
+                        <h4 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">Document Details:</h4>
+                        <table className="table-auto w-full text-sm">
                             <tbody>
                                 <tr>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-medium text-gray-700 dark:text-gray-200">Document ID</td>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-800 dark:text-gray-100">{caseItem.document_id}</td>
+                                    <td className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 text-right">Document ID:</td>
+                                    <td className="px-2 py-1 text-gray-800 dark:text-gray-100">{caseItem.document_id}</td>
                                 </tr>
+                                {displayCaseId && !isLibraryItem && ( // Show Case ID only if it exists and it's not explicitly a library item
+                                    <tr>
+                                        <td className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 text-right">Case ID:</td>
+                                        <td className="px-2 py-1 text-gray-800 dark:text-gray-100">{caseItem.case_id}</td>
+                                    </tr>
+                                )}
                                 <tr>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-medium text-gray-700 dark:text-gray-200">Case ID</td>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-800 dark:text-gray-100">{caseItem.case_id}</td>
+                                    <td className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 text-right">Name:</td>
+                                    <td className="px-2 py-1 text-gray-800 dark:text-gray-100 break-all">{caseItem.document_name}</td>
                                 </tr>
+                                {caseItem.file_size !== undefined && (
+                                    <tr>
+                                        <td className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 text-right">Size:</td>
+                                        <td className="px-2 py-1 text-gray-800 dark:text-gray-100">
+                                            {(caseItem.file_size / 1024 / 1024).toFixed(2)} MB
+                                        </td>
+                                    </tr>
+                                )}
                                 <tr>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-medium text-gray-700 dark:text-gray-200">Name</td>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-800 dark:text-gray-100">{caseItem.document_name}</td>
-                                </tr>
-                                <tr>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-medium text-gray-700 dark:text-gray-200">Size</td>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-800 dark:text-gray-100">{caseItem.file_size} bytes</td>
-                                </tr>
-                                <tr>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 font-medium text-gray-700 dark:text-gray-200">Updated At</td>
-                                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-800 dark:text-gray-100">{new Date(caseItem.updated_at).toLocaleString()}</td>
+                                    <td className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 text-right">Last Updated:</td>
+                                    <td className="px-2 py-1 text-gray-800 dark:text-gray-100">{new Date(caseItem.updated_at).toLocaleString()}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 )}
+                 <p className="text-orange-700 dark:text-orange-400 font-semibold mb-4 text-center">
+                    <FaExclamationTriangle className="inline-block mr-1" />
+                    Are you absolutely sure? This is irreversible.
+                </p>
             </div>
 
-            {/* Fixed Footer with Buttons:
-                - shrink-0: Prevents this section from shrinking.
-                - p-6: Padding for the button area.
-                - border-t: Adds a separator line.
-            */}
-            <div className="shrink-0 p-6 border-t border-gray-200 dark:border-gray-700 flex justify-around">
+            <div className="shrink-0 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-end gap-3">
                 <button
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-100 font-semibold py-2 px-4 rounded shadow"
+                    type="button"
+                    className="w-full sm:w-auto order-2 sm:order-1 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-gray-100 font-semibold py-2 px-4 rounded shadow transition-colors duration-150"
                     onClick={onClose}
+                    disabled={isDeleting}
                 >
-                    No, cancel
+                    Cancel
                 </button>
                 <button
-                    className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold py-2 px-4 rounded shadow flex items-center"
+                    type="button"
+                    className="w-full sm:w-auto order-1 sm:order-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white font-semibold py-2 px-4 rounded shadow flex items-center justify-center transition-colors duration-150 disabled:opacity-70 disabled:cursor-not-allowed"
                     onClick={handleDelete}
+                    disabled={isDeleting || !caseItem}
                 >
-                    <FaTrashAlt className="mr-2" /> Yes, I confirm
+                    {isDeleting ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Deleting...
+                        </>
+                    ) : (
+                        <>
+                            <FaTrashAlt className="mr-2" /> Confirm Delete
+                        </>
+                    )}
                 </button>
             </div>
         </div>

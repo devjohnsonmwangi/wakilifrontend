@@ -31,11 +31,11 @@ const Footer = () => {
               <h6 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Our Services</h6>
               <ul className="space-y-2">
                 {/* Links use default text color, hover to yellow */}
-                <li><Link to="#legal-consultation" className="hover:text-yellow-400 transition-colors duration-300">Legal Consultation</Link></li>
-                <li><Link to="#case-representation" className="hover:text-yellow-400 transition-colors duration-300">Case Representation</Link></li>
-                <li><Link to="#document-review" className="hover:text-yellow-400 transition-colors duration-300">Document Review</Link></li>
-                <li><Link to="#contract-drafting" className="hover:text-yellow-400 transition-colors duration-300">Contract Drafting</Link></li>
-                <li><Link to="#legal-advice" className="hover:text-yellow-400 transition-colors duration-300">Legal Advice</Link></li>
+                <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Legal Consultation</Link></li>
+                <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Case Representation</Link></li>
+                <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Document Review</Link></li>
+                <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Contract Drafting</Link></li>
+                <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Legal Advice</Link></li>
               </ul>
             </div>
 
@@ -44,7 +44,7 @@ const Footer = () => {
               <h6 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Company</h6>
               <ul className="space-y-2">
                 <li><Link to="/about" className="hover:text-yellow-400 transition-colors duration-300">About Us</Link></li>
-                <li><Link to="/dashboard/profile" className="hover:text-yellow-400 transition-colors duration-300">Dashboard</Link></li>
+                <li><Link to="/dashboard" className="hover:text-yellow-400 transition-colors duration-300">Dashboard</Link></li>
                 <li><Link to="/services" className="hover:text-yellow-400 transition-colors duration-300">Services</Link></li>
                 <li><Link to="/contactus" className="hover:text-yellow-400 transition-colors duration-300">Contact Us</Link></li>
               </ul>
@@ -55,7 +55,7 @@ const Footer = () => {
               <h6 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Legal</h6>
               <ul className="space-y-2">
                 <li><Link to="/terms" className="hover:text-yellow-400 transition-colors duration-300">Terms of Use</Link></li>
-                <li><Link to="/privacy" className="hover:text-yellow-400 transition-colors duration-300">Privacy Policy</Link></li>
+                <li><Link to="/privacy-policy" className="hover:text-yellow-400 transition-colors duration-300">Privacy Policy</Link></li>
                 <li><Link to="/cookies" className="hover:text-yellow-400 transition-colors duration-300">Cookie Policy</Link></li>
               </ul>
             </div>

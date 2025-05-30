@@ -12,7 +12,7 @@ import {
   BellRing,
   PlusCircle,
   Edit3,
-  Trash2,
+ // Trash2,
   Loader2, // For loading states on buttons
   AlertCircle, // For error states
 } from 'lucide-react'; // Added more icons
@@ -21,12 +21,12 @@ import {
   EventDataTypes,
   EventReminderDataTypes,
   useFetchRemindersQuery,
-  useDeleteReminderMutation,
+ // useDeleteReminderMutation,
 } from '../../../../features/events/events'; // Path should be correct
 
 import ReminderFormModal from './ReminderFormModal'; // Assumed to be dark-mode ready
 import EventTypeChip from './components/EventTypeChip'; // Assumed to be dark-mode ready
-import ConfirmationDialog from './components/ConfirmationDialog'; // Assumed to be dark-mode ready
+//import ConfirmationDialog from './components/ConfirmationDialog'; // Assumed to be dark-mode ready
 
 interface Props {
   currentUserId?: number; // Not currently used, but kept
@@ -48,7 +48,7 @@ const EventDetailsModal: React.FC<Props> = ({
   onError,   // Passed to ReminderFormModal
 }) => {
   const { data: allReminders, isLoading: isLoadingReminders, isError: isRemindersError, error: remindersErrorObj } = useFetchRemindersQuery(undefined, { skip: !open || !event?.event_id });
-  const [deleteReminder, { isLoading: isDeletingReminder }] = useDeleteReminderMutation();
+  //const [deleteReminder, { isLoading: isDeletingReminder }] = useDeleteReminderMutation();
 
   const reminders = useMemo(
     () => allReminders?.filter(r => r.event_id === event.event_id) || [],
@@ -57,8 +57,8 @@ const EventDetailsModal: React.FC<Props> = ({
 
   const [isReminderFormOpen, setIsReminderFormOpen] = useState(false);
   const [reminderToEdit, setReminderToEdit] = useState<EventReminderDataTypes | null>(null);
-  const [confirmDeleteReminderOpen, setConfirmDeleteReminderOpen] = useState(false);
-  const [reminderToDeleteId, setReminderToDeleteId] = useState<number | null>(null);
+ // const [confirmDeleteReminderOpen, setConfirmDeleteReminderOpen] = useState(false);
+  //onst [reminderToDeleteId, setReminderToDeleteId] = useState<number | null>(null);
 
   const handleOpenCreateReminder = () => {
     setReminderToEdit(null);
@@ -70,23 +70,12 @@ const EventDetailsModal: React.FC<Props> = ({
     setIsReminderFormOpen(true);
   };
 
-  const handleDeleteReminderRequest = (id: number) => {
-    setReminderToDeleteId(id);
-    setConfirmDeleteReminderOpen(true);
-  };
+  // const handleDeleteReminderRequest = (id: number) => {
+  //   setReminderToDeleteId(id);
+  //   setConfirmDeleteReminderOpen(true);
+  // };
 
-  const confirmDeleteReminderAction = async () => {
-    if (!reminderToDeleteId) return;
-    try {
-      await deleteReminder(reminderToDeleteId).unwrap();
-      toast.success('Reminder deleted successfully!');
-    } catch (err: unknown) {
-      toast.error((err as { data?: { msg?: string } })?.data?.msg || 'Failed to delete reminder.');
-    } finally {
-      setConfirmDeleteReminderOpen(false);
-      setReminderToDeleteId(null);
-    }
-  };
+ 
 
   const displayEventStart = (startTimeISO: string) => {
     if (!startTimeISO) return 'N/A';
@@ -228,7 +217,7 @@ const EventDetailsModal: React.FC<Props> = ({
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => handleDeleteReminderRequest(reminder.reminder_id)}
                             className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 rounded-md hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
                             disabled={isDeletingReminder && reminderToDeleteId === reminder.reminder_id}
@@ -239,7 +228,7 @@ const EventDetailsModal: React.FC<Props> = ({
                             ) : (
                               <Trash2 className="w-4 h-4" />
                             )}
-                          </button>
+                          </button> */}
                         </div>
                       </li>
                     ))}
@@ -272,15 +261,7 @@ const EventDetailsModal: React.FC<Props> = ({
       )}
 
       {/* Confirmation Dialog for Reminder Deletion */}
-      <ConfirmationDialog
-        open={confirmDeleteReminderOpen}
-        onClose={() => setConfirmDeleteReminderOpen(false)}
-        onConfirm={confirmDeleteReminderAction}
-        title="Delete Reminder"
-        description="Are you sure you want to delete this reminder? This action cannot be undone."
-        isLoading={isDeletingReminder} // Pass loading state to confirmation dialog
-        // Ensure ConfirmationDialog is also styled for dark mode
-      />
+     
     </>
   );
 };
