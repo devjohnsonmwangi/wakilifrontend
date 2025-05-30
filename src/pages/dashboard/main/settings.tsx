@@ -411,7 +411,7 @@ const SettingsPage = () => {
                 const formImageData = new FormData();
                 formImageData.append('file', imageFile);
                 formImageData.append('upload_preset', 'upload'); // Replace with your Cloudinary preset
-                const response = await axios.post(`https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload`, formImageData); // Replace YOUR_CLOUD_NAME
+                const response = await axios.post(`https://api.cloudinary.com/v1_1/dl3ovuqjn/image/upload`, formImageData); // Replace YOUR_CLOUD_NAME
                 if (response.status === 200 && response.data.secure_url && typeof response.data.secure_url === 'string') {
                     finalProfilePictureValue = response.data.secure_url;
                 } else {
