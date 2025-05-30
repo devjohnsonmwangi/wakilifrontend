@@ -1,12 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useSelector } from 'react-redux'; // For accessing Redux state
 import {
   useFetchBranchLocationsQuery,
   useDeleteBranchLocationMutation,
 } from '../../../../features/branchlocation/branchlocationapi';
+import { selectUserRole } from '../../../../features/users/userSlice'; // Selector for user role
 import CreateBranchLocation from './createbranch';
 import EditBranchLocation from './editbranch';
 import { Toaster, toast } from 'sonner';
-import { Trash2, Edit, PlusCircle, MapPin, Phone, Building, ServerCrash, WifiOff, Sun, Moon } from 'lucide-react'; // Removed AlertTriangle
+import { Trash2, Edit, PlusCircle, MapPin, Phone, Building, ServerCrash, WifiOff, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BranchLocationDataTypes {
@@ -16,26 +18,26 @@ interface BranchLocationDataTypes {
   contact_phone: string;
 }
 
-// Define a type for API error responses (adjust based on your backend)
 interface ApiErrorResponse {
     message?: string;
     error?: string;
     detail?: string | { msg: string; type: string }[];
   }
   
-// Interface to represent the structure of errors from RTK Query
 interface RtkQueryError {
     status?: number | string;
     data?: ApiErrorResponse | string;
     error?: string;
 }
   
-
 const BranchLocationManagement: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<BranchLocationDataTypes | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deletingBranchId, setDeletingBranchId] = useState<number | null>(null);
+
+  // Get user role from Redux store
+  const userRole = useSelector(selectUserRole); 
 
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -77,11 +79,10 @@ const BranchLocationManagement: React.FC = () => {
     setIsEditModalOpen(false);
   }, []);
 
-  const getApiErrorMessage = (error: unknown): string => {
+  const getApiErrorMessage = useCallback((error: unknown): string => {
     const defaultMessage = "An unexpected error occurred. Please try again or contact support.";
     if (typeof error === 'object' && error !== null) {
         const errObj = error as RtkQueryError;
-
         if (errObj.data) {
             if (typeof errObj.data === 'object') {
                 const errorData = errObj.data as ApiErrorResponse;
@@ -119,7 +120,7 @@ const BranchLocationManagement: React.FC = () => {
     }
     if (typeof error === 'string') return error;
     return defaultMessage;
-  };
+  }, []);
 
   const handleDeleteBranch = useCallback(async (branchId: number) => {
     const branchToDelete = branchLocations?.find(b => b.branch_id === branchId);
@@ -155,7 +156,7 @@ const BranchLocationManagement: React.FC = () => {
           duration: Infinity,
         }
       );
-  }, [deleteBranchLocation, refetch, branchLocations]);
+  }, [deleteBranchLocation, refetch, branchLocations, getApiErrorMessage]);
 
   const ErrorDisplay = ({ error }: { error: unknown }) => {
     const errorMessage = getApiErrorMessage(error);
@@ -212,16 +213,19 @@ const BranchLocationManagement: React.FC = () => {
               <MapPin size={48} className="text-sky-400 dark:text-sky-500 mb-4" />
               <h3 className="text-2xl font-semibold text-sky-600 dark:text-sky-300 mb-3">No Branch Locations Found</h3>
               <p className="text-gray-600 dark:text-slate-400 mb-6">
-                It seems there are no branch locations set up yet. Get started by creating one!
+                It seems there are no branch locations set up yet. 
+                {userRole === 'admin' ? " Get started by creating one!" : " Please contact an administrator to add new locations."}
               </p>
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0px 0px 12px rgba(56, 189, 248, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 dark:focus:ring-sky-500 transition-colors duration-200 shadow-md flex items-center"
-                onClick={handleOpenCreateModal}
-              >
-                <PlusCircle size={20} className="mr-2" /> Create First Branch
-              </motion.button>
+              {userRole === 'admin' && (
+                <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: "0px 0px 12px rgba(56, 189, 248, 0.4)" }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 dark:focus:ring-sky-500 transition-colors duration-200 shadow-md flex items-center"
+                    onClick={handleOpenCreateModal}
+                >
+                    <PlusCircle size={20} className="mr-2" /> Create First Branch
+                </motion.button>
+              )}
             </div>
           );
     }
@@ -230,17 +234,22 @@ const BranchLocationManagement: React.FC = () => {
       <div className="overflow-x-auto bg-white dark:bg-slate-800 shadow-2xl rounded-2xl p-1 md:p-0">
         <table className="min-w-full leading-normal">
           <thead >
-            <tr className="bg-slate-100 dark:bg-slate-700/50 border-b-2 border-slate-200 dark:border-slate-700">
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap min-w-[200px]">
-                <Building size={18} className="inline mr-2 opacity-70" />Name
+            <tr className="bg-blue-600 dark:bg-blue-800 border-b-2 border-blue-500 dark:border-blue-700"> {/* Blue header */}
+              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap min-w-[200px]">
+                <Building size={18} className="inline mr-2 opacity-80" />Name
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap min-w-[250px]">
-                <MapPin size={18} className="inline mr-2 opacity-70" />Address
+              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap min-w-[250px]">
+                <MapPin size={18} className="inline mr-2 opacity-80" />Address
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap min-w-[180px]">
-                <Phone size={18} className="inline mr-2 opacity-70" />Contact Phone
+              <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap min-w-[180px]">
+                <Phone size={18} className="inline mr-2 opacity-80" />Contact Phone
               </th>
-              <th className="px-6 py-4 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider whitespace-nowrap min-w-[120px]">Actions</th>
+              {/* Conditionally render Actions header */}
+              {userRole === 'admin' && (
+                <th className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider whitespace-nowrap min-w-[120px]">
+                    Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="text-slate-700 dark:text-slate-300">
@@ -257,33 +266,42 @@ const BranchLocationManagement: React.FC = () => {
                   <td className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100">{branch.name}</td>
                   <td className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-sm">{branch.address}</td>
                   <td className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-sm">{branch.contact_phone}</td>
-                  <td className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-sm">
-                    <div className="flex items-center justify-center space-x-3">
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="text-sky-500 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors duration-200 p-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-700/50"
-                        title="Edit Branch"
-                        onClick={() => handleOpenEditModal(branch)}
-                      >
-                        <Edit className="h-5 w-5" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDeleteBranch(branch.branch_id)}
-                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200 p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50"
-                        title="Delete Branch"
-                        disabled={deletingBranchId === branch.branch_id}
-                      >
-                        {deletingBranchId === branch.branch_id ? (
-                          <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-current rounded-full" />
-                        ) : (
-                          <Trash2 className="h-5 w-5" />
-                        )}
-                      </motion.button>
-                    </div>
-                  </td>
+                  
+                  {/* The Actions <td> is always rendered if the header is rendered.
+                      If the header is not rendered, this <td> should also not be rendered
+                      to maintain consistent column count, or be an empty <td> if the
+                      table structure requires it (e.g., fixed number of columns for styling).
+                      Given the header is conditional, this cell should also be.
+                  */}
+                  {userRole === 'admin' && (
+                    <td className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 text-sm">
+                        <div className="flex items-center justify-center space-x-3">
+                            <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="text-sky-500 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors duration-200 p-1.5 rounded-full hover:bg-sky-100 dark:hover:bg-sky-700/50"
+                            title="Edit Branch"
+                            onClick={() => handleOpenEditModal(branch)}
+                            >
+                            <Edit className="h-5 w-5" />
+                            </motion.button>
+                            <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDeleteBranch(branch.branch_id)}
+                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200 p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-700/50"
+                            title="Delete Branch"
+                            disabled={deletingBranchId === branch.branch_id}
+                            >
+                            {deletingBranchId === branch.branch_id ? (
+                                <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-current rounded-full" />
+                            ) : (
+                                <Trash2 className="h-5 w-5" />
+                            )}
+                            </motion.button>
+                        </div>
+                    </td>
+                  )}
                 </motion.tr>
               ))}
             </AnimatePresence>
@@ -303,14 +321,17 @@ const BranchLocationManagement: React.FC = () => {
           Branch Locations
         </h1>
         <div className="flex items-center gap-4">
-            <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0px 0px 12px rgba(56, 189, 248, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-blue-500 hover:bg-blue-600 dark:bg-sky-500 dark:hover:bg-sky-600 text-white font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-sky-400 transition-all duration-200 shadow-md flex items-center"
-                onClick={handleOpenCreateModal}
-            >
-                <PlusCircle size={20} className="mr-2" /> Create New
-            </motion.button>
+            {/* Conditionally show "Create New" button if user is admin */}
+            {userRole === 'admin' && (
+                <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: "0px 0px 12px rgba(56, 189, 248, 0.4)" }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-blue-500 hover:bg-blue-600 dark:bg-sky-500 dark:hover:bg-sky-600 text-white font-semibold py-2.5 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-sky-400 transition-all duration-200 shadow-md flex items-center"
+                    onClick={handleOpenCreateModal}
+                >
+                    <PlusCircle size={20} className="mr-2" /> Create New
+                </motion.button>
+            )}
             <button
                 onClick={toggleDarkMode}
                 className="p-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -334,9 +355,8 @@ const BranchLocationManagement: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Ensure these modal components are updated to accept and use the isDarkMode prop */}
-      {isCreateModalOpen && <CreateBranchLocation onClose={handleCloseCreateModal} isDarkMode={isDarkMode} />}
-      {isEditModalOpen && selectedBranch && <EditBranchLocation branch={selectedBranch} onClose={handleCloseEditModal} isDarkMode={isDarkMode} />}
+      {isCreateModalOpen && userRole === 'admin' && <CreateBranchLocation onClose={handleCloseCreateModal} isDarkMode={isDarkMode} />}
+      {isEditModalOpen && selectedBranch && userRole === 'admin' && <EditBranchLocation branch={selectedBranch} onClose={handleCloseEditModal} isDarkMode={isDarkMode} />}
 
     </div>
   );
