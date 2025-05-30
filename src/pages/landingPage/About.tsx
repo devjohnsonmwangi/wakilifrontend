@@ -107,9 +107,9 @@ const About = () => {
     ];
 
     const testimonialVideos: TestimonialVideo[] = [
-        { id: 's7upA30yZBs', title: 'A Game Changer for My Business!', clientName: 'Sarah L., Entrepreneur', description: "Wakili's team provided invaluable insights that helped us navigate complex contracts. Highly recommended!" },
-        { id: 'Gb6RK32q4Qg', title: 'Peace of Mind Achieved', clientName: 'Michael B., Homeowner', description: "Facing a property dispute was stressful, but Wakili handled everything with professionalism and care." },
-        { id: 'fp85zRg2cwg', title: 'Expert Guidance When I Needed It Most', clientName: 'Aisha K., Freelancer', description: "Their advice on intellectual property was clear, concise, and exactly what I needed to protect my work." },
+        { id: 's7upA30yZBs', title: 'Develop Yourself  every day!', clientName: 'To  all of  us', description: " Highly recommended!" },
+        { id: 'Gb6RK32q4Qg', title: 'Peace of Mind Achieved', clientName: 'M2S', description: "Facing life   with  courage." },
+        { id: 'fp85zRg2cwg', title: 'History', clientName: 'Pres Oboma', description: "Usa  and  British parliament  History" },
     ];
 
     const lawyerInsightVideos: LawyerInsightVideo[] = [
@@ -275,7 +275,7 @@ const About = () => {
                 <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
                     <h2 className={`flex items-center justify-center text-3xl md:text-4xl font-bold text-center mb-12 ${headingColor} tracking-tight`}>
                         <PlayCircle className={`w-10 h-10 mr-3 ${iconColor}`} />
-                        Hear From Our Valued Clients
+                        Hear From Our Valued Leaders And  Speaches
                     </h2>
                     {testimonialVideos.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
