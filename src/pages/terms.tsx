@@ -6,7 +6,7 @@ import { ShieldCheck, FileText, Info } from 'lucide-react'; // Example icons
 import { Link } from 'react-router-dom';
 
 const TermsAndServicesPage: FC = () => {
-  const lastUpdatedDate = "October 26, 2023"; // CHANGE THIS TO THE ACTUAL DATE
+  const lastUpdatedDate = "Always Updated  as  our  obligation"; // CHANGE THIS TO THE ACTUAL DATE
   const companyName = "WakiliApp Solutions"; // CHANGE THIS
   const appName = "Wakili Application";
   const supportEmail = "support@wakiliapp.com"; // CHANGE THIS
