@@ -59,7 +59,8 @@ const BookAppointmentPage: FC = () => {
               </span>
             </h1>
             <p className="mt-4 text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto">
-              Choose your preferred method to connect with our legal experts. We're committed to providing timely and effective assistance.
+              Choose your preferred method to connect with our legal experts  And   Schedule  An Appointment . We're committed to providing timely and effective assistance.Add  the  Appointment  to 
+                your diary for easy tracking and management. Add  a  reminder to ensure you never miss an important meeting with us.
             </p>
           </header>
 

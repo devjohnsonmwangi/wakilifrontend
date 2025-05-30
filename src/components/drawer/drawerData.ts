@@ -59,7 +59,7 @@ export const drawerData: DrawerData[] = [
     // Original ID 0, link 'mycases'
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false, category: 'User' },
     // Original ID 21, link 'myappointments'
-    { id: 21, name: 'My Appointments', icon: CalendarCheck, link: 'myappointments', adminOnly: false, category: 'User' },
+    { id: 21, name: 'My Appointments', icon: CalendarCheck, link: 'myappointments', adminOnly: true, category: 'Admin' },
     // Original ID 19, link 'user-payments'
     { id: 19, name: 'Payments Records', icon: History, link: 'user-payments', adminOnly: false, category: 'User' },
     // Original ID 16, link 'mytickets'
