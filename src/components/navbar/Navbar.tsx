@@ -185,7 +185,7 @@ const Navbar: FC = () => { // Typed as FC
         { to: "/contactus", icon: Mail, label: "Contact Us" },
     ];
 
-    const desktopLinkClasses = (isActive = false) => `flex items-center text-sm font-semibold px-2.5 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap ${isActive ? 'bg-green-100 text-green-700' : 'text-green-700 hover:text-green-800 hover:bg-green-50'}`;
+    const desktopLinkClasses = (isActive = false) => `flex items-center text-sm font-bold px-2.5 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap ${isActive ? 'bg-green-100 text-green-700' : 'text-green-500 hover:text-green-800 hover:bg-green-50'}`;
     const mobileSheetLinkClasses = (isActive = false) => `flex items-center w-full text-base px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 ${isActive ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`;
     const mobileSheetNavItemClick = (path?: string) => { if (path) navigate(path); setIsMobileMoreSheetOpen(false); };
     const bottomNavLinkClasses = (isActive: boolean) => `flex flex-col items-center justify-center flex-1 px-1 py-2 text-xs transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-green-500 focus:ring-offset-1 rounded-sm ${isActive ? 'text-green-600 font-medium' : 'text-gray-500 hover:text-green-600'}`;

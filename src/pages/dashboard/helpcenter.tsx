@@ -386,7 +386,7 @@ const helpContent: HelpItem[] = [
     id: 'tech-status-page',
     category: "Technical Issues",
     question: "Do you have a status page for system outages or maintenance?",
-    answer: "Yes, we maintain a status page at status.example.com (replace with actual URL). You can check it for real-time information on system performance, scheduled maintenance, and incident reports.",
+    answer: "Yes, we maintain a status page at status.example.com. You can check it for real-time information on system performance, scheduled maintenance, and incident reports.",
     keywords: ["system status", "outage updates", "maintenance schedule", "platform availability"],
   },
   
@@ -564,7 +564,7 @@ const HelpCenter: React.FC = () => {
           <HelpCircle size={48} className="mx-auto text-teal-600 dark:text-teal-400 mb-4" />
           <h1 className="text-4xl font-bold text-slate-800 dark:text-white">Wakili App Help Center</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 mt-3 max-w-2xl mx-auto">
-            We've gathered extensive information to help you. Search below or browse by category.
+            Here is extensive information to help you. Search below or browse by category.
             If you can't find Help, our support team is ready to assist. Click  on  install  app  button  to  get  our  app  if  you  haven't
           </p>
         </header>
@@ -653,7 +653,7 @@ const HelpCenter: React.FC = () => {
         <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
           <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
           <p className="mt-1">
-            <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
+            <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
           </p>
         </footer>
       </div>

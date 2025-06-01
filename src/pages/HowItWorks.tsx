@@ -1,7 +1,8 @@
 import React from "react";
-import Footer from "../pages/landingPage/Footer"; // Adjust path if needed
+//import Footer from "../pages/landingPage/Footer"; // Adjust path if needed
 import Navbar from "../components/navbar/Navbar";
 import Lottie, { Options as LottieOptions } from "react-lottie";
+import { Link } from "react-router-dom";
 import {
     FaUserCheck, FaListAlt, FaFileSignature, FaCalendarAlt,
     FaFileContract, FaComments, FaSmile, FaQuestionCircle, FaQuoteLeft
@@ -290,13 +291,18 @@ function HowItWorks() {
                     <button
                         className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-pink-500/50 dark:focus:ring-pink-400/50"
                     >
-                        Ready to Simplify Your Legal Needs?
+                        <Link  to='/login'>Ready to Simplify Your Legal Needs?</Link>
                         <ChevronRight className="inline-block ml-2 w-5 h-5" />
                     </button>
                 </div>
             </main>
 
-            <Footer />
+            <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
+                      <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                      <p className="mt-1">
+                        <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
+                      </p>
+                    </footer>
         </div>
     );
 }
@@ -341,6 +347,7 @@ const StepCard: React.FC<StepCardProps> = ({ step, animation, title, icon, descr
                     </p>
                 </div>
             </div>
+           
         </div>
     );
 };

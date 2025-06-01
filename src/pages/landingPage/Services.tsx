@@ -203,7 +203,8 @@ const Services = () => {
                     ))}
                 </ul>
             </div>
-            {/* <Footer /> */} {/* Ensure Footer is also dark-mode aware */}
+            
+        
         </div>
     );
 };

@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { usersAPI } from '../../../features/users/usersAPI';
 import { Toaster, toast } from 'sonner';
 import axios from 'axios';
-import Footer from '../../landingPage/Footer';
+import { Link } from 'react-router-dom';
+//import Footer from '../../landingPage/Footer';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../app/store';
 import {
@@ -843,7 +844,12 @@ const SettingsPage = () => {
                     </div>
                 </div>
             )}
-            <Footer />
+             <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
+                      <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                      <p className="mt-1">
+                        <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
+                      </p>
+                    </footer>
         </>
     );
 };

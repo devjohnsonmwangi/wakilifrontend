@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { RootState } from '../../app/store';
 // import bgrides from '../../assets/images/auth/logo.jpeg'; // Commented out or remove if not used
-import heroMainBackground from '../../assets/images/landingPage/justicemaragabench.jpg'; // <-- MAKE SURE THIS PATH IS CORRECT
+import heroMainBackground from '../../assets/images/landingPage/loginandregisterimage.webp'; // <-- MAKE SURE THIS PATH IS CORRECT
 import { useSelector } from 'react-redux';
 import { useEffect, useState, useMemo } from 'react';
 import { Lightbulb, Shield, ArrowRight } from 'lucide-react';
@@ -85,8 +85,8 @@ const Hero = () => {
                     w-full max-w-4xl lg:max-w-5xl px-4 sm:px-6 lg:px-8 py-12 md:py-16`}
             >
                  <div className="space-y-6 md:space-y-10">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white animate-fade-in-down drop-shadow-xl">
-                        Welcome to Wakili <span className="text-blue-400 dark:text-blue-300">Legal Service</span>
+                    <h1 className="text-4xl sm:text-5xl md:text-5xl font-extrabold text-white animate-fade-in-down drop-shadow-xl">
+                        Welcome to Wakili <span className="text-green-500 dark:text-blue-300">Legal Services</span>
                         {name && <span className="block text-xl sm:text-2xl mt-2 font-normal">Glad to see you, {name}!</span>}
                     </h1>
 

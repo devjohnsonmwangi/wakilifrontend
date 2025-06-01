@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { Lock, ListChecks, UserCog, Users, Database, Globe } from 'lucide-react'; // Example icons
+import { Link } from 'react-router-dom';
 
 // --- Navbar Import (Optional) ---
  import Navbar from '../components/navbar/Navbar'; // Adjust path if needed
@@ -194,6 +195,12 @@ const PrivacyPolicyPage: FC = () => {
             </Section>
           </div>
         </div>
+        <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
+                              <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                              <p className="mt-1">
+                                <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
+                              </p>
+                            </footer>
       </div>
     </>
   );

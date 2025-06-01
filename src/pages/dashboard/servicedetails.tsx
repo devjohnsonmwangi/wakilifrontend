@@ -505,7 +505,7 @@ const ServiceDetails: React.FC = () => {
                                 Take the next step with our expert team. Book an appointment  by  contacting us to discuss your specific needs and let us help you achieve your legal objectives.
                             </p>
                             <button
-                                onClick={() => navigate('/contactus')}
+                                onClick={() => navigate('/dashboard/appoints')}
                                 className="inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
                             >
                                 <CalendarPlus size={22} className="mr-3" />
@@ -549,7 +549,7 @@ const ServiceDetails: React.FC = () => {
             </main>
 
             <footer className="text-center py-8 text-sm text-slate-500 dark:text-slate-400">
-                © {new Date().getFullYear()} Your Law Firm. All Rights Reserved.
+                © {new Date().getFullYear()} Wakili. All Rights Reserved.
                 <p className="mt-1 text-xs">Disclaimer: The information on this application is for general informational purposes only and does not constitute legal advice.</p>
             </footer>
         </div>
