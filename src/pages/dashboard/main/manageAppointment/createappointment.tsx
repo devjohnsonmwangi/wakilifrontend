@@ -1,15 +1,21 @@
-// CreateAppointment.tsx
-import React, { useState, useEffect } from 'react';
-import { useCreateAppointmentMutation, AppointmentDataTypes } from '../../../../features/appointment/appointmentapi';
-import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi';
-import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI';
+// Frontend: CreateAppointment.tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+    useCreateAppointmentMutation,
+    CreateAppointmentPayload, // This should now expect `appointmentDateTimeISO`
+    // Also import AppointmentStatus if you plan to set status from frontend and want type safety
+    // AppointmentStatus,
+} from '../../../../features/appointment/appointmentapi'; // Adjust path
+import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
+import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; // Adjust path
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
+import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as UserIcon } from 'lucide-react';
 
 interface CreateAppointmentProps {
     isDarkMode?: boolean;
     forBranchId?: string | number;
+    preselectedClientId?: number;
     onAppointmentCreated?: () => void;
     onClose: () => void;
 }
@@ -17,6 +23,7 @@ interface CreateAppointmentProps {
 interface ApiErrorData {
   error?: string;
   message?: string;
+  errors?: Array<{ field: string; message: string }>;
 }
 
 interface RtkQueryErrorShape {
@@ -38,7 +45,7 @@ const generateTimeSlots = (startHour = 9, endHour = 17, intervalMinutes = 30): s
         slots.push(`${h}:${m}`);
         currentTime.setMinutes(currentTime.getMinutes() + intervalMinutes);
     }
-    if (endHour > startHour && endTime.getHours() === endHour && endTime.getMinutes() === 0) {
+    if (endTime.getHours() === endHour && endTime.getMinutes() === 0 && currentTime.getTime() <= endTime.getTime()) {
        const h = endTime.getHours().toString().padStart(2, '0');
        slots.push(`${h}:00`);
     }
@@ -47,72 +54,125 @@ const generateTimeSlots = (startHour = 9, endHour = 17, intervalMinutes = 30): s
 
 const TIME_SLOTS = generateTimeSlots(9, 17, 30);
 
-
-const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onAppointmentCreated, onClose }) => {
+const CreateAppointment: React.FC<CreateAppointmentProps> = ({
+    forBranchId,
+    preselectedClientId,
+    onAppointmentCreated,
+    onClose
+}) => {
     const [createAppointment, { isLoading: isAppointmentLoading }] = useCreateAppointmentMutation();
     const { data: branches, isLoading: isBranchesLoading, isError: isBranchesError, error: branchesApiError } = useFetchBranchLocationsQuery();
-    const { data: users, isLoading: isUsersLoading, isError: isUsersError, error: usersApiError } = useFetchUsersQuery();
+    const { data: allUsers, isLoading: isUsersLoading, isError: isUsersError, error: usersApiError } = useFetchUsersQuery();
 
     const [selectedBranchId, setSelectedBranchId] = useState<number | string>(forBranchId || '');
-    const [party, setParty] = useState('');
-    const [appointmentDate, setAppointmentDate] = useState('');
-    const [appointmentTime, setAppointmentTime] = useState<string>('');
-    const [selectedUserId, setSelectedUserId] = useState<number | string>('');
+    const [selectedClientUserId, setSelectedClientUserId] = useState<number | string>(preselectedClientId || '');
+    const [partyName, setPartyName] = useState('');
+    const [appointmentDate, setAppointmentDate] = useState(''); // User selects YYYY-MM-DD
+    const [appointmentTime, setAppointmentTime] = useState<string>(''); // User selects HH:MM
+    const [selectedStaffId, setSelectedStaffId] = useState<number | string>('');
     const [reason, setReason] = useState('');
+    const [notesByClient, setNotesByClient] = useState('');
+    // const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>('pending'); // If you want to select status
     const [formError, setFormError] = useState<string | null>(null);
+
+    const todayDateString = useMemo(() => {
+        try {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        } catch (e) {
+            console.error("Error generating today's date string:", e);
+            const y = new Date().getFullYear();
+            return `${y}-01-01`;
+        }
+    }, []);
 
     useEffect(() => {
         if (forBranchId) {
-            setSelectedBranchId(typeof forBranchId === 'number' ? forBranchId.toString() : forBranchId);
+            setSelectedBranchId(typeof forBranchId === 'number' ? forBranchId : forBranchId.toString());
         }
-    }, [forBranchId]);
+        if (preselectedClientId) {
+            setSelectedClientUserId(preselectedClientId);
+        }
+    }, [forBranchId, preselectedClientId]);
 
     const getApiErrorMessage = (error: unknown): string => {
         if (typeof error === 'object' && error !== null) {
             const errorShape = error as RtkQueryErrorShape;
             if (errorShape.data) {
                 if (typeof errorShape.data === 'string') return errorShape.data;
-                if (typeof errorShape.data === 'object' && (errorShape.data as ApiErrorData).message) return (errorShape.data as ApiErrorData).message!;
-                if (typeof errorShape.data === 'object' && (errorShape.data as ApiErrorData).error) return (errorShape.data as ApiErrorData).error!;
+                const dataError = errorShape.data as ApiErrorData;
+                if (dataError.message) return dataError.message;
+                if (dataError.error) return dataError.error;
+                if (dataError.errors && Array.isArray(dataError.errors) && dataError.errors.length > 0) {
+                    return dataError.errors.map(e => `${e.field ? `${e.field}: ` : ''}${e.message}`).join('; ');
+                }
             }
             if (errorShape.error && typeof errorShape.error === 'string') return errorShape.error;
             if ((error as Error).message) return (error as Error).message;
         }
-        return 'An unknown error occurred. Please check logs or network tab.';
+        return 'An unknown error occurred while processing your request.';
       };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setFormError(null);
-        if (!selectedBranchId || !party.trim() || !appointmentDate || !appointmentTime || !selectedUserId || !reason.trim()) {
-            setFormError('Please fill in all required fields, including selecting a time.');
-            toast.error('Please fill in all required fields, including selecting a time.');
+        if (!selectedBranchId || !partyName.trim() || !appointmentDate || !appointmentTime || !selectedClientUserId || !selectedStaffId || !reason.trim()) {
+            const errorMessage = 'Please fill in all required fields: Branch, Client, Assign To, Party Name, Date, Time, and Reason.';
+            setFormError(errorMessage); // Removed ?? null, already a string or null
+            toast.error(errorMessage);
             return;
         }
-        const newAppointment: Omit<AppointmentDataTypes, 'appointment_id'> = {
-            user_id: Number(selectedUserId),
-            branch_id: Number(selectedBranchId),
-            party: party.trim(),
-            appointment_date: appointmentDate,
-            appointment_time: appointmentTime,
-            status: 'pending',
-            reason: reason.trim(),
-        };
+
+        let appointmentDateTimeISO: string;
         try {
-            await createAppointment(newAppointment).unwrap();
+            const localDateTime = new Date(`${appointmentDate}T${appointmentTime}:00`);
+            if (isNaN(localDateTime.getTime())) {
+                throw new Error("Invalid date or time selected by user.");
+            }
+            appointmentDateTimeISO = localDateTime.toISOString(); // Converts to UTC ISO string
+        } catch (dateError: unknown) {
+            console.error("Error constructing ISO date:", dateError);
+            const errorMessage =
+                dateError && typeof dateError === "object" && "message" in dateError && typeof (dateError as { message?: string }).message === "string"
+                    ? (dateError as { message?: string }).message
+                    : "Invalid date or time. Please check your selection.";
+            setFormError(errorMessage ?? null); // Ensure string or null, never undefined
+            toast.error(errorMessage);
+            return;
+        }
+
+        // Corrected payload construction
+        const payloadForServer: CreateAppointmentPayload = {
+            client_user_id: Number(selectedClientUserId),
+            branch_id: Number(selectedBranchId),
+            party: partyName.trim(),
+            appointmentDateTimeISO: appointmentDateTimeISO, // Send the combined UTC ISO string
+            status: 'pending', // Default status, or use selectedStatus if you add a dropdown
+            reason: reason.trim(),
+            assigneeIds: selectedStaffId ? [Number(selectedStaffId)] : [], // Ensure it's an array or undefined if not sent
+            notes_by_client: notesByClient.trim() || undefined,
+        };
+
+        try {
+            await createAppointment(payloadForServer).unwrap();
             toast.success('Appointment created successfully!');
-            setParty('');
+            // Reset form fields
+            setPartyName('');
             setAppointmentDate('');
             setAppointmentTime('');
             setSelectedBranchId(forBranchId || '');
-            setSelectedUserId('');
+            setSelectedClientUserId(preselectedClientId || '');
+            setSelectedStaffId('');
             setReason('');
+            setNotesByClient('');
+            // setSelectedStatus('pending'); // Reset status if selectable
             if (onAppointmentCreated) onAppointmentCreated();
             onClose();
         } catch (error) {
             console.error('Failed to create appointment:', error);
             const message = getApiErrorMessage(error);
             toast.error(`Failed to create appointment: ${message}`);
+            setFormError(message);
         }
     };
 
@@ -128,25 +188,30 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
         exit: { opacity: 0, transition: { duration: 0.2 } },
     };
 
-    const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600
-                              rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
-                              focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent
-                              transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
+    const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
     const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
-    const filteredUsers = users ? users.filter(user => user.role !== "client" && user.role !== "user") : [];
-    const formatTimeForDisplay = (time24: string): string => {
-        if (!time24) return "";
-        const [hoursStr, minutesStr] = time24.split(':');
+
+    const staffUsers = allUsers ? allUsers.filter(user => user.role && !['client', 'user'].includes(user.role.toLowerCase())) : [];
+    const clientUsers = allUsers ? allUsers.filter(user => user.role && ['client', 'user'].includes(user.role.toLowerCase())) : [];
+
+    const formatTimeForDisplay = (time24Value: string): string => {
+        if (!time24Value || typeof time24Value !== 'string' || !time24Value.includes(':')) {
+            return "Pick Time";
+        }
+        const [hoursStr, minutesStr] = time24Value.split(':');
+        if (!hoursStr || !minutesStr) return "Invalid Format";
         const hours = parseInt(hoursStr, 10);
         const minutes = parseInt(minutesStr, 10);
+        if (isNaN(hours) || isNaN(minutes)) return "Invalid Numbers";
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const displayHours = hours % 12 || 12;
         return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     };
 
+
     return (
         <motion.div
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" // Removed overflow-y-auto h-full w-full, flex handles centering
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
@@ -154,24 +219,21 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
             onClick={onClose}
         >
             <motion.div
-                className={`relative border bg-white dark:bg-slate-800 rounded-2xl shadow-2xl
-                           text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700
-                           w-full max-w-2xl h-[70vh] flex flex-col`} // MODIFIED: Width to max-w-2xl, height to 70vh, flex flex-col. Removed padding.
+                className={`relative border bg-white dark:bg-slate-800 rounded-2xl shadow-2xl text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 w-full max-w-2xl h-[85vh] sm:h-[80vh] flex flex-col`}
                 variants={modalVariants}
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
                     title='Close Modal'
                     aria-label="Close modal"
-                    className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full p-1.5 transition-colors duration-200 z-10" // Ensure button is on top
+                    className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full p-1.5 transition-colors duration-200 z-10"
                     onClick={onClose}
                 >
                     <X className="h-5 w-5" />
                 </button>
 
-                {/* Scrollable content area */}
-                <div className="flex-grow overflow-y-auto p-6 sm:p-8"> {/* ADDED: Wrapper for scrollable content with padding */}
-                    <div className="text-center mb-6 sm:mb-8"> {/* This header section is now part of the scrollable area */}
+                <div className="flex-grow overflow-y-auto p-6 sm:p-8">
+                    <div className="text-center mb-6 sm:mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 dark:from-sky-500 dark:to-indigo-600">
                             <CalendarPlus className="w-8 h-8 text-white" />
                         </div>
@@ -188,7 +250,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                             <motion.div
                                 key="loading-data"
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                className="flex flex-col items-center justify-center py-10 min-h-[200px]" // min-h ensures loader shows nicely
+                                className="flex flex-col items-center justify-center py-10 min-h-[200px]"
                             >
                                 <Loader2 className="h-12 w-12 animate-spin text-blue-500 dark:text-sky-400 mb-3" />
                                 <p className="text-slate-600 dark:text-slate-400">
@@ -221,9 +283,10 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                 onSubmit={handleSubmit} className="space-y-5"
                             >
+                                {/* Branch Location Select */}
                                 <div>
                                     <label htmlFor="branch" className={labelBaseClasses}>
-                                        <MapPin size={16} className="mr-2 opacity-70" /> Branch Location
+                                        <MapPin size={16} className="mr-2 opacity-70" /> Branch Location *
                                     </label>
                                     <select
                                         id="branch"
@@ -244,22 +307,47 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                                     </select>
                                 </div>
 
+                                {/* Client User Select */}
                                 <div>
-                                    <label htmlFor="userId" className={labelBaseClasses}>
-                                        <UserCheck size={16} className="mr-2 opacity-70" /> Assign To (Staff/Admin)
+                                    <label htmlFor="clientUserId" className={labelBaseClasses}>
+                                        <UserIcon size={16} className="mr-2 opacity-70" /> Client (User for Appointment) *
                                     </label>
                                     <select
-                                        id="userId"
-                                        value={selectedUserId}
-                                        onChange={(e) => setSelectedUserId(e.target.value)}
-                                        className={`${inputBaseClasses} ${!selectedUserId ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                                        id="clientUserId"
+                                        value={selectedClientUserId}
+                                        onChange={(e) => setSelectedClientUserId(e.target.value)}
+                                        className={`${inputBaseClasses} ${!selectedClientUserId ? 'text-slate-400 dark:text-slate-500' : ''}`}
                                         required
-                                        disabled={filteredUsers.length === 0}
+                                        disabled={clientUsers.length === 0 || !!preselectedClientId}
                                     >
                                         <option value="" disabled>
-                                            {filteredUsers.length === 0 ? "No staff available" : "Select Staff Member"}
+                                            {clientUsers.length === 0 ? "No clients/users available" : "Select Client/User"}
                                         </option>
-                                        {filteredUsers.map((user: UserDataTypes) => (
+                                        {clientUsers.map((user: UserDataTypes) => (
+                                            <option key={user.user_id} value={user.user_id.toString()}>
+                                                {user.full_name} ({user.email})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Assign To Staff Select */}
+                                <div>
+                                    <label htmlFor="assignTo" className={labelBaseClasses}>
+                                        <UserCheck size={16} className="mr-2 opacity-70" /> Assign To (Staff) *
+                                    </label>
+                                    <select
+                                        id="assignTo"
+                                        value={selectedStaffId}
+                                        onChange={(e) => setSelectedStaffId(e.target.value)}
+                                        className={`${inputBaseClasses} ${!selectedStaffId ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                                        required
+                                        disabled={staffUsers.length === 0}
+                                    >
+                                        <option value="" disabled>
+                                            {staffUsers.length === 0 ? "No staff available" : "Select Staff Member"}
+                                        </option>
+                                        {staffUsers.map((user: UserDataTypes) => (
                                             <option key={user.user_id} value={user.user_id.toString()}>
                                                 {user.full_name} ({user.role})
                                             </option>
@@ -267,39 +355,41 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                                     </select>
                                 </div>
 
+                                {/* Party Name Input */}
                                 <div>
-                                    <label htmlFor="party" className={labelBaseClasses}>
-                                        <Users size={16} className="mr-2 opacity-70" /> Involved Party / Client Name
+                                    <label htmlFor="partyName" className={labelBaseClasses}>
+                                        <Users size={16} className="mr-2 opacity-70" /> Party Name (e.g., Client's Name or Case Name) *
                                     </label>
                                     <input
                                         type="text"
-                                        id="party"
+                                        id="partyName"
                                         className={inputBaseClasses}
-                                        value={party}
-                                        onChange={(e) => setParty(e.target.value)}
-                                        placeholder="e.g., John Doe"
+                                        value={partyName}
+                                        onChange={(e) => setPartyName(e.target.value)}
+                                        placeholder="e.g., John Doe vs ABC Corp"
                                         required
                                     />
                                 </div>
 
+                                {/* Date and Time Inputs */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="appointmentDate" className={labelBaseClasses}>
-                                            <CalendarPlus size={16} className="mr-2 opacity-70" /> Date
+                                            <CalendarPlus size={16} className="mr-2 opacity-70" /> Date *
                                         </label>
                                         <input
                                             type="date"
                                             id="appointmentDate"
                                             className={inputBaseClasses}
                                             value={appointmentDate}
-                                            min={new Date().toISOString().split('T')[0]}
+                                            min={todayDateString}
                                             onChange={(e) => setAppointmentDate(e.target.value)}
                                             required
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="appointmentTime" className={labelBaseClasses}>
-                                            <Clock size={16} className="mr-2 opacity-70" /> Time
+                                            <Clock size={16} className="mr-2 opacity-70" /> Time *
                                         </label>
                                         <select
                                             id="appointmentTime"
@@ -318,36 +408,47 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                                     </div>
                                 </div>
 
+                                {/* Reason Textarea */}
                                 <div>
                                     <label htmlFor="reason" className={labelBaseClasses}>
-                                        <MessageSquare size={16} className="mr-2 opacity-70" /> Reason / Purpose
+                                        <MessageSquare size={16} className="mr-2 opacity-70" /> Reason / Purpose *
                                     </label>
                                     <textarea
                                         id="reason"
                                         className={`${inputBaseClasses} resize-none`}
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
-                                        rows={3} // You might adjust rows if needed, but scrolling will handle overflow
+                                        rows={3}
                                         placeholder="Briefly describe the purpose of the appointment"
                                         required
                                     />
                                 </div>
 
+                                {/* Client Notes Textarea */}
+                                <div>
+                                    <label htmlFor="notesByClient" className={labelBaseClasses}>
+                                        <MessageSquare size={16} className="mr-2 opacity-70" /> Client Notes (Optional)
+                                    </label>
+                                    <textarea
+                                        id="notesByClient"
+                                        className={`${inputBaseClasses} resize-none`}
+                                        value={notesByClient}
+                                        onChange={(e) => setNotesByClient(e.target.value)}
+                                        rows={2}
+                                        placeholder="Any additional notes or requests from the client"
+                                    />
+                                </div>
+
+                                {/* Form Error Display */}
                                 {formError && (
                                     <p className="text-xs text-red-500 dark:text-red-400 text-center">{formError}</p>
                                 )}
 
-                                {/* Buttons are now inside the scrollable area too. If you want them fixed at the bottom, more complex layout is needed. */}
+                                {/* Submit and Cancel Buttons */}
                                 <div className="pt-3 flex flex-col sm:flex-row-reverse sm:justify-start gap-3">
                                     <motion.button
                                         type="submit"
-                                        className={`w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg text-white
-                                                    bg-gradient-to-r from-blue-600 to-purple-600 dark:from-sky-500 dark:to-indigo-600
-                                                    hover:from-blue-700 hover:to-purple-700 dark:hover:from-sky-600 dark:hover:to-indigo-700
-                                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-sky-500
-                                                    dark:focus:ring-offset-slate-800
-                                                    transition-all duration-300 ease-in-out shadow-md hover:shadow-lg
-                                                    disabled:opacity-60 disabled:cursor-not-allowed text-sm`}
+                                        className={`w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 dark:from-sky-500 dark:to-indigo-600 hover:from-blue-700 hover:to-purple-700 dark:hover:from-sky-600 dark:hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-sky-500 dark:focus:ring-offset-slate-800 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed text-sm`}
                                         disabled={isAppointmentLoading || isBranchesLoading || isUsersLoading}
                                         whileHover={{ scale: (isAppointmentLoading || isBranchesLoading || isUsersLoading) ? 1 : 1.03 }}
                                         whileTap={{ scale: (isAppointmentLoading || isBranchesLoading || isUsersLoading) ? 1 : 0.98 }}
@@ -361,12 +462,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                                     </motion.button>
                                     <motion.button
                                         type="button"
-                                        className="w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg
-                                                    bg-slate-100 hover:bg-slate-200 text-slate-700
-                                                    dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-200
-                                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-slate-500
-                                                    dark:focus:ring-offset-slate-800
-                                                    transition-all duration-300 ease-in-out shadow-sm hover:shadow-md text-sm"
+                                        className="w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-slate-500 dark:focus:ring-offset-slate-800 transition-all duration-300 ease-in-out shadow-sm hover:shadow-md text-sm"
                                         onClick={onClose}
                                         whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.98 }}
@@ -378,7 +474,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({  forBranchId, onA
                             </motion.form>
                         )}
                     </AnimatePresence>
-                </div> {/* End of scrollable content area */}
+                </div>
             </motion.div>
         </motion.div>
     );

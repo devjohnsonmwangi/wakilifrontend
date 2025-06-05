@@ -13,7 +13,7 @@ export interface TypeTickets {
     status: string;
     updated_at: string;
     created_at: string;
-    user: {
+    creator: {
         full_name: string;
         email: string;
         phone_number: string;

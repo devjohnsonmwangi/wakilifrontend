@@ -4,7 +4,7 @@ import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { store, persistedStore } from './app/store.ts';
+import { store, persistor } from './app/store.ts';
 
 // Pages and components
 import Home from './pages/landingPage/Home.tsx';
@@ -49,6 +49,8 @@ import BookAppointmentPage from './pages/dashboard/howtoappoint.tsx';
 import TermsAndServicesPage from './pages/terms.tsx';
 import PrivacyPolicyPage from './pages/privacypolicy.tsx';
 import CookiePolicyPage from './pages/cookies.tsx';
+import ClientAppointments from './pages/dashboard/main/manageAppointment/clientsappointments.tsx';
+import ChatPage from './pages/ChatPage.tsx';
 
 // Define routes
 const router = createBrowserRouter([
@@ -100,12 +102,16 @@ const router = createBrowserRouter([
       { path: 'mydiary', element: <MyDiary /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'updates', element: <LegalNewsSection /> }, // Path: /dashboard/updates (if different from top-level)
-      { path: 'myappointments', element: <UserAppointments /> },
+      { path: 'myclientsappointments', element: <UserAppointments /> },
       { path: 'branchappointments', element: <BranchAppointments /> },
       //general   document library
       {path: 'library', element: <LibDocumentList /> }, // Assuming this is a general document library
       //how  to  get an appointment
       {path: 'appoints', element: <BookAppointmentPage /> }, // Assuming this is a page explaining how to book appointments
+      //clients  appointment
+      {path:'myappointments', element: <ClientAppointments /> }, // Assuming this is a page for clients to view their appointments
+      //import chatpage
+      {path:'chats',element: <ChatPage /> }, // Placeholder for chat page, replace with actual component if needed
     ],
   },
   // No need for a separate global fallback here if Dashboard has its own errorElement
@@ -118,7 +124,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistedStore}>
+      <PersistGate loading={null} persistor={persistor}>
         <RouterProvider router={router} />
       </PersistGate>
     </Provider>

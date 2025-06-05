@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
+    // Adjust this path to where your caseAndPaymentAPI slice is defined
     useUpdateCaseMutation,
     CaseDataTypes,
     CaseType,
     CaseStatus,
-    UpdateCasePayload, // Import UpdateCasePayload for explicit typing if desired
+    UpdateCasePayload,
 } from '../../../../features/case/caseAPI'; // Adjust path as necessary
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -24,9 +25,8 @@ interface FormData {
     case_status: CaseStatus;
     case_number: string;
     case_track_number: string;
-    fee: number | '';
+    fee: string; // Changed from number | '' to string, to align with CaseDataTypes.fee
     case_description: string;
-    // If you add form fields for court, station, parties, add them here too
     court: string | null;
     station: string | null;
     parties: string | null;
@@ -46,10 +46,8 @@ interface RtkQueryErrorShape {
 
 const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose }) => {
     const id = caseItem?.case_id || 0;
-    // user_id is part of UpdateCasePayload and should be sent if it's meant to be updatable
-    // or if the backend requires it even for identification (though case_id in URL usually suffices for that).
-    // Based on UpdateCasePayload, user_id *can* be part of the body.
-    const userId = caseItem?.user_id || 0;
+    // userId is no longer sent in the UpdateCasePayload as per the new definition
+    // const userId = caseItem?.user_id || 0;
 
     const [updateCase, { isLoading }] = useUpdateCaseMutation();
 
@@ -58,7 +56,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
         case_status: caseItem?.case_status || 'open',
         case_number: caseItem?.case_number || '',
         case_track_number: caseItem?.case_track_number || '',
-        fee: caseItem?.fee ?? '',
+        fee: caseItem?.fee || '', // caseItem.fee is string, so default to empty string
         case_description: caseItem?.case_description || '',
         court: caseItem?.court || null,
         station: caseItem?.station || null,
@@ -73,8 +71,8 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
                 case_status: caseItem.case_status,
                 case_number: caseItem.case_number,
                 case_track_number: caseItem.case_track_number,
-                fee: caseItem.fee ?? '',
-                case_description: caseItem.case_description ?? '',
+                fee: caseItem.fee, // caseItem.fee is already a string
+                case_description: caseItem.case_description ?? '', // Ensure string, even if null from API
                 court: caseItem.court ?? null,
                 station: caseItem.station ?? null,
                 parties: caseItem.parties ?? null,
@@ -85,25 +83,22 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        let processedValue: string | number | null = value;
+        let processedValue: string | null = value;
 
         if (name === 'fee') {
-            if (value === '') {
-                processedValue = '';
-            } else {
-                const numValue = Number(value);
-                if (!isNaN(numValue)) {
-                    processedValue = numValue;
-                } else {
-                    processedValue = formData.fee;
-                }
-            }
+            // Store the raw string value from the input. Validation will handle format.
+            processedValue = value;
         } else if (name === 'court' || name === 'station' || name === 'parties') {
             processedValue = value === '' ? null : value;
         }
-
-        setFormData(prev => ({ ...prev, [name]: processedValue as string | number | null })); // Explicit type assertion for union type
-        if (errors[name]) {
+        // Note: The 'as string | number | null' assertion was broad.
+        // Since 'fee' is now string, and others are string or null,
+        // 'string | null' covers most cases. `case_type` and `case_status` are specific string literals.
+        setFormData(prev => ({
+            ...prev,
+            [name]: processedValue
+        }));
+        if (errors[name as keyof FormData]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
@@ -121,7 +116,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
             newErrors.fee = 'Fee is required.';
             isValid = false;
         } else {
-            const feeAsNumber = Number(formData.fee);
+            const feeAsNumber = Number(formData.fee); // Convert string fee to number for validation
             if (isNaN(feeAsNumber) || feeAsNumber <= 0) {
                 newErrors.fee = 'Fee must be a positive number.';
                 isValid = false;
@@ -130,12 +125,6 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
 
         if (!formData.case_description || formData.case_description.length < 10) newErrors.case_description = 'Description must be at least 10 characters';
         
-        // Optional: Add validation for court, station, parties if they become required
-        // if (formData.court && formData.court.length < 3) newErrors.court = 'Court name is too short.';
-        // if (formData.station && formData.station.length < 3) newErrors.station = 'Station name is too short.';
-        // if (formData.parties && formData.parties.length < 3) newErrors.parties = 'Parties description is too short.';
-
-
         setErrors(newErrors);
         isValid = Object.keys(newErrors).length === 0;
         return isValid;
@@ -158,7 +147,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
                     }
                 }
             }
-            if (errorShape.error) return errorShape.error;
+            if (errorShape.error) return errorShape.error; // RTK Query often puts plain error messages here
             if ((error as Error).message) return (error as Error).message;
         }
         return 'An unknown error occurred. Please try again.';
@@ -175,40 +164,28 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
             return;
         }
 
-        const numericFee = formData.fee as number; // Validation ensures this is a number
+        // formData.fee is now a string, validation ensures it's a string representing a positive number.
+        // const numericFee = formData.fee as number; // No longer needed
 
         try {
-            // Construct the payload for the request body carefully.
-            // This object should conform to `UpdateCasePayload`.
-            // It includes only the fields that are allowed to be updated.
             const bodyPayload: UpdateCasePayload = {
-                // user_id might be part of UpdateCasePayload if your backend allows/requires it
-                // If your `UpdateCasePayload` OMITs user_id (because it's immutable or derived server-side), remove it here.
-                // Based on your current UpdateCasePayload, user_id is allowed.
-                user_id: userId, 
+                // user_id is OMITTED from UpdateCasePayload in the new Redux API slice
+                // user_id: userId, 
                 
-                // Fields from the form data
                 case_type: formData.case_type,
                 case_status: formData.case_status,
                 case_number: formData.case_number,
                 case_track_number: formData.case_track_number,
-                fee: numericFee,
+                fee: formData.fee, // Send as string, as per CaseDataTypes.fee
                 case_description: formData.case_description,
-
-                // Other fields from CaseDataTypes that are part of UpdateCasePayload
-                // and might be editable (even if not directly via this form's inputs).
-                // If your form had inputs for these, they would come from formData too.
-                // Since they are in formData now, they are covered.
                 court: formData.court,
                 station: formData.station,
                 parties: formData.parties,
             };
             
-            // The object passed to the `updateCase` mutation hook needs to match
-            // its expected argument type: { case_id: number } & UpdateCasePayload
             await updateCase({
                 case_id: id,    // For the URL parameter
-                ...bodyPayload  // This becomes the request body, conforming to UpdateCasePayload
+                ...bodyPayload  // This becomes the request body
             }).unwrap();
 
             toast.success('Case updated successfully!');
@@ -409,13 +386,13 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
                                 <CircleDollarSign size={16} className="mr-2 opacity-70" /> Case Fee (KES)
                             </label>
                             <input
-                                type="number"
+                                type="number" // input type="number" is fine for user experience
                                 id="fee_edit"
                                 name="fee"
-                                value={formData.fee}
+                                value={formData.fee} // formData.fee is a string
                                 onChange={handleChange}
                                 placeholder="e.g., 50000.00"
-                                step="0.01"
+                                step="0.01" // Helps with number input UX
                                 className={`${inputBaseClasses} ${errors.fee ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-green-500 dark:focus:ring-emerald-500'}`}
                             />
                             {errors.fee && <p className={errorTextClasses}>{errors.fee}</p>}

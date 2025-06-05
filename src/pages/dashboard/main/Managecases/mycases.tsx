@@ -1,7 +1,12 @@
 // MyCases.tsx
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store'; // Ensure this path is correct
-import { caseAndPaymentAPI, CaseDataTypes, CaseStatus } from "../../../../features/case/caseAPI";
+import {
+    caseAndPaymentAPI,
+    CaseDataTypes,
+    CaseStatus,
+ 
+} from "../../../../features/case/caseAPI";
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import CreateCaseForm from '../../main/Managecases/createcase';
 import EditCaseForm from '../../main/Managecases/updatecase';
@@ -12,35 +17,31 @@ import { toast, Toaster } from 'sonner';
 
 import {
     FaEdit, FaRegWindowRestore, FaPlus, FaSearch, FaTrashAlt, FaEye, FaMoneyBill,
-    FaSun, FaMoon,
-    FaFingerprint,
-    FaTag,
-    FaBarcode,
-    FaFileInvoiceDollar,
-    FaClipboardCheck,
-    FaWallet,
-    FaCogs,
-    FaUserCircle,
-    FaExclamationTriangle,
-    FaRedo
+    FaSun, FaMoon, FaFingerprint, FaTag, FaBarcode, FaFileInvoiceDollar,
+    FaClipboardCheck, FaWallet, FaCogs, FaUserCircle, FaExclamationTriangle, FaRedo,
+    FaUsers
 } from 'react-icons/fa';
 
-// Helper component for table headers
-const HeaderCell = ({ icon: Icon, text, className = '' }: { icon: React.ElementType, text: string, className?: string }) => (
-    // Ensured whitespace-nowrap is here
-    <th className={`px-5 py-3.5 border-b-2 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}>
-      <div className="flex items-center">
-        <Icon className="mr-2 h-4 w-4 opacity-70" /> {text}
-      </div>
+// HeaderCell component for table headers
+const HeaderCell = ({ icon: Icon, text, className = "" }: { icon: React.ElementType, text: string, className?: string }) => (
+    <th
+        scope="col"
+        // Added whitespace-nowrap for no line breaks, adjusted base styling
+        className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}
+    >
+        <div className="flex items-center space-x-2">
+            <Icon className="inline-block h-4 w-4" /> {/* Icon color will inherit from text-white on thead */}
+            <span>{text}</span>
+        </div>
     </th>
 );
 
-// Modern Skeleton Loader Row for Table
+// SkeletonRow component for loading state
 const SkeletonRow = ({ columns }: { columns: number }) => (
-    <tr className="animate-pulse">
-        {Array.from({ length: columns }).map((_, index) => (
-            <td key={index} className="px-5 py-5 border-b border-gray-200 dark:border-slate-700 bg-transparent">
-                <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-3/4"></div>
+    <tr>
+        {Array.from({ length: columns }).map((_, idx) => (
+            <td key={idx} className="px-5 py-4">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
             </td>
         ))}
     </tr>
@@ -48,16 +49,33 @@ const SkeletonRow = ({ columns }: { columns: number }) => (
 
 const MyCases = () => {
     const user = useSelector((state: RootState) => state.user.user);
-    const user_id = user?.user_id ?? 0;
+    const userId = user?.user_id ?? 0;
+    const userRole = user?.role ?? 'client';
     const userFullName = user?.full_name || "User";
     const userProfilePicture = user?.profile_picture || null;
 
     const [isProfileImgError, setIsProfileImgError] = useState(false);
 
-    const { data: caseData, isLoading: caseLoading, error: rawCaseError, refetch } = caseAndPaymentAPI.useGetUserCasesByUserIdQuery(user_id, {
-        refetchOnMountOrArgChange: true,
-        skip: !user_id,
-    });
+    const isClientOrUserRole = userRole === 'client' || userRole === 'user';
+
+    const clientCasesQuery = caseAndPaymentAPI.useGetCasesByClientOwnerQuery(
+        { userId, includeAssignees: true },
+        {
+            skip: !userId || !isClientOrUserRole,
+            refetchOnMountOrArgChange: true,
+        }
+    );
+    const staffCasesQuery = caseAndPaymentAPI.useGetCasesByAssignedStaffQuery(
+        userId,
+        {
+            skip: !userId || isClientOrUserRole,
+            refetchOnMountOrArgChange: true,
+        }
+    );
+
+    const { data: caseData, isLoading: caseLoading, error: rawCaseError, refetch } =
+        isClientOrUserRole ? clientCasesQuery : staffCasesQuery;
+
 
     const errorStatus = (rawCaseError && typeof rawCaseError === 'object' && 'status' in rawCaseError) ? (rawCaseError as { status: number }).status : undefined;
     const caseErrorExists = !!rawCaseError;
@@ -118,14 +136,18 @@ const MyCases = () => {
     };
 
     const handleReopenCase = async (caseItem: CaseDataTypes) => {
-        try {
-            const updatedCase = { ...caseItem, case_status: 'open' as CaseStatus };
-            await updateCase(updatedCase).unwrap();
-            refetch();
-            toast.success('Case reopened successfully!');
-        } catch (error) {
-            console.error('Error reopening case', error);
-            toast.error('Failed to reopen case.');
+        if (!isClientOrUserRole || (isClientOrUserRole && caseItem.user_id === userId)) {
+             try {
+                const payloadForUpdate = { case_id: caseItem.case_id, case_status: 'open' as CaseStatus };
+                await updateCase(payloadForUpdate).unwrap();
+                refetch();
+                toast.success('Case reopened successfully!');
+            } catch (error) {
+                console.error('Error reopening case', error);
+                toast.error('Failed to reopen case.');
+            }
+        } else {
+            toast.info("You do not have permission to reopen this case.");
         }
     };
 
@@ -136,17 +158,23 @@ const MyCases = () => {
         } else if (Array.isArray(caseData)) {
             setCases(caseData);
         } else if (!caseLoading && !caseErrorExists) {
-            setCases([]);
+            setCases([]); 
         }
     }, [caseData, caseLoading, caseErrorExists, errorStatus]);
 
     const filteredCases = useMemo(() => {
         if (!Array.isArray(cases)) return [];
         return cases.filter(caseItem => {
-            const matchesSubject = caseItem.case_number.toLowerCase().includes(filter.subject.toLowerCase());
-            const matchesDescription = caseItem.case_description?.toLowerCase().includes(filter.description.toLowerCase());
+            const matchesCaseNumber = caseItem.case_number.toLowerCase().includes(filter.subject.toLowerCase());
+            const clientName = caseItem.owner?.full_name?.toLowerCase() || '';
+            const assignedStaffNames = caseItem.assignees?.map(a => a.assignee?.full_name?.toLowerCase() || '').join(' ') || '';
+            const matchesDescriptionOrParty =
+                (caseItem.case_description?.toLowerCase().includes(filter.description.toLowerCase())) ||
+                (clientName.includes(filter.description.toLowerCase())) ||
+                (assignedStaffNames.includes(filter.description.toLowerCase()));
+
             const matchesStatus = filter.status ? caseItem.case_status.toLowerCase() === filter.status.toLowerCase() : true;
-            return matchesSubject && matchesDescription && matchesStatus;
+            return matchesCaseNumber && matchesDescriptionOrParty && matchesStatus;
         });
     }, [cases, filter]);
 
@@ -181,7 +209,7 @@ const MyCases = () => {
     const handlePaymentFailure = useCallback(() => {
         toast.error('Payment failed. Please try again.');
     }, []);
-    
+
     const UserProfileIcon = () => {
         if (userProfilePicture && !isProfileImgError) {
             return (
@@ -204,23 +232,29 @@ const MyCases = () => {
 
     const renderTableContent = () => {
         const tableHeaders = (
-            <thead className="bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400">
+            // THEAD: Changed background to indigo, text to white, added bottom border
+            <thead className="bg-indigo-600 dark:bg-indigo-800 text-white border-b-2 border-indigo-400 dark:border-indigo-700">
                 <tr>
-                    <HeaderCell icon={FaFingerprint} text="Case ID" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaTag} text="Status" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaBarcode} text="Track Number" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaFileInvoiceDollar} text="Fees" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaClipboardCheck} text="Payment" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaWallet} text="Balance" className="border-slate-200 dark:border-slate-600"/>
-                    <HeaderCell icon={FaCogs} text="Actions" className="border-slate-200 dark:border-slate-600 text-center justify-center"/>
+                    {/* HEADER CELLS: Added right border to separate columns, color complements new background */}
+                    {/* Original ambiguous border class removed. whitespace-nowrap is now in HeaderCell component. */}
+                    <HeaderCell icon={FaFingerprint} text="Case ID" className="border-r border-indigo-500 dark:border-indigo-700"/>
+                    <HeaderCell icon={FaTag} text="Status" className="border-r border-indigo-500 dark:border-indigo-700"/>
+                    <HeaderCell icon={FaBarcode} text="Case Number" className="border-r border-indigo-500 dark:border-indigo-700"/>
+                    {!isClientOrUserRole && <HeaderCell icon={FaUserCircle} text="Client Name" className="border-r border-indigo-500 dark:border-indigo-700"/>}
+                    {isClientOrUserRole && <HeaderCell icon={FaUsers} text="Assigned Staff Members" className="border-r border-indigo-500 dark:border-indigo-700"/>}
+                    <HeaderCell icon={FaFileInvoiceDollar} text="Total Fees" className="border-r border-indigo-500 dark:border-indigo-700"/>
+                    <HeaderCell icon={FaClipboardCheck} text="Payment Status Detail" className="border-r border-indigo-500 dark:border-indigo-700"/> {/* Made text longer */}
+                    <HeaderCell icon={FaWallet} text="Outstanding Balance" className="border-r border-indigo-500 dark:border-indigo-700"/> {/* Made text longer */}
+                    {/* Last header cell: no right border. text-center will override default text-left from HeaderCell. */}
+                    <HeaderCell icon={FaCogs} text="Available Actions" className="text-center justify-center"/> {/* Made text longer */}
                 </tr>
             </thead>
         );
-        
-        const numberOfColumns = 7;
+
+        const numberOfColumns = 8; 
 
         if (caseLoading) {
-            return (
+             return (
                  <div className="overflow-x-auto">
                     <table className="min-w-full leading-normal">
                         {tableHeaders}
@@ -231,7 +265,7 @@ const MyCases = () => {
                 </div>
             );
         }
-        
+
         const noCasesForUserMessage = (
             <div className="text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-b-lg">
                 <FaRegWindowRestore className="mx-auto text-5xl text-slate-400 dark:text-slate-500 mb-4" />
@@ -239,14 +273,8 @@ const MyCases = () => {
                     No Cases Found
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 mb-6">
-                    You currently have no cases. Get started by creating one!
+                    You currently have no cases associated with your account.
                 </p>
-                <button
-                    className="bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center mx-auto"
-                    onClick={openCreateModal}
-                >
-                    <FaPlus className="mr-2 h-4 w-4" /> Create New Case
-                </button>
             </div>
         );
 
@@ -273,7 +301,7 @@ const MyCases = () => {
                 </div>
             );
         }
-        
+
         const hasNoData = !Array.isArray(caseData) || caseData.length === 0;
         if (hasNoData && !caseLoading && !caseErrorExists) {
              return noCasesForUserMessage;
@@ -290,8 +318,8 @@ const MyCases = () => {
                     <p className="text-slate-500 dark:text-slate-400 mb-6">
                         No cases match your current filter criteria.
                     </p>
-                    <button 
-                        onClick={resetFilters} 
+                    <button
+                        onClick={resetFilters}
                         className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
                     >
                         Reset Filters
@@ -305,8 +333,8 @@ const MyCases = () => {
 
 
         return (
-            <div className="overflow-x-auto shadow-sm rounded-b-lg"> {/* This is the key div for horizontal scroll */}
-                <table className="min-w-full leading-normal"> {/* Ensures table takes at least full width, allowing it to expand further */}
+            <div className="overflow-x-auto shadow-sm rounded-b-lg">
+                <table className="min-w-full leading-normal">
                     {tableHeaders}
                     <tbody className="text-slate-700 dark:text-slate-300">
                         {filteredCases.map((caseItem, index) => (
@@ -314,59 +342,74 @@ const MyCases = () => {
                                 className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 transition-colors duration-150 ease-in-out
                                            ${index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-800/60'}`}
                             >
-                                <td className="px-5 py-4 text-sm whitespace-nowrap"> {/* Added whitespace-nowrap to data cells too */}
+                                <td className="px-5 py-4 text-sm whitespace-nowrap">
                                     <p className="font-medium text-slate-800 dark:text-slate-100">{caseItem.case_id}</p>
                                 </td>
                                 <td className="px-5 py-4 text-sm whitespace-nowrap">
                                     <span className={`px-3 py-1.5 text-xs font-semibold leading-tight rounded-full
-                                        ${caseItem.case_status === 'open' 
-                                            ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-200 dark:bg-emerald-600/30' 
-                                            : 'text-rose-700 bg-rose-100 dark:text-rose-200 dark:bg-rose-600/30'}`}>
+                                        ${caseItem.case_status === 'open'
+                                            ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-200 dark:bg-emerald-600/30'
+                                            : caseItem.case_status === 'closed'
+                                            ? 'text-rose-700 bg-rose-100 dark:text-rose-200 dark:bg-rose-600/30'
+                                            : 'text-slate-700 bg-slate-100 dark:text-slate-200 dark:bg-slate-600/30'}`}>
                                         {caseItem.case_status.charAt(0).toUpperCase() + caseItem.case_status.slice(1)}
                                     </span>
                                 </td>
-                                <td className="px-5 py-4 text-sm whitespace-nowrap">{caseItem.case_track_number}</td>
+                                <td className="px-5 py-4 text-sm whitespace-nowrap">{caseItem.case_number}</td>
+                                {!isClientOrUserRole && (
+                                    <td className="px-5 py-4 text-sm whitespace-nowrap">
+                                        {caseItem.owner?.full_name || 'N/A'}
+                                    </td>
+                                )}
+                                {isClientOrUserRole && (
+                                    <td className="px-5 py-4 text-sm whitespace-nowrap">
+                                        {caseItem.assignees && caseItem.assignees.length > 0
+                                            ? caseItem.assignees.map(a => a.assignee?.full_name || 'Unassigned').join(', ')
+                                            : 'Not Assigned'}
+                                    </td>
+                                )}
                                 <td className="px-5 py-4 text-sm whitespace-nowrap">
-                                    {typeof caseItem.fee === 'number' ? `Ksh ${caseItem.fee.toFixed(2)}` : caseItem.fee}
+                                    Ksh {parseFloat(caseItem.fee).toFixed(2)}
                                 </td>
                                 <td className="px-5 py-4 text-sm whitespace-nowrap">{caseItem.payment_status}</td>
                                 <td className="px-5 py-4 text-sm whitespace-nowrap">
-                                    {typeof caseItem.payment_balance === 'number'
-                                        ? `Ksh ${caseItem.payment_balance.toFixed(2)}`
-                                        : (caseItem.payment_balance == null ? 'N/A' : caseItem.payment_balance)}
+                                    Ksh {parseFloat(caseItem.payment_balance).toFixed(2)}
                                 </td>
-                                <td className="px-5 py-4 text-sm whitespace-nowrap"> {/* Actions cell */}
+                                <td className="px-5 py-4 text-sm whitespace-nowrap">
                                     <div className="flex items-center space-x-2">
                                         <button
                                             className={`${actionButtonBase} bg-sky-500 hover:bg-sky-600 text-white dark:bg-sky-600 dark:hover:bg-sky-700`}
                                             onClick={() => openViewModal(caseItem)} title="View Details">
                                             <FaEye className={iconMr} /> View
                                         </button>
-                                        {caseItem.case_status === 'closed' ? (
+                                        {caseItem.case_status === 'closed' && (
                                             <button
                                                 className={`${actionButtonBase} bg-amber-500 hover:bg-amber-600 text-white dark:bg-amber-600 dark:hover:bg-amber-700`}
                                                 onClick={() => handleReopenCase(caseItem)} title="Reopen Case">
                                                 <FaRegWindowRestore className={iconMr} /> Reopen
                                             </button>
-                                        ) : (
+                                        )}
+                                        {!isClientOrUserRole && caseItem.case_status !== 'closed' && (
                                             <button
                                                 className={`${actionButtonBase} bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-600 dark:hover:bg-blue-700`}
                                                 onClick={() => handleOpenEditModal(caseItem)} title="Edit Case">
                                                 <FaEdit className={iconMr} /> Edit
                                             </button>
                                         )}
-                                        {caseItem.payment_status !== 'paid' && caseItem.fee > 0 && (caseItem.payment_balance == null || caseItem.payment_balance > 0) && (
+                                        {isClientOrUserRole && caseItem.payment_status !== 'paid' && parseFloat(caseItem.payment_balance) > 0 && (
                                             <button
                                                 className={`${actionButtonBase} bg-purple-500 hover:bg-purple-600 text-white dark:bg-purple-600 dark:hover:bg-purple-700`}
                                                 onClick={() => openPaymentModal(caseItem)} title="Make Payment">
                                                 <FaMoneyBill className={iconMr} /> Pay
                                             </button>
                                         )}
-                                         <button
-                                            className={`${actionButtonBase} bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700`}
-                                            onClick={() => handleOpenDeleteModal(caseItem)} title="Delete Case">
-                                            <FaTrashAlt className={iconMr} /> Delete
-                                        </button>
+                                        {!isClientOrUserRole && (
+                                             <button
+                                                className={`${actionButtonBase} bg-red-500 hover:bg-red-600 text-white dark:bg-red-600 dark:hover:bg-red-700`}
+                                                onClick={() => handleOpenDeleteModal(caseItem)} title="Delete Case">
+                                                <FaTrashAlt className={iconMr} /> Delete
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -391,7 +434,7 @@ const MyCases = () => {
                                     {userFullName}'s Cases
                                 </h1>
                                 <p className="text-sm sm:text-base text-purple-100 dark:text-indigo-200 opacity-90">
-                                    Manage and track your cases efficiently.
+                                    Manage and track your {isClientOrUserRole ? 'personal' : 'assigned'} cases efficiently.
                                 </p>
                             </div>
                         </div>
@@ -404,17 +447,19 @@ const MyCases = () => {
                             >
                                 {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
                             </button>
-                             <button
-                                className="bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center text-sm sm:text-base"
-                                onClick={openCreateModal}
-                            >
-                                <FaPlus className="mr-2 h-4 w-4" /> New Case
-                            </button>
+                             {!isClientOrUserRole && ( 
+                                <button
+                                    className="bg-blue-800 hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center text-sm sm:text-base"
+                                    onClick={openCreateModal}
+                                >
+                                    <FaPlus className="mr-2 h-4 w-4" /> New Case
+                                </button>
+                             )}
                         </div>
                     </header>
 
                     <div className="p-4 sm:p-6">
-                        <div className="mb-6 p-4 sm:p-5 bg-slate-50 dark:bg-slate-700/40 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                         <div className="mb-6 p-4 sm:p-5 bg-slate-50 dark:bg-slate-700/40 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex flex-col sm:flex-row justify-between items-center mb-3">
                                 <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2 sm:mb-0">
                                     Filter Cases
@@ -429,7 +474,7 @@ const MyCases = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[
                                     { placeholder: "Case Number", value: filter.subject, key: 'subject' },
-                                    { placeholder: "Description", value: filter.description, key: 'description' }
+                                    { placeholder: "Description / Client / Staff", value: filter.description, key: 'description' }
                                 ].map(input => (
                                 <div className="relative" key={input.key}>
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -453,24 +498,26 @@ const MyCases = () => {
                                     >
                                         <option value="">All Statuses</option>
                                         <option value="open">Open</option>
+                                        <option value="in_progress">In Progress</option>
                                         <option value="closed">Closed</option>
+                                        <option value="on_hold">On Hold</option>
+                                        <option value="resolved">Resolved</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        
                         {renderTableContent()}
                     </div>
 
-                    {isCreateModalOpen && <CreateCaseForm isOpen={isCreateModalOpen} onClose={closeCreateModal} isDarkMode={isDarkMode} />}
+                    {isCreateModalOpen && !isClientOrUserRole && <CreateCaseForm isOpen={isCreateModalOpen} onClose={closeCreateModal} isDarkMode={isDarkMode} />}
                     {isEditModalOpen && editCase && <EditCaseForm isOpen={isEditModalOpen} onClose={handleCloseEditModal} caseItem={editCase} isDarkMode={isDarkMode} />}
                     {isDeleteModalOpen && caseToDelete && <DeleteCaseForm isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal} caseItem={caseToDelete} refetch={refetch} isDarkMode={isDarkMode} />}
-                    {isViewModalOpen && selectedCase && <ViewCaseDetailsModal selectedCase={selectedCase} closeModal={closeViewModal} isDarkMode={isDarkMode} />}
+                    {isViewModalOpen && selectedCase && <ViewCaseDetailsModal selectedCase={selectedCase} closeModal={closeViewModal} isDarkMode={isDarkMode}  />}
                     {caseForPayment && (
                         <SingleCaseMpesaPayment
                             caseId={caseForPayment.case_id}
                             userId={caseForPayment.user_id}
-                            fee={caseForPayment.fee}
+                            fee={parseFloat(caseForPayment.fee)}
                             isOpen={isPaymentModalOpen}
                             onClose={closePaymentModal}
                             onPaymentSuccess={handlePaymentSuccess}

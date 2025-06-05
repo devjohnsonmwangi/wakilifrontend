@@ -1,116 +1,194 @@
 import { FC } from 'react';
-import { Link } from 'react-router-dom'; // Assuming you use React Router
-import { Phone, Building, LifeBuoy, Ticket } from 'lucide-react';
-
-// --- Navbar Import (Optional - if you have a global layout, it might already be there) ---
-// import Navbar from '../components/layout/Navbar'; // Adjust path if needed
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Phone, Building, LifeBuoy, Ticket, ArrowRight, ChevronRight } from 'lucide-react';
 
 const BookAppointmentPage: FC = () => {
-
   const options = [
+    {
+      id: 'ticket',
+      Icon: Ticket,
+      title: 'Request via Ticketing',
+      description: 'Submit a detailed request through our ticketing system. Our team will review, process, and contact you to finalize your appointment details.',
+      actionText: 'Create a Ticket',
+      route: '/dashboard/mytickets',
+      bgColorClass: 'bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600',
+      iconBgColorClass: 'bg-sky-100 dark:bg-sky-900',
+      iconTextColorClass: 'text-sky-600 dark:text-sky-400',
+      featured: true,
+    },
     {
       id: 'contact',
       Icon: Phone,
       title: 'Contact Us Directly',
-      description: 'Speak with our team immediately for urgent matters or quick queries. We are here to help you.',
-      actionText: 'Go to Contact Page',
+      description: 'For urgent matters or if you prefer to speak with someone, call us. We can assist you with scheduling over the phone.',
+      actionText: 'View Contact Info',
       route: '/contactus',
-      bgColor: 'bg-emerald-500 dark:bg-emerald-600',
-      hoverBgColor: 'hover:bg-emerald-600 dark:hover:bg-emerald-700',
-      textColor: 'text-emerald-600 dark:text-emerald-400',
-      borderColor: 'border-emerald-500 dark:border-emerald-600',
-    },
-    {
-      id: 'ticket',
-      Icon: Ticket, // Changed from Edit3 to Ticket for better relevance
-      title: 'Request via Ticketing',
-      description: 'Create a ticket with your appointment request. Our team will review it, close it once seen, and contact you. You can reopen tickets if needed.',
-      actionText: 'Go to My Tickets',
-      route: '/dashboard/mytickets',
-      bgColor: 'bg-sky-500 dark:bg-sky-600',
-      hoverBgColor: 'hover:bg-sky-600 dark:hover:bg-sky-700',
-      textColor: 'text-sky-600 dark:text-sky-400',
-      borderColor: 'border-sky-500 dark:border-sky-600',
+      bgColorClass: 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600',
+      iconBgColorClass: 'bg-emerald-100 dark:bg-emerald-900',
+      iconTextColorClass: 'text-emerald-600 dark:text-emerald-400',
+      featured: false,
     },
     {
       id: 'visit',
       Icon: Building,
       title: 'Visit Our Branches',
-      description: 'Prefer an in-person consultation? Find our nearest branch and schedule a visit at your convenience.',
+      description: 'Find our nearest branch. You can view location details and typical availability to plan your in-person consultation.',
       actionText: 'Find Locations',
       route: '/dashboard/branch',
-      bgColor: 'bg-amber-500 dark:bg-amber-600',
-      hoverBgColor: 'hover:bg-amber-600 dark:hover:bg-amber-700',
-      textColor: 'text-amber-600 dark:text-amber-400',
-      borderColor: 'border-amber-500 dark:border-amber-600',
+      bgColorClass: 'bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600',
+      iconBgColorClass: 'bg-amber-100 dark:bg-amber-900',
+      iconTextColorClass: 'text-amber-600 dark:text-amber-400',
+      featured: false,
     },
   ];
 
-  return (
-    <>
-      {/* <Navbar />  // Uncomment if your Navbar isn't part of a global layout */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-gray-200 dark:from-slate-900 dark:to-gray-950 py-12 sm:py-16 transition-colors duration-300">
-        <div className="container mx-auto px-4">
-          <header className="text-center mb-12 md:mb-16">
-            <LifeBuoy className="mx-auto h-16 w-16 text-emerald-500 dark:text-emerald-400 mb-4" />
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 via-sky-500 to-amber-500 dark:from-emerald-400 dark:via-sky-400 dark:to-amber-400">
-                Book Your Appointment
-              </span>
-            </h1>
-            <p className="mt-4 text-lg text-slate-700 dark:text-slate-300 max-w-2xl mx-auto">
-              Choose your preferred method to connect with our legal experts  And   Schedule  An Appointment . We're committed to providing timely and effective assistance.Add  the  Appointment  to 
-                your diary for easy tracking and management. Add  a  reminder to ensure you never miss an important meeting with us.
-            </p>
-          </header>
+  const featuredOption = options.find(opt => opt.featured);
+  const otherOptions = options.filter(opt => !opt.featured);
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {options.map((option) => (
-              <div
-                key={option.id}
-                className="bg-white dark:bg-slate-800/70 backdrop-blur-md shadow-xl dark:shadow-slate-900/50 rounded-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl flex flex-col group"
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-200 transition-all duration-300 font-sans">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-emerald-500 via-sky-500 to-amber-500 dark:from-emerald-700 dark:via-sky-700 dark:to-amber-700 text-white py-20 md:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 opacity-20">
+          <LifeBuoy className="absolute -top-1/4 -left-1/4 w-64 h-64 text-white/20 animate-spin-slow opacity-50" />
+          <Ticket className="absolute -bottom-1/4 -right-1/4 w-72 h-72 text-white/20 rotate-12 opacity-50" />
+        </div>
+        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            <LifeBuoy className="mx-auto h-14 w-14 sm:h-16 mb-5 drop-shadow-lg" />
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-5 drop-shadow-md">
+              Schedule Your Consultation
+            </h1>
+            <p className="text-lg sm:text-xl text-white/90 mb-4">
+              Connect with our legal experts through your preferred method. We're here to help.
+            </p>
+            <p className="text-sm sm:text-md text-white/80">
+              Once confirmed, appointments appear in{' '}
+              <Link
+                to="/dashboard/myappointments"
+                className="underline hover:text-white/90 font-semibold"
               >
-                <div className={`p-6 ${option.bgColor} flex items-center justify-center h-32 sm:h-36`}>
-                  <option.Icon className="h-16 w-16 sm:h-20 sm:w-20 text-white opacity-80 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:scale-110" />
+                My Appointments
+              </Link>
+              .
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Option */}
+      {featuredOption && (
+        <section className="py-14 sm:py-20 px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row group"
+          >
+            <div
+              className={`lg:w-2/5 p-8 flex flex-col items-center lg:items-start text-center lg:text-left ${featuredOption.iconBgColorClass}`}
+            >
+              <featuredOption.Icon
+                className={`h-20 w-20 mb-6 ${featuredOption.iconTextColorClass} group-hover:scale-110 transition-transform`}
+              />
+              <h2 className="text-2xl sm:text-3xl font-bold mb-1">{featuredOption.title}</h2>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Our recommended method.
+              </p>
+            </div>
+            <div className="lg:w-3/5 p-8 space-y-6">
+              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                {featuredOption.description}
+              </p>
+              <Link
+                to={featuredOption.route}
+                className={`inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg ${featuredOption.bgColorClass} shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
+              >
+                {featuredOption.actionText}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
+      {/* Other Options */}
+      <section className="px-4 pb-20">
+        <div className={`grid grid-cols-1 ${otherOptions.length > 1 ? 'md:grid-cols-2' : ''} gap-6`}>
+          {otherOptions.map((option) => (
+            <motion.div
+              key={option.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md group hover:shadow-2xl transition-shadow duration-300"
+            >
+              <div className="p-6 flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${option.iconBgColorClass}`}>
+                  <option.Icon
+                    className={`h-8 w-8 ${option.iconTextColorClass} group-hover:scale-110 transition-transform duration-300`}
+                  />
                 </div>
-                <div className="p-6 flex flex-col flex-grow">
-                  <h2 className={`text-2xl font-semibold ${option.textColor} mb-3`}>{option.title}</h2>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6 flex-grow">
-                    {option.description}
-                  </p>
-                  <Link
-                    to={option.route}
-                    className={`mt-auto self-start inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white ${option.bgColor} ${option.hoverBgColor} focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 focus:${option.borderColor} transition-colors duration-200 ease-in-out w-full sm:w-auto`}
-                  >
-                    {option.actionText}
-                    <span aria-hidden="true" className="ml-2 text-xl group-hover:translate-x-1 transition-transform duration-200">→</span>
-                  </Link>
+                <div>
+                  <h3 className="text-xl font-bold">{option.title}</h3>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <section className="mt-16 md:mt-24 text-center py-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-lg shadow-lg dark:shadow-slate-900/30 px-6">
-            <h3 className="text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-4">
-              Need Assistance Choosing?
-            </h3>
-            <p className="text-slate-600 dark:text-slate-300 max-w-xl mx-auto mb-6">
-              If you're unsure which option is best for your needs, feel free to start with our <Link to="/contactus" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">Contact Page</Link>, and our team can guide you.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-                 <Link to="/dashboard/ourservices" className="text-sm text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                    View Services
+              <div className="px-6 pb-6 flex flex-col">
+                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
+                  {option.description}
+                </p>
+                <Link
+                  to={option.route}
+                  className={`inline-flex items-center self-start px-5 py-2.5 text-white text-sm font-medium rounded-md ${option.bgColorClass} shadow hover:shadow-lg transform transition-transform duration-300 hover:scale-105`}
+                >
+                  {option.actionText}
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
-                <span className="text-slate-400 dark:text-slate-600">|</span>
-                <Link to="/terms" className="text-sm text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                    Terms of Service
-                </Link>
-            </div>
-          </section>
-
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
-    </>
+      </section>
+
+      {/* Help Section */}
+      <section className="bg-slate-200/60 dark:bg-slate-800/60 py-16 px-4 text-center">
+        <h3 className="text-2xl font-bold mb-4 text-slate-800 dark:text-slate-100">
+          Not Sure Where to Start?
+        </h3>
+        <p className="text-slate-700 dark:text-slate-300 max-w-xl mx-auto mb-6">
+          Our team is ready to help. If you're uncertain which option is best,{' '}
+          <Link
+            to="/contactus"
+            className="text-emerald-600 dark:text-emerald-400 font-medium underline hover:opacity-90"
+          >
+            reach out to us
+          </Link>
+          .
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Link
+            to="/dashboard/ourservices"
+            className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-500"
+          >
+            Explore Our Services
+          </Link>
+          <Link
+            to="/dashboard/help"
+            className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-sky-500"
+          >
+            FAQs
+          </Link>
+        </div>
+      </section>
+    </div>
   );
 };
 

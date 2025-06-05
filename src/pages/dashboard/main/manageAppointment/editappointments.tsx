@@ -1,24 +1,29 @@
+// EditAppointment.tsx
 import React, { useState, useEffect } from 'react';
 import {
   useUpdateAppointmentMutation,
-  AppointmentDataTypes,
+  AppointmentDataTypes,      // Should now have `appointment_datetime: string`
+  UpdateAppointmentPayload,  // Should now expect `appointmentDateTimeISO?: string`
+  AppointmentStatus,
 } from '../../../../features/appointment/appointmentapi'; // Adjust path
 import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
 import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; // Adjust path
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CalendarCheck2, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2 } from 'lucide-react';
+import { X, CalendarCheck2, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as ClientIconItself, Edit3 } from 'lucide-react';
 
 interface EditAppointmentProps {
   isDarkMode?: boolean;
-  appointment: AppointmentDataTypes;
+  appointment: AppointmentDataTypes; // This will have `appointment_datetime`
   onAppointmentUpdated?: () => void;
   onClose: () => void;
+  isClientView?: boolean;
 }
 
 interface ApiErrorData {
   error?: string;
   message?: string;
+  errors?: Array<{ field: string; message: string }>;
 }
 
 interface RtkQueryErrorShape {
@@ -26,109 +31,194 @@ interface RtkQueryErrorShape {
   error?: string;
 }
 
-const formatDateForInput = (dateString: string | Date): string => {
+// Helper to get "YYYY-MM-DD" from an ISO string or Date object
+const formatDateForDateInput = (isoOrDateString: string | Date | undefined): string => {
+  if (!isoOrDateString) return '';
   try {
-    const date = new Date(dateString);
+    const date = new Date(isoOrDateString);
     if (isNaN(date.getTime())) {
-        let parts: string[] = [];
-        if (typeof dateString === 'string') {
-            parts = dateString.split('T')[0].split('-');
+        // Fallback for simple "YYYY-MM-DD" strings if somehow passed
+        if (typeof isoOrDateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoOrDateString)) {
+            return isoOrDateString;
         }
-        if (parts.length === 3 && typeof dateString === 'string') {
-            return dateString.split('T')[0];
-        }
-        console.warn("Invalid date string for input:", dateString);
+        console.warn("Invalid date string for date input:", isoOrDateString);
         return '';
     }
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return date.toISOString().split('T')[0];
   } catch (e) {
-    console.error("Error formatting date:", dateString, e);
+    console.error("Error formatting date for input:", isoOrDateString, e);
+    return '';
+  }
+};
+
+// Helper to get "HH:MM" from an ISO string or Date object
+const formatTimeForTimeInput = (isoOrDateString: string | Date | undefined): string => {
+  if (!isoOrDateString) return '';
+  try {
+    const date = new Date(isoOrDateString);
+    if (isNaN(date.getTime())) {
+        console.warn("Invalid date string for time input:", isoOrDateString);
+        return '';
+    }
+    // Use UTC hours/minutes if the input string was UTC (like from toISOString())
+    // Or use local getHours/getMinutes if the date object represents local time
+    // Assuming appointment.appointment_datetime from backend is UTC
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  } catch (e) {
+    console.error("Error formatting time for input:", isoOrDateString, e);
     return '';
   }
 };
 
 
-const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppointmentUpdated, onClose }) => {
-  const [updateAppointment, { isLoading: isUpdateLoading }] = useUpdateAppointmentMutation();
-  const { data: branches, isLoading: isBranchesLoading, isError: isBranchesError, error: branchesApiError } = useFetchBranchLocationsQuery();
-  const { data: users, isLoading: isUsersLoading, isError: isUsersError, error: usersApiError } = useFetchUsersQuery();
+// Ensure this matches your Drizzle enum and RTK Query type
+const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "rescheduled", "no_show"];
+const getStatusDisplayName = (status: string): string => {
+  if (!status) return "N/A";
+  return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+};
 
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(appointment.branch_id.toString());
-  const [party, setParty] = useState(appointment.party);
-  const [appointmentDate, setAppointmentDate] = useState(formatDateForInput(appointment.appointment_date));
-  const [appointmentTime, setAppointmentTime] = useState(appointment.appointment_time);
-  const [selectedUserId, setSelectedUserId] = useState<string>(appointment.user_id.toString());
-  const [reason, setReason] = useState(appointment.reason || '');
+
+const EditAppointment: React.FC<EditAppointmentProps> = ({
+    appointment,
+    onAppointmentUpdated,
+    onClose,
+    isClientView = false,
+}) => {
+  const [updateAppointment, { isLoading: isUpdateLoading }] = useUpdateAppointmentMutation();
+  const { data: branches, isLoading: isBranchesLoading } = useFetchBranchLocationsQuery();
+  const { data: allUsers, isLoading: isUsersLoading } = useFetchUsersQuery();
+
+  // State for form inputs
+  const [selectedBranchId, setSelectedBranchId] = useState<string>('');
+  const [party, setParty] = useState('');
+  const [appointmentDateInput, setAppointmentDateInput] = useState(''); // For "YYYY-MM-DD" input
+  const [appointmentTimeInput, setAppointmentTimeInput] = useState(''); // For "HH:MM" input
+  const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
+  const [reason, setReason] = useState('');
+  const [status, setStatus] = useState<AppointmentStatus>('pending');
+  const [notesByClient, setNotesByClient] = useState('');
+  const [notesByStaff, setNotesByStaff] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedBranchId(appointment.branch_id.toString());
-    setParty(appointment.party);
-    setAppointmentDate(formatDateForInput(appointment.appointment_date));
-    setAppointmentTime(appointment.appointment_time);
-    setSelectedUserId(appointment.user_id.toString());
-    setReason(appointment.reason || '');
+    if (appointment) {
+        setSelectedBranchId(appointment.branch_id.toString());
+        setParty(appointment.party);
+        // MODIFIED: Parse appointment_datetime for date and time inputs
+        setAppointmentDateInput(formatDateForDateInput(appointment.appointment_datetime));
+        setAppointmentTimeInput(formatTimeForTimeInput(appointment.appointment_datetime));
+        setSelectedStaffIds(
+            appointment.assignees?.map(a => a.assignee_user_id.toString()) || []
+        );
+        setReason(appointment.reason || '');
+        setStatus(appointment.status);
+        setNotesByClient(appointment.notes_by_client || '');
+        setNotesByStaff(appointment.notes_by_staff || '');
+    }
   }, [appointment]);
 
   const getApiErrorMessage = (error: unknown): string => {
+    // ... (implementation remains the same)
     if (typeof error === 'object' && error !== null) {
         const errorShape = error as RtkQueryErrorShape;
-        if (errorShape.data && typeof errorShape.data === 'object' && (errorShape.data as ApiErrorData).message) {
-            return (errorShape.data as ApiErrorData).message!;
+        if (errorShape.data) {
+            if (typeof errorShape.data === 'string') return errorShape.data;
+            const dataError = errorShape.data as ApiErrorData;
+            if (dataError.message) return dataError.message;
+            if (dataError.error) return dataError.error;
+            if (dataError.errors && Array.isArray(dataError.errors) && dataError.errors.length > 0) {
+                return dataError.errors.map(e => `${e.field ? `${e.field}: ` : ''}${e.message}`).join('; ');
+            }
         }
-        if (errorShape.data && typeof errorShape.data === 'string') return errorShape.data;
-        if (errorShape.error) return errorShape.error;
+        if (errorShape.error && typeof errorShape.error === 'string') return errorShape.error;
         if ((error as Error).message) return (error as Error).message;
     }
     return 'An unknown error occurred.';
+  };
+
+  const handleStaffSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const staffId = event.target.value;
+    setSelectedStaffIds(staffId ? [staffId] : []); // Assuming single staff selection UI for now
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
-    if (!selectedBranchId || !party.trim() || !appointmentDate || !appointmentTime || !selectedUserId || !reason.trim()) {
-      setFormError('Please fill in all required fields.');
-      toast.error('Please fill in all required fields.');
+    if (!isClientView && (!selectedBranchId || (!selectedStaffIds.length && staffUsers.length > 0) )) { // Check if staff selection is applicable
+        setFormError('Branch and Assignee are required for staff edits if staff members are available.');
+        toast.error('Branch and Assignee are required if staff members are available.');
+        return;
+    }
+    if (!party.trim() || !appointmentDateInput || !appointmentTimeInput || !reason.trim()) {
+      setFormError('Party name, date, time, and reason are required.');
+      toast.error('Party name, date, time, and reason are required.');
       return;
     }
 
-    let isoDateString = appointment.appointment_date;
-    try {
-        const dateObj = new Date(appointmentDate); // appointmentDate is YYYY-MM-DD
-        if (!isNaN(dateObj.getTime())) {
-            // To preserve the original time if only date is changed, or to set to start of day if new date
-            // For simplicity, using the input date as is, which sets time to 00:00 UTC if not specified.
-            // If time zone is critical, backend should handle it or frontend should send date and time separately or as a combined local ISO string.
-            isoDateString = dateObj.toISOString();
-        } else {
-            toast.error("Invalid date selected. Please check the appointment date.");
-            setFormError("Invalid date selected.");
+    const payload: UpdateAppointmentPayload = {
+      appointment_id: appointment.appointment_id,
+      // client_user_id is generally not updatable here
+    };
+
+    let newAppointmentDateTimeISO: string | undefined = undefined;
+    const originalDate = formatDateForDateInput(appointment.appointment_datetime);
+    const originalTime = formatTimeForTimeInput(appointment.appointment_datetime);
+
+    if (appointmentDateInput !== originalDate || appointmentTimeInput !== originalTime) {
+        try {
+            const localDateTime = new Date(`${appointmentDateInput}T${appointmentTimeInput}:00`);
+            if (isNaN(localDateTime.getTime())) {
+                throw new Error("Invalid date or time entered.");
+            }
+            newAppointmentDateTimeISO = localDateTime.toISOString(); // Convert to UTC ISO
+            payload.appointmentDateTimeISO = newAppointmentDateTimeISO;
+        } catch (dateError: unknown) {
+            console.error("Error constructing ISO date for update:", dateError);
+            const errorMessage =
+                typeof dateError === "object" && dateError !== null && "message" in dateError
+                    ? String((dateError as { message?: string }).message)
+                    : "Invalid date or time format.";
+            setFormError(errorMessage);
+            toast.error(errorMessage);
             return;
         }
-    } catch (e) {
-        toast.error("Error processing date. Please check the appointment date format.");
-        setFormError("Error processing date format.");
+    }
+
+
+    if (!isClientView) {
+        if (appointment.branch_id.toString() !== selectedBranchId) payload.branch_id = Number(selectedBranchId);
+        if (appointment.party !== party.trim()) payload.party = party.trim();
+        if ((appointment.reason || '') !== reason.trim()) payload.reason = reason.trim();
+        if (appointment.status !== status) payload.status = status;
+        if ((appointment.notes_by_staff || '') !== (notesByStaff.trim() || undefined)) payload.notes_by_staff = notesByStaff.trim() || undefined;
+
+        const currentAssigneeIds = appointment.assignees?.map(a => a.assignee_user_id.toString()).sort() || [];
+        const newAssigneeIdsSorted = [...selectedStaffIds].sort();
+        if (JSON.stringify(currentAssigneeIds) !== JSON.stringify(newAssigneeIdsSorted)) {
+            payload.assigneeIds = selectedStaffIds.map(id => Number(id));
+        }
+    }
+
+    if ((appointment.notes_by_client || '') !== (notesByClient.trim() || undefined)) {
+        payload.notes_by_client = notesByClient.trim() || undefined;
+    }
+
+
+    // Check if any actual changes were made to include in the payload
+    const changedFields = Object.keys(payload).filter(key => key !== 'appointment_id');
+    if (changedFields.length === 0) {
+        toast.info("No changes detected to save.");
+        onClose();
         return;
     }
 
-    const updatedAppointmentPayload: Omit<AppointmentDataTypes, 'created_at' | 'updated_at'> & { appointment_id: number } = {
-      appointment_id: appointment.appointment_id,
-      user_id: Number(selectedUserId),
-      branch_id: Number(selectedBranchId),
-      party: party.trim(),
-      appointment_date: isoDateString,
-      appointment_time: appointmentTime,
-      status: appointment.status,
-      reason: reason.trim(),
-    };
-
     try {
-      await updateAppointment(updatedAppointmentPayload).unwrap();
-      toast.success('Appointment updated successfully!');
+      await updateAppointment(payload).unwrap();
+      toast.success(isClientView ? 'Your notes have been updated!' : 'Appointment updated successfully!');
       if (onAppointmentUpdated) {
         onAppointmentUpdated();
       }
@@ -137,46 +227,31 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
       console.error('Failed to update appointment:', error);
       const message = getApiErrorMessage(error);
       toast.error(`Failed to update appointment: ${message}`);
+      setFormError(message);
     }
   };
 
-    const modalVariants = {
-        hidden: { opacity: 0, y: 50, scale: 0.95 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-        exit: { opacity: 0, y: 30, scale: 0.95, transition: { duration: 0.2, ease: "easeIn" } },
-    };
+    const modalVariants = { /* ... as before ... */ };
+    const backdropVariants = { /* ... as before ... */ };
+    const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-emerald-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
+    const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
 
-    const backdropVariants = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.3 } },
-        exit: { opacity: 0, transition: { duration: 0.2 } },
-    };
+    const staffUsers = allUsers ? allUsers.filter(user => user.role && !['client', 'user'].includes(user.role.toLowerCase())) : [];
 
-  const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 
-                              rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 
-                              focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-emerald-500 focus:border-transparent 
-                              transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
-    
-  const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
-
-  const filteredUsers = users ? users.filter(user => user.role !== "client" && user.role !== "user") : [];
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" // Centering and padding for backdrop
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
       variants={backdropVariants}
       initial="hidden"
       animate="visible"
       exit="exit"
-      onClick={onClose} // Close on backdrop click
+      onClick={onClose}
     >
       <motion.div
-        className={`relative border bg-white dark:bg-slate-800 rounded-2xl shadow-2xl
-                   text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700
-                   w-full max-w-2xl h-[70vh] flex flex-col`} // MODIFIED: Width, height, flex layout. Removed padding.
+        className={`relative border bg-white dark:bg-slate-800 rounded-2xl shadow-2xl text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 w-full max-w-2xl h-[85vh] sm:h-[80vh] flex flex-col`}
         variants={modalVariants}
-        // initial, animate, exit are fine here as well for the modal itself
-        onClick={(e) => e.stopPropagation()} // ADDED: Prevent closing when clicking inside modal
+        onClick={(e) => e.stopPropagation()}
       >
         <button
           title='Close Modal'
@@ -187,58 +262,50 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
           <X className="h-5 w-5" />
         </button>
 
-        {/* Scrollable content area */}
-        <div className="flex-grow overflow-y-auto p-6 sm:p-8"> {/* ADDED: Wrapper for scrollable content with padding */}
+        <div className="flex-grow overflow-y-auto p-6 sm:p-8">
             <div className="text-center mb-6 sm:mb-8">
                 <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-green-500 to-teal-600 dark:from-emerald-500 dark:to-cyan-600">
-                    <CalendarCheck2 className="w-8 h-8 text-white" />
+                    <Edit3 className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-1 tracking-tight">
-                    Edit Appointment
+                    {isClientView ? "View / Update My Notes" : "Edit Appointment"}
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Modify the details for this scheduled appointment.
+                    {isClientView ? "Update your notes for this appointment." : "Modify the details for this scheduled appointment."}
                 </p>
             </div>
 
             <AnimatePresence mode="wait">
-                {isBranchesLoading || isUsersLoading ? (
-                    <motion.div
-                        key="loading-data-edit"
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="flex flex-col items-center justify-center py-10 min-h-[200px]"
-                    >
+                {/* Loading indicator only for staff/admin view when fetching branches/users */}
+                {(!isClientView && (isBranchesLoading || isUsersLoading)) ? (
+                    <motion.div key="loading-data-edit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-10 min-h-[200px]">
                         <Loader2 className="h-12 w-12 animate-spin text-green-500 dark:text-emerald-400 mb-3" />
                         <p className="text-slate-600 dark:text-slate-400">
-                            {isBranchesLoading ? "Loading branch data..." : "Loading user data..."}
+                            {isBranchesLoading ? "Loading branch data..." : isUsersLoading ? "Loading user data..." : ""}
                         </p>
-                    </motion.div>
-                ) : isBranchesError || isUsersError ? (
-                    <motion.div 
-                        key="loading-error-edit"
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="flex flex-col items-center justify-center text-center py-10 min-h-[200px] p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg"
-                    >
-                        <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mb-3" />
-                        <p className="font-semibold text-red-700 dark:text-red-300">
-                            {isBranchesError ? "Error loading branches." : "Error loading users."}
-                        </p>
-                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                            {getApiErrorMessage(isBranchesError ? branchesApiError : usersApiError)}
-                        </p>
-                        <button 
-                            onClick={onClose}
-                            className="mt-4 text-sm bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Close
-                        </button>
                     </motion.div>
                 ) : (
-                    <motion.form 
+                    <motion.form
                         key="appointment-form-edit"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onSubmit={handleSubmit} className="space-y-5"
                     >
+                        {/* Client Display (Read-only) */}
+                        <div>
+                            <label htmlFor="display-clientName" className={labelBaseClasses}>
+                                <ClientIconItself size={16} className="mr-2 opacity-70" /> Client
+                            </label>
+                            <input
+                                type="text"
+                                id="display-clientName"
+                                value={appointment.client?.full_name || `User ID: ${appointment.client_user_id}`}
+                                className={`${inputBaseClasses} disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed`}
+                                readOnly
+                                disabled
+                            />
+                        </div>
+
+                        {/* Branch Location Select */}
                         <div>
                             <label htmlFor="edit-branch" className={labelBaseClasses}>
                                 <MapPin size={16} className="mr-2 opacity-70" /> Branch Location
@@ -247,12 +314,12 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
                                 id="edit-branch"
                                 value={selectedBranchId}
                                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                                className={`${inputBaseClasses} ${!selectedBranchId ? 'text-slate-400 dark:text-slate-500' : ''}`}
-                                required
-                                disabled={branches?.length === 0}
+                                className={`${inputBaseClasses} ${isClientView || isBranchesLoading ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
+                                required={!isClientView}
+                                disabled={isClientView || !branches || branches.length === 0 || isBranchesLoading}
                             >
                                 <option value="" disabled>
-                                    {branches?.length === 0 ? "No branches available" : "Select a Branch"}
+                                    {isBranchesLoading ? "Loading branches..." : (branches && branches.length > 0 ? "Select a Branch" : "No branches available")}
                                 </option>
                                 {branches?.map((branch: BranchLocationDataTypes) => (
                                     <option key={branch.branch_id} value={branch.branch_id.toString()}>
@@ -262,44 +329,51 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="edit-userId" className={labelBaseClasses}>
-                                <UserCheck size={16} className="mr-2 opacity-70" /> Assign To (Admin/Staff)
-                            </label>
-                            <select
-                                id="edit-userId"
-                                value={selectedUserId}
-                                onChange={(e) => setSelectedUserId(e.target.value)}
-                                className={`${inputBaseClasses} ${!selectedUserId ? 'text-slate-400 dark:text-slate-500' : ''}`}
-                                required
-                                disabled={filteredUsers.length === 0}
-                            >
-                                 <option value="" disabled>
-                                    {filteredUsers.length === 0 ? "No staff available" : "Select Staff Member"}
-                                </option>
-                                {filteredUsers.map((user: UserDataTypes) => (
-                                    <option key={user.user_id} value={user.user_id.toString()}>
-                                        {user.full_name} ({user.role})
+                        {/* Assign To Staff Select (Not for Client View) */}
+                        {!isClientView && (
+                            <div>
+                                <label htmlFor="edit-staffId" className={labelBaseClasses}>
+                                    <UserCheck size={16} className="mr-2 opacity-70" /> Assign To (Staff)
+                                </label>
+                                <select
+                                    id="edit-staffId"
+                                    value={selectedStaffIds[0] || ''} // Assuming single staff selection for now
+                                    onChange={handleStaffSelectionChange}
+                                    className={`${inputBaseClasses} ${!selectedStaffIds.length ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                                    required // Make required if staff must be assigned
+                                    disabled={isUsersLoading || staffUsers.length === 0}
+                                >
+                                    <option value="" disabled>
+                                        {isUsersLoading ? "Loading staff..." : (staffUsers.length === 0 ? "No staff available" : "Select Staff Member")}
                                     </option>
-                                ))}
-                            </select>
-                        </div>
+                                    {staffUsers.map((user: UserDataTypes) => (
+                                        <option key={user.user_id} value={user.user_id.toString()}>
+                                            {user.full_name} ({user.role})
+                                        </option>
+                                    ))}
+                                </select>
+                                {selectedStaffIds.length > 1 && <p className="text-xs mt-1 text-slate-500 dark:text-slate-400">Current UI supports single staff assignment for edit. To change multiple, re-create or enhance UI.</p>}
+                            </div>
+                        )}
 
+                        {/* Party Name Input */}
                         <div>
                             <label htmlFor="edit-party" className={labelBaseClasses}>
-                                <Users size={16} className="mr-2 opacity-70" /> Involved Party / Client Name
+                                <Users size={16} className="mr-2 opacity-70" /> Party Name
                             </label>
                             <input
                                 type="text"
                                 id="edit-party"
-                                className={inputBaseClasses}
+                                className={`${inputBaseClasses} ${isClientView ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
                                 value={party}
                                 onChange={(e) => setParty(e.target.value)}
-                                placeholder="e.g., John Doe"
+                                placeholder="e.g., John Doe vs ABC Corp"
                                 required
+                                disabled={isClientView}
                             />
                         </div>
 
+                        {/* Date and Time Inputs */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="edit-appointmentDate" className={labelBaseClasses}>
@@ -308,88 +382,129 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({ appointment, onAppoin
                                 <input
                                     type="date"
                                     id="edit-appointmentDate"
-                                    className={inputBaseClasses}
-                                    value={appointmentDate}
-                                    // min={new Date().toISOString().split('T')[0]} // Consider if past dates should be editable
-                                    onChange={(e) => setAppointmentDate(e.target.value)}
+                                    className={`${inputBaseClasses} ${isClientView ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
+                                    value={appointmentDateInput}
+                                    onChange={(e) => setAppointmentDateInput(e.target.value)}
                                     required
+                                    disabled={isClientView}
                                 />
                             </div>
                             <div>
                                 <label htmlFor="edit-appointmentTime" className={labelBaseClasses}>
                                     <Clock size={16} className="mr-2 opacity-70" /> Time
                                 </label>
-                                <input // Using input type="time" here. Create modal used select. Keep as is unless specified.
-                                    type="time"
+                                <input
+                                    type="time" // Native time input
                                     id="edit-appointmentTime"
-                                    className={inputBaseClasses}
-                                    value={appointmentTime}
-                                    onChange={(e) => setAppointmentTime(e.target.value)}
+                                    className={`${inputBaseClasses} ${isClientView ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
+                                    value={appointmentTimeInput}
+                                    onChange={(e) => setAppointmentTimeInput(e.target.value)}
                                     required
+                                    disabled={isClientView}
                                 />
                             </div>
                         </div>
 
+                        {/* Reason Textarea */}
                         <div>
                             <label htmlFor="edit-reason" className={labelBaseClasses}>
                                 <MessageSquare size={16} className="mr-2 opacity-70" /> Reason / Purpose
                             </label>
                             <textarea
                                 id="edit-reason"
-                                className={`${inputBaseClasses} resize-none`}
+                                className={`${inputBaseClasses} resize-none ${isClientView ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                                 rows={3}
                                 placeholder="Briefly describe the purpose of the appointment"
                                 required
+                                disabled={isClientView}
                             />
                         </div>
-                        
-                        {formError && (
-                            <p className="text-xs text-red-500 dark:text-red-400 text-center">{formError}</p>
+
+                        {/* Status Select/Display */}
+                        <div>
+                            <label htmlFor="edit-status" className={labelBaseClasses}> Status </label>
+                            {isClientView ? (
+                                <p className={`${inputBaseClasses} py-3 disabled:bg-slate-100 dark:disabled:bg-slate-700/50`}>
+                                    {getStatusDisplayName(status)} {/* Display current status */}
+                                </p>
+                            ) : (
+                                <select
+                                    id="edit-status"
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value as AppointmentStatus)}
+                                    className={inputBaseClasses}
+                                    required
+                                >
+                                    {APPOINTMENT_STATUS_VALUES.map(statusVal => (
+                                        <option key={statusVal} value={statusVal}>{getStatusDisplayName(statusVal)}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+
+                        {/* Client Notes Textarea */}
+                        <div>
+                            <label htmlFor="edit-notesByClient" className={labelBaseClasses}>
+                                <MessageSquare size={16} className="mr-2 opacity-70" /> Client Notes
+                            </label>
+                            <textarea
+                                id="edit-notesByClient"
+                                className={`${inputBaseClasses} resize-none ${!isClientView ? 'disabled:bg-slate-100 dark:disabled:bg-slate-700/50 disabled:cursor-not-allowed' : ''}`}
+                                value={notesByClient}
+                                onChange={(e) => setNotesByClient(e.target.value)}
+                                rows={2}
+                                placeholder={isClientView ? "Add or update your notes here..." : "Notes provided by the client"}
+                                disabled={!isClientView} // Client can edit their notes
+                            />
+                        </div>
+
+                        {/* Staff Notes Textarea (Not for Client View) */}
+                        {!isClientView && (
+                            <div>
+                                <label htmlFor="edit-notesByStaff" className={labelBaseClasses}>
+                                    <MessageSquare size={16} className="mr-2 opacity-70" /> Staff Notes
+                                </label>
+                                <textarea
+                                    id="edit-notesByStaff"
+                                    className={`${inputBaseClasses} resize-none`}
+                                    value={notesByStaff}
+                                    onChange={(e) => setNotesByStaff(e.target.value)}
+                                    rows={2}
+                                    placeholder="Internal notes for staff members"
+                                />
+                            </div>
                         )}
 
+                        {/* Form Error Display */}
+                        {formError && (
+                            <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-center">
+                                <p className="text-xs text-red-600 dark:text-red-300 flex items-center justify-center">
+                                    <AlertCircle size={14} className="mr-1.5" /> {formError}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Submit and Cancel Buttons */}
                         <div className="pt-3 flex flex-col sm:flex-row-reverse sm:justify-start gap-3">
                             <motion.button
                                 type="submit"
-                                className={`w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg text-white
-                                            bg-gradient-to-r from-green-500 to-teal-600 dark:from-emerald-500 dark:to-cyan-600
-                                            hover:from-green-600 hover:to-teal-700 dark:hover:from-emerald-600 dark:hover:to-cyan-700
-                                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-cyan-500 
-                                            dark:focus:ring-offset-slate-800
-                                            transition-all duration-300 ease-in-out shadow-md hover:shadow-lg
-                                            disabled:opacity-60 disabled:cursor-not-allowed text-sm`}
-                                disabled={isUpdateLoading || isBranchesLoading || isUsersLoading}
-                                whileHover={{ scale: (isUpdateLoading || isBranchesLoading || isUsersLoading) ? 1 : 1.03 }}
-                                whileTap={{ scale: (isUpdateLoading || isBranchesLoading || isUsersLoading) ? 1 : 0.98 }}
+                                className={`w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg text-white bg-gradient-to-r from-green-500 to-teal-600 dark:from-emerald-500 dark:to-cyan-600 hover:from-green-600 hover:to-teal-700 dark:hover:from-emerald-600 dark:hover:to-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 dark:focus:ring-cyan-500 dark:focus:ring-offset-slate-800 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed text-sm`}
+                                disabled={isUpdateLoading || (!isClientView && (isBranchesLoading || isUsersLoading))}
+                                whileHover={{ scale: (isUpdateLoading || (!isClientView && (isBranchesLoading || isUsersLoading))) ? 1 : 1.03 }}
+                                whileTap={{ scale: (isUpdateLoading || (!isClientView && (isBranchesLoading || isUsersLoading))) ? 1 : 0.98 }}
                             >
-                                {isUpdateLoading ? (
-                                    <div className="flex items-center justify-center">
-                                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                                        Updating...
-                                    </div>
-                                ) : 'Save Changes'}
+                                {isUpdateLoading ? ( <div className="flex items-center justify-center"> <Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing... </div> ) : (isClientView ? "Update My Notes" : "Save Changes")}
                             </motion.button>
-                            <motion.button
-                                type="button"
-                                className="w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg 
-                                            bg-slate-100 hover:bg-slate-200 text-slate-700 
-                                            dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-200
-                                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-slate-500
-                                            dark:focus:ring-offset-slate-800
-                                            transition-all duration-300 ease-in-out shadow-sm hover:shadow-md text-sm"
-                                onClick={onClose}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.98 }}
-                                disabled={isUpdateLoading} // Disable cancel during submission
-                            >
+                            <motion.button type="button" className="w-full sm:w-auto font-semibold py-2.5 px-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 dark:focus:ring-slate-500 dark:focus:ring-offset-slate-800 transition-all duration-300 ease-in-out shadow-sm hover:shadow-md text-sm" onClick={onClose} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} disabled={isUpdateLoading} >
                                 Cancel
                             </motion.button>
                         </div>
                     </motion.form>
                 )}
             </AnimatePresence>
-        </div> {/* End of scrollable content area */}
+        </div>
       </motion.div>
     </motion.div>
   );

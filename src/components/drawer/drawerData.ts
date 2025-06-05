@@ -59,7 +59,9 @@ export const drawerData: DrawerData[] = [
     // Original ID 0, link 'mycases'
     { id: 0, name: 'My Cases', icon: Briefcase, link: 'mycases', adminOnly: false, category: 'User' },
     // Original ID 21, link 'myappointments'
-    { id: 21, name: 'My Appointments', icon: CalendarCheck, link: 'myappointments', adminOnly: true, category: 'Admin' },
+    { id: 21, name: 'Clients Appointments', icon: CalendarCheck, link: 'myclientsappointments', adminOnly: true, category: 'Admin' },
+    //my appointments
+    { id: 21, name: 'My Appointments', icon: CalendarCheck, link: 'myappointments', adminOnly: false, category: 'User' }, // Renamed "My_Appointments" to "My Appointments"
     // Original ID 19, link 'user-payments'
     { id: 19, name: 'Payments Records', icon: History, link: 'user-payments', adminOnly: false, category: 'User' },
     // Original ID 16, link 'mytickets'
@@ -68,6 +70,8 @@ export const drawerData: DrawerData[] = [
     { id: 25, name: 'Book Appointment', icon: CalendarDays, link: 'appoints', adminOnly: false, category: 'User' }, // Standardized link for clarity
 
     // --- General / Common ---
+    //chats
+    { id: 26, name: 'Chats', icon: MessageSquareText, link: 'chats', adminOnly: false, category: 'General' }, // Assuming this is a chat page
     // Original ID 12, link 'branch'
     { id: 12, name: 'Branch Location', icon: MapPin, link: 'branch', adminOnly: false, category: 'General' },
     // Original ID 13, link 'feedbacks'

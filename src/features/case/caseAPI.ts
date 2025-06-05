@@ -1,30 +1,37 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; // Ensure this path is correct
 
-// --- Enums ---
+// --- Enums (Assuming these are unchanged) ---
 export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
 export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolved";
-export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue";
-export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
+export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; // Make sure 'partially_paid' is valid in backend schema
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"; // For paymentTable
 
 // --- Data Types ---
-export interface UserDataType {
+export interface UserDataType { // Basic user details for owner/assignee
     user_id: number;
-    full_name: string;
+    full_name: string | null;
     email: string;
-    phone_number: string;
+    phone_number: string | null;
     role: string;
-    profile_picture: string | null;
-    location: string;
-    is_active: boolean;
-    created_at: string;
-    // updated_at: string;
+    profile_picture?: string | null;
+    // Add other relevant fields returned by the backend for user context
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface CaseAssigneeData {
+    case_id: number;
+    assignee_user_id: number;
+    assigned_at: string;
+    assignee: UserDataType | null; // The staff member details
 }
 
 export interface CaseDataTypes {
   case_id: number;
-  user_id: number;
-  user?: UserDataType;
+  user_id: number; // Client owner's ID
+  owner?: Partial<UserDataType> | null; // Client owner details
+  assignees?: CaseAssigneeData[]; // Staff assigned to the case
   case_type: CaseType;
   case_status: CaseStatus;
   case_description: string | null;
@@ -33,42 +40,32 @@ export interface CaseDataTypes {
   court: string | null;
   station: string | null;
   parties: string | null;
-  fee: number; // Backend handles parsing, frontend sends as number
-  payment_status: PaymentStatusOnCase;
-  payment_balance: number;
+  fee: string; // Backend schema uses decimal, often string in transit
+  payment_status: PaymentStatusOnCase; // Ensure this matches backend logic, including 'partially_paid'
+  payment_balance: string; // Backend schema uses decimal
   created_at: string;
   updated_at: string;
 }
 
-// Payload for creating a case, based on backend expectations
 export interface CreateCasePayload {
     user_id: number;
     case_type: CaseType;
-    fee: number; // Backend requires and parses this
+    fee: number; // Frontend sends number, backend service handles string conversion if needed
     case_number: string;
     case_track_number: string;
     case_description?: string | null;
     court?: string | null;
     station?: string | null;
     parties?: string | null;
-    // Fields like payment_balance, payment_status, created_at, updated_at are set by backend
 }
 
-// Payload for updating a case
-// We can send any of the TCaseInsert fields, so Partial<CaseDataTypes> is mostly fine
-// The backend will ignore fields it doesn't allow updates for (like created_at) or handles itself.
-export type UpdateCasePayload = Partial<Omit<CaseDataTypes, 'case_id' | 'user' | 'created_at' | 'updated_at' | 'payment_status' | 'payment_balance'>> & {
-    // We can still allow updating fee, description, status, type, etc.
-    // payment_status and payment_balance are typically updated by specific payment actions or recalculations.
-    // The backend's updateCaseService might recalculate balance if `fee` is changed.
-};
-
+export type UpdateCasePayload = Partial<Omit<CaseDataTypes, 'case_id' | 'owner' | 'assignees' | 'created_at' | 'updated_at' | 'payment_status' | 'payment_balance' | 'user_id'>>;
 
 export interface PaymentDataTypes {
   payment_id: number;
   case_id: number;
   user_id: number;
-  payment_amount: string; // Assuming backend expects string for decimal precision
+  payment_amount: string;
   payment_status: PaymentStatus;
   payment_gateway: string;
   session_id?: string | null;
@@ -83,25 +80,31 @@ export interface PaymentDataTypes {
 }
 
 // --- API Response Types for Mutations ---
-interface BackendCaseResponse {
-    msg: string;
+export interface BackendCaseResponse { // For single case responses
+    msg?: string;
     case: CaseDataTypes;
 }
-interface BackendDeleteResponse {
+
+export interface BackendAssignmentResponse {
     msg: string;
+    assignment: CaseAssigneeData;
 }
 
+
+export interface BackendSuccessMessage {
+    msg: string;
+}
 
 // Combined API Slice
 export const caseAndPaymentAPI = createApi({
   reducerPath: "caseAndPaymentAPI",
   baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
   refetchOnReconnect: true,
-  tagTypes: ["Cases", "Payments"], // "CaseDetail" could be added for more granular updates
+  tagTypes: ["Cases", "Payments", "CaseAssignments"],
   endpoints: (builder) => ({
     // ** Case Endpoints **
-    fetchCases: builder.query<CaseDataTypes[], void>({
-      query: () => "cases",
+    fetchCases: builder.query<CaseDataTypes[], { includeDetails?: boolean } | void>({
+      query: (params) => `cases${params && params.includeDetails !== undefined ? `?includeDetails=${params.includeDetails}` : ''}`,
       providesTags: (result) =>
         result
           ? [
@@ -114,56 +117,68 @@ export const caseAndPaymentAPI = createApi({
       query: (case_id) => `cases/${case_id}`,
       providesTags: (_result,_error, case_id) => [{ type: 'Cases', id: case_id }],
     }),
-    getUserCasesByUserId: builder.query<CaseDataTypes[], number>({
-      query: (id) => `/cases/user/${id}`,
-      providesTags: (result) =>
+    // Renamed and updated to match new backend route and params
+    getCasesByClientOwner: builder.query<CaseDataTypes[], { userId: number, includeAssignees?: boolean }>({
+      query: ({ userId, includeAssignees }) =>
+        `cases/client/${userId}${includeAssignees !== undefined ? `?includeAssignees=${includeAssignees}` : ''}`,
+      providesTags: (result, _error, { userId }) =>
         result
           ? [
               ...result.map(({ case_id }) => ({ type: 'Cases' as const, id: case_id })),
-              { type: 'Cases', id: 'LIST' }, // Potentially also invalidate general list if user cases change
+              { type: 'Cases', id: `CLIENT_LIST_${userId}` }, // Specific tag for this client's list
+              { type: 'Cases', id: 'LIST' },
             ]
-          : [{ type: 'Cases', id: 'LIST' }],
+          : [{ type: 'Cases', id: `CLIENT_LIST_${userId}` }, { type: 'Cases', id: 'LIST' }],
+    }),
+    // New: Get cases assigned to a specific staff member
+    getCasesByAssignedStaff: builder.query<CaseDataTypes[], number>({
+        query: (staffId) => `cases/staff/${staffId}`,
+        providesTags: (result, _error, staffId) =>
+        result
+            ? [
+                ...result.map(({ case_id }) => ({ type: 'Cases' as const, id: case_id })),
+                { type: 'Cases', id: `STAFF_LIST_${staffId}` },
+                { type: 'Cases', id: 'LIST' }, // Also invalidates general list
+            ]
+            : [{ type: 'Cases', id: `STAFF_LIST_${staffId}` }, { type: 'Cases', id: 'LIST' }],
+    }),
+    // New: Get case by payment ID
+    getCaseByPayment: builder.query<CaseDataTypes, number>({
+        query: (paymentId) => `cases/payment/${paymentId}`,
+        // This might provide the case tag, or a more specific tag if needed
+        providesTags: (result) => result ? [{ type: 'Cases', id: result.case_id }] : [],
     }),
     createCase: builder.mutation<CaseDataTypes, CreateCasePayload>({
       query: (newCase) => ({
         url: "cases",
         method: "POST",
-        body: newCase, // newCase should conform to CreateCasePayload
+        body: newCase,
       }),
-      transformResponse: (response: BackendCaseResponse) => response.case, // Extract case from {msg, case}
+      transformResponse: (response: BackendCaseResponse) => response.case,
       invalidatesTags: [{ type: 'Cases', id: 'LIST' }],
     }),
     updateCase: builder.mutation<CaseDataTypes, { case_id: number } & UpdateCasePayload>({
       query: ({ case_id, ...rest }) => ({
         url: `cases/${case_id}`,
         method: "PUT",
-        body: rest, // `rest` will be UpdateCasePayload
+        body: rest,
       }),
-      transformResponse: (response: BackendCaseResponse) => response.case, // Extract case
-      // invalidatesTags: (result, error, { case_id }) => [{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }],
-      // More robust invalidation:
+      transformResponse: (response: BackendCaseResponse) => response.case,
       async onQueryStarted({ case_id, ...patch }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           caseAndPaymentAPI.util.updateQueryData('getCaseById', case_id, (draft) => {
-            Object.assign(draft, patch);
+            Object.assign(draft, patch); // Optimistically apply non-nested updates
+            // If fee changes, balance/status might change on backend, so optimistic update is harder
           })
-        );
-        // Also update in any list queries
-        // This requires more complex logic if you want to update lists without full refetch
-        dispatch(
-            caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }])
         );
         try {
           await queryFulfilled;
+          // If successful, the cache is already updated by queryFulfilled if transformResponse returns the case
+          // But LIST still needs invalidation for any sorting/filtering changes
+          dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }, { type: 'Cases', id: case_id }]));
         } catch {
           patchResult.undo();
-           /**
-           * Optimistic update failed, dispatch invalidateTags to refetch
-           * list and the specific item.
-           */
-          dispatch(
-            caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }])
-          );
+          dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }]));
         }
       }
     }),
@@ -172,63 +187,87 @@ export const caseAndPaymentAPI = createApi({
         url: `cases/${case_id}`,
         method: "DELETE",
       }),
-      transformResponse: (response: BackendDeleteResponse, _meta, arg_case_id) => ({
-        success: response.msg.toLowerCase().includes("successfully"), // Or a more robust check
+      transformResponse: (response: BackendSuccessMessage, _meta, arg_case_id) => ({
+        success: response.msg.toLowerCase().includes("successfully"),
         case_id: arg_case_id,
         msg: response.msg,
       }),
-      invalidatesTags: (_result, _error, case_id) => [{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }],
+      invalidatesTags: (_result, _error, case_id) => [
+          { type: 'Cases', id: case_id },
+          { type: 'Cases', id: 'LIST' },
+          { type: 'CaseAssignments', id: `CASE_${case_id}` } // Invalidate assignments for this case
+        ],
     }),
-
-    // New endpoint for triggering balance update
     triggerCaseBalanceUpdate: builder.mutation<CaseDataTypes, number>({
         query: (case_id) => ({
-            url: `cases/${case_id}/update-balance`, // Define this route in your Hono backend
-            method: 'PUT', // Or POST, ensure backend route matches
+            url: `cases/${case_id}/recalculate-balance`, // Corrected Hono route
+            method: 'POST', // As per Hono router
         }),
         transformResponse: (response: BackendCaseResponse) => response.case,
-        // invalidatesTags: (result, error, case_id) => [{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }],
-        // Optimistic update for balance
         async onQueryStarted(case_id, { dispatch, queryFulfilled }) {
-            // Potentially update optimistically if you know what the balance *should* become,
-            // or just refetch. For now, let's refetch.
             try {
                 const { data: updatedCase } = await queryFulfilled;
-                // Update the specific case in cache
                 dispatch(
                     caseAndPaymentAPI.util.updateQueryData('getCaseById', case_id, (draft) => {
                         Object.assign(draft, updatedCase);
                     })
                 );
-                // Update in lists if needed (can be complex, simpler to invalidate LIST)
-                dispatch(
-                    caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }])
-                );
+                // Potentially invalidate lists if balance/status affects sorting/filtering
+                dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }]));
             } catch {
-                dispatch(
-                    caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }])
-                );
+                dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }]));
             }
         }
     }),
 
+    // ** Case Assignment Endpoints **
+    getAssignedStaffForCase: builder.query<(UserDataType & { assigned_at: string })[], number>({
+        query: (caseId) => `cases/${caseId}/assigned-staff`,
+        providesTags: (_result, _error, caseId) => [{ type: 'CaseAssignments', id: `CASE_${caseId}` }],
+        // transformResponse might be needed if backend wraps in 'staff':
+        // transformResponse: (response: BackendStaffListResponse) => response.staff,
+    }),
+    assignStaffToCase: builder.mutation<CaseAssigneeData, { caseId: number, staffUserId: number }>({
+        query: ({ caseId, staffUserId }) => ({
+            url: `cases/${caseId}/assign-staff`,
+            method: 'POST',
+            body: { staff_user_id: staffUserId }, // Backend expects staff_user_id in body
+        }),
+        transformResponse: (response: BackendAssignmentResponse) => response.assignment,
+        invalidatesTags: (_result, _error, { caseId }) => [
+            { type: 'Cases', id: caseId }, // To update the case's assignee list
+            { type: 'CaseAssignments', id: `CASE_${caseId}` }, // Specific tag for this case's assignments
+            { type: 'Cases', id: 'LIST' } // General list if assignees shown there
+        ],
+    }),
+    unassignStaffFromCase: builder.mutation<BackendSuccessMessage, { caseId: number, staffId: number }>({
+        query: ({ caseId, staffId }) => ({
+            url: `cases/${caseId}/assign-staff/${staffId}`, // staffId in URL
+            method: 'DELETE',
+        }),
+        invalidatesTags: (_result, _error, { caseId }) => [
+            { type: 'Cases', id: caseId },
+            { type: 'CaseAssignments', id: `CASE_${caseId}` },
+            { type: 'Cases', id: 'LIST' }
+        ],
+    }),
 
-    // ** Payment Endpoints ** (Assuming these are largely okay, but apply similar scrutiny if issues arise)
+    // ** Payment Endpoints ** (Assuming structure is mostly fine)
     fetchPayments: builder.query<PaymentDataTypes[], void>({
       query: () => "payments",
-      providesTags: ["Payments"],
+      providesTags: (result) => result ? [...result.map(({ payment_id }) => ({type: 'Payments' as const, id: payment_id})), {type: 'Payments', id: 'LIST'}] : [{type: 'Payments', id: 'LIST'}],
     }),
     getPaymentById: builder.query<PaymentDataTypes, number>({
       query: (payment_id) => `payments/${payment_id}`,
-      providesTags: ["Payments"],
+      providesTags: (_r, _e, id) => [{type: 'Payments', id}],
     }),
-    createPayment: builder.mutation<PaymentDataTypes, Partial<PaymentDataTypes>>({ // Ensure payload matches backend
+    createPayment: builder.mutation<PaymentDataTypes, Partial<PaymentDataTypes>>({
       query: (newPayment) => ({
         url: "payments",
         method: "POST",
         body: newPayment,
       }),
-      invalidatesTags: ["Payments", "Cases"], // Creating a payment might affect case balance/status
+      invalidatesTags: [{type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}], // Payment affects cases
     }),
     updatePayment: builder.mutation<PaymentDataTypes, Partial<PaymentDataTypes & { payment_id: number }>>({
       query: ({ payment_id, ...rest }) => ({
@@ -236,14 +275,19 @@ export const caseAndPaymentAPI = createApi({
         method: "PUT",
         body: rest,
       }),
-      invalidatesTags: ["Payments", "Cases"], // Updating a payment might affect case balance/status
+      invalidatesTags: (_r, _e, {payment_id}) => [{type: 'Payments', id: payment_id}, {type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}],
     }),
-    deletePayment: builder.mutation<{ success: boolean; payment_id: number }, number>({
+    deletePayment: builder.mutation<{ success: boolean; payment_id: number, msg: string }, number>({
       query: (payment_id) => ({
         url: `payments/${payment_id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Payments", "Cases"], // Deleting a payment might affect case balance/status
+      transformResponse: (response: BackendSuccessMessage, _meta, arg_payment_id) => ({
+        success: response.msg.toLowerCase().includes("successfully"),
+        payment_id: arg_payment_id,
+        msg: response.msg,
+      }),
+      invalidatesTags: (_r, _e, id) => [{type: 'Payments', id}, {type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}],
     }),
   }),
 });
@@ -251,13 +295,20 @@ export const caseAndPaymentAPI = createApi({
 // Export hooks for usage in components
 export const {
   // Case Hooks
-  useGetUserCasesByUserIdQuery,
   useFetchCasesQuery,
   useGetCaseByIdQuery,
+  useGetCasesByClientOwnerQuery,    // Updated
+  useGetCasesByAssignedStaffQuery, // New
+  useGetCaseByPaymentQuery,        // New
   useCreateCaseMutation,
   useUpdateCaseMutation,
   useDeleteCaseMutation,
-  useTriggerCaseBalanceUpdateMutation, // Export new hook
+  useTriggerCaseBalanceUpdateMutation,
+
+  // Case Assignment Hooks
+  useGetAssignedStaffForCaseQuery, // New
+  useAssignStaffToCaseMutation,    // New
+  useUnassignStaffFromCaseMutation,// New
 
   // Payment Hooks
   useFetchPaymentsQuery,
