@@ -1,3 +1,5 @@
+// src/app/store.ts (or your store setup file) - UPDATED
+
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
@@ -16,20 +18,22 @@ import { caseDocumentAPI } from "../features/casedocument/casedocmentapi";
 import { appointmentAPI } from "../features/appointment/appointmentapi";
 import { loginAPI } from "../features/login/loginAPI";
 import { teamApi } from "../features/team/teamApi";
-import { chatsAPI } from "../features/chats/chatsAPI"; // <<< ADDED chatsAPI IMPORT
+import { chatsAPI } from "../features/chats/chatsAPI";
 
 // Importing regular slices
-import userReducer from "../features/users/userSlice"; // Assuming userSlice exports the reducer directly
+import userReducer from "../features/users/userSlice";
+import onlineStatusReducer from "../features/online/online"; // <<< 1. IMPORTED a new reducer
 
 // Persist configuration
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user"], // only the user state (which includes token and user object) will be persisted
+    whitelist: ["user"], // Correctly only persisting the user slice. onlineStatus is ephemeral.
 };
 
 // Combine reducers
 const rootReducer = combineReducers({
+    // API Reducers
     [teamApi.reducerPath]: teamApi.reducer,
     [usersAPI.reducerPath]: usersAPI.reducer,
     [caseAndPaymentAPI.reducerPath]: caseAndPaymentAPI.reducer,
@@ -43,8 +47,11 @@ const rootReducer = combineReducers({
     [caseDocumentAPI.reducerPath]: caseDocumentAPI.reducer,
     [appointmentAPI.reducerPath]: appointmentAPI.reducer,
     [loginAPI.reducerPath]: loginAPI.reducer,
-    [chatsAPI.reducerPath]: chatsAPI.reducer, // <<< ADDED chatsAPI REDUCER
-    user: userReducer, // Your user slice reducer
+    [chatsAPI.reducerPath]: chatsAPI.reducer,
+
+    // Regular Reducers
+    user: userReducer,
+    onlineStatus: onlineStatusReducer, // <<< 2. ADDED the onlineStatus reducer to the store
 });
 
 // Add persist reducer
@@ -56,29 +63,27 @@ export const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                // It's recommended to ignore specific actions from redux-persist
-                // rather than disabling serializableCheck entirely if possible.
-                // However, if you have non-serializable data elsewhere, false might be necessary.
                 ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER', 'persist/PURGE'],
             },
-        })
-            .concat(usersAPI.middleware)
-            .concat(caseAndPaymentAPI.middleware)
-            .concat(paymentAPI.middleware)
-            .concat(logAPI.middleware)
-            .concat(feedbackAPI.middleware)
-            .concat(TicketAPI.middleware)
-            .concat(eventAndReminderAPI.middleware)
-            .concat(eventReminderAPI.middleware)
-            .concat(locationBranchAPI.middleware)
-            .concat(caseDocumentAPI.middleware)
-            .concat(appointmentAPI.middleware)
-            .concat(loginAPI.middleware)
-            .concat(teamApi.middleware)
-            .concat(chatsAPI.middleware), // <<< ADDED chatsAPI MIDDLEWARE
+        }).concat(
+            usersAPI.middleware,
+            caseAndPaymentAPI.middleware,
+            paymentAPI.middleware,
+            logAPI.middleware,
+            feedbackAPI.middleware,
+            TicketAPI.middleware,
+            eventAndReminderAPI.middleware,
+            eventReminderAPI.middleware,
+            locationBranchAPI.middleware,
+            caseDocumentAPI.middleware,
+            appointmentAPI.middleware,
+            loginAPI.middleware,
+            teamApi.middleware,
+            chatsAPI.middleware
+        )
 });
 
-export const persistor = persistStore(store); // Renamed from persistedStore for common convention
+export const persistor = persistStore(store);
 
 // Define RootState based on the rootReducer to get the clean state shape
 export type RootState = ReturnType<typeof rootReducer>;

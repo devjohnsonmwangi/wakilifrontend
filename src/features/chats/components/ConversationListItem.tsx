@@ -29,6 +29,19 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
     creator,
   } = conversation;
 
+  // Type guard for participant with 'user' property
+  function isParticipantWithUser(
+    obj: unknown
+  ): obj is { user: { user_id: number; full_name: string | null; profile_picture?: string | null } } {
+      return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'user' in obj &&
+        typeof (obj as { user?: unknown }).user === 'object' &&
+        (obj as { user?: unknown }).user !== undefined
+      );
+  }
+
   let displayTitle = title;
   let avatarUser: { user_id: number; full_name: string | null; profile_picture?: string | null } | undefined;
   let otherParticipantsNames = "Group Chat Members";
@@ -44,11 +57,15 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
     );
 
     if (otherParticipantData) {
-        avatarUser = 'user' in otherParticipantData ? otherParticipantData.user : otherParticipantData;
+        avatarUser = isParticipantWithUser(otherParticipantData)
+            ? otherParticipantData.user
+            : (otherParticipantData as { user_id: number; full_name: string | null; profile_picture?: string | null });
     } else if (creator && creator.user_id !== currentUserId) {
         avatarUser = creator;
     } else if (participants.length > 0) { // Self-chat or only one participant listed
-        avatarUser = 'user' in participants[0] ? participants[0].user : participants[0];
+        avatarUser = isParticipantWithUser(participants[0])
+            ? participants[0].user
+            : (participants[0] as { user_id: number; full_name: string | null; profile_picture?: string | null });
     }
 
 

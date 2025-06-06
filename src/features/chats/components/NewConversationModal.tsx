@@ -152,18 +152,18 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ isOpen, onC
              setLocalError("Please provide a group name or uncheck 'Create a group chat' for a direct message."); return;
         }
         conversation = await createConversation({
-          creatorUserId: currentUserId, // Pass currentUserId as creatorUserId
-          participantUserIds: selectedUsers.map(u => u.user_id),
+          creator_id: currentUserId, // Pass currentUserId as creator_id
+          participant_user_ids: selectedUsers.map(u => u.user_id),
           title: groupTitle.trim() || undefined,
-          isGroup: true,
+          is_group: true,
         }).unwrap();
       } else {
         if (selectedUsers.length !== 1) {
             setLocalError("Please select exactly one person for a direct chat."); return;
         }
         conversation = await findOrCreateOneOnOne({
-          requestingUserId: currentUserId, // Pass currentUserId as requestingUserId
-          otherUserId: selectedUsers[0].user_id,
+          user_id_1: currentUserId, // Pass currentUserId as user_id_1
+          user_id_2: selectedUsers[0].user_id,
         }).unwrap();
       }
       if (conversation?.conversation_id) {

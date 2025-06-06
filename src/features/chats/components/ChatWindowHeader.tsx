@@ -52,10 +52,11 @@ const ChatWindowHeader: React.FC<ChatWindowHeaderProps> = ({ conversation, onBac
       (p: Participant) => p.user_id !== currentUserId
     );
      if (otherParticipantData) {
-        avatarUser = 'user' in otherParticipantData ? otherParticipantData.user : {
-          user_id: otherParticipantData.user_id!,
-          full_name: otherParticipantData.full_name ?? null,
-          profile_picture: otherParticipantData.profile_picture
+        const participant = otherParticipantData as Participant;
+        avatarUser = 'user' in participant && participant.user ? participant.user : {
+          user_id: participant.user_id!,
+          full_name: participant.full_name ?? null,
+          profile_picture: participant.profile_picture
         };
     } else if (creator && creator.user_id !== currentUserId) {
         avatarUser = creator;

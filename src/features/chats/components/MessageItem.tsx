@@ -13,7 +13,7 @@ interface MessageItemProps {
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage, showAvatarAndName }) => {
-  const { content, sent_at, sender, sender_name, message_id } = message;
+  const { content, sent_at, sender, message_id } = message;
 
   // Placeholder for demonstrating AlertCircle.
   // In a real app, this would come from message.status or an actual error condition.
@@ -34,7 +34,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage, showAv
         {!isOwnMessage && showAvatarAndName && (
           <UserAvatar
             src={sender?.profile_picture}
-            name={sender?.full_name || sender_name}
+            name={sender?.full_name}
             size="sm"
             className="mr-2 self-start flex-shrink-0" // Added flex-shrink-0
           />

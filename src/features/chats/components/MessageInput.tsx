@@ -47,10 +47,10 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId }) => {
       }
       try {
         await sendMessage({
-          conversationId,
-          senderUserId: currentUserId, // Pass currentUserId as senderUserId
+          conversation_id: conversationId,
+          sender_id: currentUserId,
           content: messageContent,
-          // messageType: 'text' // Default type, can be omitted if 'text' is the backend default
+          // message_type: 'text' // Default type, can be omitted if 'text' is the backend default
         }).unwrap();
         // Optionally, clear sendError if it was previously set
         if (sendError) { /* logic to clear error if displayed in UI */ }

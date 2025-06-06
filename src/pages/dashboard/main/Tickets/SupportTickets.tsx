@@ -123,8 +123,8 @@ const AllTicket = () => {
 
     const filteredTickets = useMemo(() => {
         return tickets.filter((ticket) => {
-            const fullNameMatch = filters.full_name ? ticket.user.full_name.toLowerCase().includes(filters.full_name.toLowerCase()) : true;
-            const emailMatch = filters.email ? ticket.user.email.toLowerCase().includes(filters.email.toLowerCase()) : true;
+            const fullNameMatch = filters.full_name ? ticket.creator.full_name.toLowerCase().includes(filters.full_name.toLowerCase()) : true;
+            const emailMatch = filters.email ? ticket.creator.email.toLowerCase().includes(filters.email.toLowerCase()) : true;
             const subjectMatch = filters.subject ? ticket.subject.toLowerCase().includes(filters.subject.toLowerCase()) : true;
             const statusMatch = filters.status ? ticket.status.toLowerCase() === filters.status.toLowerCase() : true;
             return fullNameMatch && emailMatch && subjectMatch && statusMatch;
@@ -198,17 +198,17 @@ const AllTicket = () => {
                  </div>
             </td>
             <td className="px-5 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-800 dark:text-gray-200">{ticket.user.full_name}</div>
+                <div className="text-sm text-gray-800 dark:text-gray-200">{ticket.creator.full_name}</div>
             </td>
             <td className="px-5 py-4 whitespace-nowrap">
-                <a href={`mailto:${ticket.user.email}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center">
-                    <FaEnvelope className="mr-1.5 h-4 w-4 flex-shrink-0" /> <span className="truncate" title={ticket.user.email}>{ticket.user.email}</span>
+                <a href={`mailto:${ticket.creator.email}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center">
+                    <FaEnvelope className="mr-1.5 h-4 w-4 flex-shrink-0" /> <span className="truncate" title={ticket.creator.email}>{ticket.creator.email}</span>
                 </a>
             </td>
             <td className="px-5 py-4 whitespace-nowrap">
-                {ticket.user.phone_number ? (
-                    <a href={`tel:${ticket.user.phone_number}`} className="text-sm text-gray-700 dark:text-gray-300 hover:underline flex items-center">
-                        <FaPhone className="mr-1.5 h-4 w-4 flex-shrink-0" /> {ticket.user.phone_number}
+                {ticket.creator.phone_number ? (
+                    <a href={`tel:${ticket.creator.phone_number}`} className="text-sm text-gray-700 dark:text-gray-300 hover:underline flex items-center">
+                        <FaPhone className="mr-1.5 h-4 w-4 flex-shrink-0" /> {ticket.creator.phone_number}
                     </a>
                 ) : (
                     <span className="text-sm text-gray-400 dark:text-gray-500 italic">N/A</span>

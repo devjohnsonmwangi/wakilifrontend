@@ -42,7 +42,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
       currentConversation &&
       (currentConversation.unread_count || 0) > 0
     ) {
-      markAsRead({ conversationId, userId: currentUserId })
+      markAsRead({ conversation_id: conversationId, user_id: currentUserId })
         .unwrap()
         .catch(err => console.error("Failed to mark as read:", err));
     }
