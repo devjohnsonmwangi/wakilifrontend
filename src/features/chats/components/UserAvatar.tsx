@@ -1,23 +1,25 @@
 // src/features/chats/components/UserAvatar.tsx
+
 import React from 'react';
-import OnlineIndicator from './OnlineIndicator'; // Assuming OnlineIndicator is in the same directory
+// --- Import the smart component that knows about real-time status ---
+import UserOnlineIndicator from './indicator'; // Assuming it's in the same directory
 
 interface UserAvatarProps {
+  userId?: number; // <<< ADDED: The ID is now needed for real-time status
   src?: string | null;
   name?: string | null;
   size?: 'xs'| 'sm' | 'md' | 'lg' | 'xl';
-  isOnline?: boolean;
   className?: string;
-  showOnlineIndicator?: boolean; // Control whether to show the indicator
+  showOnlineIndicator?: boolean;
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
+  userId, // <<< ADDED
   src,
   name,
   size = 'md',
-  isOnline,
   className = '',
-  showOnlineIndicator = false, // Default to false, explicitly enable
+  showOnlineIndicator = false,
 }) => {
   const sizeMap = {
     xs: 'w-6 h-6 text-xs',
@@ -50,9 +52,12 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
           {getInitials(name)}
         </div>
       )}
-      {showOnlineIndicator && isOnline !== undefined && (
-        <OnlineIndicator
-          isOnline={isOnline}
+
+      {/* --- UPDATED LOGIC --- */}
+      {/* Show the indicator if requested AND if we have a userId to look up */}
+      {showOnlineIndicator && userId && (
+        <UserOnlineIndicator // <<< USING THE SMART COMPONENT
+          userId={userId}    // <<< PASSING THE USER ID
           size={size === 'xs' || size === 'sm' ? 'sm' : 'md'}
           className={`absolute bottom-0 right-0 border-2 border-white dark:border-neutral-800 rounded-full`}
         />
@@ -60,4 +65,5 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     </div>
   );
 };
+
 export default UserAvatar;
