@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
-interface OnlineStatusState {
+export interface OnlineStatusState {
   // A simple and efficient key-value store: { [userId]: true, [anotherUserId]: true }
   onlineUsers: Record<number, boolean>;
 }
 
-const initialState: OnlineStatusState = {
+export const initialState: OnlineStatusState = {
   onlineUsers: {},
 };
 

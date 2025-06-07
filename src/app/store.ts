@@ -19,16 +19,17 @@ import { appointmentAPI } from "../features/appointment/appointmentapi";
 import { loginAPI } from "../features/login/loginAPI";
 import { teamApi } from "../features/team/teamApi";
 import { chatsAPI } from "../features/chats/chatsAPI";
+import { notificationsAPI } from "../features/notifications/notificationAPI"; // <<< 1. IMPORT the new notifications API
 
 // Importing regular slices
 import userReducer from "../features/users/userSlice";
-import onlineStatusReducer from "../features/online/online"; // <<< 1. IMPORTED a new reducer
+import onlineStatusReducer from "../features/online/online";
 
 // Persist configuration
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user"], // Correctly only persisting the user slice. onlineStatus is ephemeral.
+    whitelist: ["user"], // Correctly only persisting the user slice.
 };
 
 // Combine reducers
@@ -48,10 +49,11 @@ const rootReducer = combineReducers({
     [appointmentAPI.reducerPath]: appointmentAPI.reducer,
     [loginAPI.reducerPath]: loginAPI.reducer,
     [chatsAPI.reducerPath]: chatsAPI.reducer,
+    [notificationsAPI.reducerPath]: notificationsAPI.reducer, // <<< 2. ADD the new notifications reducer
 
     // Regular Reducers
     user: userReducer,
-    onlineStatus: onlineStatusReducer, // <<< 2. ADDED the onlineStatus reducer to the store
+    onlineStatus: onlineStatusReducer,
 });
 
 // Add persist reducer
@@ -66,6 +68,7 @@ export const store = configureStore({
                 ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER', 'persist/PURGE'],
             },
         }).concat(
+            // Concatenate all API middlewares
             usersAPI.middleware,
             caseAndPaymentAPI.middleware,
             paymentAPI.middleware,
@@ -79,7 +82,8 @@ export const store = configureStore({
             appointmentAPI.middleware,
             loginAPI.middleware,
             teamApi.middleware,
-            chatsAPI.middleware
+            chatsAPI.middleware,
+            notificationsAPI.middleware // <<< 3. ADD the new notifications middleware
         )
 });
 

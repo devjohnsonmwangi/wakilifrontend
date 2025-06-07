@@ -65,6 +65,7 @@ import LibDocumentList from './pages/dashboard/main/managedocs/library.tsx';
 import BookAppointmentPage from './pages/dashboard/howtoappoint.tsx';
 import ClientAppointments from './pages/dashboard/main/manageAppointment/clientsappointments.tsx';
 import ChatPage from './pages/ChatPage.tsx';
+import NotificationsPage from './features/notifications/components/NotificationsPage.tsx';
 
 // --- Router Definition ---
 const router = createBrowserRouter([
@@ -117,6 +118,7 @@ const router = createBrowserRouter([
       { path: 'appoints', element: <BookAppointmentPage /> },
       { path: 'myappointments', element: <ClientAppointments /> },
       { path: 'chats', element: <ChatPage /> },
+      {path:'notifications', element:<NotificationsPage />},
     ],
   },
   { path: '*', element: <Error /> }
