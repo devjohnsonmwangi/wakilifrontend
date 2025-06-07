@@ -1,4 +1,6 @@
 // src/features/chats/chatsAPI.ts
+// THIS FILE REMAINS UNCHANGED
+
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { APIDomain } from '../../utils/APIDomain';
 import { RootState } from '../../app/store';
@@ -122,7 +124,6 @@ export const chatsAPI = createApi({
     }),
 
     sendMessage: builder.mutation<ChatMessage, SendMessagePayload>({
-      // The body now correctly sends snake_case keys
       query: ({ conversation_id, ...body }) => ({ url: `/conversations/${conversation_id}/messages`, method: 'POST', body }),
       async onQueryStarted({ conversation_id, sender_id, content, message_type }, { dispatch, queryFulfilled, getState }) {
         const tempId = `temp_${Date.now()}`;

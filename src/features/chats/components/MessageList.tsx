@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGetMessagesForConversationQuery } from '../chatsAPI';
 import MessageItem from './MessageItem';
 import { useSelector } from 'react-redux';
-import { selectCurrentUserId } from '../../users/userSlice'; // Ensure this path is correct
-import { ArrowDownCircle, Loader2, AlertTriangle } from 'lucide-react'; // Added Loader2, AlertTriangle
+import { selectCurrentUserId } from '../../users/userSlice';
+import { ArrowDownCircle, Loader2, AlertTriangle } from 'lucide-react';
 
 interface MessageListProps {
   conversationId: number;
@@ -12,30 +12,33 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
   const [offset, setOffset] = useState(0);
-  const limit = 30; // Number of messages to fetch per page (was 20, common to use 30)
+  const limit = 30;
 
-  const currentUserId = useSelector(selectCurrentUserId); // Get current user's ID
+  const currentUserId = useSelector(selectCurrentUserId);
 
+  // --- START OF CHANGES ---
   const {
     data: messagesData,
     isLoading,
     isFetching,
     isError,
     error,
-    refetch // Added refetch for a manual "Try Again" button
+    refetch,
   } = useGetMessagesForConversationQuery(
     {
       conversationId,
-      requestingUserId: currentUserId as number, // Pass currentUserId as requestingUserId
+      requestingUserId: currentUserId as number,
       limit,
       offset,
     },
     {
-      skip: currentUserId === null, // Skip query if currentUserId is not yet available
-      // Note: `merge` logic is in the API slice.
-      // refetchOnMountOrArgChange: true, // Fetches when conversationId or requestingUserId changes (already handled by RTK Query default behavior with arg changes)
+      skip: currentUserId === null,
+      // Add this line to automatically refresh messages every 3 seconds
+      pollingInterval: 3000, 
     }
   );
+  // --- END OF CHANGES ---
+
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -44,22 +47,36 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
 
   // Scroll to bottom logic
   useEffect(() => {
-    if (messagesContainerRef.current && initialLoad && messagesData && messagesData.length > 0 && !isFetching) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    // Check if user is scrolled near the bottom before auto-scrolling
+    const isScrolledToBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+
+    if (initialLoad && messagesData && messagesData.length > 0 && !isFetching) {
+      // On initial load, always jump to the bottom
+      container.scrollTop = container.scrollHeight;
       setInitialLoad(false);
-    } else if (messagesContainerRef.current && prevScrollHeight && !isFetching) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight - prevScrollHeight;
+    } else if (prevScrollHeight && !isFetching) {
+      // When loading older messages, restore scroll position
+      container.scrollTop = container.scrollHeight - prevScrollHeight;
       setPrevScrollHeight(null);
+    } else if (isScrolledToBottom && !isFetching) {
+      // NEW: For polled updates, only scroll if the user is already near the bottom
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
   }, [messagesData, initialLoad, prevScrollHeight, isFetching]);
 
   const handleScroll = () => {
-    if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const container = messagesContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Load more messages when user scrolls to the top
       if (scrollTop === 0 && !isFetching && messagesData && messagesData.length >= (offset + limit)) {
         setPrevScrollHeight(scrollHeight);
         setOffset(prevOffset => prevOffset + limit);
       }
+      // Show/hide the "Scroll to Bottom" button
       setShowScrollToBottom(scrollHeight - scrollTop > clientHeight + 200);
     }
   };
@@ -67,7 +84,9 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
   const scrollToBottom = () => {
     messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
   };
-
+  
+  // (The rest of your component's JSX remains exactly the same)
+  // ...
   // Enhanced Loading/Error/Empty States
   if (currentUserId === null) {
     return (
@@ -115,9 +134,9 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="h-full overflow-y-auto p-4 space-y-0.5 scroll-smooth" // Adjusted space-y for tighter packing if desired
+        className="h-full overflow-y-auto p-4 space-y-0.5 scroll-smooth"
       >
-        {isFetching && offset > 0 && ( // Loading older messages indicator
+        {isFetching && offset > 0 && (
           <div className="text-center py-3 text-sm text-neutral-500 dark:text-neutral-400 flex items-center justify-center">
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             Loading older messages...
@@ -125,7 +144,6 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
         )}
         {messagesData.map((msg, index) => {
           const prevMsg = messagesData[index - 1];
-          // Show avatar/name if: no previous message, OR different sender, OR time gap > 5 mins
           const showAvatarAndName =
             !prevMsg ||
             prevMsg.sender_id !== msg.sender_id ||
@@ -133,9 +151,9 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
 
           return (
             <MessageItem
-              key={`${msg.message_id}-${index}`} // Use index for temp stability if message_id isn't unique during optimistic updates
+              key={`${msg.message_id}-${index}`}
               message={msg}
-              isOwnMessage={msg.sender_id === currentUserId} // currentUserId is now guaranteed to be a number here or skipped
+              isOwnMessage={msg.sender_id === currentUserId}
               showAvatarAndName={showAvatarAndName}
             />
           );

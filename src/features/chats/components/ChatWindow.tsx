@@ -4,38 +4,37 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ChatWindowHeader from './ChatWindowHeader';
 import { useMarkConversationAsReadMutation, useGetUserConversationsQuery } from '../chatsAPI';
-import { useSelector } from 'react-redux'; // Import useSelector
-import { selectCurrentUserId } from '../../users/userSlice'; // Import your selector
-import { Loader2, AlertTriangle } from 'lucide-react'; // For better loading/error states
+import { useSelector } from 'react-redux';
+import { selectCurrentUserId } from '../../users/userSlice';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface ChatWindowProps {
   conversationId: number;
-  onBack?: () => void; // For mobile view
-  // currentUserId: number; // No longer needed as prop, will get from Redux
+  onBack?: () => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
-  const currentUserId = useSelector(selectCurrentUserId); // Get current user's ID from Redux
+  const currentUserId = useSelector(selectCurrentUserId);
 
   const [markAsRead] = useMarkConversationAsReadMutation();
 
-  // Fetch conversations for the current user to find details about the currentConversation
+  // Fetch conversations to find details for the current one
   const {
     data: conversations,
     isLoading: isLoadingConversations,
-    // isError: isErrorConversations, // Can be used for more specific error handling
-    // error: errorConversations, // Can be used for more specific error handling
   } = useGetUserConversationsQuery(
-    currentUserId as number, // Pass currentUserId
+    currentUserId as number,
     {
-      skip: currentUserId === null, // Skip if userId is not available
+      skip: currentUserId === null,
+      // NEW: Add polling to automatically refresh conversation details (e.g., title)
+      // A longer interval is fine here as this data changes infrequently.
+      pollingInterval: 15000, // Refresh every 15 seconds
     }
   );
 
   const currentConversation = conversations?.find(c => c.conversation_id === conversationId);
 
   useEffect(() => {
-    // Ensure currentUserId is available before attempting to mark as read
     if (
       typeof currentUserId === 'number' &&
       typeof conversationId === 'number' &&
@@ -48,9 +47,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
     }
   }, [conversationId, markAsRead, currentConversation, currentUserId]);
 
-  // Handle loading and error states
+  // Handle loading and error states (Unchanged)
   if (currentUserId === null) {
-    // This state should ideally be brief or handled by a higher-level auth guard
     return (
       <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
         <ChatWindowHeader conversation={undefined} onBack={onBack} />
@@ -78,7 +76,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
     );
   }
 
-  if (!currentConversation && !isLoadingConversations) { // Conversations loaded, but specific one not found
+  if (!currentConversation && !isLoadingConversations) {
     return (
       <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
         <ChatWindowHeader conversation={undefined} onBack={onBack} />
@@ -101,20 +99,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
     );
   }
 
-  // If currentConversation is still undefined here but isLoadingConversations is false,
-  // it means the find operation failed after successful fetch. This is covered by the above.
-  // If currentConversation is available, render the chat.
   return (
     <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
       <ChatWindowHeader conversation={currentConversation} onBack={onBack} />
-      {/*
-        MessageList and MessageInput will need currentUserId.
-        It's better if they fetch it themselves via useSelector for better component independence,
-        unless there's a strong reason to pass it down (e.g., if the ID could change dynamically
-        for these components in a way ChatWindow controls, which is unlikely here).
-
-        Assuming MessageList and MessageInput will also use useSelector(selectCurrentUserId):
-      */}
+      {/* The MessageList component now handles its own data fetching and refreshing */}
       <MessageList conversationId={conversationId} />
       <MessageInput conversationId={conversationId} />
     </div>

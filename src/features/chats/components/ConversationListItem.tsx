@@ -87,7 +87,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
 
   // Placeholder for online status - this would come from a WebSocket/presence system
   // const isUserOnline = getOnlineStatus(avatarUser?.user_id); // You'd need a presence system
-  const isUserOnline = false; // For now
+  //const isUserOnline = false; // For now
 
   return (
     <div
@@ -102,7 +102,6 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
         name={is_group_chat ? displayTitle : avatarUser?.full_name}
         src={is_group_chat ? undefined /* groupAvatarUrl */ : avatarUser?.profile_picture}
         showOnlineIndicator={!is_group_chat}
-        isOnline={isUserOnline}
         size="md"
       />
       <div className="ml-3 flex-1 min-w-0">
