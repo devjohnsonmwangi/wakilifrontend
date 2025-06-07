@@ -75,7 +75,7 @@ export const drawerData: DrawerData[] = [
     // Original ID 12, link 'branch'
     { id: 12, name: 'Branch Location', icon: MapPin, link: 'branch', adminOnly: false, category: 'General' },
     // Original ID 13, link 'feedbacks'
-    { id: 13, name: 'Feedbacks', icon: MessageSquareText, link: 'feedbacks', adminOnly: false, category: 'General' },
+    //{ id: 13, name: 'Feedbacks', icon: MessageSquareText, link: 'feedbacks', adminOnly: false, category: 'General' },
     // Original ID 10, link 'events' (was adminOnly:true in your original, now adminOnly:false for users to view)
     { id: 10, name: 'Events', icon: CalendarDays, link: 'events', adminOnly: true, category: 'General' },
     // Original ID 8, link 'profile'
