@@ -5,11 +5,11 @@ import {
     FaTimes, FaTag,
     FaMoneyBill, FaBriefcase, FaHashtag, FaFileAlt,
     FaBalanceScale, FaUniversity, FaBuilding, FaUsers,
-    FaCreditCard, FaDollarSign // FaMoneyCheckAlt is okay, FaDollarSign for fee, FaCreditCard for status
+    FaCreditCard, FaDollarSign 
 } from "react-icons/fa";
 
 interface ViewCaseDetailsModalProps {
-    isDarkMode?: boolean; // Kept for consistency, though Tailwind dark mode is usually global
+    isDarkMode?: boolean; 
     selectedCase: CaseDataTypes | null;
     closeModal: () => void;
 }
@@ -52,7 +52,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
         { label: "Case Type", value: selectedCase.case_type ?? 'N/A', icon: FaTag },
         { label: "Case Status", value: formatStatus(selectedCase.case_status), icon: FaBalanceScale },
         { label: "Case Number", value: selectedCase.case_number ?? 'N/A', icon: FaBriefcase },
-        { label: "Track Number", value: selectedCase.case_track_number ?? 'N/A', icon: FaHashtag }, // Could be FaBarcode
+        { label: "Track Number", value: selectedCase.case_track_number ?? 'N/A', icon: FaHashtag }, 
         { label: "Court", value: selectedCase.court ?? 'N/A', icon: FaUniversity },
         { label: "Station", value: selectedCase.station ?? 'N/A', icon: FaBuilding },
         { label: "Parties Involved", value: selectedCase.parties ?? 'N/A', icon: FaUsers },

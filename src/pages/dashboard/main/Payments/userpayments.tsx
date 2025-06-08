@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     useFetchPaymentsQuery,
-} from '../../../../features/payment/paymentAPI'; // Adjust path as necessary
+} from '../../../../features/payment/paymentAPI'; 
 import { toast } from "sonner";
 import { format, parseISO } from 'date-fns';
 import {
@@ -11,11 +11,11 @@ import {
     CreditCard, Activity, Eye, Download, UserX, LogOut, Settings, Loader2,
 } from 'lucide-react';
 
-import { useSelector } from 'react-redux'; // useDispatch removed as it's not used
+import { useSelector } from 'react-redux'; 
 import {
     selectCurrentUser,
     selectIsAuthenticated,
-    // logoutUserAction, // Example for logout: make sure this is imported if used
+    // logoutUserAction, 
 } from '../../../../features/users/userSlice';
 
 // --- SVG Icons (Define or Import) ---
@@ -62,7 +62,7 @@ interface FetchPaymentsQueryResult {
     isLoading: boolean;
     isError: boolean;
     error: unknown;
-    refetch: () => void; // Kept for potential future use, but not actively called in this version
+    refetch: () => void; 
 }
 
 interface StatusDisplayInfo {
@@ -87,7 +87,7 @@ const getStatusDisplayInfo = (status: string | undefined): StatusDisplayInfo => 
 };
 
 const UserPaymentRecords: React.FC = () => {
-    // const dispatch = useDispatch(); // Removed as it's not used
+    // const dispatch = useDispatch(); 
 
     // --- Theme State ---
     const getInitialTheme = (): boolean => {
@@ -145,14 +145,14 @@ const UserPaymentRecords: React.FC = () => {
     const [filterTransactionId, setFilterTransactionId] = useState<string>('');
 
     const { data, isLoading: paymentsLoading, isError, error, 
-        // refetch // Removed from destructuring as it's not actively called
+        // refetch 
     } = useFetchPaymentsQuery(undefined, {
         skip: !isAuthenticated || !currentUserId,
     }) as FetchPaymentsQueryResult;
     
     const [baseUserPayments, setBaseUserPayments] = useState<PaymentDataTypes[]>([]);
     const [filteredPayments, setFilteredPayments] = useState<PaymentDataTypes[]>([]);
-    const [isDownloading, setIsDownloading] = useState<number | null>(null); // isDownloading state is used in handleDownloadReceipt
+    const [isDownloading, setIsDownloading] = useState<number | null>(null); 
 
     useEffect(() => {
         if (!isAuthenticated || !currentUserId) {
@@ -214,12 +214,12 @@ const UserPaymentRecords: React.FC = () => {
         toast.info("Filters have been reset.");
     };
 
-    const handleDownloadReceipt = async (payment: PaymentDataTypes) => { // 'payment' parameter is used
+    const handleDownloadReceipt = async (payment: PaymentDataTypes) => { 
         if (!payment.receipt_url || !payment.payment_id) {
             toast.error("Receipt URL is not available for download.");
             return;
         }
-        setIsDownloading(payment.payment_id); // This line uses setIsDownloading
+        setIsDownloading(payment.payment_id); 
         toast.promise(
             (async () => {
                 try {
@@ -251,7 +251,7 @@ const UserPaymentRecords: React.FC = () => {
                     URL.revokeObjectURL(link.href);
                     return { fileName };
                 } finally {
-                    setIsDownloading(null); // This line uses setIsDownloading
+                    setIsDownloading(null); 
                 }
             })(),
             {
@@ -262,7 +262,7 @@ const UserPaymentRecords: React.FC = () => {
         );
     };
 
-    const handleViewReceipt = async (receiptUrl: string) => { // 'receiptUrl' parameter is used
+    const handleViewReceipt = async (receiptUrl: string) => { 
         if (!receiptUrl) {
             toast.warning("Receipt URL is not available.");
             return;
@@ -339,7 +339,7 @@ const UserPaymentRecords: React.FC = () => {
         <div className="w-full p-4 md:p-6 bg-slate-100 dark:bg-slate-900 min-h-screen font-sans transition-colors duration-300">
             {/* Header Section */}
             <header className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
-                <h1 className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100">
+                <h1 className="text-xl sm:text-2xl font-bold text-green-800 dark:text-green-100">
                     {pageTitle}
                 </h1>
                 <div className="flex items-center space-x-3 sm:space-x-4">
@@ -358,7 +358,7 @@ const UserPaymentRecords: React.FC = () => {
                             id="user-menu-button" aria-expanded={isUserMenuOpen} aria-haspopup="true"
                         >
                             <span className="sr-only">Open user menu</span>
-                            {loggedInUser?.profile_picture ? ( // Corrected: profile_picture
+                            {loggedInUser?.profile_picture ? ( 
                                 <img className="h-9 w-9 rounded-full object-cover border-2 border-transparent hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors" src={loggedInUser.profile_picture} alt="User profile" />
                             ) : (
                                 <UserCircleIcon className="h-9 w-9 text-slate-500 dark:text-slate-400" />
@@ -456,7 +456,7 @@ const UserPaymentRecords: React.FC = () => {
                     </table>
                 </div>
             </div>
-            {/* No Modals Rendered Here */}
+        
         </div>
     );
 };

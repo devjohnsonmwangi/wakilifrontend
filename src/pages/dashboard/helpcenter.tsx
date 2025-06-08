@@ -10,7 +10,7 @@ import {
   FileLock2, HelpCircle
 } from 'lucide-react';
 
-// Map of icon names (strings) to Lucide components for dynamic rendering
+
 const iconComponents: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
   Phone, Mail, Search, ChevronDown, ChevronUp, UserCircle, Settings, CreditCard,
   FileText, AlertTriangle, BookOpen, LifeBuoy, KeyRound, MailCheck, ShieldQuestion,

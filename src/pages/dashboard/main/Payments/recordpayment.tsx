@@ -3,14 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import {
     useFetchCasesQuery,
-    CaseDataTypes as Case, // Ensure this Case type includes 'payment_balance', 'fee', and 'user_id'
+    CaseDataTypes as Case, 
     CaseStatus,
     CaseType,
 } from '../../../../features/case/caseAPI';
 import {
     PaymentGateway,
-    ManualPaymentRequest, // Correctly imported
-    useAddManualPaymentMutation, // Correctly imported
+    ManualPaymentRequest, 
+    useAddManualPaymentMutation, 
 } from '../../../../features/payment/paymentAPI';
 
 // --- Custom useDebounce Hook ---
@@ -30,13 +30,13 @@ const MANUAL_ENTRY_LAST_USED_MPESA_PHONES_KEY = 'manualPaymentEntry_lastUsedMpes
 const MAX_MANUAL_SUGGESTIONS = 5;
 
 interface ManualPaymentEntryModalProps {
-    userId?: number; // Optional userId prop if needed for context
+    userId?: number; 
     isOpen: boolean;
-    isDarkMode?: boolean; // Optional prop to handle dark mode styles
+    isDarkMode?: boolean; 
     onClose: () => void;
 }
 
-// Define ApiError interface if not globally available
+// ApiError interface 
 interface ApiError {
     data?: {
         message?: string;
@@ -133,13 +133,13 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
             );
         }
 
-        // START OF CHANGE: Filter for cases with a positive balance
+        // Filter for cases with a positive balance
         tempFilteredCases = tempFilteredCases.filter(c => {
             // Use payment_balance, fallback to fee, default to 0 if neither exists
             const balance = parseFloat(String(c.payment_balance ?? c.fee ?? 0));
             return !isNaN(balance) && balance > 0;
         });
-        // END OF CHANGE
+        
 
         return tempFilteredCases;
     }, [
@@ -150,23 +150,23 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
         debouncedStationFilter,
         debouncedCaseNumberFilter,
         debouncedSearchTerm
-        // No new dependencies needed for the balance filter as it uses properties of 'c' from 'cases'
+        
     ]);
 
     useEffect(() => {
         if (selectedCase) {
-            // Use the same logic for balance calculation as in the filter and table display
+            
             const balanceValue = parseFloat(String(selectedCase.payment_balance ?? selectedCase.fee ?? 0));
             setAmount(balanceValue > 0 ? balanceValue.toFixed(2) : '');
         } else {
             setAmount('');
         }
-        // Reset other fields only when selectedCase changes, not every time amount might change due to other reasons
+        
         setTransactionId('');
         setMpesaPhoneNumber('');
         setPaymentNotes('');
-        // Note: customerEmail and paymentDate are generally not reset when just selecting a different case,
-        // unless specific business logic requires it. The current handleClose resets them.
+        
+    
     }, [selectedCase]);
 
 
@@ -200,7 +200,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
 
         const payload: ManualPaymentRequest = {
             case_id: selectedCase.case_id,
-            user_id: selectedCase.user_id, // Ensure selectedCase.user_id is populated
+            user_id: selectedCase.user_id, 
             payment_amount: numericAmount,
             payment_gateway: selectedGateway,
             payment_date: paymentDate,
@@ -211,7 +211,7 @@ const ManualPaymentEntryModal: React.FC<ManualPaymentEntryModalProps> = ({ isOpe
         };
 
         // if (selectedGateway === 'mpesa' && mpesaPhoneNumber) {
-        // //    payload.mpesa_phone_number = mpesaPhoneNumber; // Assuming your backend expects this
+        // //    payload.mpesa_phone_number = mpesaPhoneNumber; 
         // }
 
         try {

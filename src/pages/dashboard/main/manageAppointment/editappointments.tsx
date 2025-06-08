@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   useUpdateAppointmentMutation,
-  AppointmentDataTypes,      // Should now have `appointment_datetime: string`
-  UpdateAppointmentPayload,  // Should now expect `appointmentDateTimeISO?: string`
+  AppointmentDataTypes,      
+  UpdateAppointmentPayload,  
   AppointmentStatus,
-} from '../../../../features/appointment/appointmentapi'; // Adjust path
-import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
-import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; // Adjust path
+} from '../../../../features/appointment/appointmentapi'; 
+import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; 
+import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; 
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarCheck2, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as ClientIconItself, Edit3 } from 'lucide-react';
@@ -60,9 +60,6 @@ const formatTimeForTimeInput = (isoOrDateString: string | Date | undefined): str
         console.warn("Invalid date string for time input:", isoOrDateString);
         return '';
     }
-    // Use UTC hours/minutes if the input string was UTC (like from toISOString())
-    // Or use local getHours/getMinutes if the date object represents local time
-    // Assuming appointment.appointment_datetime from backend is UTC
     const hours = date.getUTCHours().toString().padStart(2, '0');
     const minutes = date.getUTCMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
@@ -73,7 +70,7 @@ const formatTimeForTimeInput = (isoOrDateString: string | Date | undefined): str
 };
 
 
-// Ensure this matches your Drizzle enum and RTK Query type
+
 const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "rescheduled", "no_show"];
 const getStatusDisplayName = (status: string): string => {
   if (!status) return "N/A";
@@ -107,7 +104,7 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
     if (appointment) {
         setSelectedBranchId(appointment.branch_id.toString());
         setParty(appointment.party);
-        // MODIFIED: Parse appointment_datetime for date and time inputs
+        
         setAppointmentDateInput(formatDateForDateInput(appointment.appointment_datetime));
         setAppointmentTimeInput(formatTimeForTimeInput(appointment.appointment_datetime));
         setSelectedStaffIds(
@@ -121,7 +118,7 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
   }, [appointment]);
 
   const getApiErrorMessage = (error: unknown): string => {
-    // ... (implementation remains the same)
+    
     if (typeof error === 'object' && error !== null) {
         const errorShape = error as RtkQueryErrorShape;
         if (errorShape.data) {
@@ -141,7 +138,7 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
 
   const handleStaffSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const staffId = event.target.value;
-    setSelectedStaffIds(staffId ? [staffId] : []); // Assuming single staff selection UI for now
+    setSelectedStaffIds(staffId ? [staffId] : []); 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,8 +228,8 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
     }
   };
 
-    const modalVariants = { /* ... as before ... */ };
-    const backdropVariants = { /* ... as before ... */ };
+    const modalVariants = {  };
+    const backdropVariants = {  };
     const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-emerald-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md text-sm`;
     const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
 

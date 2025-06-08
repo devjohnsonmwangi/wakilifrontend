@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 export interface SnackbarMessage {
   message: string;
   severity: 'success' | 'info' | 'warning' | 'error';
-  key: number; // Or string, if preferred for keys
+  key: number; 
 }
 
 interface NotificationSnackbarProps {
@@ -26,7 +26,7 @@ const iconSeverityStyles = {
   error: 'text-red-500 dark:text-red-400',
 };
 
-// Example icons (you might want to use lucide-react or another icon library)
+
 const AlertIcons = {
   success: () => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">

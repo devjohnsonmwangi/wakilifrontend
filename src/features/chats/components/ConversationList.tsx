@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { useGetUserConversationsQuery } from '../chatsAPI';
 import ConversationListItem from './ConversationListItem';
-import { PlusCircle, Search, Loader2, AlertTriangle } from 'lucide-react'; // Added Loader2 and AlertTriangle for better loading/error states
-import { useSelector } from 'react-redux'; // Import useSelector
-import { selectCurrentUserId } from '../../users/userSlice'; // Import your selector
+import { PlusCircle, Search, Loader2, AlertTriangle } from 'lucide-react'; 
+import { useSelector } from 'react-redux'; 
+import { selectCurrentUserId } from '../../users/userSlice'; 
 
 interface ConversationListProps {
   selectedConversationId: number | null;
@@ -25,14 +25,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
     isError,
     error,
     refetch,
-    // Add isFetching if you want to show a different loading state for refetches vs initial load
+    
   } = useGetUserConversationsQuery(
     currentUserId as number, // Pass the userId as an argument
     {
       skip: currentUserId === null, // Skip the query if userId is not yet available
-      // pollingInterval: 30000,
-      // refetchOnFocus: true,
-      // refetchOnReconnect: true,
+       pollingInterval: 30000,
+      refetchOnFocus: true,
+     refetchOnReconnect: true,
     }
   );
   const [searchTerm, setSearchTerm] = useState('');

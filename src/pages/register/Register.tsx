@@ -2,7 +2,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import Navbar from "../../components/navbar/Navbar";
-import authImage from "../../assets/images/auth/wakililogo.jpg"; // Ensure this path is correct
+import authImage from "../../assets/images/auth/wakililogo.jpg"; 
 import { usersAPI } from "../../features/users/usersAPI";
 import { Link, useNavigate } from "react-router-dom";
 import { Toaster, toast } from 'sonner';
@@ -99,9 +99,9 @@ const Register = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex justify-center items-center p-4 sm:p-6 order-2">
-          {/* MODIFICATION 1: Added lg:max-h-[75vh] to the card */}
+          {/*  lg:max-h-[75vh] to the card */}
           <div className="card w-full bg-[#fefffe] max-w-md shadow-xl rounded-lg lg:max-h-[75vh]">
-            {/* MODIFICATION 2: Added lg:overflow-y-auto to the form (card-body) */}
+            {/*  lg:overflow-y-auto to the form (card-body) */}
             <form onSubmit={handleSubmit(onSubmit)} className="card-body p-6 sm:p-8 lg:overflow-y-auto">
               <h2 className="text-center text-[#006400] text-2xl sm:text-3xl font-bold mb-6">Create An Account 📢</h2>
 

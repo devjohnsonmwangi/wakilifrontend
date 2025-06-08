@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useRef, FC } from "react"; // Added FC
+import React, { useState, useEffect, useRef, FC } from "react"; 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { RootState } from "../../app/store"; // Adjust path
+import { RootState } from "../../app/store"; 
 import { useSelector, useDispatch } from 'react-redux';
-import { logOut } from "../../features/users/userSlice"; // Adjust path
-import { usersAPI } from "../../features/users/usersAPI"; // Adjust path
+import { logOut } from "../../features/users/userSlice"; 
+import { usersAPI } from "../../features/users/usersAPI"; 
 import {
     User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard,
     X, ChevronDown, Settings, HelpCircle, Briefcase, BookOpen, DownloadCloud, MoreHorizontal,
     Menu,
-    Newspaper // <-- Import Newspaper icon
+    Newspaper 
 } from 'lucide-react';
 
-import AppDrawer from "../../pages/dashboard/aside/Drawer"; // Adjust path
+import AppDrawer from "../../pages/dashboard/aside/Drawer";
 
 // This will be true during development (when NODE_ENV is 'development' or not 'production')
 // and false when a production build is made (NODE_ENV is 'production').
-// If using Vite:
+// using Vite:
 const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = import.meta.env.DEV;
-// If using Create React App or other Webpack-based setups:
+// using Create React App or other Webpack-based setups:
 // const ALWAYS_SHOW_PWA_BUTTON_FOR_DEV = process.env.NODE_ENV !== 'production';
 
 
-// Define this interface at the top of the file or in a global types.d.ts
+
 interface BeforeInstallPromptEvent extends Event {
     readonly platforms: Array<string>;
     readonly userChoice: Promise<{
@@ -31,11 +31,11 @@ interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
 }
 
-// Define UserData type (adjust based on your actual usersAPI.useGetUserByIdQuery response)
+// Define UserData type
 interface UserData {
     profile_picture?: string;
     email?: string;
-    // Add other properties returned by your API
+    full_name?:string;
 }
 
 
@@ -46,10 +46,10 @@ const Navbar: FC = () => { // Typed as FC
 
     const user = useSelector((state: RootState) => state.user);
     const username = user.user?.full_name;
-    const user_id = user.user?.user_id ? Number(user.user.user_id) : undefined; // Ensure user_id is number or undefined
+    const user_id = user.user?.user_id ? Number(user.user.user_id) : undefined; 
     const userRole = user.user?.role;
 
-    const { data: userData } = usersAPI.useGetUserByIdQuery(user_id!, { skip: !user_id }); // Added non-null assertion for user_id
+    const { data: userData } = usersAPI.useGetUserByIdQuery(user_id!, { skip: !user_id }); // non-null assertion for user_id
     const profile_picture = (userData as UserData | undefined)?.profile_picture; // Cast userData
 
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -91,7 +91,7 @@ const Navbar: FC = () => { // Typed as FC
 
     const handlePWAInstall = async () => {
         const mockPrompt = {
-            prompt: () => { console.log("DEV MODE: Mock PWA prompt() called"); return Promise.resolve(); }, // Ensure prompt returns Promise<void>
+            prompt: () => { console.log("DEV MODE: Mock PWA prompt() called"); return Promise.resolve(); }, // Ensures prompt returns Promise<void>
             userChoice: Promise.resolve({ outcome: 'accepted' as 'accepted' | 'dismissed', platform: 'web' })
         };
 
@@ -178,7 +178,7 @@ const Navbar: FC = () => { // Typed as FC
     const desktopNavLinksList = [
         { to: "/", icon: Home, label: "Home" },
         { to: "/howitworks", icon: BookOpen, label: "How It Works" },
-        { to: "/updates", icon: Newspaper, label: "News" }, // <-- ADDED NEWS TAB
+        { to: "/updates", icon: Newspaper, label: "News" }, //  NEWS TAB
         { to: "/about", icon: Info, label: "About Us" },
         { to: "/services", icon: Briefcase, label: "Services" },
         ...(userRole !== 'disabled' && username ? [{ to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : []),
@@ -337,7 +337,7 @@ const Navbar: FC = () => { // Typed as FC
 
             {username && (
                  <AppDrawer
-                    isMobileMode={true} // This prop might not be needed if AppDrawer handles its own responsiveness
+                    isMobileMode={true} 
                     mobileIsOpen={isAppDrawerOpen}
                     onMobileClose={() => setIsAppDrawerOpen(false)}
                 />

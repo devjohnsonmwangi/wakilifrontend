@@ -3,11 +3,11 @@ import React from 'react';
 import { ChatMessage } from '../chatsAPI';
 import UserAvatar from './UserAvatar';
 import { format, parseISO, isToday, isYesterday } from 'date-fns';
-// import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid'; // Removed Heroicons
-import { CheckCircle2, Clock, AlertCircle } from 'lucide-react'; // Added Lucide icons
+// import { CheckCircleIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/20/solid'; 
+import { CheckCircle2, Clock, AlertCircle } from 'lucide-react'; // Lucide icons
 
 interface MessageItemProps {
-  message: ChatMessage & { hadError?: boolean }; // Added optional hadError for demonstration
+  message: ChatMessage & { hadError?: boolean }; 
   isOwnMessage: boolean;
   showAvatarAndName: boolean; // To show avatar only for first message in a sequence from same user
 }
@@ -16,7 +16,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isOwnMessage, showAv
   const { content, sent_at, sender, message_id } = message;
 
   // Placeholder for demonstrating AlertCircle.
-  // In a real app, this would come from message.status or an actual error condition.
+  // this would come from message.status or an actual error condition.
   const messageHadError = message.hadError || false; // Example: Set to true on a message to see AlertCircle
 
   const isTemporary = typeof message_id === 'string' && message_id.startsWith('temp_');

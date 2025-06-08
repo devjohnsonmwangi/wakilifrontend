@@ -1,11 +1,11 @@
-// src/features/user/userSlice.ts (or your actual path)
+// src/features/user/userSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from '../../app/store'; // Adjust path to your RootState if necessary
+import { RootState } from '../../app/store'; 
 
 export interface User {
     full_name: string;
     email: string;
-    role: string; // This is the role we need
+    role: string; 
     user_id: number;
     address: string;
     phone_number?: string;

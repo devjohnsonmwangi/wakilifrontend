@@ -95,15 +95,15 @@ const ChatWindowHeader: React.FC<ChatWindowHeaderProps> = ({ conversation, onBac
         {/* TODO: Add functionality to these buttons */}
         <button className="p-2 text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400" title="Call">
           {/* <PhoneIcon className="w-5 h-5" /> */}
-          <Phone className="w-5 h-5" /> {/* Replaced with Lucide icon */}
+          <Phone className="w-5 h-5" />
         </button>
         <button className="p-2 text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400" title="Video Call">
           {/* <VideoCameraIcon className="w-5 h-5" /> */}
-          <Video className="w-5 h-5" /> {/* Replaced with Lucide icon */}
+          <Video className="w-5 h-5" />
         </button>
         <button className="p-2 text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400" title="More options">
           {/* <EllipsisVerticalIcon className="w-5 h-5" /> */}
-          <MoreVertical className="w-5 h-5" /> {/* Replaced with Lucide icon */}
+          <MoreVertical className="w-5 h-5" /> 
         </button>
       </div>
     </div>

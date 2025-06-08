@@ -96,10 +96,9 @@ export const usersAPI = createApi({
           : [{ type: 'Users', id: 'LIST' }],
     }),
 
-    fetchUsersByRole: builder.query<UserApiResponse[], string>({ // Assuming role is a string parameter
-      query: (role) => `users/roles/${role}`, // Example: if you pass the role in the URL
-      // Or if it's a general endpoint fetching multiple roles based on backend logic:
-      // query: () => "users/by-role", // Or "users/roles" if your backend is /users/roles
+    fetchUsersByRole: builder.query<UserApiResponse[], string>({ //  role is a string parameter
+      query: (role) => `users/roles/${role}`, 
+      // query: () => "users/roles", 
       providesTags: (result, ) => // Use _error, _arg if arg is used for tagging
         result
           ? [
@@ -149,8 +148,7 @@ export const usersAPI = createApi({
                 optimisticSingleUserUpdate.undo();
             }
         },
-        // Consider invalidating tags as well, or instead of manual cache updates if preferred,
-        // though optimistic updates provide a better UX.
+       
         // invalidatesTags: (_, __, { user_id }) => [{ type: 'User', id: user_id }, { type: 'Users', id: 'LIST' }],
     }),
 

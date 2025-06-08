@@ -1,12 +1,12 @@
-import Navbar from "../components/navbar/Navbar"; // Import Navbar component
-//import Footer from "../pages/landingPage/Footer"; // Import Footer component
+import Navbar from "../components/navbar/Navbar"; 
+//import Footer from "../pages/landingPage/Footer"; 
 import { Link } from "react-router-dom";
-// Import Lucide React icons
+
 import { Mail, MapPin, Phone, User, MessageSquareText } from 'lucide-react';
 
 const ContactPage = () => {
   return (
-    // Added a subtle gradient background for a more "fancy" feel
+    
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-gray-900 font-sans transition-colors duration-300">
       <Navbar />
 
@@ -33,7 +33,7 @@ const ContactPage = () => {
               <form className="space-y-6">
                 {/* Name Input */}
                 <div className="relative">
-                  <User // Changed to Lucide icon
+                  <User 
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500 peer-focus:text-emerald-500 dark:peer-focus:text-amber-400"
                     aria-hidden="true"
                   />
@@ -55,7 +55,7 @@ const ContactPage = () => {
 
                 {/* Email Input */}
                 <div className="relative">
-                  <Mail // Changed to Lucide icon
+                  <Mail 
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500 peer-focus:text-emerald-500 dark:peer-focus:text-amber-400"
                     aria-hidden="true"
                   />
@@ -77,7 +77,7 @@ const ContactPage = () => {
 
                 {/* Message Textarea */}
                 <div className="relative">
-                   <MessageSquareText // Changed to Lucide icon
+                   <MessageSquareText 
                     className="absolute left-3 top-4 h-5 w-5 text-slate-400 dark:text-slate-500 peer-focus:text-emerald-500 dark:peer-focus:text-amber-400"
                     aria-hidden="true"
                    />
@@ -116,19 +116,19 @@ const ContactPage = () => {
               </h2>
               {[
                 {
-                  icon: <MapPin className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />, // Changed to Lucide icon
+                  icon: <MapPin className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />, 
                   title: "Our Office",
                   lines: ["123 Wakili Street", "Nairobi, Kenya"],
                   href: "https://maps.google.com/?q=123+Wakili+Street,+Nairobi,+Kenya"
                 },
                 {
-                  icon: <Phone className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />, // Changed to Lucide icon
+                  icon: <Phone className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />,
                   title: "Call Us",
                   lines: ["+254 112 810 203"],
                   href: "tel:+254112810203"
                 },
                 {
-                  icon: <Mail className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />, // Changed to Lucide icon
+                  icon: <Mail className="h-8 w-8 text-emerald-500 dark:text-amber-500" aria-hidden="true" />, 
                   title: "Email Us",
                   lines: ["info@wakili.com", "support@wakili.com"],
                   href: "mailto:info@wakili.com"

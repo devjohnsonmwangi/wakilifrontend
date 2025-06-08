@@ -1,14 +1,14 @@
 import { Toaster, toast } from 'sonner';
-// Assuming caseDocumentAPI and CaseDocumentDataTypes are correctly defined and exported
+
 import { caseDocumentAPI, CaseDocumentDataTypes } from '../../../../features/casedocument/casedocmentapi';
 import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa';
 
 interface DeleteCaseFormProps {
-    caseItem: CaseDocumentDataTypes | null; // This type should allow case_id to be null/undefined
+    caseItem: CaseDocumentDataTypes | null; 
     onClose: () => void;
     refetch: () => void;
     isDarkMode?: boolean;
-    isLibraryItem?: boolean; // New prop to distinguish document type
+    isLibraryItem?: boolean; 
 }
 
 export const DeleteCaseForm = ({
@@ -18,8 +18,7 @@ export const DeleteCaseForm = ({
     isDarkMode = false,
     isLibraryItem = false // Default to false if not provided
 }: DeleteCaseFormProps) => {
-    // Assuming this mutation can delete any document by its ID
-    // If not, you'll need another mutation for library items and conditional logic
+    
     const [deleteDocument, { isLoading: isDeleting }] = caseDocumentAPI.useDeleteCaseDocumentMutation();
 
     const handleDelete = async () => {
@@ -31,7 +30,7 @@ export const DeleteCaseForm = ({
                 refetch();
             } catch (err) {
                 console.error("Error deleting document:", err);
-                // Define a type for the error object
+                
                 type APIError = {
                     data?: {
                         detail?: string;
@@ -52,7 +51,7 @@ export const DeleteCaseForm = ({
         }
     };
 
-    // Toast styles can be defined globally or per-toast if preferred
+    // Toast styles can be defined globally 
     // const toastStyles = {
     //     error: 'bg-red-500 text-white',
     //     success: 'bg-green-500 text-white',
@@ -62,12 +61,12 @@ export const DeleteCaseForm = ({
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-auto max-h-[80vh] sm:max-h-[70vh] flex flex-col">
-            {/* Toaster can be at a higher level in your app, but if here, ensure it's configured */}
+            
             <Toaster
-                position="top-center" // More common to set position on the Toaster instance
+                position="top-center" 
                 richColors
                 theme={isDarkMode ? 'dark' : 'light'}
-                // toastOptions={{ classNames: toastStyles }} // Sonner handles richColors styling well
+                // toastOptions={{ classNames: toastStyles }} 
             />
 
             <div className="flex-grow overflow-y-auto p-6">

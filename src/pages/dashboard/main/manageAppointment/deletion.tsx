@@ -21,7 +21,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm', // Default confirm text
+  confirmText = 'Confirm', 
   cancelText = 'Cancel',
   isLoading = false,
   isDarkMode = false,

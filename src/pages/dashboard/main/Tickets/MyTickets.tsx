@@ -6,7 +6,7 @@ import CreateTicket from './CreateTicket';
 import EditUserTicket from './EditUserTicket';
 import DeleteUserTicket from './DeleteUserTicket';
 import { FaEdit, FaTrashAlt, FaRegWindowRestore, FaPlus, FaSearch, FaSyncAlt } from 'react-icons/fa';
-import { FiMoon, FiSun, FiAlertTriangle, FiCheckCircle, FiLoader, FiInbox, FiUser } from 'react-icons/fi'; // Added FiUser
+import { FiMoon, FiSun, FiAlertTriangle, FiCheckCircle, FiLoader, FiInbox, FiUser } from 'react-icons/fi'; 
 
 const MyTickets = () => {
     const userState = useSelector((state: RootState) => state.user);
@@ -114,7 +114,7 @@ const MyTickets = () => {
     return (
         <div className='bg-slate-50 dark:bg-gray-900 min-h-screen p-4 md:p-8 transition-colors duration-300'>
             <div className='card mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-xl overflow-hidden'>
-                {/* MODIFIED HEADER SECTION */}
+                {/*  HEADER SECTION */}
                 <div className="bg-gradient-to-r from-sky-500 to-indigo-600 dark:from-sky-600 dark:to-indigo-700 p-4 md:p-5 text-white flex justify-between items-center">
                     <div className="flex items-center space-x-3 md:space-x-4">
                         {/* User Profile Picture */}
@@ -305,13 +305,13 @@ const MyTickets = () => {
                 </div>
             </div>
 
-            {/* Modals (userFullName and userProfilePicture are still passed in case child components need them) */}
+            
             <dialog id='create_ticket' className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box w-11/12 max-w-3xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-xl p-6">
                     <form method="dialog" className="relative">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 z-10">✕</button>
                     </form>
-                    {/* Removed ModalUserInfoHeader from here */}
+                    
                     <CreateTicket
                         userFullName={userFullName}
                         userProfilePicture={userProfilePicture}
@@ -326,7 +326,7 @@ const MyTickets = () => {
                     <form method="dialog" className="relative">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 z-10">✕</button>
                     </form>
-                    {/* Removed ModalUserInfoHeader from here */}
+                    
                     {editTicket && (
                         <EditUserTicket
                             ticket={editTicket}
@@ -344,7 +344,7 @@ const MyTickets = () => {
                     <form method="dialog" className="relative">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 z-10">✕</button>
                     </form>
-                     {/* Removed ModalUserInfoHeader from here */}
+                     
                     {deleteTicket && (
                         <DeleteUserTicket
                             ticket={deleteTicket}

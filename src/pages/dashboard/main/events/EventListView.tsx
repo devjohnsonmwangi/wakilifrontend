@@ -1,12 +1,12 @@
 // src/features/events/EventListView.tsx
 import React, { useState } from 'react';
-import { EventDataTypes } from '../../../../features/events/events'; // Assuming events.ts is in the same folder
-import EventTypeChip from './components/EventTypeChip'; // Ensure this is dark mode ready
-import { format, parseISO, isValid } from 'date-fns'; // Added isValid
+import { EventDataTypes } from '../../../../features/events/events'; 
+import EventTypeChip from './components/EventTypeChip'; 
+import { format, parseISO, isValid } from 'date-fns'; 
 import {
   Eye, Edit3, Trash2,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-   // A more descriptive icon for Date/Time
+   
   ListFilter, // For "Rows per page"
   SearchX // For empty state
 } from 'lucide-react';

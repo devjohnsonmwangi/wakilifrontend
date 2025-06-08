@@ -7,10 +7,9 @@ export interface PageDefinition {
   title: string; // User-friendly title
   iconName?: keyof typeof LucideIcons; // Optional Lucide icon name
   isDashboardPage?: boolean; // Flag if it's part of the main dashboard layout
-  // Add any other metadata you might need
+  
 }
 
-// This list needs to be comprehensive and match your router paths
 export const APP_PAGE_DEFINITIONS: PageDefinition[] = [
   // Non-Dashboard Pages
   { path: '/', id: 'home', title: 'Homepage', iconName: 'Home' },
@@ -18,7 +17,7 @@ export const APP_PAGE_DEFINITIONS: PageDefinition[] = [
   { path: '/login', id: 'login', title: 'Login', iconName: 'LogIn' },
   { path: '/howitworks', id: 'howitworks', title: 'How It Works', iconName: 'HelpCircle' },
   { path: '/contactus', id: 'contactus', title: 'Contact Us', iconName: 'Mail' },
-  { path: '/services', id: 'services', title: 'Our Services', iconName: 'Briefcase' }, // Assuming Briefcase for general services
+  { path: '/services', id: 'services', title: 'Our Services', iconName: 'Briefcase' }, 
   { path: '/about', id: 'about', title: 'About Us', iconName: 'Info' },
   { path: '/forgot-password', id: 'forgot-password', title: 'Forgot Password', iconName: 'KeyRound' },
   { path: '/reset-password', id: 'reset-password', title: 'Reset Password', iconName: 'KeyRound' }, // Path might include token
@@ -39,7 +38,7 @@ export const APP_PAGE_DEFINITIONS: PageDefinition[] = [
   { path: 'profile', id: 'dashboard-profile', title: 'My Profile', iconName: 'UserCircle2', isDashboardPage: true },
   { path: 'listdoc', id: 'dashboard-documents', title: 'Documents', iconName: 'FileText', isDashboardPage: true },
   { path: 'mytickets', id: 'dashboard-mytickets', title: 'My Support Tickets', iconName: 'Ticket', isDashboardPage: true },
-  { path: 'logout', id: 'dashboard-logout', title: 'Logout', iconName: 'LogOut', isDashboardPage: true }, // Logout is an action, but if it's a route
+  { path: 'logout', id: 'dashboard-logout', title: 'Logout', iconName: 'LogOut', isDashboardPage: true }, 
   { path: 'mycases', id: 'dashboard-mycases', title: 'My Cases', iconName: 'FolderKanban', isDashboardPage: true },
   { path: 'cases', id: 'dashboard-cases', title: 'Manage Cases (All)', iconName: 'Briefcase', isDashboardPage: true },
   { path: 'reports', id: 'dashboard-reports', title: 'Reports', iconName: 'BarChart3', isDashboardPage: true },
@@ -48,5 +47,5 @@ export const APP_PAGE_DEFINITIONS: PageDefinition[] = [
   // You might need more specific entries for dynamic routes or use regex later
   // e.g., for a case detail page like /dashboard/cases/:caseId
   // This approach might require more sophisticated matching if IDs are part of the URL
-  // For now, this definition assumes distinct paths as defined in your router.
+  // For now, this definition assumes distinct paths as defined in the router.
 ];

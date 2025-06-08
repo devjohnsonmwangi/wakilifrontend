@@ -47,10 +47,10 @@ const CardsReport = () => {
       const customersCount = usersData.filter((user: UserDataTypes) => user.role === 'user').length;
       const adminsCount = usersData.filter((user: UserDataTypes) => user.role === 'admin').length;
       const lawyerCount = usersData.filter((user: UserDataTypes) => user.role === 'lawyer').length;
-      const clerksCount = usersData.filter((user: UserDataTypes) => user.role === 'clerk').length;
+      const clerksCount = usersData.filter((user: UserDataTypes) => user.role === 'clerks').length;
       const managersCount = usersData.filter((user: UserDataTypes) => user.role === 'manager').length;
       const clientsCount = usersData.filter((user: UserDataTypes) => user.role === 'client').length;
-      const supportersCount = usersData.filter((user: UserDataTypes) => user.role === 'support').length;
+      const supportersCount = usersData.filter((user: UserDataTypes) => user.role === 'supports').length;
 
       // Animation code
       const duration = 500;

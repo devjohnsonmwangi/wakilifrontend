@@ -1,4 +1,4 @@
-// src/features/Tickets/components/MyTickets/EditUserTicket.tsx (or your path)
+// src/features/Tickets/components/MyTickets/EditUserTicket.tsx 
 import { useForm, SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -6,12 +6,12 @@ import { TicketAPI } from "../../../../features/Tickets/AllTickets";
 import { Toaster, toast } from 'sonner';
 import { useEffect } from 'react';
 import { TypeTickets } from '../../../../features/Tickets/AllTickets';
-import { FileEdit, Loader2, Save, UserCircle, XCircle } from 'lucide-react'; // Modern Lucide icons
+import { FileEdit, Loader2, Save, UserCircle, XCircle } from 'lucide-react'; 
 
 interface EditTicketFormProps {
     userFullName?: string;
     userProfilePicture?: string;
-    useremail?: string; // Kept for potential future use
+    useremail?: string; 
     ticket: TypeTickets | null;
     modalId: string;
 }
@@ -36,9 +36,9 @@ const EditUserTicket: React.FC<EditTicketFormProps> = ({
     modalId
 }) => {
     const ticket_id = Number(ticket?.ticket_id);
-    const user_id = ticket?.user_id; // This seems correct as it's the user who owns the ticket
+    const user_id = ticket?.user_id; 
 
-    // Use the isLoading state directly from the mutation hook
+    
     const [updateTicketApi, { isLoading: isUpdatingTicket }] = TicketAPI.useUpdateTicketMutation();
 
     const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<FormData>({

@@ -4,29 +4,27 @@ import { Link } from "react-router-dom";
 import {
     caseAndPaymentAPI,
     CaseDataTypes,
-    CaseStatus, // From caseAPI
-     // From caseAPI
-    // CaseAssigneeData // This type is part of CaseDataTypes.assignees
-} from "../../../../features/case/caseAPI"; // Ensure correct path
+    CaseStatus, 
+} from "../../../../features/case/caseAPI"; 
 import { Toaster, toast } from 'sonner';
-import { logAPI } from "../../../../features/log/logsapi"; // Ensure correct path
-import { RootState } from "../../../../app/store"; // Ensure correct path
-import AnimatedLoader from "../../../../components/AnimatedLoader"; // Ensure correct path
+import { logAPI } from "../../../../features/log/logsapi"; 
+import { RootState } from "../../../../app/store"; 
+import AnimatedLoader from "../../../../components/AnimatedLoader"; 
 import { useSelector } from "react-redux";
 import {
     FaFileAlt, FaUser, FaEnvelope, FaTimes, FaSearch, FaFilter,
     FaPhone, FaIdCard, FaTrashAlt, FaCheckCircle, FaRegWindowRestore, FaMoneyBillAlt, FaInfoCircle,
-    FaThList, FaSun, FaMoon, FaUsers // Added FaUsers for assigned staff
+    FaThList, FaSun, FaMoon, FaUsers 
 } from "react-icons/fa";
-import DeleteCaseForm from '../../main/Managecases/deletecase'; // Ensure correct path
-import ViewCaseDetailsModal from "./ViewCaseDetailsModal"; // Ensure correct path
+import DeleteCaseForm from '../../main/Managecases/deletecase'; 
+import ViewCaseDetailsModal from "./ViewCaseDetailsModal"; 
 
 // Helper function to safely format currency
 const formatCurrency = (value: string | number | null | undefined): string => {
     if (value == null) return 'N/A';
     // Case fee/balance are strings from API representing decimal, convert to number for formatting
     const num = Number(value);
-    if (isNaN(num)) return 'N/A'; // Or handle as the raw string if that's preferred for 'N/A'
+    if (isNaN(num)) return 'N/A'; 
     return `KES ${num.toFixed(2)}`;
 };
 
@@ -59,7 +57,7 @@ const AllCases = () => {
         refetch
     } = caseAndPaymentAPI.useFetchCasesQuery({ includeDetails: true }, {
         refetchOnMountOrArgChange: true,
-        pollingInterval: 300000, // 5 minutes
+        pollingInterval: 1000, // 5 minutes
     });
 
     const [updateCase] = caseAndPaymentAPI.useUpdateCaseMutation();
@@ -85,9 +83,9 @@ const AllCases = () => {
         if (isError) {
             if (errorStatus === 404) {
                 setCases([]);
-                // toast.info("No cases found in the system at the moment.");
+                 toast.info("No cases found in the system at the moment.");
             } else {
-                // toast.error(`Error fetching cases: ${errorStatus || 'Unknown error'}`);
+                 toast.error(`Error fetching cases: ${errorStatus || 'Unknown error'}`);
             }
         } else if (allCasesDataFromAPI) {
             setCases(allCasesDataFromAPI);
@@ -146,13 +144,13 @@ const AllCases = () => {
             const clientEmailLower = caseItem.owner?.email?.toLowerCase() ?? '';
             const caseDescLower = caseItem.case_description?.toLowerCase() ?? '';
             const itemActualStatusLower = caseItem.case_status?.toLowerCase() ?? '';
-            const caseNumberLower = caseItem.case_number?.toLowerCase() ?? ''; // Assuming case_number can be filtered
+            const caseNumberLower = caseItem.case_number?.toLowerCase() ?? ''; 
 
             const assignedStaffNamesLower = caseItem.assignees?.map(a => a.assignee?.full_name?.toLowerCase() || '').join(' ') || '';
 
             const matchesClientFullName = filters.clientFullName ? clientFullNameLower.includes(filters.clientFullName.toLowerCase()) : true;
             const matchesClientEmail = filters.clientEmail ? clientEmailLower.includes(filters.clientEmail.toLowerCase()) : true;
-            // Updated description filter to search case number as well
+            
             const matchesDescriptionOrCaseNumber = filters.description ? (caseDescLower.includes(filters.description.toLowerCase()) || caseNumberLower.includes(filters.description.toLowerCase())) : true;
             const matchesAssignedStaff = filters.assignedStaffName ? assignedStaffNamesLower.includes(filters.assignedStaffName.toLowerCase()) : true;
 

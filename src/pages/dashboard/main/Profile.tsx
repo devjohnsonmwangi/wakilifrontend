@@ -371,7 +371,7 @@ const Profile = () => {
         <>
             <Toaster richColors position="top-center" theme={isDarkMode ? 'dark' : 'light'} />
             
-            {/* Fixed position toggle button REMOVED from here */}
+            
 
             <div className="bg-gray-100 dark:bg-gray-900 min-h-screen py-8 sm:py-12 px-4">
                 <div className="max-w-3xl mx-auto">

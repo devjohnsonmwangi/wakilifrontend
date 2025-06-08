@@ -1,11 +1,11 @@
 // src/features/chats/components/UserAvatar.tsx
 
 import React from 'react';
-// --- Import the smart component that knows about real-time status ---
-import UserOnlineIndicator from './indicator'; // Assuming it's in the same directory
+
+import UserOnlineIndicator from './indicator'; 
 
 interface UserAvatarProps {
-  userId?: number; // <<< ADDED: The ID is now needed for real-time status
+  userId?: number; // The ID is needed for real-time status
   src?: string | null;
   name?: string | null;
   size?: 'xs'| 'sm' | 'md' | 'lg' | 'xl';
@@ -14,7 +14,7 @@ interface UserAvatarProps {
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
-  userId, // <<< ADDED
+  userId, // 
   src,
   name,
   size = 'md',
@@ -53,8 +53,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         </div>
       )}
 
-      {/* --- UPDATED LOGIC --- */}
-      {/* Show the indicator if requested AND if we have a userId to look up */}
+    
       {showOnlineIndicator && userId && (
         <UserOnlineIndicator // <<< USING THE SMART COMPONENT
           userId={userId}    // <<< PASSING THE USER ID

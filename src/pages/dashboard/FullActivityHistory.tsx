@@ -30,14 +30,14 @@ import {
   Home as HomeIcon,
   HelpCircle,
   LoaderCircle,
-  Sun, // Added for theme toggle
-  Moon, // Added for theme toggle
+  Sun, 
+  Moon, 
 } from 'lucide-react';
 import {
   getStoredRecentPages,
   clearRecentPagesHistory,
   StoredVisitedPage,
-} from './activity'; // Adjust path as needed
+} from './activity'; 
 
 // --- Integrated timeAgo Function ---
 const timeAgo = (date: Date | string | number): string => {
@@ -67,7 +67,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   History, Search, Trash2, XCircle, CalendarDays, FileText, Briefcase, Users, Settings2, Info, PanelRight,
   LayoutDashboard, MessageSquareWarning, Ticket, UserCog, CalendarClock, CreditCard, UserCircle2, LogOut, FolderKanban,
   BarChart3, Building2, FilePlus2, BellRing, ShieldCheck, Home: HomeIcon, HelpCircle,
-  Sun, Moon, // Technically not needed here if not stored via iconName, but harmless
+  Sun, Moon, 
 };
 
 const FullActivityHistory: React.FC = () => {
@@ -104,11 +104,7 @@ const FullActivityHistory: React.FC = () => {
 
   const fetchHistory = () => {
     setIsLoading(true);
-    // Regarding "store as many activity as a week":
-    // This component displays what getStoredRecentPages() provides.
-    // Ensure that the functions in './activity.ts' (for storing and retrieving pages)
-    // are capable of handling and retaining at least a week's worth of activity data.
-    // For example, it shouldn't be capped at a very low number of items or auto-purge daily.
+    
     const pages = getStoredRecentPages();
     setAllPages(pages);
     setIsLoading(false);

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronsLeft, Search as SearchIcon } from 'lucide-react'; // Added SearchIcon
+import { ChevronsLeft, Search as SearchIcon } from 'lucide-react'; 
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../app/store'; // Adjust path
-import {  filterDrawerByRole } from '../../../components/drawer/drawerData'; // Adjust path, ensure filterDrawerByRole is exported
+import { RootState } from '../../../app/store'; 
+import {  filterDrawerByRole } from '../../../components/drawer/drawerData'; 
 
 interface DrawerProps {
   isMobileMode?: boolean;
@@ -33,7 +33,7 @@ const Drawer = ({
   // Memoize filtered items for performance
   const displayedItems = useMemo(() => {
     const userRole = user.user?.role || 'guest'; // Default to a non-privileged role if undefined
-    let items = filterDrawerByRole(userRole); // Use the robust filter function
+    let items = filterDrawerByRole(userRole); 
 
     if (searchTerm.trim() !== '') {
       items = items.filter(item =>
@@ -49,7 +49,7 @@ const Drawer = ({
     const handleResize = () => {
       if (window.innerWidth >= 1024 && isMobileMode && mobileIsOpen && onMobileClose) {
         // Consider if this is truly needed or if it causes issues with parent state.
-        // onMobileClose();
+         onMobileClose();
       }
     };
     window.addEventListener('resize', handleResize);

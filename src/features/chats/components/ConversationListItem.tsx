@@ -1,10 +1,10 @@
 // src/features/chats/components/ConversationListItem.tsx
 import React from 'react';
-import { Conversation } from '../chatsAPI'; // Assuming types are exported from chatsAPI.ts
+import { Conversation } from '../chatsAPI'; 
 import UserAvatar from './UserAvatar';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useSelector } from 'react-redux';
-import { selectCurrentUserId } from '../../users/userSlice'; // Path to your userSlice selectors
+import { selectCurrentUserId } from '../../users/userSlice'; 
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -86,7 +86,7 @@ const ConversationListItem: React.FC<ConversationListItemProps> = ({
 
 
   // Placeholder for online status - this would come from a WebSocket/presence system
-  // const isUserOnline = getOnlineStatus(avatarUser?.user_id); // You'd need a presence system
+  // const isUserOnline = getOnlineStatus(avatarUser?.user_id); // TODO
   //const isUserOnline = false; // For now
 
   return (

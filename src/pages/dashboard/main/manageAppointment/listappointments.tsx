@@ -7,22 +7,21 @@ import {
   AppointmentDataTypes,
   AppointmentStatus,
   FetchAppointmentsArgs,
-} from '../../../../features/appointment/appointmentapi'; // ADJUSTED PATH
-import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; // Assuming this stays
+} from '../../../../features/appointment/appointmentapi'; 
+import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; 
 import { Toaster, toast } from 'sonner';
-import CreateAppointment from './createappointment'; // Adjust path
-import EditAppointment from './editappointments';   // Adjust path
-import ConfirmationModal from './deletion';         // Adjust path
-import ReasonDisplayModal from './ReasonDisplayModal'; // Adjust path
+import CreateAppointment from './createappointment'; 
+import EditAppointment from './editappointments';  
+import ConfirmationModal from './deletion';       
+import ReasonDisplayModal from './ReasonDisplayModal'; 
 
 import {
   PlusCircle,
   FilePenLine,
   Trash2,
-  AlertTriangle, // Will be used in ErrorDisplay
+  AlertTriangle, 
   CalendarDays,
-  RefreshCcw,   // Will be used in LoadingIndicator & ErrorDisplay
-         // Will be used in filter section
+  RefreshCcw,   
   Sun,
   Moon,
   Eye,
@@ -42,7 +41,7 @@ const getErrorMessage = (error: ApiError | null | undefined): string => {
   if (!error) return 'An unknown error occurred. Please try again.';
   const data = error.data;
   if (data) {
-    if (typeof data === 'string') return data; // Use the string directly if it's the error message
+    if (typeof data === 'string') return data; 
     if (data.message) return data.message;
     if (data.error) return data.error;
     if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
@@ -50,7 +49,7 @@ const getErrorMessage = (error: ApiError | null | undefined): string => {
     }
   }
   if (error.message) return error.message;
-  if (error.error) return error.error; // Common for client-side fetch errors
+  if (error.error) return error.error; 
   if (error.status) return `An error occurred (Status: ${error.status}). Please try again.`;
   return 'Failed to perform action. Please check network or try again.';
 };
@@ -97,7 +96,7 @@ const ListAppointments: React.FC = () => {
     isLoading: isLoadingAppointments,
     isError: isFetchAppointmentsError,
     error: queryError,
-    refetch // Now used in ErrorDisplay
+    refetch 
   } = useFetchAppointmentsQuery(queryArgs, {
     refetchOnMountOrArgChange: true,
   });
@@ -206,35 +205,35 @@ const ListAppointments: React.FC = () => {
     });
   }, [actualAppointmentsArray, isBackendNoAppointments, displayableError, searchParty, searchLocation]);
 
-  const LoadingIndicator: React.FC<{ text?: string }> = ({ text = "Loading appointments..." }) => ( // Added text prop
+  const LoadingIndicator: React.FC<{ text?: string }> = ({ text = "Loading appointments..." }) => ( 
     <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
-      <RefreshCcw className="h-12 w-12 animate-spin mb-4" /> {/* USED RefreshCcw */}
+      <RefreshCcw className="h-12 w-12 animate-spin mb-4" /> 
       <p className="text-lg">{text}</p>
     </div>
   );
 
-  // CORRECTED ErrorDisplay Component
+  
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null; onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => {
     if (!errorToDisplay) return null; // Return null if no error
     const message = getErrorMessage(errorToDisplay);
-    // Don't show "no appointments" as a big red error if it's handled elsewhere
+    
     if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null;
 
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
             <div className="flex items-center">
-                <AlertTriangle className="h-8 w-8 mr-3" /> {/* USED AlertTriangle */}
+                <AlertTriangle className="h-8 w-8 mr-3" />
                 <div>
                     <p className="font-bold text-lg">Error Loading Appointments</p>
                     <p className="text-sm">{message}</p>
                 </div>
             </div>
-            {onRetry && ( // Only show retry button if onRetry is provided
+            {onRetry && ( 
                 <button
                     onClick={onRetry}
                     className="mt-4 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md text-sm flex items-center transition-colors"
                 >
-                    <RefreshCcw className="h-4 w-4 mr-2" /> {/* USED RefreshCcw */}
+                    <RefreshCcw className="h-4 w-4 mr-2" />
                     Try Again
                 </button>
             )}
@@ -290,7 +289,7 @@ const ListAppointments: React.FC = () => {
         <section className="p-6 md:p-8">
           <div className="mb-6 p-4 sm:p-6 bg-slate-50/70 dark:bg-slate-700/30 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
             <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center">
-              <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> {/* USED ListFilter if preferred over Search */}
+              <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> 
               Filter Appointments
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">

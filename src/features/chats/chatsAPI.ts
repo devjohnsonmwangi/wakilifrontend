@@ -1,11 +1,11 @@
 // src/features/chats/chatsAPI.ts
-// THIS FILE REMAINS UNCHANGED
+
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { APIDomain } from '../../utils/APIDomain';
 import { RootState } from '../../app/store';
 
-// --- TypeScript Interfaces (Unchanged) ---
+// --- TypeScript Interfaces 
 export interface UserSummary {
   user_id: number;
   full_name: string | null;
@@ -35,7 +35,7 @@ export interface Conversation {
   participants?: UserSummary[];
 }
 
-// --- CORRECTED Payload Types for API Calls (Using snake_case) ---
+
 export interface CreateConversationPayload {
   creator_id: number;
   participant_user_ids: number[];

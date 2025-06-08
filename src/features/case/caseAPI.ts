@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; // Ensure this path is correct
 
-// --- Enums (Assuming these are unchanged) ---
+// --- Enums
 export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
 export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolved";
-export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; // Make sure 'partially_paid' is valid in backend schema
+export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; //  'partially_paid' is valid in backend schema
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"; // For paymentTable
 
 // --- Data Types ---
@@ -15,7 +15,7 @@ export interface UserDataType { // Basic user details for owner/assignee
     phone_number: string | null;
     role: string;
     profile_picture?: string | null;
-    // Add other relevant fields returned by the backend for user context
+  
     created_at?: string;
     updated_at?: string;
 }
@@ -145,7 +145,7 @@ export const caseAndPaymentAPI = createApi({
     // New: Get case by payment ID
     getCaseByPayment: builder.query<CaseDataTypes, number>({
         query: (paymentId) => `cases/payment/${paymentId}`,
-        // This might provide the case tag, or a more specific tag if needed
+        // This  provide the case tag, or a more specific tag if needed
         providesTags: (result) => result ? [{ type: 'Cases', id: result.case_id }] : [],
     }),
     createCase: builder.mutation<CaseDataTypes, CreateCasePayload>({
@@ -168,7 +168,7 @@ export const caseAndPaymentAPI = createApi({
         const patchResult = dispatch(
           caseAndPaymentAPI.util.updateQueryData('getCaseById', case_id, (draft) => {
             Object.assign(draft, patch); // Optimistically apply non-nested updates
-            // If fee changes, balance/status might change on backend, so optimistic update is harder
+            
           })
         );
         try {
@@ -297,18 +297,18 @@ export const {
   // Case Hooks
   useFetchCasesQuery,
   useGetCaseByIdQuery,
-  useGetCasesByClientOwnerQuery,    // Updated
-  useGetCasesByAssignedStaffQuery, // New
-  useGetCaseByPaymentQuery,        // New
+  useGetCasesByClientOwnerQuery,    
+  useGetCasesByAssignedStaffQuery, 
+  useGetCaseByPaymentQuery,        
   useCreateCaseMutation,
   useUpdateCaseMutation,
   useDeleteCaseMutation,
   useTriggerCaseBalanceUpdateMutation,
 
   // Case Assignment Hooks
-  useGetAssignedStaffForCaseQuery, // New
-  useAssignStaffToCaseMutation,    // New
-  useUnassignStaffFromCaseMutation,// New
+  useGetAssignedStaffForCaseQuery, 
+  useAssignStaffToCaseMutation,    
+  useUnassignStaffFromCaseMutation,
 
   // Payment Hooks
   useFetchPaymentsQuery,

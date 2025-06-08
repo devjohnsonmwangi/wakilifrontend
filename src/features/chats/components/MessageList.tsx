@@ -16,7 +16,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
 
   const currentUserId = useSelector(selectCurrentUserId);
 
-  // --- START OF CHANGES ---
+  //
   const {
     data: messagesData,
     isLoading,
@@ -33,11 +33,11 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
     },
     {
       skip: currentUserId === null,
-      // Add this line to automatically refresh messages every 3 seconds
+      
       pollingInterval: 3000, 
     }
   );
-  // --- END OF CHANGES ---
+  //
 
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +62,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
       container.scrollTop = container.scrollHeight - prevScrollHeight;
       setPrevScrollHeight(null);
     } else if (isScrolledToBottom && !isFetching) {
-      // NEW: For polled updates, only scroll if the user is already near the bottom
+      //  For polled updates, only scroll if the user is already near the bottom
       container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
   }, [messagesData, initialLoad, prevScrollHeight, isFetching]);
@@ -85,7 +85,7 @@ const MessageList: React.FC<MessageListProps> = ({ conversationId }) => {
     messagesContainerRef.current?.scrollTo({ top: messagesContainerRef.current.scrollHeight, behavior: 'smooth' });
   };
   
-  // (The rest of your component's JSX remains exactly the same)
+  
   // ...
   // Enhanced Loading/Error/Empty States
   if (currentUserId === null) {

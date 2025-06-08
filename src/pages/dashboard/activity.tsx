@@ -26,8 +26,8 @@ export interface StoredVisitedPage {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const pages: StoredVisitedPage[] = JSON.parse(stored);
-        // Optional: Could add validation here to ensure data integrity
-        return pages.sort((a, b) => b.lastVisited - a.lastVisited); // Ensure sorted by most recent
+        
+        return pages.sort((a, b) => b.lastVisited - a.lastVisited); // Ensures sorted by most recent
       }
     } catch (error) {
       console.error("Error reading recent pages from localStorage:", error);
@@ -75,7 +75,7 @@ export interface StoredVisitedPage {
     }
   };
   
-  // Optional: Function to clear history
+  //Function to clear history
   export const clearRecentPagesHistory = (): void => {
       try {
           localStorage.removeItem(STORAGE_KEY);

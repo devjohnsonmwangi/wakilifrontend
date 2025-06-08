@@ -10,7 +10,7 @@ import {
     FaHome,
     FaUsers,
     FaSpinner, FaExclamationTriangle, FaInfoCircle,
-    FaSun, FaMoon // Icons for dark mode toggle
+    FaSun, FaMoon 
 } from "react-icons/fa";
 
 // Helper for styling toast
@@ -152,11 +152,11 @@ const AllTicket = () => {
         return new Date(dateString).toLocaleString(undefined, options);
     }, []);
 
-    // Full-page loading state (if this component itself represents the "modal" view when loading)
+    // Full-page loading state 
     if (isLoading && !allUserTickets) {
         return (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-100px)] bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 relative">
-                {/* Dark Mode Toggle - Placed within this loading view too if it's modal-like */}
+                
                 <button
                     onClick={toggleDarkMode}
                     title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
@@ -252,9 +252,9 @@ const AllTicket = () => {
     );
 
     return (
-        // Main container now has `position: relative`
+        
         <div className="p-4 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-200 transition-colors duration-300 relative">
-            {/* Dark Mode Toggle Button - Positioned absolutely within this component */}
+            
             <h1 className="text-3xl font-semibold text-green-800 dark:text-green-100 mb-4 sm:mb-0">
                   Ticket portal, Manage Users  Concerns  Here
                 </h1>
@@ -288,7 +288,7 @@ const AllTicket = () => {
                 </ol>
             </nav>
 
-            {/* Toast Notification - Remains fixed to viewport, bottom-right */}
+            
             {toastMessage && (
                 <div
                     className={`fixed bottom-6 right-6 z-[100] p-4 rounded-lg shadow-xl text-white text-sm font-medium border ${getToastStyles(toastType)} flex items-center transition-all duration-300 ease-in-out transform animate-fadeInUp`}

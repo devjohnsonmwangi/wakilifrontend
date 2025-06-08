@@ -7,7 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
-import { EventDataTypes, EventType } from '../../../../features/events/events'; // Adjust path if needed
+import { EventDataTypes, EventType } from '../../../../features/events/events'; 
 
 interface EventCalendarViewProps {
   events: EventDataTypes[];
@@ -132,22 +132,13 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
   const initialCalendarView = 'dayGridMonth';
 
   // Helper class for the main div to ensure index.css dark styles are applied
-  // by FullCalendar if your app's dark mode is activated by a class on <html> or <body>
+  // by FullCalendar if app's dark mode is activated by a class on <html> or <body>
   const calendarWrapperClass = `p-2 sm:p-4 md:p-6 event-calendar-wrapper ${isDarkMode ? 'fc-dark-manual-trigger' : ''} max-h-[70vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible`;
-  // If your global dark mode is triggered by adding 'dark' class to <html>,
-  // then FullCalendar's own CSS variables for `.dark` in index.css should activate automatically.
-  // The `isDarkMode` prop passed to this component is now primarily for any component-specific logic
-  // that *isn't* handled by FC's own .dark CSS.
+
 
   return (
     <div className={calendarWrapperClass}>
-      {/*
-        NOTE: The 'fc-dark' class on the wrapper was for component-level dark mode styles.
-        If your index.css uses a class like '.dark' on the <html> or <body> tag to activate
-        FullCalendar's dark mode variables, you might not need to manually add a class here
-        for FullCalendar's own dark styling.
-        The component-level dark mode styles below are being reduced.
-      */}
+   
       <style>{`
         /* Component-level styles that are NOT primarily for dark mode colors,
            or are overrides that index.css doesn't cover. */

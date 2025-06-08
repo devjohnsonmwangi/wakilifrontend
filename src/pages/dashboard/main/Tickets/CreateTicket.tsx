@@ -1,4 +1,4 @@
-// src/features/Tickets/components/MyTickets/CreateTicket.tsx (or your path)
+// src/features/Tickets/components/MyTickets/CreateTicket.tsx
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
 import { TicketAPI } from "../../../../features/Tickets/AllTickets";
@@ -6,7 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Toaster, toast } from 'sonner';
-import { Ticket, Loader2, Send, UserCircle } from 'lucide-react'; // Using standard Lucide icons
+import { Ticket, Loader2, Send, UserCircle } from 'lucide-react'; 
 import {  useEffect } from 'react';
 
 // Props for the component

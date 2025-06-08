@@ -1,6 +1,6 @@
-// src/features/events/events.ts (or your RTK Query file)
+// src/features/events/events.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain"; // Adjust path if needed
+import { APIDomain } from "../../utils/APIDomain"; 
 
 // Define Event Types
 export type EventType = "meeting" | "hearing" | "consultation" | "reminder" | "court_date";
@@ -13,12 +13,12 @@ export interface EventDataTypes {
   event_title: string;
   event_description?: string;
   start_time: string;    // Expected as ISO 8601 string from backend
-  // event_date?: string | null; // REMOVED
+  // event_date?: string | null; 
   created_at: string;
   updated_at: string;
 }
 
-export interface EventReminderDataTypes { // Assuming this remains the same
+export interface EventReminderDataTypes { 
   reminder_id: number;
   event_id: number;
   reminder_time: string;
@@ -35,11 +35,11 @@ export interface CreateEventPayload {
     event_description?: string;
     case_id: number;
     user_id: number;
-    // event_date is removed
+    
 }
 
 export interface UpdateEventPayload extends Partial<CreateEventPayload> {
-    // No event_date here either
+    
 }
 
 

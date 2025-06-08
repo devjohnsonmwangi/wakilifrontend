@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const NotificationBell = () => {
   const { data } = useGetUnreadCountQuery(undefined, {
-    // This will automatically refetch the count every 60 seconds
-    pollingInterval: 60000, 
+    // This will automatically refetch the count every 1 seconds
+    pollingInterval: 1000, 
   });
 
   const unreadCount = data?.count || 0;

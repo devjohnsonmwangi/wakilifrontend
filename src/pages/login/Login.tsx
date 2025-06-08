@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import Navbar from "../../components/navbar/Navbar"; // Adjust path as needed
-import authImage from "../../assets/images/auth/wakililogo.jpg"; // Adjust path as needed
-import { loginAPI, LoginFormData } from "../../features/login/loginAPI"; // Adjust path as needed
+import Navbar from "../../components/navbar/Navbar"; 
+import authImage from "../../assets/images/auth/wakililogo.jpg"; 
+import { loginAPI, LoginFormData } from "../../features/login/loginAPI"; 
 import { Link, useNavigate } from "react-router-dom";
 import { Toaster, toast } from 'sonner';
 import { useDispatch } from "react-redux";
-import { loginSuccess, UserState, User as UserType } from "../../features/users/userSlice"; // Adjust path as needed
+import { loginSuccess, UserState, User as UserType } from "../../features/users/userSlice"; 
 
 // **Form schema for validation**
 const schema = yup.object().shape({

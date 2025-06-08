@@ -1,10 +1,11 @@
 // src/components/RouteChangeTracker.tsx
+//commented  by  Dev Johnson Mwangi
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { logPageVisitToStorage } from '../pages/dashboard/activity'; // Adjust path
-import { APP_PAGE_DEFINITIONS, PageDefinition } from '../config/pageDefinitions'; // Adjust path
+import { logPageVisitToStorage } from '../pages/dashboard/activity'; 
+import { APP_PAGE_DEFINITIONS, PageDefinition } from '../config/pageDefinitions'; 
 
-// This RouteChangeTracker will be used *inside* your RouterProvider context
+// This RouteChangeTracker will be used *inside*  RouterProvider context
 
 interface RouteChangeTrackerProps {
   // You can pass the router's route configuration if needed for more complex matching,
@@ -20,7 +21,7 @@ const RouteChangeTracker: React.FC<RouteChangeTrackerProps> = () => {
     let matchedPage: PageDefinition | undefined = undefined;
 
     // Attempt to find a matching page definition
-    // This matching logic might need to be more sophisticated for complex apps
+    // This matching logic might need to be more sophisticated as   wakili  application   becomes complex apps
     // (e.g., handling dynamic segments like /cases/:id)
 
     // 1. Try exact match first for non-dashboard pages

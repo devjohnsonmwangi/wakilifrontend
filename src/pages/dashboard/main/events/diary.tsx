@@ -13,10 +13,10 @@ import {
     selectCurrentUser,
     selectIsAuthenticated,
     selectCurrentUserId,
-    User, // Import your User type
+    User, 
 } from '../../../../features/users/userSlice';
 
-import EventCalendarView from './EventCalendarView'; // Make sure this path is correct
+import EventCalendarView from './EventCalendarView'; 
 import EventListView from './EventListView';
 import EventFormModal from './EventFormModal';
 import EventDetailsModal from './EventDetailsModal';

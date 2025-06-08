@@ -5,15 +5,14 @@ import { toast } from 'sonner';
 
 import {
   useFetchCasesQuery,
-  CaseDataTypes as Case, // IMPORTANT: Ensure this type definition includes your backend balance field
-                           // e.g., payment_balance?: number | string;
+  CaseDataTypes as Case, 
   CaseStatus,
   CaseType,
 } from '../../../../features/case/caseAPI';
 
 import {
   useInitiateMpesaStkPushMutation,
-  // useFetchPaymentsQuery, // REMOVED: No longer fetching all payments here
+  // useFetchPaymentsQuery, 
 } from '../../../../features/payment/paymentAPI';
 
 // --- Custom useDebounce Hook ---
@@ -33,17 +32,13 @@ function useDebounce<T>(value: T, delay: number): T {
 
 const MPESA_ICON_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
 const DEBOUNCE_DELAY = 300; // milliseconds
-
-// !!!!! IMPORTANT !!!!!
-// This should be the EXACT field name on your Case object from the backend
-// that holds the current outstanding balance.
-const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance'; // Example, adjust if needed
+const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance'; 
 
 // --- Constants for localStorage suggestions ---
 const LAST_USED_PHONE_NUMBERS_KEY = 'mpesaPayment_lastUsedPhoneNumbers';
 const LAST_USED_EMAILS_KEY = 'mpesaPayment_lastUsedEmails';
 const MAX_SUGGESTIONS = 5; // Max number of suggestions to store and display
-// --- End Constants for localStorage suggestions ---
+
 
 
 interface MpesaPaymentProps {
@@ -123,7 +118,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
       }
     } catch (e) {
       console.error("Failed to load last used phone numbers from localStorage:", e);
-      // Optionally clear corrupted data: localStorage.removeItem(LAST_USED_PHONE_NUMBERS_KEY);
+      // Optionally clear corrupted data: localStorage.removeItem
     }
 
     try {
@@ -133,7 +128,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
       }
     } catch (e) {
       console.error("Failed to load last used emails from localStorage:", e);
-      // Optionally clear corrupted data: localStorage.removeItem(LAST_USED_EMAILS_KEY);
+      // Optionally clear corrupted data: localStorage.removeItem
     }
   }, []); // Empty dependency array ensures it runs only on mount
   // --- End Effect to load suggestions ---
@@ -377,7 +372,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const SuccessModal = () => { /* ... same as before ... */
+  const SuccessModal = () => { 
     const [showFireworks, setShowFireworks] = useState(true);
     const encouragementQuotes = [
       "The only way to do great work is to love what you do.",
@@ -647,7 +642,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 placeholder="Enter customer's email address"
                 list="lastUsedEmailsDatalist" 
               />
-              <datalist id="lastUsedEmailsDatalist"> {/* Added datalist element */}
+              <datalist id="lastUsedEmailsDatalist">
                 {lastUsedEmails.map((email, index) => (
                   <option key={`email-suggestion-${index}`} value={email} />
                 ))}
@@ -672,7 +667,7 @@ const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
                 placeholder="Enter M-Pesa phone number (e.g., 07XXXXXXXX or 01XXXXXXXX)"
                 list="lastUsedPhoneNumbersDatalist" 
               />
-              <datalist id="lastUsedPhoneNumbersDatalist"> {/* Added datalist element */}
+              <datalist id="lastUsedPhoneNumbersDatalist"> 
                 {lastUsedPhoneNumbers.map((phone, index) => (
                   <option key={`phone-suggestion-${index}`} value={phone} />
                 ))}

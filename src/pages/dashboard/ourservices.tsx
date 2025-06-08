@@ -6,11 +6,11 @@ import {
     FileText, Users, ArrowRight, Search, LucideProps, XCircle,
     Filter, ChevronDown, Star, Zap, Info, Briefcase,
     Landmark, Scale, GanttChartSquare,
-    // Icons used in the data structure defined in this file (for processSteps)
-    UsersRound, Puzzle, Target, Settings, MessageSquare, CheckCircle // Added CheckCircle, removed Package & HelpCircle
+
+    UsersRound, Puzzle, Target, Settings, MessageSquare, CheckCircle 
 } from 'lucide-react';
 
-// (Optional) If you have a shared Navbar for the dashboard
+
 // import DashboardNavbar from '../../components/dashboard/DashboardNavbar';
 
 interface ServiceItem {
@@ -18,7 +18,7 @@ interface ServiceItem {
     slug: string;
     icon: React.ComponentType<LucideProps>;
     title: string;
-    description: string; // Short description for list view
+    description: string; 
     category: string;
     tags?: string[];
     isNew?: boolean;
@@ -34,9 +34,7 @@ interface ServiceItem {
     faqs?: { question: string, answer: string }[];
 }
 
-// --- START: DETAILED DATA DEFINITION ---
-// This structure should ideally be in a shared file and imported by both
-// DashboardServices.tsx and ServiceDetails.tsx
+
 
 const initialServicesData: Omit<ServiceItem, 'detailedDescription' | 'whoIsThisFor' | 'processSteps' | 'expertBlurb' | 'pricingModel' | 'faqs'>[] = [
     {
@@ -191,12 +189,12 @@ const allDashboardServices: ServiceItem[] = initialServicesData.map(baseService 
         detailedDescription,
     };
 });
-// --- END: DETAILED DATA DEFINITION ---
+
 
 
 type SortOption = 'title-asc' | 'title-desc' | 'popularity' | 'newest' | 'category';
 
-// Renaming component to OurServices as per the file path in the error
+
 const OurServices: React.FC = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');

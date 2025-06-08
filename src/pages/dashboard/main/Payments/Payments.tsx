@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI'; // Ensure this path is correct
+import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI'; 
 import { motion, AnimatePresence }from 'framer-motion';
 import {
   FaMobileAlt,
@@ -72,8 +72,8 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
   fee,
   isOpen,
   onClose,
-  onPaymentSuccess: onParentPaymentSuccess, // Renamed to avoid conflict
-  onPaymentFailure: onParentPaymentFailure, // Renamed to avoid conflict
+  onPaymentSuccess: onParentPaymentSuccess, 
+  onPaymentFailure: onParentPaymentFailure, 
 }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paymentAmount, setPaymentAmount] = useState<number>(fee);
@@ -81,7 +81,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [internalPaymentSuccess, setInternalPaymentSuccess] = useState(false); // Renamed
+  const [internalPaymentSuccess, setInternalPaymentSuccess] = useState(false); 
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const [initiateMpesaStkPush] = useInitiateMpesaStkPushMutation();
@@ -167,7 +167,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
         case_id: caseId,
         user_id: userId,
         amount: paymentAmount,
-        phoneNumber: phoneNumber, // Use as is, or formatPhoneNumberForApi(phoneNumber) if needed
+        phoneNumber: phoneNumber, // Use as is, or formatPhoneNumberForApi(phoneNumber) 
       };
 
       const response = await initiateMpesaStkPush(paymentData).unwrap() as MpesaTransactionDetails;
@@ -193,7 +193,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
       } else if (typeof err.message === 'string' && err.message.length < 200) { // Avoid overly long/generic messages
          parsedErrorMessage = err.message;
       }
-      // Attempt to parse if message is JSON string (common with some RTK Query error structures)
+      
       try {
         const nestedError = JSON.parse(parsedErrorMessage);
         if (nestedError?.data?.message) parsedErrorMessage = nestedError.data.message;
@@ -229,8 +229,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
           <motion.div
             className="relative w-full max-w-md overflow-hidden rounded-xl bg-white dark:bg-slate-800 shadow-2xl"
             variants={modalPanelVariants}
-            // initial, animate, exit are inherited from parent AnimatePresence context if not specified
-            // but explicit declaration is fine for clarity or specific overrides.
+            
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">

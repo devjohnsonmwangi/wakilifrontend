@@ -21,9 +21,9 @@ const ChatPageLayout: React.FC = () => {
   // If using react-router, redirect if not authenticated
   // Also, if authenticated but currentUserId is somehow null, it might indicate an issue.
   // However, if isAuthenticated is true, currentUserId should ideally be a number.
-  if (!isAuthenticated || currentUserId === null) { // Added check for currentUserId
+  if (!isAuthenticated || currentUserId === null) { //  check for currentUserId
     // If currentUserId is null while authenticated, it might be a state inconsistency.
-    // For now, redirecting to login. You might want to handle this differently (e.g., show error, force logout).
+    // For now, redirecting to login. 
     console.warn("ChatPageLayout: Not authenticated or currentUserId is null. Redirecting to login.");
     return <Navigate to="/login" replace />;
   }
@@ -77,7 +77,7 @@ const ChatPageLayout: React.FC = () => {
           <ChatWindow
             conversationId={selectedConversationId}
             onBack={handleBackToConversations}
-            // If ChatWindow also needs currentUserId, pass it here:
+            
             // currentUserId={currentUserId}
           />
         ) : (
@@ -104,7 +104,7 @@ const ChatPageLayout: React.FC = () => {
           </div>
         )}
       </div>
-      {isNewConvoModalOpen && typeof currentUserId === 'number' && ( // Ensure currentUserId is a number before rendering
+      {isNewConvoModalOpen && typeof currentUserId === 'number' && ( // Ensures currentUserId is a number before rendering
         <NewConversationModal
           isOpen={isNewConvoModalOpen}
           onClose={handleCloseNewConvoModal}

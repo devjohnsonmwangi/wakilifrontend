@@ -4,20 +4,20 @@ import {
   useFetchAppointmentsByBranchQuery,
   useUpdateAppointmentMutation,
   useDeleteAppointmentMutation,
-  AppointmentDataTypes, // This should now have `appointment_datetime: string`
-  AppointmentStatus,    // This is the TYPE
+  AppointmentDataTypes, 
+  AppointmentStatus,    
   UpdateAppointmentPayload,
-  FetchAppointmentsArgs, // Import for queryParams type
-} from '../../../../features/appointment/appointmentapi'; // Adjust path
+  FetchAppointmentsArgs, 
+} from '../../../../features/appointment/appointmentapi'; 
 import {
   useFetchBranchLocationsQuery,
   BranchLocationDataTypes
-} from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
+} from '../../../../features/branchlocation/branchlocationapi'; 
 import { Toaster, toast } from 'sonner';
-import CreateAppointment from './createappointment'; // Adjust path
-import EditAppointment from './editappointments';   // Adjust path
-import ConfirmationModal from './deletion';         // Adjust path
-import ReasonDisplayModal from './ReasonDisplayModal'; // Adjust path
+import CreateAppointment from './createappointment';
+import EditAppointment from './editappointments';   
+import ConfirmationModal from './deletion';       
+import ReasonDisplayModal from './ReasonDisplayModal'; 
 
 import {
   PlusCircle,
@@ -31,8 +31,8 @@ import {
   Moon,
   ListFilter,
   Eye,
-  Users,    // For Client column
-  Briefcase, // For Header icon
+  Users,    
+  Briefcase, 
 } from 'lucide-react';
 
 interface ApiError {
@@ -78,11 +78,11 @@ const truncateText = (text: string | null | undefined, maxLength: number): strin
 };
 
 interface NoAppointmentsMessageProps {
-  isFiltering: boolean; // Changed from isInitialEmptyState
+  isFiltering: boolean; 
   selectedBranchName?: string | null;
 }
 
-// Ensure this matches your Drizzle enum values and RTK Query type
+
 const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "rescheduled", "no_show"];
 
 const BranchAppointments: React.FC = () => {
@@ -91,10 +91,10 @@ const BranchAppointments: React.FC = () => {
 
   // State for filters to be passed as queryParams
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
-  const [searchPartyOrClient, setSearchPartyOrClient] = useState(''); // For client-side filtering for now
+  const [searchPartyOrClient, setSearchPartyOrClient] = useState(''); 
   const [searchDateFrom, setSearchDateFrom] = useState(''); // YYYY-MM-DD
   const [searchDateTo, setSearchDateTo] = useState('');   // YYYY-MM-DD
-  const [searchClientId, setSearchClientId] = useState<string | number | ''>(''); // For server-side if supported
+  const [searchClientId, setSearchClientId] = useState<string | number | ''>(''); 
 
 
   const queryParamsForFetch: Omit<FetchAppointmentsArgs, 'branchId'> = useMemo(() => {
@@ -102,7 +102,7 @@ const BranchAppointments: React.FC = () => {
     if (searchStatus) params.status = searchStatus;
     if (searchDateFrom) params.dateTimeFrom = new Date(searchDateFrom + "T00:00:00.000Z").toISOString();
     if (searchDateTo) params.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString();
-    if (searchClientId) params.clientId = Number(searchClientId); // Assuming backend expects number
+    if (searchClientId) params.clientId = Number(searchClientId); 
     // Add limit/offset if implementing pagination
     // params.limit = 20;
     // params.offset = 0;
@@ -247,7 +247,7 @@ const BranchAppointments: React.FC = () => {
     try {
       await updateAppointment(payload).unwrap();
       toast.success(`Status updated to ${getStatusDisplayName(newStatus)}!`);
-      // refetchBranchAppointments(); // updateAppointment mutation should invalidate tags and trigger refetch
+      // refetchBranchAppointments(); 
     } catch (err) {
       const errorMessage = getErrorMessage(err as ApiError);
       toast.error(`Failed to update status: ${errorMessage}`);
@@ -266,7 +266,7 @@ const BranchAppointments: React.FC = () => {
       toast.success(`Appointment for ${appointmentToDelete.party} deleted!`);
       setAppointmentToDelete(null);
       setIsConfirmDeleteModalOpen(false);
-      // refetchBranchAppointments(); // deleteAppointment mutation should invalidate tags
+      // refetchBranchAppointments(); 
     } catch (err) {
       const errorMessage = getErrorMessage(err as ApiError);
       toast.error(`Failed to delete: ${errorMessage}`);
@@ -285,7 +285,7 @@ const BranchAppointments: React.FC = () => {
   }, [appointmentsData]);
 
   // Client-side filtering for party/client name.
-  // Status and date range are now handled by server-side via queryParamsForFetch.
+  
   const filteredAppointments = useMemo(() => {
     if (!selectedBranchId || isBackendNoAppointments || displayableError) return [];
     return actualAppointmentsArray.filter(appointment => {
@@ -309,7 +309,7 @@ const BranchAppointments: React.FC = () => {
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onTryAgain?: () => void }> = ({ errorToDisplay, onTryAgain }) => {
     if (!errorToDisplay) return null;
     const message = getErrorMessage(errorToDisplay);
-    // Avoid showing "no appointments found" as a big red error if it's just a 404 or specific message.
+    
     if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onTryAgain) return null;
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
@@ -491,10 +491,10 @@ const BranchAppointments: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.party}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
-                            {/* MODIFIED: Use parsed displayDate and displayTime */}
+                            
                             {displayDate} at {displayTime}
                           </td>
-                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"> {/* No whitespace-nowrap */}
+                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                             {appointment.assignees && appointment.assignees.length > 0
                               ? appointment.assignees.map((a, idx) => (
                                   <span key={a.assignee_user_id} className='inline-block mr-1'>

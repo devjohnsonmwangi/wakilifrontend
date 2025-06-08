@@ -1,8 +1,8 @@
 // src/features/notifications/notificationsAPI.ts
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../../app/store'; // Adjust path if needed
-import { APIDomain } from '../../utils/APIDomain'; // Adjust path if needed
+import { RootState } from '../../app/store'; 
+import { APIDomain } from '../../utils/APIDomain'; 
 
 // --- TypeScript Interfaces for the API ---
 
@@ -92,13 +92,13 @@ export const notificationsAPI = createApi({
         method: 'POST',
       }),
       async onQueryStarted(notificationId, { dispatch, queryFulfilled, getState }) {
-        // CORRECTION 1: Get the full state to access the current user's ID.
+        // 1: Get the full state to access the current user's ID.
         const state = getState() as unknown as RootState;
         const currentUserId = state.user?.user?.user_id;
 
         if (!currentUserId) return; // Don't do anything if no user is logged in
 
-        // We need to patch both the 'all' and 'unread' lists if they are in the cache.
+        //  patch both the 'all' and 'unread' lists if they are in the cache.
         const patchPromises = [
           // Patch the 'all' list
           dispatch(
@@ -144,13 +144,13 @@ export const notificationsAPI = createApi({
         method: 'DELETE',
       }),
       async onQueryStarted(notificationId, { dispatch, queryFulfilled, getState }) {
-        // CORRECTION 1 (same as above): Get the current user's ID from the state.
+        //  1 (same as above): Get the current user's ID from the state.
         const state = getState() as unknown as RootState;
         const currentUserId = state.user?.user?.user_id;
 
         if (!currentUserId) return;
 
-        // CORRECTION 2: Create patch results for both 'all' and 'unread' filters.
+        //  2: Create patch results for both 'all' and 'unread' filters.
         const patchResults = [
           dispatch(
             notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: false }, (draft) => {

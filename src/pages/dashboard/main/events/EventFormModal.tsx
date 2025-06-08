@@ -1,23 +1,23 @@
 // src/pages/dashboard/main/events/EventFormModal.tsx
 import React, { useState, useEffect, forwardRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns'; // Added parseISO
+import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns'; 
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; // Base styles
-// import '../styles/datepicker-theme.css'; // IF YOU CREATED A SEPARATE CSS FILE FOR DATEPICKER, IMPORT IT
+import 'react-datepicker/dist/react-datepicker.css'; 
+// import '../styles/datepicker-theme.css'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Calendar as CalendarIcon,
   Clock,
-  Type as TypeIcon, // Renamed to avoid conflict with type keyword
+  Type as TypeIcon, 
   FileText,
   Briefcase,
   Save,
   X as XIcon,
   Tag,
   Loader2,
-  User, // Icon for User ID (though not directly editable)
+  User, 
 } from 'lucide-react';
 
 import {
@@ -67,7 +67,7 @@ const getInitialFormState = (
         initialDateStr = format(dt, 'yyyy-MM-dd');
         // Check if original was all-day (time part can be omitted or set to 00:00:00)
         if (eventToEdit.start_time.length === 10 && !eventToEdit.start_time.includes('T')) {
-          initialTimeStr = '00:00:00'; // Or '00:00' if you prefer HH:mm for time picker
+          initialTimeStr = '00:00:00'; // Or '00:00'  HH:mm for time picker
         } else {
           initialTimeStr = format(dt, 'HH:mm:ss'); // Or 'HH:mm'
         }
@@ -89,12 +89,12 @@ const getInitialFormState = (
 // Enhanced base classes
 const baseInputStyles = "block w-full text-sm rounded-md shadow-sm placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-150";
 const labelBaseClasses = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center";
-const formFieldWrapperClasses = "space-y-1"; // For consistent spacing around label and input
+const formFieldWrapperClasses = "space-y-1"; 
 
 interface CustomDateInputProps {
   value?: string;
   onClick?: () => void;
-  // onChange is not typically needed here as DatePicker controls it
+  
   hasError?: boolean;
   placeholder?: string;
   disabled?: boolean;
@@ -104,7 +104,7 @@ const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
   ({ value, onClick, hasError, placeholder, disabled }, ref) => (
     <input
       type="text"
-      className={`${baseInputStyles} px-3 py-2.5 border ${ // Consistent padding
+      className={`${baseInputStyles} px-3 py-2.5 border ${ 
         hasError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
                  : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'
       } focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 cursor-pointer read-only:bg-slate-100 dark:read-only:bg-slate-600`}
@@ -191,7 +191,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
         return;
     }
 
-    if (!formData.user_id) { // Double check, though validateForm should catch it
+    if (!formData.user_id) { 
         toast.error("User information is missing. Cannot save event.");
         return;
     }
@@ -229,7 +229,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
       event_title: formData.event_title.trim(),
       event_type: formData.event_type,
       start_time: combinedStartDateTime.toISOString(),
-      event_description: formData.event_description?.trim() || undefined, // Send undefined if empty
+      event_description: formData.event_description?.trim() || undefined, 
       case_id: Number(formData.case_id),
       user_id: Number(formData.user_id),
     };

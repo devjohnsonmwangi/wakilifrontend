@@ -1,16 +1,16 @@
 import { FC } from 'react';
-import { Lock, ListChecks, UserCog, Users, Database, Globe } from 'lucide-react'; // Example icons
+import { Lock, ListChecks, UserCog, Users, Database, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-// --- Navbar Import (Optional) ---
- import Navbar from '../components/navbar/Navbar'; // Adjust path if needed
+
+ import Navbar from '../components/navbar/Navbar'; 
 
 const PrivacyPolicyPage: FC = () => {
-  const lastUpdatedDate = "Always updating  for  integrity"; // CHANGE THIS TO THE ACTUAL DATE
-  const companyName = "WakiliApp Solutions"; // CHANGE THIS
+  const lastUpdatedDate = "Always updating  for  integrity"; 
+  const companyName = "WakiliApp Solutions"; 
   const appName = "Wakili Application";
-  const supportEmail = "privacy@wakiliapp.com"; // CHANGE THIS (dedicated privacy email is good practice)
-  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; // CHANGE THIS
+  const supportEmail = "privacy@wakiliapp.com"; 
+  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; 
 
   // Helper component for sections
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (

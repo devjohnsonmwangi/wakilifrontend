@@ -1,6 +1,6 @@
 // ReasonDisplayModal.tsx
 import React from 'react';
-import { X, FileText, AlertCircle } from 'lucide-react'; // FileText for details, AlertCircle for no reason
+import { X, FileText, AlertCircle } from 'lucide-react';
 
 interface ReasonDisplayModalProps {
   isOpen: boolean;
@@ -22,22 +22,22 @@ const ReasonDisplayModal: React.FC<ReasonDisplayModalProps> = ({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-in-out ${
-        isOpen ? 'opacity-100 backdrop-blur-md' : 'opacity-0 pointer-events-none' // Enhanced backdrop blur
+        isOpen ? 'opacity-100 backdrop-blur-md' : 'opacity-0 pointer-events-none' 
       }`}
       onClick={onClose}
     >
       <div
         className={`fixed inset-0 ${
-          isDarkMode ? 'bg-slate-900/70' : 'bg-slate-900/60' // Darker overlay for more focus
+          isDarkMode ? 'bg-slate-900/70' : 'bg-slate-900/60' 
         }`}
         aria-hidden="true"
       ></div>
 
       <div
-        className={`relative z-10 w-full max-w-lg transform overflow-hidden rounded-xl shadow-2xl transition-all duration-300 ease-in-out ${ // max-w-lg is good for text
+        className={`relative z-10 w-full max-w-lg transform overflow-hidden rounded-xl shadow-2xl transition-all duration-300 ease-in-out ${ 
           isDarkMode
             ? 'bg-slate-800 text-slate-200 border border-slate-700'
-            : 'bg-white text-slate-800' // Removed light mode border for cleaner look on white
+            : 'bg-white text-slate-800' 
         } ${isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
         onClick={(e) => e.stopPropagation()}
       >

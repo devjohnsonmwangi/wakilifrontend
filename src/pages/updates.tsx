@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback, FC, SyntheticEvent } from 'react';
 import {
   Newspaper, Globe, MapPin, Building, Scale, AlertTriangle,
   Loader2, ExternalLink, CalendarDays, Building2, LucideProps,
-  Landmark, Users // Added icons for politics
+  Landmark, Users 
 } from 'lucide-react';
 
-// --- Navbar Import ---
-// Ensure this path is correct for your project structure
+
 import Navbar from '../components/navbar/Navbar';
 
 // --- TypeScript Type Definitions ---
@@ -40,11 +39,11 @@ interface NewsCardProps {
 }
 // --- End TypeScript Type Definitions ---
 
-// !!! WARNING: API Key hardcoded. Not recommended for production. !!!
+
 const API_KEY = '0dd6564dccaf43a486afa01c50f9bbe2';
 const BASE_URL_EVERYTHING = 'https://newsapi.org/v2/everything';
 const BASE_URL_TOPHEADLINES = 'https://newsapi.org/v2/top-headlines';
-const PAGE_SIZE = 20; // Increased page size to fetch more articles
+const PAGE_SIZE = 20; 
 
 const CATEGORIES: Category[] = [
   // Kenya
@@ -167,15 +166,15 @@ const LegalNewsSection: FC = () => {
 
     let baseUrlToUse: string;
     const queryParams = new URLSearchParams({
-        q: encodeURIComponent(category.query), // Ensure query is encoded
+        q: encodeURIComponent(category.query), 
         language: 'en',
-        sortBy: 'publishedAt', // 'relevancy' or 'popularity' are other options
+        sortBy: 'publishedAt', 
         pageSize: PAGE_SIZE.toString()
     });
 
     if (category.country && !category.useEverythingAPI) {
       baseUrlToUse = BASE_URL_TOPHEADLINES;
-      queryParams.set('country', category.country); // Add country for /top-headlines
+      queryParams.set('country', category.country); 
     } else {
       baseUrlToUse = BASE_URL_EVERYTHING;
       // For /everything, country is not a direct param, but can be part of 'q'
@@ -233,7 +232,7 @@ const LegalNewsSection: FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, [category.id]: false }));
     }
-  }, []); // API_KEY, PAGE_SIZE, etc., are constants
+  }, []);
 
   useEffect(() => {
     const currentCategory = CATEGORIES.find(cat => cat.id === activeTab);
@@ -298,7 +297,7 @@ const LegalNewsSection: FC = () => {
           )}
 
           {!loading[activeTab] && !error && news[activeTab] && news[activeTab].length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"> {/* Potentially 4 columns on xl */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"> 
               {news[activeTab].map((article, index) => (
                 <NewsCard key={article.url || `${article.title}-${index}`} article={article} />
               ))}

@@ -21,7 +21,7 @@ import {
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-// Define a more specific type for roles if not already in UserDataTypes
+
 type UserRole = "user" | "admin" | "lawyer" | "client" | "clerks" | "manager" | "supports";
 
 // Define a type for API error responses from your backend's JSON payload
@@ -82,7 +82,7 @@ function Account() {
 
   useEffect(() => {
     if (usersData) {
-      // localStorage.setItem('userCount', usersData.length.toString());
+       localStorage.setItem('userCount', usersData.length.toString());
     }
   }, [usersData]);
 

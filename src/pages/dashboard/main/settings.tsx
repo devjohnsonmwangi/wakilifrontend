@@ -28,10 +28,10 @@ import {
     FaPalette,
     FaEye,
     FaEyeSlash,
-    FaQuestionCircle, // Added for Help Tab
+    FaQuestionCircle, 
 } from 'react-icons/fa';
 
-// ======= Modal Component (No changes needed) =======
+// ======= Modal Component  =======
 interface ModalProps {
     title: string;
     children: ReactNode;
@@ -99,7 +99,7 @@ interface ApiErrorData {
     message?: string;
 }
 
-// ======= Profile Form Types & Schema (Existing) =======
+// ======= Profile Form Types & Schema =======
 type UserFormData = {
     full_name: string;
     email: string;
@@ -116,7 +116,7 @@ const profileSchema = yup.object().shape({
     profile_picture: yup.string().optional(),
 });
 
-// ======= NEW: Change Password Form Types & Schema =======
+// =======Change Password Form Types & Schema =======
 type ChangePasswordFormData = {
     oldPassword: string;
     newPassword: string;
@@ -131,7 +131,7 @@ const passwordSchema = yup.object().shape({
         .required('Confirm new password is required'),
 });
 
-// ======= NEW: Notification Settings Types =======
+// =======  Notification Settings Types =======
 interface NotificationPreferences {
     emailOnNewMessage: boolean;
     emailOnProductUpdates: boolean;

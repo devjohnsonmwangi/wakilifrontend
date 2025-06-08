@@ -19,11 +19,11 @@ import {
   ShieldCheck,
   BarChart3,
   MessageSquareWarning,
-  Sun, // Added for theme toggle
-  Moon, // Added for theme toggle
+  Sun, 
+  Moon, 
 } from 'lucide-react';
 import { getStoredRecentPages, StoredVisitedPage } from '../../pages/dashboard/activity';
-import { filterDrawerByRole } from '../../components/drawer/drawerData'; // Adjust the import path
+import { filterDrawerByRole } from '../../components/drawer/drawerData'; 
 
 // --- Integrated timeAgo Function ---
 const timeAgo = (date: Date | string | number): string => {
@@ -151,8 +151,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     icon: item.icon || Info,
     link: `/dashboard/${item.link}`,
     iconBgColor: item.iconBgColor || 'bg-sky-100', // Use provided or default
-    iconTextColor: item.iconTextColor || 'text-sky-600', // Use provided or default
-    borderColor: item.borderColor || 'border-sky-500', // Use provided or default
+    iconTextColor: 'text-sky-600', // Use provided or default
+    borderColor: 'border-sky-500', // Use provided or default
   }));
 
   return (

@@ -3,11 +3,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import {
   useFetchAppointmentsByClientQuery,
-  AppointmentDataTypes, // This should now have `appointment_datetime: string`
+  AppointmentDataTypes, 
   AppointmentStatus,
-  FetchAppointmentsArgs, // Import if you use it for queryParams
-} from '../../../../features/appointment/appointmentapi'; // Adjust path
-import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
+  FetchAppointmentsArgs, 
+} from '../../../../features/appointment/appointmentapi'; 
+import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; 
 import { Toaster, toast } from 'sonner';
 import EditAppointment from './editappointments';
 import ReasonDisplayModal from './ReasonDisplayModal';
@@ -15,7 +15,7 @@ import ReasonDisplayModal from './ReasonDisplayModal';
 import {
   selectCurrentUserId,
   selectCurrentUser
-} from '../../../../features/users/userSlice'; // Adjust path
+} from '../../../../features/users/userSlice'; 
 
 import {
   FilePenLine,
@@ -31,7 +31,7 @@ import {
   Eye,
   Briefcase,
   Users as StaffIcon,
-  ListFilter, // Added for filter title
+  ListFilter, 
 } from 'lucide-react';
 
 interface ApiError {
@@ -76,7 +76,7 @@ const truncateText = (text: string | null | undefined, maxLength: number): strin
   return text.substring(0, maxLength) + '...';
 };
 
-// Ensure this matches your RTK Query slice and Drizzle enum
+
 const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "rescheduled", "no_show"];
 
 
@@ -90,10 +90,10 @@ const ClientAppointments: React.FC = () => {
 
   // State for query parameters for useFetchAppointmentsByClientQuery
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
-  // For client-side filtering, not directly for the query (unless you modify the hook)
+  // For client-side filtering, not directly for the query 
   const [searchPartyOrStaff, setSearchPartyOrStaff] = useState('');
   const [searchLocationId, setSearchLocationId] = useState<string | number | ''>('');
-  // Add date range filters if you want to pass them to the backend
+  
   const [searchDateFrom, setSearchDateFrom] = useState(''); // YYYY-MM-DD
   const [searchDateTo, setSearchDateTo] = useState('');   // YYYY-MM-DD
 
@@ -123,7 +123,7 @@ const ClientAppointments: React.FC = () => {
     { clientId: clientId as string | number, queryParams: queryParamsForFetch },
     {
       skip: !clientId,
-      refetchOnMountOrArgChange: true, // Refetches if clientId or queryParamsForFetch changes
+      refetchOnMountOrArgChange: true, 
     }
   );
 
@@ -214,13 +214,13 @@ const ClientAppointments: React.FC = () => {
   }, [appointmentsData]);
 
   // Client-side filtering after data is fetched.
-  // If you want server-side filtering for party/staff/location,
-  // you'd need to add these to `queryParamsForFetch` and ensure your backend API supports them.
+  
+  
   const filteredAppointments = useMemo(() => {
     if (!clientId || isBackendNoAppointments || displayableError) return [];
     return actualAppointmentsArray.filter(appointment => {
-      // Status filter is now handled by queryParamsForFetch (server-side) if backend supports it,
-      // but we can keep it for client-side too if needed, or remove if server handles it.
+      // Status filter is  handled by queryParamsForFetch (server-side) if backend supports it,
+      // but we  keep it for client-side too if needed, or remove if server handles it.
       // const statusMatch = searchStatus ? appointment.status === searchStatus : true;
 
       const partyNameLower = appointment.party?.toLowerCase() || '';
@@ -231,7 +231,7 @@ const ClientAppointments: React.FC = () => {
         : true;
 
       const locationMatch = searchLocationId ? appointment.branch_id === Number(searchLocationId) : true;
-      return partyOrStaffMatch && locationMatch; // Removed statusMatch as it's in queryParams
+      return partyOrStaffMatch && locationMatch; 
     });
   }, [actualAppointmentsArray, clientId, isBackendNoAppointments, displayableError, searchPartyOrStaff, searchLocationId]);
 
@@ -245,7 +245,7 @@ const ClientAppointments: React.FC = () => {
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => {
     if (!errorToDisplay) return null;
     const message = getErrorMessage(errorToDisplay);
-    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null; // Don't show if it's just "no appointments"
+    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null; 
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
           <div className="flex items-center">
@@ -292,9 +292,7 @@ const ClientAppointments: React.FC = () => {
 
   const ProfilePictureFallback: React.FC<{ name?: string | null, size?: number }> = ({ name, size = 8 }) => {
     const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || '';
-    // Tailwind needs full class names, so dynamic h-${size} won't work directly in JSX like that.
-    // You might need to map size to specific classes or use inline styles.
-    // For simplicity, I'll keep it but be aware of Tailwind's JIT limitations for dynamic class parts.
+    
     const classSize = `h-${size} w-${size}`; 
     const iconSize = `h-${Math.floor(size/1.5)} w-${Math.floor(size/1.5)}`;
 
@@ -387,7 +385,7 @@ const ClientAppointments: React.FC = () => {
                                   {appointment.branch?.name || 'N/A'}
                               </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"> {/* Removed whitespace-nowrap to allow wrapping for multiple assignees */}
+                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"> 
                               {appointment.assignees && appointment.assignees.length > 0
                                 ? appointment.assignees.map((a, idx) => (
                                   <div key={a.assignee_user_id} className="flex items-center my-0.5">

@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-    ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard, // Car, Truck, DollarSign will be used
-    FileText, Users, LucideProps, ArrowLeft, CheckCircle, Star, // Users will be used
-    CalendarPlus, Zap, ThumbsUp, Info, Briefcase, Landmark, Scale, GanttChartSquare, // Landmark, Scale will be used
-    UsersRound, Puzzle, HelpCircle, ChevronDown, Target, Settings, Package, MessageSquare, ArrowRight // ArrowRight added
+    ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard,
+    FileText, Users, LucideProps, ArrowLeft, CheckCircle, Star, 
+    CalendarPlus, Zap, ThumbsUp, Info, Briefcase, Landmark, Scale, GanttChartSquare, 
+    UsersRound, Puzzle, HelpCircle, ChevronDown, Target, Settings, Package, MessageSquare, ArrowRight 
 } from 'lucide-react';
 
 interface ServiceItem {
@@ -19,7 +19,7 @@ interface ServiceItem {
     isPopular?: boolean;
     status?: 'Available' | 'Active' | 'Requires Action' | 'Coming Soon' | 'Archived';
     lastUsed?: string;
-    detailedDescription?: string; // Longer description for the details page
+    detailedDescription?: string; 
     whoIsThisFor?: string[];
     processSteps?: { title: string, description: string, icon: React.ComponentType<LucideProps> }[];
     expertBlurb?: string;
@@ -27,7 +27,7 @@ interface ServiceItem {
     faqs?: { question: string, answer: string }[];
 }
 
-// 1. Define the base data for all services with correct icons and short descriptions
+
 const initialServicesData: Omit<ServiceItem, 'detailedDescription' | 'whoIsThisFor' | 'processSteps' | 'expertBlurb' | 'pricingModel' | 'faqs'>[] = [
     {
         id: 'svc001', slug: 'legal-consultation', icon: Clipboard, title: 'Legal Consultation',
@@ -106,7 +106,7 @@ const initialServicesData: Omit<ServiceItem, 'detailedDescription' | 'whoIsThisF
     }
 ];
 
-// 2. Define specific detailed content for some services
+
 const specificDetailedContentMap: Record<string, Partial<ServiceItem>> = {
     'svc001': {
         detailedDescription: "Our Legal Consultation service provides direct access to experienced attorneys who can offer clarity on complex legal issues. Whether you're facing a specific challenge or seeking preventative advice, we tailor our guidance to your unique situation, empowering you to make informed decisions. We cover a wide range of legal fields, ensuring you get the specific guidance you need.",
@@ -169,7 +169,7 @@ const specificDetailedContentMap: Record<string, Partial<ServiceItem>> = {
     },
 };
 
-// 3. Define generic detailed content for other services
+
 const genericDetailedContentDefaults: Omit<ServiceItem, 'id' | 'slug' | 'icon' | 'title' | 'description' | 'category' | 'status'> = {
     whoIsThisFor: ["Individuals and businesses seeking expert assistance.", "Clients requiring specialized knowledge in this area.", "Those looking for reliable and effective solutions."],
     processSteps: [
@@ -186,7 +186,7 @@ const genericDetailedContentDefaults: Omit<ServiceItem, 'id' | 'slug' | 'icon' |
     ]
 };
 
-// 4. Combine base data with detailed content
+
 const allDashboardServices: ServiceItem[] = initialServicesData.map(baseService => {
     const specificDetails = specificDetailedContentMap[baseService.id];
     const detailedDescription = specificDetails?.detailedDescription || baseService.description + " Our team provides in-depth support and guidance for all aspects related to this service, ensuring your needs are met with professionalism and expertise.";
@@ -195,14 +195,14 @@ const allDashboardServices: ServiceItem[] = initialServicesData.map(baseService 
         return { 
             ...baseService, 
             ...specificDetails,
-            detailedDescription // Ensure specific detailedDescription is used if available
+            detailedDescription 
         };
     }
-    // Apply generic details if no specific details are found
+    
     return {
         ...baseService,
         ...genericDetailedContentDefaults,
-        detailedDescription, // Use the constructed detailedDescription
+        detailedDescription, 
     };
 });
 
@@ -311,7 +311,7 @@ const ServiceDetails: React.FC = () => {
         );
     }
 
-    const ServiceIcon = service.icon; // This will now correctly use Car, Truck, Scale etc.
+    const ServiceIcon = service.icon; 
 
     return (
         <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300">
@@ -521,7 +521,7 @@ const ServiceDetails: React.FC = () => {
                             </h3>
                             <div className="grid sm:grid-cols-2 gap-6">
                                 {relatedServices.map(related => {
-                                    const RelatedIcon = related.icon; // This will also use the correct icons
+                                    const RelatedIcon = related.icon; 
                                     return (
                                         <Link
                                             to={`/dashboard/servicesdetails/${related.slug}`}

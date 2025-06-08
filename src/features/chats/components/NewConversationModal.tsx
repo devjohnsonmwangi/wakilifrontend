@@ -1,6 +1,6 @@
 // src/features/chats/components/NewConversationModal.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'; // Using specific imports
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'; 
 import { X, UserPlus, Users, Search, Loader2, AlertTriangle } from 'lucide-react';
 import { useCreateConversationMutation, useFindOrCreateOneOnOneConversationMutation } from '../chatsAPI';
 import UserAvatar from './UserAvatar';
@@ -43,7 +43,7 @@ function getApiErrorMessage(error: unknown): string | undefined {
     if ('message' in error && typeof (error as { message?: string }).message === 'string') {
       return (error as { message?: string }).message;
     }
-    // Add more specific error shapes from RTK Query if needed
+    
     if ('status' in error && 'error' in error) { // Standard RTK Query error shape
         const rtkError = error as { status: number | string, error: string };
         return `${rtkError.status}: ${rtkError.error}`;
@@ -170,7 +170,7 @@ const NewConversationModal: React.FC<NewConversationModalProps> = ({ isOpen, onC
         handleCloseModal(conversation.conversation_id);
       }
     } catch (err) {
-      // Error is now handled by the combinedApiError display, but console.error is good for debugging
+      // Error is now handled by the combinedApiError display
       console.error("Failed to create/find conversation:", err);
     }
   };

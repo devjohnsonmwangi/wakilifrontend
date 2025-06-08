@@ -1,6 +1,6 @@
 // MyCases.tsx
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../../app/store'; // Ensure this path is correct
+import { RootState } from '../../../../app/store'; 
 import {
     caseAndPaymentAPI,
     CaseDataTypes,
@@ -26,11 +26,11 @@ import {
 const HeaderCell = ({ icon: Icon, text, className = "" }: { icon: React.ElementType, text: string, className?: string }) => (
     <th
         scope="col"
-        // Added whitespace-nowrap for no line breaks, adjusted base styling
+        
         className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}
     >
         <div className="flex items-center space-x-2">
-            <Icon className="inline-block h-4 w-4" /> {/* Icon color will inherit from text-white on thead */}
+            <Icon className="inline-block h-4 w-4" />
             <span>{text}</span>
         </div>
     </th>
@@ -232,11 +232,11 @@ const MyCases = () => {
 
     const renderTableContent = () => {
         const tableHeaders = (
-            // THEAD: Changed background to indigo, text to white, added bottom border
+            
             <thead className="bg-indigo-600 dark:bg-indigo-800 text-white border-b-2 border-indigo-400 dark:border-indigo-700">
                 <tr>
-                    {/* HEADER CELLS: Added right border to separate columns, color complements new background */}
-                    {/* Original ambiguous border class removed. whitespace-nowrap is now in HeaderCell component. */}
+                    
+
                     <HeaderCell icon={FaFingerprint} text="Case ID" className="border-r border-indigo-500 dark:border-indigo-700"/>
                     <HeaderCell icon={FaTag} text="Status" className="border-r border-indigo-500 dark:border-indigo-700"/>
                     <HeaderCell icon={FaBarcode} text="Case Number" className="border-r border-indigo-500 dark:border-indigo-700"/>
@@ -245,7 +245,7 @@ const MyCases = () => {
                     <HeaderCell icon={FaFileInvoiceDollar} text="Total Fees" className="border-r border-indigo-500 dark:border-indigo-700"/>
                     <HeaderCell icon={FaClipboardCheck} text="Payment Status Detail" className="border-r border-indigo-500 dark:border-indigo-700"/> {/* Made text longer */}
                     <HeaderCell icon={FaWallet} text="Outstanding Balance" className="border-r border-indigo-500 dark:border-indigo-700"/> {/* Made text longer */}
-                    {/* Last header cell: no right border. text-center will override default text-left from HeaderCell. */}
+                    
                     <HeaderCell icon={FaCogs} text="Available Actions" className="text-center justify-center"/> {/* Made text longer */}
                 </tr>
             </thead>

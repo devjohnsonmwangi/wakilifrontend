@@ -1,7 +1,7 @@
 // src/features/events/components/ConfirmationDialog.tsx
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, CheckCircle, Info, Loader2, X as XIcon } from 'lucide-react'; // Replaced X with XIcon for clarity
+import { AlertTriangle, CheckCircle, Info, Loader2, X as XIcon } from 'lucide-react'; 
 
 interface ConfirmationDialogProps {
   open: boolean;

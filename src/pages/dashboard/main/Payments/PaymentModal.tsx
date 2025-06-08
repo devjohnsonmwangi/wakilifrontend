@@ -1,9 +1,9 @@
 // src/components/PaymentHistory.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import CashPaymentModal from './cash'; // Assuming this is for automated cash recording or a different flow
-import MpesaPayment from './mpesa';   // Assuming this is for automated M-Pesa STK push
-import StripePaymentModal from './stripe'; // Assuming this is for automated Stripe checkout
-import ManualPaymentEntryModal from './recordpayment'; // Import the new modal
+import CashPaymentModal from './cash'; 
+import MpesaPayment from './mpesa';   
+import StripePaymentModal from './stripe'; 
+import ManualPaymentEntryModal from './recordpayment'; 
 
 import {
     useFetchPaymentsQuery,

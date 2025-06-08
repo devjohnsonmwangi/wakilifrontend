@@ -4,7 +4,7 @@ import caseImage3 from '../../assets/images/landingPage/koomeandmwilu.jpeg';
 import caseImage4 from '../../assets/images/landingPage/mwiluandkoome.jpg';
 
 type TCaseCardData = {
-    image: string;   // Image related to the case (could be related to the law firm or case type)
+    image: string;   // Image related to the case
     caseTitle: string; // Title or name of the case
     clientName: string; // Client's name
     lawyerName: string; // Assigned lawyer's name

@@ -1,16 +1,16 @@
 import { FC } from 'react';
-import { ShieldCheck, FileText, Info } from 'lucide-react'; // Example icons
+import { ShieldCheck, FileText, Info } from 'lucide-react'; 
 
-// --- Navbar Import (Optional) ---
- import Navbar from '../components/navbar/Navbar'; // Adjust path if needed
+
+ import Navbar from '../components/navbar/Navbar'; 
 import { Link } from 'react-router-dom';
 
 const TermsAndServicesPage: FC = () => {
-  const lastUpdatedDate = "Always Updated  as  our  obligation"; // CHANGE THIS TO THE ACTUAL DATE
-  const companyName = "WakiliApp Solutions"; // CHANGE THIS
+  const lastUpdatedDate = "Always Updated  as  our  obligation"; 
+  const companyName = "WakiliApp Solutions"; 
   const appName = "Wakili Application";
-  const supportEmail = "support@wakiliapp.com"; // CHANGE THIS
-  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; // CHANGE THIS
+  const supportEmail = "support@wakiliapp.com"; 
+  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; 
 
   // Helper component for sections to maintain consistent styling
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (

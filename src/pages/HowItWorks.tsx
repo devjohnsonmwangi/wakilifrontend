@@ -1,5 +1,5 @@
 import React from "react";
-//import Footer from "../pages/landingPage/Footer"; // Adjust path if needed
+//import Footer from "../pages/landingPage/Footer"; 
 import Navbar from "../components/navbar/Navbar";
 import Lottie, { Options as LottieOptions } from "react-lottie";
 import { Link } from "react-router-dom";

@@ -5,7 +5,7 @@ import {
   useDeleteEventMutation,
   EventDataTypes,
   EventType,
-} from '../../../../features/events/events'; // Assuming this path is correct
+} from '../../../../features/events/events'; 
 
 import EventCalendarView from './EventCalendarView';
 import EventListView from './EventListView';
@@ -21,7 +21,7 @@ export type ViewMode = 'calendar' | 'list';
 const SunIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6" // Adjust size as needed
+    className="h-6 w-6" 
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -38,7 +38,7 @@ const SunIcon = () => (
 const MoonIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6" // Adjust size as needed
+    className="h-6 w-6" 
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -51,7 +51,7 @@ const MoonIcon = () => (
     />
   </svg>
 );
-// --- End SVG Icons ---
+
 
 const EventsPage: React.FC = () => {
   const getInitialTheme = (): boolean => {

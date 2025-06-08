@@ -4,7 +4,7 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 
-// Importing all API slices
+// all API slices
 import { usersAPI } from "../features/users/usersAPI";
 import { caseAndPaymentAPI } from "../features/case/caseAPI";
 import { paymentAPI } from "../features/payment/paymentAPI";
@@ -21,7 +21,7 @@ import { teamApi } from "../features/team/teamApi";
 import { chatsAPI } from "../features/chats/chatsAPI";
 import { notificationsAPI } from "../features/notifications/notificationAPI"; // <<< 1. IMPORT the new notifications API
 
-// Importing regular slices
+
 import userReducer from "../features/users/userSlice";
 import onlineStatusReducer from "../features/online/online";
 
@@ -29,7 +29,7 @@ import onlineStatusReducer from "../features/online/online";
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user"], // Correctly only persisting the user slice.
+    whitelist: ["user"], 
 };
 
 // Combine reducers
@@ -56,10 +56,10 @@ const rootReducer = combineReducers({
     onlineStatus: onlineStatusReducer,
 });
 
-// Add persist reducer
+//  persist reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-// Create store
+//  store
 export const store = configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
@@ -83,7 +83,7 @@ export const store = configureStore({
             loginAPI.middleware,
             teamApi.middleware,
             chatsAPI.middleware,
-            notificationsAPI.middleware // <<< 3. ADD the new notifications middleware
+            notificationsAPI.middleware 
         )
 });
 

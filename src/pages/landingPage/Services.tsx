@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // For navigation
+import { useNavigate } from 'react-router-dom'; 
 import Navbar from "../../components/navbar/Navbar";
-// import Footer from './Footer'; // Uncomment if you have a Footer
+// import Footer from './Footer'; 
 import serviceHeroImage from '../../assets/images/landingPage/coverimageone.webp';
 import pageBackground from '../../assets/images/landingPage/coverimage3.jpeg';
 import { ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard, FileText, Users, ArrowRight, LucideProps } from 'lucide-react';
@@ -9,18 +9,16 @@ import React from 'react';
 
 interface ServiceItem {
     id: string;
-    icon: React.ComponentType<LucideProps>; // More specific type for Lucide icons
+    icon: React.ComponentType<LucideProps>; 
     title: string;
     description: string;
 }
 
-// Simulate auth status - in a real app, this would come from context or state management
-// If setIsLoggedIn is not used in this specific file, the linter might still warn about it here.
-// For this example, we assume isLoggedIn is the only part used by THIS component.
+
 const useAuth = () => {
     // To test logged out state:
     // const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isLoggedIn] = useState(true); // Example: user is logged in
+    const [isLoggedIn] = useState(true); 
     return { isLoggedIn };
 };
 

@@ -28,7 +28,7 @@ const DeleteUserTicket = ({ ticket, modalId }: DeleteUserTicketProps) => {
             } catch (err) {
                 console.error('Error during ticket deletion:', err);
                 
-                // Assuming the error has a consistent structure
+                
                 const error = err as { status?: number; originalStatus?: number; error?: string };
 
                 if (error.status === 403 || error.originalStatus === 403) {

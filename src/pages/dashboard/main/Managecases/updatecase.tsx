@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-    // Adjust this path to where your caseAndPaymentAPI slice is defined
+    
     useUpdateCaseMutation,
     CaseDataTypes,
     CaseType,
     CaseStatus,
     UpdateCasePayload,
-} from '../../../../features/case/caseAPI'; // Adjust path as necessary
+} from '../../../../features/case/caseAPI'; 
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 interface EditCaseFormProps {
-    isDarkMode?: boolean; // isDarkMode is not used in the provided JSX, but kept for consistency
+    isDarkMode?: boolean; 
     caseItem: CaseDataTypes | null;
     isOpen: boolean;
     onClose: () => void;
@@ -46,7 +46,7 @@ interface RtkQueryErrorShape {
 
 const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose }) => {
     const id = caseItem?.case_id || 0;
-    // userId is no longer sent in the UpdateCasePayload as per the new definition
+    
     // const userId = caseItem?.user_id || 0;
 
     const [updateCase, { isLoading }] = useUpdateCaseMutation();
@@ -56,7 +56,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
         case_status: caseItem?.case_status || 'open',
         case_number: caseItem?.case_number || '',
         case_track_number: caseItem?.case_track_number || '',
-        fee: caseItem?.fee || '', // caseItem.fee is string, so default to empty string
+        fee: caseItem?.fee || '', 
         case_description: caseItem?.case_description || '',
         court: caseItem?.court || null,
         station: caseItem?.station || null,
@@ -71,8 +71,8 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
                 case_status: caseItem.case_status,
                 case_number: caseItem.case_number,
                 case_track_number: caseItem.case_track_number,
-                fee: caseItem.fee, // caseItem.fee is already a string
-                case_description: caseItem.case_description ?? '', // Ensure string, even if null from API
+                fee: caseItem.fee, 
+                case_description: caseItem.case_description ?? '', 
                 court: caseItem.court ?? null,
                 station: caseItem.station ?? null,
                 parties: caseItem.parties ?? null,
@@ -91,9 +91,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
         } else if (name === 'court' || name === 'station' || name === 'parties') {
             processedValue = value === '' ? null : value;
         }
-        // Note: The 'as string | number | null' assertion was broad.
-        // Since 'fee' is now string, and others are string or null,
-        // 'string | null' covers most cases. `case_type` and `case_status` are specific string literals.
+        
         setFormData(prev => ({
             ...prev,
             [name]: processedValue
@@ -116,7 +114,7 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
             newErrors.fee = 'Fee is required.';
             isValid = false;
         } else {
-            const feeAsNumber = Number(formData.fee); // Convert string fee to number for validation
+            const feeAsNumber = Number(formData.fee); 
             if (isNaN(feeAsNumber) || feeAsNumber <= 0) {
                 newErrors.fee = 'Fee must be a positive number.';
                 isValid = false;
@@ -164,19 +162,19 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
             return;
         }
 
-        // formData.fee is now a string, validation ensures it's a string representing a positive number.
-        // const numericFee = formData.fee as number; // No longer needed
+        
+        // const numericFee = formData.fee as number; 
 
         try {
             const bodyPayload: UpdateCasePayload = {
-                // user_id is OMITTED from UpdateCasePayload in the new Redux API slice
+                
                 // user_id: userId, 
                 
                 case_type: formData.case_type,
                 case_status: formData.case_status,
                 case_number: formData.case_number,
                 case_track_number: formData.case_track_number,
-                fee: formData.fee, // Send as string, as per CaseDataTypes.fee
+                fee: formData.fee, 
                 case_description: formData.case_description,
                 court: formData.court,
                 station: formData.station,
@@ -184,8 +182,8 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
             };
             
             await updateCase({
-                case_id: id,    // For the URL parameter
-                ...bodyPayload  // This becomes the request body
+                case_id: id,    
+                ...bodyPayload  
             }).unwrap();
 
             toast.success('Case updated successfully!');
@@ -386,13 +384,13 @@ const UpdateCaseForm: React.FC<EditCaseFormProps> = ({ caseItem, isOpen, onClose
                                 <CircleDollarSign size={16} className="mr-2 opacity-70" /> Case Fee (KES)
                             </label>
                             <input
-                                type="number" // input type="number" is fine for user experience
+                                type="number" // input type="number" 
                                 id="fee_edit"
                                 name="fee"
                                 value={formData.fee} // formData.fee is a string
                                 onChange={handleChange}
                                 placeholder="e.g., 50000.00"
-                                step="0.01" // Helps with number input UX
+                                
                                 className={`${inputBaseClasses} ${errors.fee ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-green-500 dark:focus:ring-emerald-500'}`}
                             />
                             {errors.fee && <p className={errorTextClasses}>{errors.fee}</p>}

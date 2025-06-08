@@ -12,7 +12,7 @@ const OnlineIndicator: React.FC<OnlineIndicatorProps> = ({ isOnline, className =
   return (
     <span
       className={`inline-block rounded-full ${sizeClasses} ${
-        isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400' // Added subtle pulse for online
+        isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400' // subtle pulse for online
       } ${className}`}
       title={isOnline ? 'Online' : 'Offline'}
     />

@@ -1,9 +1,9 @@
 // src/features/chats/components/MessageInput.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useSendMessageMutation } from '../chatsAPI';
-import { Send, Paperclip, X, Loader2 } from 'lucide-react'; // Added Loader2 for sending state
-import { useSelector } from 'react-redux'; // Import useSelector
-import { selectCurrentUserId } from '../../users/userSlice'; // Import your selector
+import { Send, Paperclip, X, Loader2 } from 'lucide-react'; 
+import { useSelector } from 'react-redux'; 
+import { selectCurrentUserId } from '../../users/userSlice'; 
 
 interface MessageInputProps {
   conversationId: number;
@@ -11,7 +11,7 @@ interface MessageInputProps {
 
 const MessageInput: React.FC<MessageInputProps> = ({ conversationId }) => {
   const [content, setContent] = useState('');
-  const [sendMessage, { isLoading: isSending, error: sendError }] = useSendMessageMutation(); // Added sendError
+  const [sendMessage, { isLoading: isSending, error: sendError }] = useSendMessageMutation(); //  sendError
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const currentUserId = useSelector(selectCurrentUserId); // Get current user's ID
@@ -35,7 +35,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId }) => {
     e?.preventDefault();
     if (!currentUserId) {
       console.error("Cannot send message: User ID is not available.");
-      // Optionally, show a user-facing error here (e.g., using a toast)
+      // Optionally, show a user-facing error here (e.g., using a toast)//TODO
       return;
     }
 
@@ -50,9 +50,9 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId }) => {
           conversation_id: conversationId,
           sender_id: currentUserId,
           content: messageContent,
-          // message_type: 'text' // Default type, can be omitted if 'text' is the backend default
+          // message_type: 'text' // Default type
         }).unwrap();
-        // Optionally, clear sendError if it was previously set
+        //  clear sendError if it was previously set
         if (sendError) { /* logic to clear error if displayed in UI */ }
       } catch (err) {
         console.error('Failed to send message:', err);

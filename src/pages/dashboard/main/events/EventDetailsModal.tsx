@@ -15,27 +15,27 @@ import {
  // Trash2,
   Loader2, // For loading states on buttons
   AlertCircle, // For error states
-} from 'lucide-react'; // Added more icons
+} from 'lucide-react'; 
 
 import {
   EventDataTypes,
   EventReminderDataTypes,
   useFetchRemindersQuery,
  // useDeleteReminderMutation,
-} from '../../../../features/events/events'; // Path should be correct
+} from '../../../../features/events/events'; 
 
-import ReminderFormModal from './ReminderFormModal'; // Assumed to be dark-mode ready
-import EventTypeChip from './components/EventTypeChip'; // Assumed to be dark-mode ready
-//import ConfirmationDialog from './components/ConfirmationDialog'; // Assumed to be dark-mode ready
+import ReminderFormModal from './ReminderFormModal'; 
+import EventTypeChip from './components/EventTypeChip'; 
+//import ConfirmationDialog from './components/ConfirmationDialog';
 
 interface Props {
-  currentUserId?: number; // Not currently used, but kept
+  currentUserId?: number; 
   open: boolean;
   onClose: () => void;
   event: EventDataTypes;
-  onEditEvent?: (event: EventDataTypes) => void; // Optional, if you add UI for it
-  onDeleteEvent?: (eventId: number) => void;   // Optional, if you add UI for it
-  // onSuccess/onError are passed to ReminderFormModal. Delete in this modal uses toast directly.
+  onEditEvent?: (event: EventDataTypes) => void; 
+  onDeleteEvent?: (eventId: number) => void;  
+  
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -44,8 +44,8 @@ const EventDetailsModal: React.FC<Props> = ({
   open,
   onClose,
   event,
-  onSuccess, // Passed to ReminderFormModal
-  onError,   // Passed to ReminderFormModal
+  onSuccess, 
+  onError,   
 }) => {
   const { data: allReminders, isLoading: isLoadingReminders, isError: isRemindersError, error: remindersErrorObj } = useFetchRemindersQuery(undefined, { skip: !open || !event?.event_id });
   //const [deleteReminder, { isLoading: isDeletingReminder }] = useDeleteReminderMutation();

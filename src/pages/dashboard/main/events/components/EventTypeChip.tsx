@@ -1,19 +1,15 @@
 // src/features/events/components/EventTypeChip.tsx
 import React from 'react';
-// Assuming EventType is defined in a file like 'types.ts' or directly in 'events.ts'
-// in the parent 'events' feature folder.
-// If `EventType` is in `src/features/events/events.ts` and this file is `src/features/events/components/EventTypeChip.tsx`
-// then the path would be:
-import { EventType } from '../../../../../features/events/events'; // Adjusted path
+
+
+
+import { EventType } from '../../../../../features/events/events'; 
 
 interface EventTypeChipProps {
   eventType: EventType;
 }
 
-// We'll use Tailwind classes directly for styling instead of hex codes for colors
-// to leverage your theme and provide better maintainability.
-// You might need to ensure these Tailwind color classes exist in your config
-// (e.g., bg-blue-100, text-blue-700). Standard Tailwind includes many.
+
 const getEventTypeStyle = (
   type: EventType
 ): { className: string; label: string } => {
@@ -43,15 +39,15 @@ const getEventTypeStyle = (
         className: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200', // Added dark mode variants
         label: 'Court Date',
       };
-    default: { // <--- ADDED OPENING BRACE
+    default: { 
       const formattedLabel = (type as string)
-        .replace(/_/g, ' ') // Replace underscores with spaces
+        .replace(/_/g, ' ') 
         .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
       return {
         className: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200', // Added dark mode variants
         label: formattedLabel,
       };
-    } // <--- ADDED CLOSING BRACE
+    } 
   }
 };
 

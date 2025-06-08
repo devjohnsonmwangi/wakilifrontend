@@ -9,35 +9,34 @@ import {
   AppointmentStatus,
   UpdateAppointmentPayload,
   FetchAppointmentsArgs,
-} from '../../../../features/appointment/appointmentapi'; // Adjust path
-import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
+} from '../../../../features/appointment/appointmentapi'; 
+import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; 
 import { Toaster, toast } from 'sonner';
-import CreateAppointment from './createappointment'; // Adjust path
-import EditAppointment from './editappointments';   // Adjust path
-import ConfirmationModal from './deletion';         // Adjust path
-import ReasonDisplayModal from './ReasonDisplayModal'; // Adjust path
+import CreateAppointment from './createappointment';
+import EditAppointment from './editappointments';   
+import ConfirmationModal from './deletion';         
+import ReasonDisplayModal from './ReasonDisplayModal'; 
 
 import {
   selectCurrentUserId,
   selectCurrentUser
-} from '../../../../features/users/userSlice'; // Adjust path
+} from '../../../../features/users/userSlice'; 
 
 import {
   PlusCircle,
   FilePenLine,
   Trash2,
-  AlertTriangle, // Used
+  AlertTriangle, 
   CalendarDays,
-  RefreshCcw,   // Used
-        // Used
+  RefreshCcw,   
   Sun,
   Moon,
-  User as UserProfileIcon, // Renamed to avoid conflict with UserIcon (ProfilePictureFallback)
-  LogIn,        // Used
-  ImageOff,     // Used
+  User as UserProfileIcon,
+  LogIn,        
+  ImageOff,     
   Eye,
-  Users as ClientLucideIcon, // Used for client column
-  Briefcase,    // Used for branch column
+  Users as ClientLucideIcon, 
+  Briefcase,    
   ListFilter,
 } from 'lucide-react';
 
@@ -105,9 +104,9 @@ const UserAppointments: React.FC = () => {
     if (searchStatus) { params.status = searchStatus; hasParams = true; }
     if (searchDateFrom) { params.dateTimeFrom = new Date(searchDateFrom + "T00:00:00.000Z").toISOString(); hasParams = true; }
     if (searchDateTo) { params.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString(); hasParams = true; }
-    // Example if you add branchId to server-side filtering for this hook:
+    
     // if (searchLocationId) { params.branchId = Number(searchLocationId); hasParams = true; }
-    return hasParams ? params : {}; // Send empty object if no params, RTK might treat undefined differently
+    return hasParams ? params : {}; 
   }, [searchStatus, searchDateFrom, searchDateTo /*, searchLocationId */]);
 
   const {
@@ -246,7 +245,7 @@ const UserAppointments: React.FC = () => {
 
   const LoadingIndicator: React.FC<{text?: string}> = ({ text = "Loading your assigned appointments..." }) => (
     <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
-      <RefreshCcw className="h-12 w-12 animate-spin mb-4" /> {/* Used */}
+      <RefreshCcw className="h-12 w-12 animate-spin mb-4" />
       <p className="text-lg">{text}</p>
     </div>
   );
@@ -258,7 +257,7 @@ const UserAppointments: React.FC = () => {
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
             <div className="flex items-center">
-                <AlertTriangle className="h-8 w-8 mr-3" /> {/* Used */}
+                <AlertTriangle className="h-8 w-8 mr-3" /> 
                 <div>
                     <p className="font-bold text-lg">Error Loading Appointments</p>
                     <p className="text-sm">{message}</p>
@@ -266,7 +265,7 @@ const UserAppointments: React.FC = () => {
             </div>
             {onRetry && (
                 <button onClick={onRetry} className="mt-4 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md text-sm flex items-center transition-colors">
-                    <RefreshCcw className="h-4 w-4 mr-2" /> {/* Used */}
+                    <RefreshCcw className="h-4 w-4 mr-2" /> 
                     Try Again
                 </button>
             )}
@@ -286,7 +285,7 @@ const UserAppointments: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 sm:p-6 lg:p-8 font-sans flex items-center justify-center">
         <div className="max-w-md w-full bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-8 text-center">
-            <LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" /> {/* Used */}
+            <LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" /> 
             <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">Access Denied</h2>
             <p className="text-slate-500 dark:text-slate-400"> Please log in to view your assigned appointments. </p>
         </div>
@@ -300,7 +299,7 @@ const UserAppointments: React.FC = () => {
 
   const inputClass = "block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500";
 
-  // CORRECTED ProfilePictureFallback Component
+
   const ProfilePictureFallback: React.FC<{ name?: string | null, sizeClass?: string, iconSizeClass?: string }> = ({ name, sizeClass = "h-8 w-8", iconSizeClass = "h-5 w-5" }) => {
     const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || '';
     if (imgError && profilePictureUrl) {
@@ -382,7 +381,7 @@ const UserAppointments: React.FC = () => {
                             <div className="flex items-center">
                                 {appointment.client?.profile_picture ? (
                                     <img src={appointment.client.profile_picture} alt={appointment.client.full_name || 'Client'} className="w-6 h-6 rounded-full mr-2 object-cover" />
-                                ) : ( <ClientLucideIcon className="w-5 h-5 mr-2 text-slate-400" /> )} {/* Used ClientLucideIcon */}
+                                ) : ( <ClientLucideIcon className="w-5 h-5 mr-2 text-slate-400" /> )} 
                                 {appointment.client?.full_name || 'N/A'}
                             </div>
                           </td>
@@ -437,7 +436,7 @@ const UserAppointments: React.FC = () => {
           appointment={selectedAppointment}
           onAppointmentUpdated={handleAppointmentUpdated}
           onClose={closeEditModal}
-          // isClientView can be omitted if default is false or set explicitly
+          
           // isClientView={false} 
         />
       )}
@@ -456,7 +455,7 @@ const UserAppointments: React.FC = () => {
         isOpen={isReasonModalOpen}
         onClose={closeReasonModal}
         reason={reasonToDisplay}
-        partyName={reasonContextName} // Changed from reasonPartyName
+        partyName={reasonContextName} 
         isDarkMode={isDarkMode}
       />
     </div>

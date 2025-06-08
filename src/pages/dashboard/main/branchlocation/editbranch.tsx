@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
   useUpdateBranchLocationMutation,
-} from '../../../../features/branchlocation/branchlocationapi'; // Adjust the path as needed
-import { toast } from 'sonner'; // Toaster component itself is likely at a higher level
+} from '../../../../features/branchlocation/branchlocationapi'; 
+import { toast } from 'sonner'; 
 import { motion } from 'framer-motion';
-import { X, Building, MapPin, Phone, Edit3 } from 'lucide-react'; // Using Edit3 for title icon
+import { X, Building, MapPin, Phone, Edit3 } from 'lucide-react';
 
 interface BranchLocationDataTypes {
   branch_id: number;
@@ -13,17 +13,17 @@ interface BranchLocationDataTypes {
   contact_phone: string;
 }
 
-// Define a more specific type for the error data from the backend if known
+
 interface ApiErrorData {
   error?: string;
   message?: string;
-  // Add other potential error fields from your backend
+  
 }
 
 interface RtkQueryErrorShape {
   data?: ApiErrorData | string;
   error?: string; // For FetchBaseQueryError string
-  // other RTK Query error fields
+  
 }
 
 interface EditBranchLocationProps {

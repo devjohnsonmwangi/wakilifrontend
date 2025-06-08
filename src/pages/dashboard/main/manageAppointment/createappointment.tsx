@@ -2,12 +2,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     useCreateAppointmentMutation,
-    CreateAppointmentPayload, // This should now expect `appointmentDateTimeISO`
-    // Also import AppointmentStatus if you plan to set status from frontend and want type safety
-    // AppointmentStatus,
-} from '../../../../features/appointment/appointmentapi'; // Adjust path
-import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; // Adjust path
-import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI'; // Adjust path
+    CreateAppointmentPayload, 
+} from '../../../../features/appointment/appointmentapi'; 
+import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; 
+import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as UserIcon } from 'lucide-react';
@@ -72,7 +70,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
     const [selectedStaffId, setSelectedStaffId] = useState<number | string>('');
     const [reason, setReason] = useState('');
     const [notesByClient, setNotesByClient] = useState('');
-    // const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>('pending'); // If you want to select status
+    // const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus>('pending'); 
     const [formError, setFormError] = useState<string | null>(null);
 
     const todayDateString = useMemo(() => {
@@ -147,9 +145,9 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
             branch_id: Number(selectedBranchId),
             party: partyName.trim(),
             appointmentDateTimeISO: appointmentDateTimeISO, // Send the combined UTC ISO string
-            status: 'pending', // Default status, or use selectedStatus if you add a dropdown
+            status: 'pending', // Default status
             reason: reason.trim(),
-            assigneeIds: selectedStaffId ? [Number(selectedStaffId)] : [], // Ensure it's an array or undefined if not sent
+            assigneeIds: selectedStaffId ? [Number(selectedStaffId)] : [], 
             notes_by_client: notesByClient.trim() || undefined,
         };
 
@@ -165,7 +163,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
             setSelectedStaffId('');
             setReason('');
             setNotesByClient('');
-            // setSelectedStatus('pending'); // Reset status if selectable
+            // setSelectedStatus('pending'); 
             if (onAppointmentCreated) onAppointmentCreated();
             onClose();
         } catch (error) {

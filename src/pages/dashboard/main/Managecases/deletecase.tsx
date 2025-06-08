@@ -1,11 +1,11 @@
 import { toast } from 'sonner';
 import { caseAndPaymentAPI, CaseDataTypes } from '../../../../features/case/caseAPI';
-import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa'; // Import icons
+import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa'; 
 
 interface DeleteCaseFormProps {
     caseItem: CaseDataTypes | null;
     isOpen: boolean;
-    isDarkMode?: boolean; // Optional prop for dark mode awareness, styling handled by Tailwind dark: variants
+    isDarkMode?: boolean; 
     onClose: () => void;
     refetch: () => void;
 }
@@ -35,7 +35,7 @@ const DeleteCaseForm = ({ caseItem, isOpen, onClose, refetch }: DeleteCaseFormPr
         toast.warning('Deletion cancelled.', { duration: 2000 });
     };
 
-    if (!isOpen) return null;  // Don't render if not open
+    if (!isOpen) return null;  
 
     return (
         // Overlay container
@@ -43,7 +43,7 @@ const DeleteCaseForm = ({ caseItem, isOpen, onClose, refetch }: DeleteCaseFormPr
             {/* Modal Content Box */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl dark:shadow-slate-900/50 p-6 w-full max-w-md">
                 
-                {/* Toaster comment remains as is */}
+                {/* Toaster */}
                 {/* 
                 <Toaster
                     toastOptions={{
@@ -89,7 +89,7 @@ const DeleteCaseForm = ({ caseItem, isOpen, onClose, refetch }: DeleteCaseFormPr
                                     <td className="px-2 py-2 font-medium text-gray-600 dark:text-slate-300">Case No:</td>
                                     <td className="px-2 py-2 text-gray-800 dark:text-slate-100">{caseItem.case_number}</td>
                                 </tr>
-                                <tr className="border-gray-200 dark:border-transparent"> {/* Last row, no bottom border or transparent for dark if preferred */}
+                                <tr className="border-gray-200 dark:border-transparent">
                                     <td className="px-2 py-2 font-medium text-gray-600 dark:text-slate-300">Track No:</td>
                                     <td className="px-2 py-2 text-gray-800 dark:text-slate-100">{caseItem.case_track_number}</td>
                                 </tr>

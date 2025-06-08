@@ -4,12 +4,12 @@ import {
     useFetchCaseDocumentsQuery,
     useUpdateCaseDocumentMutation,
     CaseDocumentDataTypes
-} from "../../../../features/casedocument/casedocmentapi"; // Assuming this path is correct
+} from "../../../../features/casedocument/casedocmentapi"; 
 import GeneralDocumentUpload from './generaldocuments';
 import DeleteCaseForm from './deleteCaseForm';
 
 // --- Icon Components ---
-// ... (all your icon components remain the same)
+
 const SunIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-6.364-.386 1.591-1.591M3 12h2.25m.386-6.364 1.591 1.591A9.953 9.953 0 0 0 12 2.25c-2.647 0-5.058.982-6.973 2.622m13.946 0A9.953 9.953 0 0 1 12 18.75c-2.647 0-5.058-.982-6.973-2.622m0-10.756A9.953 9.953 0 0 0 12 2.25c2.647 0 5.058.982 6.973 2.622" />
@@ -75,15 +75,15 @@ const ExclamationTriangleIcon = ({ className = "w-6 h-6" }: { className?: string
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
   </svg>
 );
-// --- End Icon Components ---
+
 
 import { useSelector } from 'react-redux';
-// ---!!! IMPORTANT: Adjust this import path to your actual userSlice.ts file !!!---
-import { selectIsAuthenticated, selectUserRole } from '../../../../features/users/userSlice'; // Or your correct path
+
+import { selectIsAuthenticated, selectUserRole } from '../../../../features/users/userSlice'; 
 
 // Helper function to extract error message
 function getStructuredErrorMessage(error: unknown): string {
-    // ... (getStructuredErrorMessage remains the same)
+    
     if (!error) { return "An unknown error occurred."; }
     if (typeof error === 'string') { return error; }
     if (typeof error === 'object' && error !== null) {
@@ -106,7 +106,7 @@ function getStructuredErrorMessage(error: unknown): string {
 
 // Modern Modal Wrapper
 interface ModalProps {
-    // ... (ModalProps remains the same)
+    
     isOpen: boolean;
     onClose: () => void;
     children: React.ReactNode;
@@ -114,7 +114,7 @@ interface ModalProps {
     title?: string;
 }
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, size = 'md' }) => {
-    // ... (Modal component remains the same)
+    
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => { if (event.key === 'Escape') { onClose(); } };
         if (isOpen) {
@@ -395,7 +395,7 @@ const LibDocumentList: React.FC = () => {
                 </Modal>
             )}
             
-            {/* Delete modal - its trigger is already conditional */}
+        
             <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Confirm Deletion" size="sm">
                 <DeleteCaseForm
                     caseItem={documents?.find(doc => doc.document_id === selectedDocumentId) || null}

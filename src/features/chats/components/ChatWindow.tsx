@@ -26,7 +26,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
     currentUserId as number,
     {
       skip: currentUserId === null,
-      // NEW: Add polling to automatically refresh conversation details (e.g., title)
+      //  polling to automatically refresh conversation details (e.g., title)
       // A longer interval is fine here as this data changes infrequently.
       pollingInterval: 15000, // Refresh every 15 seconds
     }
@@ -47,7 +47,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
     }
   }, [conversationId, markAsRead, currentConversation, currentUserId]);
 
-  // Handle loading and error states (Unchanged)
+  // Handle loading and error states 
   if (currentUserId === null) {
     return (
       <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
@@ -102,7 +102,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ conversationId, onBack }) => {
   return (
     <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
       <ChatWindowHeader conversation={currentConversation} onBack={onBack} />
-      {/* The MessageList component now handles its own data fetching and refreshing */}
+      {/* The MessageList component  handles its own data fetching and refreshing */}
       <MessageList conversationId={conversationId} />
       <MessageInput conversationId={conversationId} />
     </div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
   useCreateBranchLocationMutation,
-} from '../../../../features/branchlocation/branchlocationapi'; // Adjust the path as needed
-import { toast } from 'sonner'; // Toaster component itself is likely at a higher level
+} from '../../../../features/branchlocation/branchlocationapi'; 
+import { toast } from 'sonner'; 
 import { motion } from 'framer-motion';
 import { X, Building, MapPin, Phone, Briefcase } from 'lucide-react';
 
@@ -13,18 +13,16 @@ interface BranchLocationDataTypes {
   contact_phone: string;
 }
 
-// Define a more specific type for the error data from the backend if known
-// For now, keeping it somewhat generic but avoiding 'any' where possible
 interface ApiErrorData {
   error?: string;
   message?: string;
-  // Add other potential error fields from your backend
+  
 }
 
 interface RtkQueryErrorShape {
     data?: ApiErrorData | string; // Can be an object or a string
-    error?: string; // For FetchBaseQueryError string
-    // other RTK Query error fields
+    error?: string; 
+    
   }
 
 interface CreateBranchLocationProps {
@@ -233,10 +231,7 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
           </div>
         </form>
       </motion.div>
-      {/* The <Toaster /> component should be placed at a higher level in your application,
-          typically in your main App.tsx or layout component, to handle all toasts globally.
-          It's not needed within each modal if a global one is present.
-      */}
+     
     </motion.div>
   );
 };

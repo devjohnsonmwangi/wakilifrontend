@@ -4,8 +4,8 @@ import {
   isValid, parseISO, format, parse, setHours, setMinutes, setSeconds, startOfDay,
 } from 'date-fns';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; // Base styles
-// import '../styles/datepicker-theme.css'; // IF YOU CREATED A SEPARATE CSS FILE, IMPORT IT HERE
+import 'react-datepicker/dist/react-datepicker.css'; 
+// import '../styles/datepicker-theme.css'; 
 
 import { toast } from 'sonner';
 import {
@@ -13,7 +13,7 @@ import {
   useCreateReminderMutation,
   useUpdateReminderMutation,
   useDeleteReminderMutation,
-} from '../../../../features/events/events'; // Adjust path
+} from '../../../../features/events/events'; 
 import { Dialog } from '@headlessui/react';
 import { Calendar as CalendarIcon, Clock, AlertTriangle, Save, X, Trash2, Loader2 } from 'lucide-react';
 
@@ -117,7 +117,7 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
       setFormData(getInitialReminderFormState(eventTitle, reminderToEdit));
       setErrors({});
     }
-  }, [open, reminderToEdit, eventTitle]); // Removed eventId as it's not used in getInitial...
+  }, [open, reminderToEdit, eventTitle]); 
 
   useEffect(() => {
     if (!open && isDeleteConfirmModalOpen) {

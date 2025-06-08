@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-// Make sure to install react-icons: npm install react-icons
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {
@@ -13,7 +12,7 @@ const Footer = () => {
   ];
 
   return (
-    // Changed background to dark green, main text is light gray
+    
     <footer className="bg-[#081f08] text-gray-300">
       <div className="container mx-auto px-6 py-8 sm:py-12 lg:py-16">
 
@@ -27,10 +26,10 @@ const Footer = () => {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             {/* Services Section */}
             <div>
-              {/* Section titles are a slightly darker gray, uppercase */}
+              
               <h6 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Our Services</h6>
               <ul className="space-y-2">
-                {/* Links use default text color, hover to yellow */}
+                
                 <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Legal Consultation</Link></li>
                 <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Case Representation</Link></li>
                 <li><Link to="dashboard/ourservices" className="hover:text-yellow-400 transition-colors duration-300">Document Review</Link></li>
@@ -71,7 +70,7 @@ const Footer = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    // Social icons are gray, hover to yellow
+                    
                     className="text-gray-400 hover:text-yellow-400 transition-colors duration-300"
                   >
                     <social.icon className="h-6 w-6" />
@@ -82,11 +81,9 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Footer Bottom Section - Always visible */}
-        {/* Adjusted border color to a lighter green (e.g., green-700) for better contrast with bg-[#081f08] */}
-        {/* You might need to define 'green-700' in your tailwind.config.js if it's not standard, or use an arbitrary value like border-[#15803d] */}
+      
         <div className="text-center text-sm sm:mt-10 sm:pt-8 sm:border-t border-green-700"> {/* Tailwind's green-700 is #15803d */}
-          {/* Copyright text changed to text-gray-400 for better readability on very dark green */}
+        
           <p className="text-gray-400">
             © {currentYear} <Link to="/" className="font-semibold text-gray-300 hover:text-yellow-400 transition-colors duration-300">Wakili</Link>. All rights reserved.
           </p>

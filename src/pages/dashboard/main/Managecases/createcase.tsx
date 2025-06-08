@@ -4,11 +4,11 @@ import {
     useAssignStaffToCaseMutation,
     CaseType,
     CreateCasePayload,
-} from '../../../../features/case/caseAPI'; // ADJUST THIS PATH
+} from '../../../../features/case/caseAPI'; 
 import {
     useFetchUsersQuery,
     UserApiResponse,
-} from '../../../../features/users/usersAPI'; // ADJUST THIS PATH
+} from '../../../../features/users/usersAPI'; 
 import { toast } from 'sonner';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { motion } from 'framer-motion';
@@ -18,7 +18,7 @@ import {
 
 interface FormData {
     user_id_for_case: number | null;
-    primary_assignee_id: number | null; // Will be mandatory
+    primary_assignee_id: number | null; 
     case_type: CaseType;
     case_number: string;
     case_track_number: string;
@@ -27,7 +27,7 @@ interface FormData {
     parties: string;
     fee: number;
     case_description: string;
-    assigned_staff_ids: number[]; // For multi-select additional staff (remains optional)
+    assigned_staff_ids: number[]; 
 }
 
 interface CreateCaseFormProps {
@@ -35,7 +35,7 @@ interface CreateCaseFormProps {
     onClose: () => void;
     isDarkMode?: boolean;
     currentUserId?: number;
-    currentUserRole?: UserApiResponse['role']; // Still useful for client self-selection
+    currentUserRole?: UserApiResponse['role']; 
 }
 
 // Roles that qualify as staff members to be assigned
@@ -48,7 +48,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
     const [createCase, { isLoading: isCreatingCase }] = useCreateCaseMutation();
     const [assignStaffToCase, { isLoading: isAssigningStaff }] = useAssignStaffToCaseMutation();
 
-    // Client self-selection logic remains
+    // Client self-selection logic
     const isUserClientOrBasic = currentUserRole && CLIENT_ROLES_FOR_SELECTION.includes(currentUserRole);
     const isUserCreatingForSelf = isUserClientOrBasic && currentUserId !== undefined;
 
@@ -74,7 +74,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
         mode: 'onSubmit',
         defaultValues: {
             user_id_for_case: isUserCreatingForSelf ? currentUserId : null,
-            primary_assignee_id: null, // Will be required
+            primary_assignee_id: null, 
             case_type: 'civil' as CaseType,
             case_description: '',
             case_number: '',
@@ -83,7 +83,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
             station: '',
             parties: '',
             fee: 0,
-            assigned_staff_ids: [], // Additional staff remain optional
+            assigned_staff_ids: [], 
         },
     });
 
@@ -91,14 +91,14 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
         if (isUserCreatingForSelf) {
             setValue('user_id_for_case', currentUserId);
         } else {
-            // If not self-creating, ensure client ID field is clear if it was previously set to currentUserId
+            
             if (currentUserRole && !isUserCreatingForSelf && watch('user_id_for_case') === currentUserId) {
                  setValue('user_id_for_case', null);
             }
         }
     }, [currentUserId, currentUserRole, isUserCreatingForSelf, setValue, watch]);
 
-    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); // For custom validation errors
+    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); 
 
     const validateAndPreparePayload: SubmitHandler<FormData> = async (data) => {
         const newErrors: { [key: string]: string } = {};
@@ -119,7 +119,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
         if (data.fee == null || isNaN(Number(data.fee)) || Number(data.fee) <= 0) { newErrors.fee = 'Fee must be a positive number.'; isValid = false;}
         if (!data.case_description || data.case_description.length < 10) { newErrors.case_description = 'Description must be at least 10 characters.'; isValid = false;}
         
-        setFormErrors(newErrors); // Update custom error state
+        setFormErrors(newErrors); 
 
         if (!isValid) {
             const firstErrorKey = Object.keys(newErrors)[0] as keyof FormData | undefined;
@@ -127,14 +127,14 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
                 let elementId: string = firstErrorKey;
                 if (firstErrorKey === 'user_id_for_case') elementId = 'user_id_select';
                 else if (firstErrorKey === 'primary_assignee_id') elementId = 'primary_assignee_select';
-                else if (firstErrorKey === 'assigned_staff_ids') elementId = 'assigned_staff_select'; // Though not mandatory
+                else if (firstErrorKey === 'assigned_staff_ids') elementId = 'assigned_staff_select'; 
                 document.getElementById(elementId)?.focus();
             }
             toast.error("Please correct the errors in the form.");
             return;
         }
 
-        // Double check critical fields after custom validation (should be caught by above)
+        
         if (data.user_id_for_case === null && !isUserCreatingForSelf) {
             toast.error("Client ID is missing."); return;
         }
@@ -147,7 +147,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
         try {
             // 1. Create the case
             const casePayload: CreateCasePayload = {
-                user_id: data.user_id_for_case!, // Will be set if !isUserCreatingForSelf
+                user_id: data.user_id_for_case!, 
                 case_type: data.case_type,
                 fee: data.fee,
                 case_number: data.case_number,
@@ -174,7 +174,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
                     toast.success(`Primary assignee ${primaryStaffMember?.full_name || `ID ${data.primary_assignee_id}`} assigned.`);
                 } catch (assignError: unknown) {
                     allAssignmentsSuccessful = false;
-                    // ... (error handling for primary assignment as before)
+                    
                     const staffMember = selectableStaff.find(s => s.user_id === data.primary_assignee_id);
                     const staffName = staffMember ? staffMember.full_name : `ID ${data.primary_assignee_id}`;
                     console.error(`Failed to assign primary staff ${staffName}:`, assignError);
@@ -192,7 +192,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
 
             // 3. Assign Additional Staff members (optional)
             const additionalStaffToAssign = data.assigned_staff_ids.filter(
-                id => id !== data.primary_assignee_id // Avoid re-assigning primary if they were also in multi-select
+                id => id !== data.primary_assignee_id 
             );
 
             if (createdCaseId && additionalStaffToAssign.length > 0) {
@@ -205,7 +205,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
                         successfulAdditionalAssignments++;
                     } catch (assignError: unknown) {
                         allAssignmentsSuccessful = false;
-                        // ... (error handling for additional assignment as before)
+                        
                         const staffMember = selectableStaff.find(s => s.user_id === staffId);
                         const staffName = staffMember ? staffMember.full_name : `ID ${staffId}`;
                         console.error(`Failed to assign additional staff ${staffName}:`, assignError);
@@ -235,7 +235,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
             console.error('Error during case creation:', error);
             let errorMessage = 'Failed to create case.';
              if (typeof error === 'object' && error !== null) {
-                // ... (error handling as before)
+                // ... (error handling )
                 const apiError = error as { data?: { msg?: string, message?: string, error?: string, errors?: Record<string, string[]> }, status?: number, message?: string };
                 if (apiError.data?.errors) {
                     const fieldErrors = Object.entries(apiError.data.errors)

@@ -1,8 +1,8 @@
 // src/redux/features/appointments/appointmentAPISlice.ts (or your preferred path)
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain"; // Adjust path as needed
-// import { RootState } from "../../../app/store"; // Uncomment if using token from Redux state
+import { APIDomain } from "../../utils/APIDomain"; 
+// import { RootState } from "../../../app/store"; 
 
 // Define User and Branch basic types as returned by the backend (JSON representation)
 interface BasicUser {
@@ -17,12 +17,12 @@ interface Branch {
   branch_id: number;
   name: string;
   address: string;
-  contact_phone: string; // Assuming this is a string
+  contact_phone: string; 
   created_at: string;    // ISO string
   updated_at: string;    // ISO string
 }
 
-// Ensure this matches your Drizzle enum values for appointment_status
+
 export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled" | "no_show";
 
 
@@ -33,7 +33,7 @@ export interface AppointmentDataTypes {
   branch_id: number;
   party: string;
   reason: string;
-  // === MODIFIED PART ===
+  
   appointment_datetime: string; // Single ISO string (e.g., "YYYY-MM-DDTHH:mm:ss.sssZ") from backend
   // appointment_date: string; // REMOVED
   // appointment_time: string; // REMOVED
@@ -49,7 +49,7 @@ export interface AppointmentDataTypes {
   assignees?: Array<{
     assignee_user_id: number;
     assigned_at: string; // Date becomes ISO string in JSON
-    appointment_id: number; // Assuming this is part of the join table data returned
+    appointment_id: number; 
     assignee?: BasicUser;
   }>;
 }
@@ -60,7 +60,7 @@ export interface CreateAppointmentPayload {
   branch_id: number;
   party: string;
   reason: string;
-  // === MODIFIED PART ===
+
   appointmentDateTimeISO: string; // Frontend sends combined ISO string (e.g., UTC)
   // appointment_date: string; // REMOVED
   // appointment_time: string; // REMOVED
@@ -83,7 +83,7 @@ export interface UpdateAppointmentPayload {
   status?: AppointmentStatus;
   notes_by_client?: string;
   notes_by_staff?: string;
-  assigneeIds?: number[]; // Optional: if undefined, backend might not change assignees
+  assigneeIds?: number[]; // Optional: if undefined, backend will not change assignees
 }
 
 // Arguments for fetching a list of appointments
@@ -105,9 +105,9 @@ export const appointmentAPI = createApi({
   reducerPath: "appointmentAPI",
   baseQuery: fetchBaseQuery({
     baseUrl: APIDomain,
-    prepareHeaders: (headers) => { // Added { getState } if you need it
+    prepareHeaders: (headers) => { // Added { getState } 
       // Example: Get token from Redux store
-      // const token = (getState() as RootState).auth.token; // Assuming RootState is defined
+      // const token = (getState() as RootState).auth.token; //  RootState is defined
       // if (token) {
       //   headers.set('authorization', `Bearer ${token}`);
       // }
@@ -125,11 +125,11 @@ export const appointmentAPI = createApi({
           if (args.assigneeId !== undefined) params.append('assigneeId', String(args.assigneeId));
           if (args.branchId !== undefined) params.append('branchId', String(args.branchId));
           if (args.status) params.append('status', args.status);
-          // === MODIFIED PART ===
+          
           if (args.dateTimeFrom) params.append('dateTimeFrom', args.dateTimeFrom);
           if (args.dateTimeTo) params.append('dateTimeTo', args.dateTimeTo);
-          // if (args.dateFrom) params.append('dateFrom', args.dateFrom); // REMOVED
-          // if (args.dateTo) params.append('dateTo', args.dateTo);       // REMOVED
+          // if (args.dateFrom) params.append('dateFrom', args.dateFrom); 
+          // if (args.dateTo) params.append('dateTo', args.dateTo);       
           if (args.limit !== undefined) params.append('limit', String(args.limit));
           if (args.offset !== undefined) params.append('offset', String(args.offset));
         }
@@ -150,7 +150,7 @@ export const appointmentAPI = createApi({
         _result ? [{ type: "Appointments", id: appointment_id }] : [],
     }),
 
-    // Specific fetch endpoints - consider if `fetchAppointments` with args is sufficient
+    // Specific fetch endpoints 
     fetchAppointmentsByClient: builder.query<AppointmentDataTypes[], { clientId: number | string; queryParams?: Omit<FetchAppointmentsArgs, 'clientId'> }>({
         query: ({ clientId, queryParams }) => {
             const params = new URLSearchParams();
@@ -237,7 +237,7 @@ export const appointmentAPI = createApi({
       query: ({ appointment_id, ...payload }) => ({
         url: `appointments/${appointment_id}`,
         method: "PUT",
-        body: payload, // This now might contain `appointmentDateTimeISO`
+        body: payload, // This now  contain `appointmentDateTimeISO`
       }),
       invalidatesTags: (result, _error, { appointment_id }) => [
           { type: "Appointments", id: appointment_id }, // Specific appointment
@@ -256,7 +256,7 @@ export const appointmentAPI = createApi({
       invalidatesTags: (_result, _error, appointment_id) => [
           { type: "Appointments", id: appointment_id },
           { type: "Appointments", id: 'LIST' },
-          // Consider invalidating related lists if you know the client/assignees from somewhere
+          
         ],
     }),
   }),

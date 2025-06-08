@@ -1,6 +1,6 @@
 import { useGetTeamByRolesQuery } from '../../features/team/teamApi';
 import Navbar from "../../components/navbar/Navbar";
-// import Footer from './Footer'; // Assuming you might add this later
+// import Footer from './Footer'; 
 import {
     Mail, Phone, Loader2, Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake, Sun, Moon,
     Focus,
@@ -11,9 +11,9 @@ import {
     RefreshCw,
     Group,
     PlayCircle,
-    Video // New icon for lawyer insights
+    Video 
 } from 'lucide-react';
-import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg'; // Ensure this path is correct
+import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg'; 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -27,17 +27,17 @@ interface Member {
 }
 
 interface TestimonialVideo {
-    id: string; // YouTube video ID
+    id: string; 
     title: string;
     clientName: string;
     description?: string;
 }
 
 interface LawyerInsightVideo {
-    id: string; // YouTube video ID
+    id: string; 
     title: string;
     lawyerName: string;
-    topic: string; // e.g., "Corporate Law", "Intellectual Property"
+    topic: string; 
     description: string;
 }
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { logOut } from '../../features/users/userSlice'; // Assuming the logout action is in this slice
+import { logOut } from '../../features/users/userSlice'; 
 
-// --- (SunIcon and MoonIcon from above) ---
+
 const SunIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-6.364-.386l1.591-1.591M3 12h2.25m.386-6.364l1.591 1.591" />
@@ -16,7 +16,7 @@ const MoonIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) =
   </svg>
 );
 
-// A simple SVG spinner component
+// A  SVG spinner component
 const SpinnerIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg
     className={`animate-spin ${className}`}
@@ -61,9 +61,9 @@ const Logout: React.FC = () => {
   const navigate = useNavigate();
 
   const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') { // Ensure localStorage is available
+    if (typeof window !== 'undefined') { 
       const savedTheme = localStorage.getItem('theme');
-      // If a theme is saved, use it. Otherwise, check system preference.
+      
       // Default to 'dark' if no preference or if system preference cannot be determined.
       if (savedTheme) return savedTheme;
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -91,7 +91,7 @@ const Logout: React.FC = () => {
   const handleLogout = () => {
     setIsLoggingOut(true);
     dispatch(logOut());
-    localStorage.removeItem('authToken'); // Keep app-specific localStorage items
+    localStorage.removeItem('authToken'); 
     sessionStorage.removeItem('authToken');
     document.cookie = 'authToken=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
 
@@ -187,7 +187,7 @@ const Logout: React.FC = () => {
           >
             {isLoggingOut ? (
               <>
-                <SpinnerIcon className="w-5 h-5 mr-3 text-white" /> {/* Spinner color adjusted */}
+                <SpinnerIcon className="w-5 h-5 mr-3 text-white" /> {/* Spinner color */}
                 Logging out...
               </>
             ) : (

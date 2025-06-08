@@ -1,13 +1,13 @@
 // 📁 services/teamApi.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { APIDomain } from '../../utils/APIDomain'; // Import the base API domain
+import { APIDomain } from '../../utils/APIDomain'; 
 
 export const teamApi = createApi({
   reducerPath: 'teamApi',
-  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }), // Use the URL from utils
+  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }), 
   endpoints: (builder) => ({
     getTeamByRoles: builder.query({
-      query: () => 'users/roles', // Updated endpoint to match your backend router logic
+      query: () => 'users/roles', 
     }),
   }),
 });

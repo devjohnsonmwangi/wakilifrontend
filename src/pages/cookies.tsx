@@ -1,15 +1,15 @@
 import { FC } from 'react';
-import { Cookie, Settings, Info, CheckCircle, BarChart2, Zap, Globe } from 'lucide-react'; // Example icons
+import { Cookie, Settings, Info, CheckCircle, BarChart2, Zap, Globe } from 'lucide-react';
 
-// --- Navbar Import (Optional) ---
-import Navbar from '../components/navbar/Navbar'; // Adjust path if needed
+
+import Navbar from '../components/navbar/Navbar'; 
 //import { Link } from 'react-router-dom';
 
 const CookiePolicyPage: FC = () => {
-  const lastUpdatedDate = "Always  updated for  your   safety cookies policy  are  optional"; // CHANGE THIS TO THE ACTUAL DATE
+  const lastUpdatedDate = "Always  updated for  your   safety cookies policy  are  optional"; 
   const appName = "Wakili Application";
-  //const companyWebsite = "https://www.wakiliapp.com"; // CHANGE THIS
-  const supportEmail = "privacy@wakiliapp.com"; // CHANGE THIS
+  //const companyWebsite = "https://www.wakiliapp.com"; 
+  const supportEmail = "privacy@wakiliapp.com"; 
 
   // Helper component for sections
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (

@@ -1,28 +1,28 @@
 // src/components/UserPaymentPortal.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef for click outside
-import CashPaymentModal from './cash'; // Assume dark mode ready, will pass isDarkMode
-import MpesaPayment from './mpesa';   // Assume dark mode ready, will pass isDarkMode
-import StripePaymentModal from './stripe'; // Assume dark mode ready, will pass isDarkMode
-import ManualPaymentEntryModal from './recordpayment'; // Assume dark mode ready, will pass isDarkMode
+import React, { useState, useEffect, useCallback, useRef } from 'react'; 
+import CashPaymentModal from './cash'; 
+import MpesaPayment from './mpesa';  
+import StripePaymentModal from './stripe'; 
+import ManualPaymentEntryModal from './recordpayment'; 
 
 import {
     useFetchPaymentsQuery,
-} from '../../../../features/payment/paymentAPI'; // Adjust path as necessary
+} from '../../../../features/payment/paymentAPI'; 
 import { toast } from "sonner";
-import { format, parseISO } from 'date-fns'; // Ensured parseISO is imported
+import { format, parseISO } from 'date-fns'; 
 import {
     PlusCircle, ListFilter, RotateCcw, ChevronDown, X, Search, CalendarDays,
     DollarSign, Fingerprint, Briefcase, Clock, CheckCircle, XCircle, AlertTriangle,
-    CreditCard, Activity, Eye, Download,  UserX, LogOut, Settings, Loader2, // Added Loader2
+    CreditCard, Activity, Eye, Download,  UserX, LogOut, Settings, Loader2, Edit3
 } from 'lucide-react';
 
 // Import Redux hooks and selectors
-import { useSelector, } from 'react-redux'; // Added useDispatch
+import { useSelector, } from 'react-redux'; 
 import {
     selectCurrentUser,
     selectIsAuthenticated,
-    // logoutUserAction, // Example: if you have a logout action in userSlice
-} from '../../../../features/users/userSlice'; // <<--- Path to YOUR userSlice.ts
+    // logoutUserAction, 
+} from '../../../../features/users/userSlice'; 
 
 // --- SVG Icons (Define or Import) ---
 const SunIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
@@ -385,7 +385,7 @@ const UserPaymentPortal: React.FC = () => {
         { mode: 'mpesa', label: 'M-Pesa (STK Push)', icon: <CreditCard size={16} className="mr-2.5 opacity-70" /> },
         { mode: 'stripe', label: 'Stripe (Card/Wallet)', icon: <CreditCard size={16} className="mr-2.5 opacity-70" /> },
         { mode: 'cash', label: 'Cash (Record)', icon: <DollarSign size={16} className="mr-2.5 opacity-70" /> },
-        // { mode: 'manual_entry', label: 'Manual Entry (Admin)', icon: <Edit3 size={16} className="mr-2.5 opacity-70" /> }, // Usually for admins
+         { mode: 'manual_entry', label: 'Manual Entry (Admin)', icon: <Edit3 size={16} className="mr-2.5 opacity-70" /> }, // Usually for admins
     ];
 
     if (!isAuthenticated || !currentUserId) {

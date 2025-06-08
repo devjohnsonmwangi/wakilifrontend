@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-// Assuming you might use react-router-dom for navigation
-// import { Link } from "react-router-dom"; 
+
+ import { Link } from "react-router-dom"; 
 import { useFetchCasesQuery } from "../../../../features/case/caseAPI";
 import { useCreateCaseDocumentMutation } from "../../../../features/casedocument/casedocmentapi";
 import { useCreateLogMutation } from "../../../../features/log/logsapi";
@@ -79,7 +79,7 @@ const FolderPlusIcon = ({ className = "w-12 h-12" }: { className?: string }) => 
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5v6m3-3H9m3.75 1.5H15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 15 4.5h-4.5m0 0V9a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 9V6.75A2.25 2.25 0 0 1 5.25 4.5H7.5" />
     </svg>
 );
-// --- End Icon Components ---
+
 
 interface DocumentUploadProps {
     onClose: () => void;
@@ -98,7 +98,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
-    // ... (useEffect hooks and handlers remain the same)
+    
     useEffect(() => {
     }, [cases, isLoading, selectedCaseId]);
 
@@ -138,7 +138,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             toast.success("Document uploaded successfully!");
             resetForm();
             onClose();
-        } catch (err) { // Catch specifically for typing if needed, otherwise error is fine
+        } catch (err) {
             console.error("Failed to upload document:", err);
             toast.error("Failed to upload document. Please try again.");
         } finally {
@@ -259,7 +259,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
             );
         }
         if (isError) {
-            // You can inspect the `error` object for more details if needed
+            
             console.error("Error fetching cases:", error);
             return (
                 <div className="flex flex-col items-center justify-center py-10 text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-300 dark:border-red-700">
@@ -275,20 +275,19 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
                     <FolderPlusIcon className="w-12 h-12 mb-3 text-blue-500 dark:text-blue-400" />
                     <p className="font-semibold text-lg mb-1">No cases found.</p>
                     <p className="text-sm mb-4">You haven't created any cases yet.</p>
-                    {/* 
-                        Replace with actual navigation if using react-router or similar.
-                        Example with react-router Link:
+                     
+                        
                         <Link to="/my-cases" className={`${primaryButtonClass} px-6`}>
                             Go to My Cases
                         </Link>
-                    */}
+                    
                     <button 
                         onClick={() => {
-                            // Placeholder for navigation. In a real app, use your routing solution.
+                            // Placeholder for navigation. 
                             // e.g., navigate('/my-cases') or router.push('/my-cases')
                             toast.info("Navigating to 'My Cases' (placeholder)...");
                             // You might want to close the modal after this action too:
-                            // onClose(); 
+                             onClose(); 
                         }}
                         className={`${primaryButtonClass} px-6 py-2 text-sm`}
                     >
@@ -300,7 +299,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
         if (!filteredCases || filteredCases.length === 0) {
             return (
                 <div className="flex flex-col items-center justify-center py-10 text-gray-500 dark:text-gray-400">
-                    <SearchIcon /> {/* You might want a bigger search icon here */}
+                    <SearchIcon /> 
                     <p className="mt-2 font-semibold">No cases match your search "{searchTerm}".</p>
                     <p className="text-sm">Try a different search term.</p>
                 </div>

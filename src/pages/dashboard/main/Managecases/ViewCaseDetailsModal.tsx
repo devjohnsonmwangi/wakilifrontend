@@ -1,23 +1,19 @@
 // src/pages/dashboard/main/Managecases/ViewCaseDetailsModal.tsx
 
 import React, { useEffect } from 'react';
-// UserDataType and CaseAssigneeData are part of CaseDataTypes from caseAPI
-// If CaseDataTypes is properly defined in caseAPI.ts to include these,
-// direct imports here might not be strictly necessary for this file's direct use,
-// but they help in understanding the structure of CaseDataTypes.
-// For now, let's assume CaseDataTypes from caseAPI implicitly uses them.
+
 import { CaseDataTypes /*, UserDataType, CaseAssigneeData */ } from "../../../../features/case/caseAPI";
-// import { toast } from 'sonner'; // Removed if not used, or uncomment if you add toast calls
+ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
-    X, Briefcase, /* User, // Removed as UserCheck is used */ Mail, Phone, Tag, BarChart3, Hash, FileText, Scale, University, Building, Users, CircleDollarSign, CreditCard, UserCheck
+    X, Briefcase, Mail, Phone, Tag, BarChart3, Hash, FileText, Scale, University, Building, Users, CircleDollarSign, CreditCard, UserCheck
 } from "lucide-react";
 
 interface ViewCaseDetailsModalProps {
     isDarkMode?: boolean;
     selectedCase: CaseDataTypes | null;
     closeModal: () => void;
-    currentUserRole?: string; // Kept for potential future use or if sub-components need it
+    currentUserRole?: string; 
 }
 
 // Helper function to format currency
@@ -49,21 +45,19 @@ const DetailItem: React.FC<{ label: string; value: React.ReactNode; icon: React.
 );
 
 const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCase, closeModal, currentUserRole }) => {
-    // 'currentUserRole' is passed but not directly used in this component's rendering logic yet.
-    // It's kept in case you want to add role-specific views or actions within this modal later.
-    // If not, you can remove it from props and its passing point.
+    
 
     useEffect(() => {
         if (selectedCase) {
             // console.log(`Viewing details for Case ID: ${selectedCase.case_id}, Role: ${currentUserRole}`); // Example use of currentUserRole
-            // toast.info(`🔍 Viewing details for Case ID: ${selectedCase.case_id}`); // Re-enable if needed
+             toast.info(`🔍 Viewing details for Case ID: ${selectedCase.case_id}`); 
         }
     }, [selectedCase, currentUserRole]); // Added currentUserRole to dependency array if used in useEffect
 
     if (!selectedCase) return null;
 
     const handleClose = () => {
-        // toast.info(`✅ Closed details for Case ID: ${selectedCase.case_id}`); // Re-enable if needed
+         toast.info(`✅ Closed details for Case ID: ${selectedCase.case_id}`); 
         closeModal();
     };
 

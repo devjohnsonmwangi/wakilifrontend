@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
 import {
     useFetchCasesQuery,
-    CaseDataTypes as Case, // Ensure this type includes your backend balance field
+    CaseDataTypes as Case, 
     CaseStatus,
     CaseType
 } from '../../../../features/case/caseAPI';
@@ -27,9 +27,9 @@ function useDebounce<T>(value: T, delay: number): T {
 // --- End Custom useDebounce Hook ---
 
 interface StripePaymentModalProps {
-    userId?: number; // Optional userId prop if needed
+    userId?: number; 
     isOpen: boolean;
-    isDarkMode?: boolean; // Optional dark mode prop
+    isDarkMode?: boolean; 
     onClose: () => void;
 }
 
@@ -37,7 +37,7 @@ interface StripePaymentRequest {
     case_id: number;
     user_id: number;
     amount: number;
-    customer_email?: string; // Added customer_email
+    customer_email?: string;
 }
 
 interface StripeSessionResponse {
@@ -54,7 +54,7 @@ const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [handleStripePayment] = useHandleStripePaymentMutation();
     const [amount, setAmount] = useState('');
-    const [customerEmail, setCustomerEmail] = useState(''); // State for customer email
+    const [customerEmail, setCustomerEmail] = useState(''); 
     const navigate = useNavigate();
 
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
@@ -136,7 +136,7 @@ const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose
                 }
             }
             // Optionally pre-fill email if available on the selectedCase or associated user
-            // setCustomerEmail(selectedCase.client_email || ''); 
+            setCustomerEmail(selectedCase.owner?.email || ''); 
         } else {
             setAmount('');
             setCustomerEmail(''); // Reset email when no case is selected

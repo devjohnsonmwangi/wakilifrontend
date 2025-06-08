@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { RootState } from '../../app/store';
-// import bgrides from '../../assets/images/auth/logo.jpeg'; // Commented out or remove if not used
-import heroMainBackground from '../../assets/images/landingPage/loginandregisterimage.webp'; // <-- MAKE SURE THIS PATH IS CORRECT
+// import bgrides from '../../assets/images/auth/logo.jpeg'; 
+import heroMainBackground from '../../assets/images/landingPage/loginandregisterimage.webp'; 
 import { useSelector } from 'react-redux';
 import { useEffect, useState, useMemo } from 'react';
 import { Lightbulb, Shield, ArrowRight } from 'lucide-react';
 
-// Hypothetical import from a different library
-import SimpleParticles from 'react-tsparticles'; // Replace with actual library
+
+import SimpleParticles from 'react-tsparticles'; 
 // The configuration options would be specific to this new library
 const particleConfigLight = { /* ... options for light mode ... */ };
 const particleConfigDark = { /* ... options for dark mode ... */ };
@@ -62,7 +62,7 @@ const Hero = () => {
                 className="absolute inset-0 z-10" // Ensure particles are above the background (z-0 or auto) and below overlay (z-20)
             />
 
-            {/* This div was for the faint bgrides logo. You can remove it if heroMainBackground is your primary BG */}
+            
             {/*
             <div
                 className="absolute inset-0 z-10" // If you keep it, adjust z-index. Original was 0.10 opacity.
