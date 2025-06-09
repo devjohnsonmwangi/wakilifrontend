@@ -37,6 +37,12 @@ interface NewsCardProps {
 }
 // --- End TypeScript Type Definitions ---
 
+/**************************************************************************/
+/** WARNING: THIS IS THE INSECURE, FRONTEND-ONLY APPROACH                **/
+/** Your API Key is exposed here. This will work on localhost but        **/
+/** WILL FAIL with a CORS error when deployed to Vercel or any other     **/
+/** hosting platform. The serverless proxy is the correct solution.      **/
+/**************************************************************************/
 const API_KEY = '0dd6564dccaf43a486afa01c50f9bbe2';
 const BASE_URL_EVERYTHING = 'https://newsapi.org/v2/everything';
 const PAGE_SIZE = 20;
@@ -49,6 +55,8 @@ const NEWS_CATEGORIES: Category[] = [
   { id: 'africa_legal', name: 'Africa Law', Icon: Globe, query: 'Africa AND (law OR legal OR court OR "African Union")', useEverythingAPI: true },
   { id: 'africa_politics', name: 'Africa Politics', Icon: Users, query: 'Africa AND (politics OR election OR government)', useEverythingAPI: true },
 ];
+
+// --- Reusable Child Components ---
 
 const NewsCard: FC<NewsCardProps> = ({ article }) => {
   if (!article || !article.title) return null;
@@ -95,36 +103,19 @@ const NewsCard: FC<NewsCardProps> = ({ article }) => {
 
 const ScrollControls: FC = () => {
   const [isVisible, setIsVisible] = useState(false);
-
-  const handleScroll = () => {
-    if (window.pageYOffset > 300) setIsVisible(true);
-    else setIsVisible(false);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const scrollToBottom = () => {
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+  const handleScroll = () => { if (window.pageYOffset > 300) setIsVisible(true); else setIsVisible(false); };
+  const scrollToTop = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const scrollToBottom = () => { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); };
+  useEffect(() => { window.addEventListener('scroll', handleScroll); return () => window.removeEventListener('scroll', handleScroll); }, []);
   return (
     <div className={`fixed bottom-20 right-4 z-50 flex-col space-y-2 transition-opacity duration-300 lg:hidden ${isVisible ? 'opacity-100 flex' : 'opacity-0 hidden'}`}>
-      <button onClick={scrollToTop} aria-label="Scroll to top" className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-800/70 text-white backdrop-blur-sm border border-slate-500/50 shadow-lg hover:bg-slate-700 transition-colors">
-        <ChevronUp className="w-6 h-6" />
-      </button>
-      <button onClick={scrollToBottom} aria-label="Scroll to bottom" className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-800/70 text-white backdrop-blur-sm border border-slate-500/50 shadow-lg hover:bg-slate-700 transition-colors">
-        <ChevronDown className="w-6 h-6" />
-      </button>
+      <button onClick={scrollToTop} aria-label="Scroll to top" className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-800/70 text-white backdrop-blur-sm border border-slate-500/50 shadow-lg hover:bg-slate-700 transition-colors"><ChevronUp className="w-6 h-6" /></button>
+      <button onClick={scrollToBottom} aria-label="Scroll to bottom" className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-800/70 text-white backdrop-blur-sm border border-slate-500/50 shadow-lg hover:bg-slate-700 transition-colors"><ChevronDown className="w-6 h-6" /></button>
     </div>
   );
 };
+
+// --- Main Page Component ---
 
 const LegalNewsSection: FC = () => {
   const [activeTab, setActiveTab] = useState<string>(NEWS_CATEGORIES[0].id);
@@ -145,24 +136,39 @@ const LegalNewsSection: FC = () => {
     else setIsLoadMoreLoading(prev => ({ ...prev, [category.id]: true }));
     setError(prev => ({ ...prev, [category.id]: null }));
 
-    const queryParams = new URLSearchParams({ q: category.query, language: 'en', sortBy: 'publishedAt', pageSize: PAGE_SIZE.toString(), page: page.toString() });
+    const queryParams = new URLSearchParams({
+      q: category.query,
+      language: 'en',
+      sortBy: 'publishedAt',
+      pageSize: PAGE_SIZE.toString(),
+      page: page.toString(),
+    });
+
     const fullUrl = `${BASE_URL_EVERYTHING}?${queryParams.toString()}`;
 
     try {
+      // THIS IS THE DIRECT, INSECURE CALL THAT WILL CAUSE CORS ERRORS IN PRODUCTION
       const response = await fetch(fullUrl, { headers: { 'X-Api-Key': API_KEY } });
+      
       if (!response.ok) {
+        // This is where the CORS error will be caught in production.
+        // It will throw a generic network error, not a helpful JSON message.
         const errorData = await response.json();
-        throw new Error(`API Error (Status ${response.status}): ${errorData?.message || 'An unknown API error.'}`);
+        throw new Error(`API Error (Status ${response.status}): ${errorData.message || 'An unknown API error.'}`);
       }
+
       const data = await response.json();
-      if (data.status === "error") throw new Error(`API Error: ${data.message || 'An error occurred.'}`);
+      if (data.status === "error") {
+        throw new Error(`API Error: ${data.message || 'An error occurred.'}`);
+      }
       
       setNews(prev => ({ ...prev, [category.id]: page === 1 ? data.articles || [] : [...(prev[category.id] || []), ...(data.articles || [])] }));
       setTotalResults(prev => ({ ...prev, [category.id]: data.totalResults || 0 }));
       setCurrentPage(prev => ({ ...prev, [category.id]: page }));
     } catch (err) {
+      // The error message in production will likely be "Failed to fetch" due to the CORS policy.
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(prev => ({ ...prev, [category.id]: `Could not load news. ${errorMessage}` }));
+      setError(prev => ({ ...prev, [category.id]: `Could not load news. Check browser console for CORS errors. ${errorMessage}` }));
     } finally {
       if (page === 1) setLoading(prev => ({ ...prev, [category.id]: false }));
       else setIsLoadMoreLoading(prev => ({ ...prev, [category.id]: false }));
