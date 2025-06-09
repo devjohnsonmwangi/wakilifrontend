@@ -1,0 +1,14 @@
+// File: /api/tsconfig.json
+{
+    "compilerOptions": {
+      "target": "es2020",
+      "lib": ["es2020", "dom"],
+      "module": "commonjs", // Critical for Node.js environment on Vercel
+      "outDir": "../.vercel/output/functions", // Not strictly needed, but good practice
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "resolveJsonModule": true
+    }
+  }
