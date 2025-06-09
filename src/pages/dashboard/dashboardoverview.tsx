@@ -149,7 +149,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     title: item.name,
     description: `Access your ${item.name.toLowerCase()}.`,
     icon: item.icon || Info,
-    link: `/${item.link}`,
+    // MODIFIED: Use the relative path directly from drawerData.
+    // react-router-dom will correctly resolve this relative to the current path (e.g., '/dashboard').
+    link: item.link,
     iconBgColor: item.iconBgColor || 'bg-sky-100', // Use provided or default
     iconTextColor: 'text-sky-600', // Use provided or default
     borderColor: 'border-sky-500', // Use provided or default
