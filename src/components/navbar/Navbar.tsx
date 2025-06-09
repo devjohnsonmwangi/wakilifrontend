@@ -9,7 +9,9 @@ import {
     User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard,
     X, ChevronDown, Settings, HelpCircle, Briefcase, BookOpen, DownloadCloud, MoreHorizontal,
     Menu,
-    Newspaper
+    Newspaper,
+    Sun, // <-- Import Sun icon
+    Moon, // <-- Import Moon icon
 } from 'lucide-react';
 
 import AppDrawer from "../../pages/dashboard/aside/Drawer";
@@ -52,6 +54,30 @@ const Navbar: FC = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isRunningAsPWA, setIsRunningAsPWA] = useState(false);
 
+    // --- THEME TOGGLE STATE AND LOGIC ---
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        if (typeof window === 'undefined') return 'light'; // Fallback for SSR
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+            return storedTheme;
+        }
+        // If no stored theme, use system preference
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    });
+
+    // Effect to apply the theme class to the HTML element and save to localStorage
+    useEffect(() => {
+        const root = window.document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+    
+    // --- END THEME TOGGLE LOGIC ---
+
     const desktopProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileProfileMenuRef = useRef<HTMLDivElement>(null);
     const mobileSheetRef = useRef<HTMLDivElement>(null);
@@ -89,7 +115,6 @@ const Navbar: FC = () => {
             const isOutsideDesktop = desktopProfileMenuRef.current && !desktopProfileMenuRef.current.contains(targetNode);
             const isOutsideMobile = mobileProfileMenuRef.current && !mobileProfileMenuRef.current.contains(targetNode);
 
-            // Corrected logic: Both must be true to close
             if (isOutsideDesktop && isOutsideMobile) {
                 setIsProfileDropdownOpen(false);
             }
@@ -99,7 +124,7 @@ const Navbar: FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isProfileDropdownOpen]);
 
-    // **KEY FIX**: This effect now reliably closes all pop-ups when the route changes.
+    // This effect reliably closes all pop-ups when the route changes.
     useEffect(() => {
         setIsProfileDropdownOpen(false);
         setIsMobileMoreSheetOpen(false);
@@ -107,6 +132,10 @@ const Navbar: FC = () => {
     }, [location.pathname]);
 
     // --- Core Functions ---
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+    };
 
     const handlePWAInstall = async () => {
         if (deferredPrompt) {
@@ -121,36 +150,31 @@ const Navbar: FC = () => {
     const toggleProfileDropdown = (event: React.MouseEvent) => {
         event.stopPropagation();
         setIsProfileDropdownOpen(prev => !prev);
-        setIsMobileMoreSheetOpen(false); // Close other menus
+        setIsMobileMoreSheetOpen(false);
         setIsAppDrawerOpen(false);
     };
 
     const toggleMobileMoreSheet = (event?: React.MouseEvent) => {
         if (event) event.stopPropagation();
         setIsMobileMoreSheetOpen(prev => !prev);
-        setIsProfileDropdownOpen(false); // Close other menus
+        setIsProfileDropdownOpen(false);
         setIsAppDrawerOpen(false);
     };
 
     const toggleAppDrawer = (event?: React.MouseEvent) => {
         if (event) event.stopPropagation();
         setIsAppDrawerOpen(prev => !prev);
-        setIsProfileDropdownOpen(false); // Close other menus
+        setIsProfileDropdownOpen(false);
         setIsMobileMoreSheetOpen(false);
     };
 
-    /**************************************************/
-    /**        FIXED & SIMPLIFIED LOGOUT LOGIC       **/
-    /**************************************************/
     const handleLogout = () => {
-        // Perform the two critical actions. The useEffect listening on 
-        // location.pathname will handle closing any open modals after navigation.
         dispatch(logOut());
         navigate('/login');
     };
 
     // --- Reusable Data & Classes ---
-
+    // (No changes in this section)
     const desktopNavLinksList = [
         { to: "/", icon: Home, label: "Home" },
         { to: "/howitworks", icon: BookOpen, label: "How It Works" },
@@ -160,37 +184,52 @@ const Navbar: FC = () => {
         ...(userRole !== 'disabled' && username ? [{ to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : []),
         { to: "/contactus", icon: Mail, label: "Contact Us" },
     ];
-
-    const desktopLinkClasses = (isActive = false) => `flex items-center text-sm font-bold px-2.5 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap ${isActive ? 'bg-green-100 text-green-700' : 'text-green-500 hover:text-green-800 hover:bg-green-50'}`;
-    const mobileSheetLinkClasses = (isActive = false) => `flex items-center w-full text-base px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 ${isActive ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`;
-    const bottomNavLinkClasses = (isActive: boolean) => `flex flex-col items-center justify-center flex-1 px-1 py-2 text-xs transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-green-500 focus:ring-offset-1 rounded-sm ${isActive ? 'text-green-600 font-medium' : 'text-gray-500 hover:text-green-600'}`;
+    const desktopLinkClasses = (isActive = false) => `flex items-center text-sm font-bold px-2.5 py-2 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 whitespace-nowrap ${isActive ? 'bg-green-100 text-green-700 dark:bg-gray-700 dark:text-green-400' : 'text-green-500 hover:text-green-800 hover:bg-green-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`;
+    const mobileSheetLinkClasses = (isActive = false) => `flex items-center w-full text-base px-4 py-3 rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 ${isActive ? 'bg-green-100 text-green-700 dark:bg-gray-700 dark:text-green-400 font-semibold' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+    const bottomNavLinkClasses = (isActive: boolean) => `flex flex-col items-center justify-center flex-1 px-1 py-2 text-xs transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-green-500 focus:ring-offset-1 rounded-sm ${isActive ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400'}`;
     const PWA_BUTTON_SHARED_CLASSES = "flex items-center justify-center font-semibold rounded-md shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap px-2.5 py-1.5 text-sm";
     const desktopAuthButtonBaseClasses = "flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-150 whitespace-nowrap";
+    const themeToggleButtonClasses = "p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-green-700 dark:hover:text-green-500 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1";
+
 
     const shouldShowPWAButton = !isRunningAsPWA && (!!deferredPrompt || ALWAYS_SHOW_PWA_BUTTON_FOR_DEV);
 
     // --- Reusable Components ---
 
     const ProfileDropdownPanel = ({ triggerButtonId }: { triggerButtonId: string }) => (
-        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none py-1 z-70" role="menu" aria-orientation="vertical" aria-labelledby={triggerButtonId}>
-            <div className="px-4 py-3"><p className="text-sm font-semibold text-gray-900 truncate" title={username || ""}>{username}</p>{(userData as UserData)?.email && <p className="text-xs text-gray-500 truncate" title={(userData as UserData).email}>{(userData as UserData).email}</p>}</div>
-            <div className="border-t border-gray-100"></div>
-            {/* FIXED: Removed onClick handlers. The useEffect hook will now close the dropdown on navigation. */}
-            <Link to="/dashboard/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><User className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Profile</Link>
-            <Link to="/dashboard/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><Settings className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Settings</Link>
-            <Link to="/dashboard/help" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 shrink-0" /> Help</Link>
-            <div className="border-t border-gray-100"></div>
-            {/* FIXED: Added type="button" for best practice */}
-            <button type="button" onClick={handleLogout} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700" role="menuitem">
+        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-xl bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-700 ring-opacity-5 focus:outline-none py-1 z-70" role="menu" aria-orientation="vertical" aria-labelledby={triggerButtonId}>
+            <div className="px-4 py-3"><p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate" title={username || ""}>{username}</p>{(userData as UserData)?.email && <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={(userData as UserData).email}>{(userData as UserData).email}</p>}</div>
+            <div className="border-t border-gray-100 dark:border-gray-700"></div>
+            <Link to="/dashboard/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem"><User className="w-4 h-4 mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" /> Profile</Link>
+            <Link to="/dashboard/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem"><Settings className="w-4 h-4 mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" /> Settings</Link>
+            <Link to="/dashboard/help" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem"><HelpCircle className="w-4 h-4 mr-2.5 text-gray-500 dark:text-gray-400 shrink-0" /> Help</Link>
+            <div className="border-t border-gray-100 dark:border-gray-700"></div>
+            <button type="button" onClick={handleLogout} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/50 hover:text-red-700" role="menuitem">
                 <LogOutIcon className="w-4 h-4 mr-2.5 shrink-0" /> Logout
             </button>
         </div>
+    );
+    
+    // Reusable Theme Toggle Button Component
+    const ThemeToggleButton = ({ className }: { className?: string }) => (
+        <button
+            type="button"
+            onClick={toggleTheme}
+            className={`${themeToggleButtonClasses} ${className}`}
+            aria-label={theme === 'light' ? "Switch to dark mode" : "Switch to light mode"}
+        >
+            {theme === 'light' ? (
+                <Moon className="h-5 w-5" />
+            ) : (
+                <Sun className="h-5 w-5 text-yellow-400" />
+            )}
+        </button>
     );
 
     return (
         <>
             {/* Top Navbar: z-50 */}
-            <header className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-gray-800 shadow-md h-16">
+            <header className="fixed top-0 left-0 w-full z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-md h-16">
                 <div className="flex items-center justify-between h-full px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center"> {/* Left side: Hamburger and Brand */}
                         <button
@@ -210,6 +249,7 @@ const Navbar: FC = () => {
 
                     {/* Right side of Navbar */}
                     <div className="flex items-center">
+                        {/* --- Desktop View --- */}
                         <div className="hidden lg:flex items-center space-x-3">
                             <nav className="flex items-center space-x-1" aria-label="Main navigation">
                                 {desktopNavLinksList.map(link => (
@@ -218,8 +258,10 @@ const Navbar: FC = () => {
                                     </Link>
                                 ))}
                             </nav>
-                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || username)) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
+                            {(desktopNavLinksList.length > 0 && (shouldShowPWAButton || username || true)) && (<div className="h-6 border-l border-gray-300 dark:border-gray-600"></div>)}
                             <div className="flex items-center space-x-2">
+                                {/* ADDED: Theme toggle button for desktop */}
+                                <ThemeToggleButton />
                                 {shouldShowPWAButton && (<button type="button" onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} bg-green-600 hover:bg-green-700 text-white`} title="Install WakiliApp"><DownloadCloud className="w-4 h-4 mr-1.5 shrink-0" /> Install App</button>)}
                                 {!username ? (
                                     <>
@@ -237,10 +279,13 @@ const Navbar: FC = () => {
                                 )}
                             </div>
                         </div>
+                        {/* --- Mobile View (Top Right) --- */}
                         <div className="lg:hidden flex items-center space-x-1">
-                            {shouldShowPWAButton && (<button type="button" onClick={handlePWAInstall} className="p-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1" title="Install WakiliApp"><DownloadCloud className="h-5 w-5 shrink-0" /></button>)}
+                             {/* ADDED: Theme toggle button for mobile top bar */}
+                            <ThemeToggleButton />
+                            {shouldShowPWAButton && (<button type="button" onClick={handlePWAInstall} className={`${themeToggleButtonClasses}`} title="Install WakiliApp"><DownloadCloud className="h-5 w-5 shrink-0" /></button>)}
                             {!username ? (
-                                <Link to="/login" className="p-2 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-500 hover:bg-green-50 dark:hover:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1" title="Login"><LogIn className="w-5 h-5 shrink-0" /></Link>
+                                <Link to="/login" className={`${themeToggleButtonClasses}`} title="Login"><LogIn className="w-5 h-5 shrink-0" /></Link>
                             ) : (
                                 <div className="relative" ref={mobileProfileMenuRef}>
                                     <button type="button" id="user-menu-button-mobile" onClick={toggleProfileDropdown} aria-expanded={isProfileDropdownOpen} className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
@@ -280,9 +325,26 @@ const Navbar: FC = () => {
                     >
                         <div className="flex justify-between items-center mb-3"><h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">More Options</h3><button type="button" onClick={() => setIsMobileMoreSheetOpen(false)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Close more options"><X className="w-5 h-5 shrink-0" /></button></div>
                         <nav className="space-y-1">
+                            {/* ADDED: Theme toggle button for mobile "More" sheet */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    toggleTheme();
+                                    // Optionally close sheet, or allow user to see the change
+                                    // setIsMobileMoreSheetOpen(false); 
+                                }}
+                                className={mobileSheetLinkClasses(false)}
+                            >
+                                {theme === 'light' ? (
+                                    <Moon className="w-5 h-5 mr-3 text-gray-500 shrink-0" />
+                                ) : (
+                                    <Sun className="w-5 h-5 mr-3 text-yellow-400 shrink-0" />
+                                )}
+                                Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode
+                            </button>
+
                             {shouldShowPWAButton && (<button type="button" onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} ${mobileSheetLinkClasses(false)} w-full bg-green-100 text-green-700 hover:bg-green-200 text-base px-4 py-3`}><DownloadCloud className="w-5 h-5 mr-3 shrink-0" /> Install WakiliApp</button>)}
                             
-                            {/* FIXED: Removed complex onClick handlers. Using standard <Link> components now. */}
                             {!(username && userRole !== 'disabled') && (
                                 <Link to="/updates" className={mobileSheetLinkClasses(location.pathname.startsWith("/updates"))}><Newspaper className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> News</Link>
                             )}

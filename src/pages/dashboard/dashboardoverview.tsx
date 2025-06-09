@@ -19,11 +19,11 @@ import {
   ShieldCheck,
   BarChart3,
   MessageSquareWarning,
-  Sun, 
-  Moon, 
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { getStoredRecentPages, StoredVisitedPage } from '../../pages/dashboard/activity';
-import { filterDrawerByRole } from '../../components/drawer/drawerData'; 
+import { filterDrawerByRole } from '../../components/drawer/drawerData';
 
 // --- Integrated timeAgo Function ---
 const timeAgo = (date: Date | string | number): string => {
@@ -75,7 +75,6 @@ interface ServiceCardItem {
   iconBgColor: string; // For light mode
   iconTextColor: string; // For light mode
   borderColor?: string; // For light mode
-  // Dark mode colors will be applied via dark: prefixes in JSX for simplicity here
 }
 
 const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -94,10 +93,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       if (storedTheme === 'light' || storedTheme === 'dark') {
         return storedTheme;
       }
-      // Default to dark mode if no preference or system preference is not being used
       return 'dark';
     }
-    return 'dark'; // Fallback for SSR or non-browser environments
+    return 'dark';
   });
 
   useEffect(() => {
@@ -108,7 +106,6 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
-
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
@@ -122,9 +119,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   useEffect(() => {
     fetchRecentPages();
-    const handleStorageUpdate = () => {
-      fetchRecentPages();
-    };
+    const handleStorageUpdate = () => fetchRecentPages();
     window.addEventListener('wakiliStorageUpdated', handleStorageUpdate);
     return () => {
       window.removeEventListener('wakiliStorageUpdated', handleStorageUpdate);
@@ -149,12 +144,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     title: item.name,
     description: `Access your ${item.name.toLowerCase()}.`,
     icon: item.icon || Info,
-    // MODIFIED: Use the relative path directly from drawerData.
-    // react-router-dom will correctly resolve this relative to the current path (e.g., '/dashboard').
     link: item.link,
-    iconBgColor: item.iconBgColor || 'bg-sky-100', // Use provided or default
-    iconTextColor: 'text-sky-600', // Use provided or default
-    borderColor: 'border-sky-500', // Use provided or default
+    iconBgColor: item.iconBgColor || 'bg-sky-100',
+    iconTextColor: 'text-sky-600',
+    borderColor: 'border-sky-500',
   }));
 
   return (
@@ -210,11 +203,44 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 <Link
                   key={card.id}
                   to={card.link}
-                  className={`group bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg hover:shadow-xl dark:hover:shadow-slate-700/60 transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col relative overflow-hidden border-l-4 ${card.borderColor} dark:border-sky-700`}
+                  className={`
+                    group bg-white dark:bg-slate-800 p-5 rounded-xl shadow-lg 
+                    flex flex-col relative overflow-hidden 
+                    border-l-4 ${card.borderColor} dark:border-sky-700
+                    
+                    transition-all duration-300 ease-in-out
+                    
+                    hover:-translate-y-2 hover:scale-[1.03]
+                    
+                    /* === MORE INTENSE HOVER EFFECTS === */
+                    hover:bg-gradient-to-br hover:from-green-50 hover:to-sky-50
+                    dark:hover:bg-gradient-to-br dark:hover:from-green-950/60 dark:hover:to-slate-800
+                    hover:border-green-500 dark:hover:border-green-400
+                    hover:shadow-2xl dark:hover:shadow-green-400/30
+                  `}
                 >
                   <div className="flex items-start mb-3">
-                    <div className={`p-3 rounded-lg ${card.iconBgColor} dark:bg-sky-900/50 mr-4 shadow-sm`}>
-                      <IconComponent size={28} className={`${card.iconTextColor} dark:text-sky-400`} strokeWidth={1.75} />
+                    <div
+                      className={`
+                        p-3 rounded-lg ${card.iconBgColor} dark:bg-sky-900/50 mr-4 shadow-sm
+                        
+                        /* === ANIMATE ICON WRAPPER & CHANGE BG COLOR === */
+                        transition-all duration-300 ease-in-out
+                        group-hover:scale-110 group-hover:-rotate-6
+                        group-hover:bg-green-500 dark:group-hover:bg-green-500
+                      `}
+                    >
+                      <IconComponent
+                        size={28}
+                        className={`
+                          ${card.iconTextColor} dark:text-sky-400
+                          
+                          /* === CHANGE ICON COLOR FOR CONTRAST === */
+                          transition-colors duration-300
+                          group-hover:text-white dark:group-hover:text-white
+                        `}
+                        strokeWidth={1.75}
+                      />
                     </div>
                     <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors mt-1">
                       {card.title}
@@ -224,7 +250,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   <div className="mt-auto flex justify-end">
                     <span className="text-green-600 dark:text-green-400 font-medium text-sm group-hover:underline flex items-center">
                       Explore
-                      <ArrowRight size={16} className="ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:translate-x-1" strokeWidth={2} />
+                      <ArrowRight size={16} className="ml-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-2" strokeWidth={2} />
                     </span>
                   </div>
                 </Link>
@@ -250,10 +276,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 {recentPages.map((page) => {
                   const PageIcon = (page.iconName && iconMap[page.iconName]) || History;
                   return (
-                    <li key={page.id + page.lastVisited} className="py-3.5 px-2 hover:bg-slate-50/70 dark:hover:bg-slate-700/50 transition-colors duration-150">
+                    <li key={page.id + page.lastVisited} className="py-3.5 px-2 hover:bg-slate-50/70 dark:hover:bg-slate-700/50 transition-colors duration-150 rounded-lg">
                       <Link to={page.link} className="flex items-center space-x-3 group cursor-pointer">
                         <div className={`flex-shrink-0 p-2 rounded-full bg-slate-100 dark:bg-slate-700`}>
-                          <PageIcon size={20} className="text-slate-500 dark:text-slate-400 group-hover:text-green-600 dark:group-hover:text-green-400" strokeWidth={1.75} />
+                          <PageIcon size={20} className="text-slate-500 dark:text-slate-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" strokeWidth={1.75} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-green-600 dark:group-hover:text-green-400">
