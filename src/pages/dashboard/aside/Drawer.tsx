@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ChevronsLeft, Search as SearchIcon } from 'lucide-react'; 
+import { ChevronsLeft, Search as SearchIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../../app/store'; 
-import {  filterDrawerByRole } from '../../../components/drawer/drawerData'; 
+import { RootState } from '../../../app/store';
+import { filterDrawerByRole } from '../../../components/drawer/drawerData';
 
 interface DrawerProps {
   isMobileMode?: boolean;
@@ -26,14 +26,11 @@ const Drawer = ({
     if (isMobileMode && onMobileClose) {
       onMobileClose();
     }
-    // Optionally clear search term on navigation
-    // setSearchTerm('');
   };
 
-  // Memoize filtered items for performance
   const displayedItems = useMemo(() => {
-    const userRole = user.user?.role || 'guest'; // Default to a non-privileged role if undefined
-    let items = filterDrawerByRole(userRole); 
+    const userRole = user.user?.role || 'guest';
+    let items = filterDrawerByRole(userRole);
 
     if (searchTerm.trim() !== '') {
       items = items.filter(item =>
@@ -44,18 +41,14 @@ const Drawer = ({
   }, [user.user?.role, searchTerm]);
 
   useEffect(() => {
-    // Effect to close mobile drawer if window resizes to desktop width
-    // This is a fallback; usually, the parent component's conditional rendering handles this.
     const handleResize = () => {
       if (window.innerWidth >= 1024 && isMobileMode && mobileIsOpen && onMobileClose) {
-        // Consider if this is truly needed or if it causes issues with parent state.
-         onMobileClose();
+        onMobileClose();
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMode, mobileIsOpen, onMobileClose]);
-
 
   if (isMobileMode && !actualIsOpen) {
     return null;
@@ -66,7 +59,7 @@ const Drawer = ({
       {/* Overlay for Mobile Mode */}
       {isMobileMode && actualIsOpen && (
         <div
-          className="fixed inset-0 bg-black/60 dark:bg-black/70 z-20 lg:hidden backdrop-blur-sm" // Enhanced overlay
+          className="fixed inset-0 bg-black/60 dark:bg-black/70 z-20 lg:hidden backdrop-blur-sm"
           onClick={onMobileClose}
           aria-hidden="true"
         />
@@ -76,13 +69,13 @@ const Drawer = ({
       <div
         id={isMobileMode ? "app-drawer" : "desktop-sidebar"}
         className={`
-          overflow-y-hidden /* Prevent double scrollbars, inner div will scroll */
+          overflow-y-hidden
           transition-transform duration-300 ease-in-out
           bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700
-          flex flex-col /* Ensure it's a flex column */
+          flex flex-col
           ${isMobileMode
-            ? `fixed left-0 top-16 w-72 sm:w-80 h-[calc(100vh-8rem)] z-30 transform ${actualIsOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden border-r shadow-xl` // Mobile: fixed, below top-nav, above bottom-nav, added shadow
-            : `relative h-full w-64 flex-shrink-0 hidden lg:flex border-r` // Desktop: part of layout
+            ? `fixed left-0 top-16 w-72 sm:w-80 h-[calc(100vh-8rem)] z-30 transform ${actualIsOpen ? 'translate-x-0' : '-translate-x-full'} lg:hidden border-r shadow-xl`
+            : `relative h-full w-64 flex-shrink-0 hidden lg:flex border-r`
           }
         `}
         tabIndex={-1}
@@ -119,13 +112,7 @@ const Drawer = ({
               type="text"
               name="search-drawer"
               id="search-drawer"
-              className="block w-full pl-9 pr-3 py-2 text-sm rounded-md
-                         bg-white dark:bg-slate-700
-                         border border-slate-300 dark:border-slate-600
-                         text-slate-900 dark:text-slate-100
-                         placeholder-slate-400 dark:placeholder-slate-500
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                         dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full pl-9 pr-3 py-2 text-sm rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Search menu..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -135,7 +122,7 @@ const Drawer = ({
         </div>
 
         {/* Drawer Items List */}
-        <div className="flex-grow p-3 overflow-y-auto"> {/* Inner scroll for items */}
+        <div className="flex-grow p-3 overflow-y-auto">
           {displayedItems.length > 0 ? (
             <ul className="space-y-1.5 font-medium">
               {displayedItems.map((item) => {
@@ -146,7 +133,7 @@ const Drawer = ({
                     <Link
                       to={item.link}
                       onClick={handleLinkClick}
-                      className={`flex items-center p-2.5 rounded-lg transition-all duration-200 ease-in-out group
+                      className={`flex items-center p-2 rounded-lg transition-all duration-200 ease-in-out group
                         ${isActive
                           ? 'bg-blue-500 text-white dark:bg-blue-600 dark:text-white shadow-sm font-semibold'
                           : 'text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/80 hover:text-slate-900 dark:hover:text-slate-50'
@@ -154,16 +141,28 @@ const Drawer = ({
                       `}
                       aria-current={isActive ? "page" : undefined}
                     >
+                  
                       {item.icon && (
-                        <item.icon
-                          className={`w-5 h-5 mr-3 shrink-0 transition-colors duration-200
-                            ${isActive
-                              ? 'text-white dark:text-blue-100'
-                              : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                            }
+                        <div
+                          className={`
+                            w-8 h-8 mr-3 rounded-lg flex items-center justify-center shrink-0
+                            transition-all duration-200
                           `}
-                        />
+                        
+                          style={{ backgroundColor: isActive ? 'transparent' : item.iconBgColor }}
+                        >
+                          <item.icon
+                            className={`
+                              w-5 h-5 transition-colors duration-200
+                              ${isActive
+                                ? 'text-white' 
+                                : 'text-slate-800' 
+                              }
+                            `}
+                          />
+                        </div>
                       )}
+                    
                       <span className="flex-1 whitespace-nowrap text-sm">{item.name}</span>
                     </Link>
                   </li>
