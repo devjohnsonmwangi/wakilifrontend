@@ -149,7 +149,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     title: item.name,
     description: `Access your ${item.name.toLowerCase()}.`,
     icon: item.icon || Info,
-    link: `/dashboard/${item.link}`,
+    link: `/${item.link}`,
     iconBgColor: item.iconBgColor || 'bg-sky-100', // Use provided or default
     iconTextColor: 'text-sky-600', // Use provided or default
     borderColor: 'border-sky-500', // Use provided or default
