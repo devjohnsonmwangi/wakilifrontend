@@ -50,7 +50,7 @@ export const drawerData: DrawerData[] = [
     { id: 12, name: 'Branch Location', icon: MapPin, link: '/dashboard/branch', adminOnly: false, category: 'General', iconBgColor: '#D1FAE5' }, // Light Green
     { id: 8, name: 'Profile', icon: CircleUserRound, link: '/dashboard/profile', adminOnly: false, category: 'General', iconBgColor: '#E0E7FF' }, // Light Indigo
     { id: 9, name: 'System Settings', icon: SettingsIcon, link: '/dashboard/settings', adminOnly: false, category: 'General', iconBgColor: '#E5E7EB' }, // Light Gray
-    { id: 15, name: 'Logout', icon: LogOut, link: '/logout', adminOnly: false, category: 'General', iconBgColor: '#FEE2E2' }, // Light Red
+    { id: 15, name: 'Logout', icon: LogOut, link: '/dashboard/logout', adminOnly: false, category: 'General', iconBgColor: '#FEE2E2' }, // Light Red
 ];
 
 // ... (The rest of your file: filterDrawerByRole, groupDrawerItems, etc. remains the same)
