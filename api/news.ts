@@ -1,5 +1,3 @@
-// File Path: /api/news.ts
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const API_KEY = process.env.VITE_NEWS_API_KEY; 
@@ -10,17 +8,12 @@ export default async function handler(
   response: VercelResponse
 ) {
   if (!API_KEY) {
-    return response.status(500).json({ 
-      error: 'Server configuration error: API key is missing.' 
-    });
+    return response.status(500).json({ error: 'Server configuration error: API key is missing.' });
   }
-
   const { q, language, sortBy, pageSize, page } = request.query;
-
   if (!q) {
     return response.status(400).json({ error: 'Query parameter "q" is required.' });
   }
-
   try {
     const queryParams = new URLSearchParams({
       q: q as string,
@@ -29,29 +22,16 @@ export default async function handler(
       pageSize: (pageSize as string) || '20',
       page: (page as string) || '1',
     });
-
     const newsApiUrl = `${BASE_URL_EVERYTHING}?${queryParams.toString()}`;
-
-    const apiResponse = await fetch(newsApiUrl, {
-      headers: {
-        'X-Api-Key': API_KEY,
-      },
-    });
-
+    const apiResponse = await fetch(newsApiUrl, { headers: { 'X-Api-Key': API_KEY } });
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json();
-      console.error('NewsAPI Error:', errorData);
-      return response.status(apiResponse.status).json({
-        error: `Failed to fetch from NewsAPI: ${errorData.message || 'Unknown API error'}`,
-      });
+      return response.status(apiResponse.status).json({ error: `Failed to fetch from NewsAPI: ${errorData.message || 'Unknown API error'}` });
     }
-
     const newsData = await apiResponse.json();
     response.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate');
     return response.status(200).json(newsData);
-
   } catch (error) {
-    console.error('Proxy function error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown internal error occurred.';
     return response.status(500).json({ error: errorMessage });
   }

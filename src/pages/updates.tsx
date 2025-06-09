@@ -37,16 +37,10 @@ interface NewsCardProps {
 }
 // --- End TypeScript Type Definitions ---
 
-/**************************************************************************/
-/** WARNING: THIS IS THE INSECURE, FRONTEND-ONLY APPROACH                **/
-/** Your API Key is exposed here. This will work on localhost but        **/
-/** WILL FAIL with a CORS error when deployed to Vercel or any other     **/
-/** hosting platform. The serverless proxy is the correct solution.      **/
-/**************************************************************************/
-const API_KEY = '0dd6564dccaf43a486afa01c50f9bbe2';
-const BASE_URL_EVERYTHING = 'https://newsapi.org/v2/everything';
+// Constants are defined for clarity. The secret API key is NOT here.
 const PAGE_SIZE = 20;
 
+// The final, working list of news categories.
 const NEWS_CATEGORIES: Category[] = [
   { id: 'world_legal', name: 'World Law', Icon: Scale, query: '"international law" OR "human rights law" OR "global legal"', useEverythingAPI: true },
   { id: 'world_politics', name: 'World Politics', Icon: Globe, query: '"global politics" OR "international relations" OR diplomacy', useEverythingAPI: true },
@@ -127,11 +121,6 @@ const LegalNewsSection: FC = () => {
   const [isLoadMoreLoading, setIsLoadMoreLoading] = useState<Record<string, boolean>>({});
 
   const fetchNews = useCallback(async (category: Category, page: number) => {
-    if (!API_KEY) {
-      setError(prev => ({ ...prev, [category.id]: "Configuration Error: API key is missing." }));
-      return;
-    }
-
     if (page === 1) setLoading(prev => ({ ...prev, [category.id]: true }));
     else setIsLoadMoreLoading(prev => ({ ...prev, [category.id]: true }));
     setError(prev => ({ ...prev, [category.id]: null }));
@@ -144,31 +133,25 @@ const LegalNewsSection: FC = () => {
       page: page.toString(),
     });
 
-    const fullUrl = `${BASE_URL_EVERYTHING}?${queryParams.toString()}`;
+    // The URL now points to our own secure serverless function. No more CORS errors!
+    const proxyUrl = `/api/news?${queryParams.toString()}`;
 
     try {
-      // THIS IS THE DIRECT, INSECURE CALL THAT WILL CAUSE CORS ERRORS IN PRODUCTION
-      const response = await fetch(fullUrl, { headers: { 'X-Api-Key': API_KEY } });
-      
-      if (!response.ok) {
-        // This is where the CORS error will be caught in production.
-        // It will throw a generic network error, not a helpful JSON message.
-        const errorData = await response.json();
-        throw new Error(`API Error (Status ${response.status}): ${errorData.message || 'An unknown API error.'}`);
-      }
-
+      // No headers with API keys are needed here in the frontend. It's safe!
+      const response = await fetch(proxyUrl);
       const data = await response.json();
-      if (data.status === "error") {
-        throw new Error(`API Error: ${data.message || 'An error occurred.'}`);
+
+      if (!response.ok) {
+        // Our serverless function sends back a helpful error message in the `error` property.
+        throw new Error(data.error || `Request failed with status ${response.status}`);
       }
       
       setNews(prev => ({ ...prev, [category.id]: page === 1 ? data.articles || [] : [...(prev[category.id] || []), ...(data.articles || [])] }));
       setTotalResults(prev => ({ ...prev, [category.id]: data.totalResults || 0 }));
       setCurrentPage(prev => ({ ...prev, [category.id]: page }));
     } catch (err) {
-      // The error message in production will likely be "Failed to fetch" due to the CORS policy.
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(prev => ({ ...prev, [category.id]: `Could not load news. Check browser console for CORS errors. ${errorMessage}` }));
+      setError(prev => ({ ...prev, [category.id]: `Could not load news. ${errorMessage}` }));
     } finally {
       if (page === 1) setLoading(prev => ({ ...prev, [category.id]: false }));
       else setIsLoadMoreLoading(prev => ({ ...prev, [category.id]: false }));
