@@ -1,3 +1,4 @@
+// File: /tsconfig.json
 {
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
