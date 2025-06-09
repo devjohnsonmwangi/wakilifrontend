@@ -1,7 +1,0 @@
-{
-    "functions": {
-      "api/news.ts": {
-        "runtime": "nodejs18.x"
-      }
-    }
-  }

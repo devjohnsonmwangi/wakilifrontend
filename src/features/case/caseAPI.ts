@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; // Ensure this path is correct
 
 // --- Enums
-export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'tribunal' | 'conveyances';
+export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'Tribunal' | 'conveyances'|'succession';
 export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolved";
 export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; //  'partially_paid' is valid in backend schema
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"; // For paymentTable

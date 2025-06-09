@@ -19,7 +19,9 @@ import { appointmentAPI } from "../features/appointment/appointmentapi";
 import { loginAPI } from "../features/login/loginAPI";
 import { teamApi } from "../features/team/teamApi";
 import { chatsAPI } from "../features/chats/chatsAPI";
-import { notificationsAPI } from "../features/notifications/notificationAPI"; // <<< 1. IMPORT the new notifications API
+import { notificationsAPI } from "../features/notifications/notificationAPI"; 
+//import   news  api
+import {newsApi}  from   "../features/news/newsAPI";
 
 
 import userReducer from "../features/users/userSlice";
@@ -50,6 +52,7 @@ const rootReducer = combineReducers({
     [loginAPI.reducerPath]: loginAPI.reducer,
     [chatsAPI.reducerPath]: chatsAPI.reducer,
     [notificationsAPI.reducerPath]: notificationsAPI.reducer, // <<< 2. ADD the new notifications reducer
+    [newsApi.reducerPath]: newsApi.reducer, 
 
     // Regular Reducers
     user: userReducer,
@@ -69,6 +72,7 @@ export const store = configureStore({
             },
         }).concat(
             // Concatenate all API middlewares
+            newsApi.middleware,
             usersAPI.middleware,
             caseAndPaymentAPI.middleware,
             paymentAPI.middleware,

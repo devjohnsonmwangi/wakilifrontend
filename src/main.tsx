@@ -26,7 +26,7 @@ import HowItWorks from './pages/HowItWorks.tsx';
 import Contactus from './pages/contact.tsx';
 import About from './pages/landingPage/About.tsx';
 import Services from './pages/landingPage/Services.tsx';
-import LegalNewsSection from './pages/updates.tsx';
+import  LegalNewsSection from './pages/updates.tsx';
 import TermsAndServicesPage from './pages/terms.tsx';
 import PrivacyPolicyPage from './pages/privacypolicy.tsx';
 import CookiePolicyPage from './pages/cookies.tsx';
@@ -82,7 +82,7 @@ const router = createBrowserRouter([
   { path: 'privacy-policy', element: <PrivacyPolicyPage />, errorElement: <Error /> },
   { path: 'terms', element: <TermsAndServicesPage />, errorElement: <Error /> },
   { path: 'cookies', element: <CookiePolicyPage />, errorElement: <Error /> },
-  { path: 'updates', element: <LegalNewsSection />, errorElement: <Error /> },
+  { path: 'updates', element: < LegalNewsSection />, errorElement: <Error /> },
 
   // Dashboard nested routes
   {
