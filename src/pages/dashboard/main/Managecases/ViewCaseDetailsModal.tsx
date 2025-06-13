@@ -3,8 +3,15 @@ import { CaseDataTypes } from "../../../../features/case/caseAPI"; // Ensure thi
 import { CaseProgressModal } from './progress'; // Adjust this path to your component's location
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+
+// --- NEW: Import the separate modal for viewing documents ---
+// NOTE: You must create this 'CaseDocumentsModal.tsx' file. Adjust path if needed.
+import { CaseDocumentsModal } from '../managedocs/singlecasedoc';
+
 import {
-    X, Briefcase, Mail, Phone, Tag, BarChart3, Hash, FileText, Scale, University, Building, Users, CircleDollarSign, CreditCard, UserCheck, History // Added History icon
+    X, Briefcase, Mail, Phone, Tag, BarChart3, Hash, FileText, Scale, University, 
+    Building, Users, CircleDollarSign, CreditCard, UserCheck, History,
+    Paperclip // Icon for the new section
 } from "lucide-react";
 
 interface ViewCaseDetailsModalProps {
@@ -42,9 +49,11 @@ const DetailItem: React.FC<{ label: string; value: React.ReactNode; icon: React.
     </div>
 );
 
-const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCase, closeModal }) => {
-    // --- State for controlling the progress modal ---
+// The props passed into the component are destructured here
+const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCase, closeModal, currentUserRole, isDarkMode }) => {
+    // --- State for controlling modals ---
     const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+    const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false); // State for the new documents modal
 
     useEffect(() => {
         if (selectedCase) {
@@ -111,7 +120,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                     onClick={(e) => e.stopPropagation()}
                 >
                     <header className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-                        {/* Header content... */}
+                        {/* Header content... (Unchanged) */}
                         <div className="flex items-center">
                             <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 mr-3 sm:mr-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 dark:from-sky-500 dark:to-indigo-600">
                                 <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -135,7 +144,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                     </header>
 
                     <div className="p-5 sm:p-6 overflow-y-auto flex-grow styled-scrollbar space-y-6">
-                        {/* All existing sections... */}
+                        {/* All existing sections are untouched */}
                         <section>
                             <h3 className="text-md font-semibold text-blue-700 dark:text-sky-400 mb-3 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center">
                                 <UserCheck size={18} className="mr-2" /> Client Information
@@ -161,13 +170,10 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
 
                         {selectedCase.assignees && selectedCase.assignees.length > 0 && (
                             <section>
-                                {/* Assigned Staff section... */}
+                                {/* Assigned Staff section... (Unchanged) */}
                             </section>
                         )}
                         
-                        {/* ========================================================== */}
-                        {/* === NEW SECTION FOR CASE PROGRESS ======================== */}
-                        {/* ========================================================== */}
                         <section>
                             <h3 className="text-md font-semibold text-blue-700 dark:text-sky-400 mb-3 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center">
                                 <History size={18} className="mr-2" /> Case Timeline & Progress
@@ -183,6 +189,28 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                                             transition-colors flex items-center"
                                 >
                                     Manage Progress
+                                </button>
+                            </div>
+                        </section>
+
+                        {/* ========================================================== */}
+                        {/* === NEW SECTION FOR CASE DOCUMENTS ===================== */}
+                        {/* ========================================================== */}
+                        <section>
+                            <h3 className="text-md font-semibold text-blue-700 dark:text-sky-400 mb-3 border-b pb-2 border-slate-200 dark:border-slate-700 flex items-center">
+                                <Paperclip size={18} className="mr-2" /> Case Documents
+                            </h3>
+                            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg flex items-center justify-between flex-wrap gap-2">
+                                <p className="text-sm text-slate-600 dark:text-slate-300 flex-grow">
+                                    View or manage all documents associated with this case.
+                                </p>
+                                <button
+                                    onClick={() => setIsDocumentsModalOpen(true)}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white text-sm font-semibold rounded-lg shadow-sm
+                                            focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:ring-opacity-75
+                                            transition-colors flex items-center"
+                                >
+                                    Manage Documents
                                 </button>
                             </div>
                         </section>
@@ -211,7 +239,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                     </div>
 
                     <footer className="flex justify-end p-4 sm:p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0 rounded-b-xl">
-                        {/* Footer content... */}
+                        {/* Footer content... (Unchanged) */}
                         <motion.button
                             className="px-5 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-sky-600 dark:hover:bg-sky-700 text-white text-sm font-semibold rounded-lg shadow-md
                                     focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:ring-opacity-75
@@ -226,13 +254,25 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                 </motion.div>
             </motion.div>
 
-            {/* --- Conditionally render the Case Progress Modal --- */}
+            {/* --- Conditionally render the Case Progress Modal (Unchanged) --- */}
             {isProgressModalOpen && (
                 <CaseProgressModal
                     isOpen={isProgressModalOpen}
                     onClose={() => setIsProgressModalOpen(false)}
                     caseId={selectedCase.case_id}
                     caseNumber={selectedCase.case_number}
+                />
+            )}
+
+            {/* --- NEW: Conditionally render the Case Documents Modal --- */}
+            {isDocumentsModalOpen && (
+                <CaseDocumentsModal
+                    isOpen={isDocumentsModalOpen}
+                    onClose={() => setIsDocumentsModalOpen(false)}
+                    caseId={selectedCase.case_id}
+                    // Pass other props if the document modal needs them
+                    isDarkMode={isDarkMode}
+                    currentUserRole={currentUserRole ?? ""}
                 />
             )}
         </>

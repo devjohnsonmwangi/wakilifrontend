@@ -1,137 +1,292 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
+
+// --- API and Type Imports ---
 import {
     useFetchCaseDocumentsByCaseIdQuery,
-
-    CaseDocument,
+    useCreateCaseDocumentMutation, 
+    useDeleteCaseDocumentMutation, // Import the delete mutation
+    
 } from "../../../../features/casedocument/casedocmentapi";
-import DeleteCaseForm from './deleteCaseForm'; // Assuming this is in a reusable location
 
-// --- Reusable Icons (copied from DocumentList for self-containment) ---
-const DocumentTextIcon = ({ className = "w-5 h-5" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h4.5m-4.5 0H5.625c-.621 0-1.125.504-1.125 1.125v2.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg> );
-const CalendarDaysIcon = ({ className = "w-5 h-5" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-3.75h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" /></svg> );
-const AdjustmentsHorizontalIcon = ({ className = "w-5 h-5" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" /></svg> );
-const ExternalLinkIcon = ({ className = "w-4 h-4" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg> );
-const PencilSquareIcon = ({ className = "w-4 h-4" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg> );
-const TrashIcon = ({ className = "w-4 h-4" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12.56 0c-.245.035-.484.076-.72.125m12.072 0M15.36 5.79H8.64m6.72 0V3.122A2.25 2.25 0 0 0 13.122.87H10.88c-.799 0-1.473.447-1.865 1.104l-.5 1.177M15.36 5.79H8.64" /></svg> );
-const ExclamationTriangleIcon = ({ className = "w-6 h-6" }: { className?: string }) => ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg> );
+// --- Icon Imports ---
+import { 
+    X, FileText, CalendarDays, Settings, ExternalLink, Trash2, Loader, 
+    AlertTriangle, FolderOpen, UploadCloud, XCircle
+} from 'lucide-react';
 
-// Note: Modal component and getStructuredErrorMessage are assumed to be available from a shared utility file.
-// If not, they would need to be defined here or imported.
-
-interface CaseDocumentsViewerProps {
+interface CaseDocumentsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
     caseId: number;
+    currentUserRole?: string;
     isDarkMode?: boolean;
 }
 
-const CaseDocumentsViewer: React.FC<CaseDocumentsViewerProps> = ({ caseId, isDarkMode }) => {
-    // Fetch documents for the specific case ID
-    const { data: documents, isLoading, error, refetch } = useFetchCaseDocumentsByCaseIdQuery(caseId);
+export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, onClose, caseId, currentUserRole, isDarkMode }) => {
     
-    // Mutations for deleting
-    const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    // --- Data Fetching & Mutation Hooks ---
+    const { data: documents, isLoading, error, refetch } = useFetchCaseDocumentsByCaseIdQuery(caseId);
+    const [uploadDocument, { isLoading: isUploading }] = useCreateCaseDocumentMutation();
+    const [deleteDocument, { isLoading: isDeleting }] = useDeleteCaseDocumentMutation();
 
+    // --- Local State ---
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+    const [dragActive, setDragActive] = useState(false);
+    const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    // --- Permissions ---
+    const isReadOnlyUser = currentUserRole === 'client' || currentUserRole === 'user';
+
+    // --- Event Handlers ---
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setFileToUpload(e.dataTransfer.files[0]);
+        }
+    };
+    
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFileToUpload(e.target.files[0]);
+        }
+    };
+
+    const handleFileUpload = async () => {
+        if (!fileToUpload) {
+            toast.error("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        // Construct the FormData to match the backend's requirements
+        formData.append("case_id", String(caseId));
+        formData.append("document_name", fileToUpload.name);
+        formData.append("file", fileToUpload); // The key is 'file'
+
+        toast.loading("Uploading document...");
+
+        try {
+            await uploadDocument(formData).unwrap();
+            toast.dismiss();
+            toast.success("Document uploaded successfully!");
+            setFileToUpload(null);
+            // RTK Query tags will auto-refetch the list
+        } catch (err) {
+            toast.dismiss();
+            toast.error("Upload failed. Please try again.");
+            console.error("Upload error:", err);
+        }
+    };
+    
     const handleDownload = (document_url: string) => {
         window.open(document_url, '_blank');
+        toast.success("Document opened in a new tab.");
     };
 
-    const openDeleteModal = (document_id: number) => {
-        setSelectedDocumentId(document_id);
-        setIsDeleteModalOpen(true);
+    const handleDelete = async () => {
+        if (!confirmDeleteId) return;
+
+        toast.loading("Deleting document...");
+
+        try {
+            await deleteDocument(confirmDeleteId).unwrap();
+            toast.dismiss();
+            toast.success("Document deleted successfully.");
+            // RTK Query tags will auto-refetch the list
+        } catch (err) {
+            toast.dismiss();
+            toast.error("Failed to delete document.");
+            console.error("Delete error:", err);
+        } finally {
+            setConfirmDeleteId(null); // Close the confirmation dialog
+        }
     };
-    
-    // We can add Update functionality later if needed, keeping it simple for now.
-    const handleUpdate = (doc: CaseDocument) => {
-        toast.info(`Update functionality for "${doc.document_name}" can be implemented here.`);
-        // To implement fully, you'd open a modal similar to DocumentList
-    };
 
-    const tableHeaders = [
-        { text: "Document Name", icon: DocumentTextIcon },
-        { text: "Last Updated", icon: CalendarDaysIcon },
-        { text: "Actions", icon: AdjustmentsHorizontalIcon }
-    ];
+    // --- Main Content Rendering Logic ---
+    const renderContent = () => {
+        if (isLoading) {
+            return (
+                <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                    <Loader className="w-10 h-10 animate-spin text-blue-500" />
+                    <p className="mt-3 text-lg font-semibold">Loading Documents...</p>
+                </div>
+            );
+        }
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center py-8 text-slate-500 dark:text-slate-400">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
-                Loading Documents...
-            </div>
-        );
-    }
+        if (error) {
+            if ('status' in error && error.status === 404) {
+                 return (
+                    <div className="text-center py-16">
+                        <FolderOpen className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500" />
+                        <p className="mt-4 text-lg font-semibold text-slate-600 dark:text-slate-300">No Documents Found</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Be the first to upload a document for this case.</p>
+                    </div>
+                );
+            }
+            return (
+                <div className="p-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-center">
+                    <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+                    <p className="text-lg font-semibold text-red-800 dark:text-red-200">Something went wrong</p>
+                    <p className="text-sm text-red-600 dark:text-red-300 mb-4">You might be offline. Please check your connection.</p>
+                    <button onClick={() => refetch()} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-semibold">
+                        Try Again
+                    </button>
+                </div>
+            );
+        }
 
-    if (error) {
-        return (
-            <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-center">
-                <ExclamationTriangleIcon className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                <p className="text-red-700 dark:text-red-300 font-semibold">Failed to load documents.</p>
-                <button onClick={() => refetch()} className="mt-2 text-sm text-blue-600 dark:text-sky-500 hover:underline">Try Again</button>
-            </div>
-        );
-    }
-
-    return (
-        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-lg">
-            <Toaster position="bottom-right" richColors theme={isDarkMode ? "dark" : "light"} />
-            
-            {documents && documents.length > 0 ? (
+        if (documents && documents.length > 0) {
+            return (
                 <div className="overflow-x-auto">
                     <table className="min-w-full leading-normal">
-                        <thead>
-                            <tr>
-                                {tableHeaders.map(header => (
-                                    <th key={header.text} className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-600 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                                        <div className="flex items-center">
-                                            <header.icon className="mr-2 opacity-80" />
-                                            {header.text}
-                                        </div>
-                                    </th>
-                                ))}
+                        <thead><tr>
+                            <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-slate-700 text-left text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase tracking-wider whitespace-nowrap"><FileText size={14} className="inline mr-2"/>Document Name</th>
+                            <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-slate-700 text-left text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase tracking-wider whitespace-nowrap"><CalendarDays size={14} className="inline mr-2"/>Last Updated</th>
+                            <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700 bg-blue-50 dark:bg-slate-700 text-left text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase tracking-wider whitespace-nowrap"><Settings size={14} className="inline mr-2"/>Actions</th>
+                        </tr></thead>
+                        <tbody>{documents.map(doc => (
+                           <tr key={doc.document_id} className="hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors duration-150">
+                                <td className="px-4 py-3 border-b border-slate-200 dark:border-slate-600 text-sm"><p className="text-slate-900 dark:text-slate-100 font-medium truncate" title={doc.document_name}>{doc.document_name}</p></td>
+                                <td className="px-4 py-3 border-b border-slate-200 dark:border-slate-600 text-sm"><p className="text-slate-600 dark:text-slate-300 whitespace-nowrap">{new Date(doc.updated_at).toLocaleDateString()}</p></td>
+                                <td className="px-4 py-3 border-b border-slate-200 dark:border-slate-600 text-sm">
+                                    <div className="flex items-center space-x-1">
+                                        <button onClick={() => handleDownload(doc.document_url)} title="Open Document" className="p-1.5 rounded text-sky-600 hover:bg-sky-100 dark:text-sky-400 dark:hover:bg-sky-900/50 transition-colors"><ExternalLink size={16} /></button>
+                                        {!isReadOnlyUser && (
+                                            <button onClick={() => setConfirmDeleteId(doc.document_id)} title="Delete Document" className="p-1.5 rounded text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"><Trash2 size={16} /></button>
+                                        )}
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {documents.map(doc => (
-                                <tr key={doc.document_id} className="hover:bg-slate-100 dark:hover:bg-slate-700/70 transition-colors duration-150 border-b border-slate-200 dark:border-slate-600 last:border-b-0">
-                                    <td className="px-4 py-3 text-sm">
-                                        <p className="text-slate-900 dark:text-slate-100 font-medium truncate" title={doc.document_name}>
-                                            {doc.document_name}
-                                        </p>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm">
-                                        <p className="text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                            {new Date(doc.updated_at).toLocaleDateString()}
-                                        </p>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <button onClick={() => handleDownload(doc.document_url)} title="Open Document" className="p-1.5 rounded text-sky-600 hover:bg-sky-100 dark:text-sky-400 dark:hover:bg-sky-900/50 transition-colors"><ExternalLinkIcon className="w-4 h-4" /></button>
-                                            <button onClick={() => handleUpdate(doc)} title="Update Document" className="p-1.5 rounded text-amber-600 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/50 transition-colors"><PencilSquareIcon className="w-4 h-4" /></button>
-                                            <button onClick={() => openDeleteModal(doc.document_id)} title="Delete Document" className="p-1.5 rounded text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"><TrashIcon className="w-4 h-4" /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
+                        ))}</tbody>
                     </table>
                 </div>
-            ) : (
-                <div className="text-center py-6">
-                    <p className="text-slate-500 dark:text-slate-400">No documents are currently associated with this case.</p>
+            );
+        }
+        
+        return (
+            <div className="text-center py-16">
+                 <FolderOpen className="w-16 h-16 mx-auto text-slate-400 dark:text-slate-500" />
+                 <p className="mt-4 text-lg font-semibold text-slate-600 dark:text-slate-300">No Documents Found</p>
+                 <p className="text-sm text-slate-500 dark:text-slate-400">There are no documents currently associated with this case.</p>
+            </div>
+        );
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <>
+            <Toaster position="bottom-right" richColors theme={isDarkMode ? "dark" : "light"} />
+            <motion.div
+                className="fixed inset-0 z-[101] bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full flex items-start sm:items-center justify-center p-4 pt-16 sm:pt-4"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+            >
+                <motion.div
+                    className="relative w-[95vw] sm:w-full max-w-4xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col"
+                    initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
+                >
+                    <header className="p-5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+                        <div className="flex items-center justify-between mb-4">
+                             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center">
+                                <FileText size={22} className="mr-3 text-blue-600 dark:text-sky-500" />
+                                Case Documents
+                            </h2>
+                            <button onClick={onClose} title="Close" className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {!isReadOnlyUser && (
+                            <div onDragEnter={handleDrag}>
+                                <input ref={fileInputRef} type="file" id="file-upload-input" className="hidden" onChange={handleFileChange} />
+                                { !fileToUpload ? (
+                                    <label 
+                                        htmlFor="file-upload-input"
+                                        className={`relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors
+                                            ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                    >
+                                        <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
+                                        <span className="font-semibold text-slate-600 dark:text-slate-300">Click to upload or drag and drop</span>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">PDF, DOCX, PNG, or JPG</span>
+                                        {dragActive && <div className="absolute inset-0 w-full h-full" onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}></div>}
+                                    </label>
+                                ) : (
+                                    <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <FileText className="w-5 h-5 text-slate-500 flex-shrink-0"/>
+                                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">{fileToUpload.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                             <button 
+                                                onClick={handleFileUpload}
+                                                disabled={isUploading}
+                                                className="px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold text-xs disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center"
+                                            >
+                                                {isUploading && <Loader className="w-4 h-4 mr-2 animate-spin"/>}
+                                                {isUploading ? 'Uploading...' : 'Upload'}
+                                            </button>
+                                            <button onClick={() => setFileToUpload(null)} title="Clear selection" className="p-1 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600">
+                                                <XCircle className="w-5 h-5"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </header>
+                    
+                    <div className="p-5 overflow-y-auto flex-grow styled-scrollbar">
+                        {renderContent()}
+                    </div>
+                </motion.div>
+            </motion.div>
+
+            {confirmDeleteId && (
+                <div className="fixed inset-0 z-[102] bg-black/60 flex items-center justify-center p-4" onClick={() => setConfirmDeleteId(null)}>
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full" onClick={e => e.stopPropagation()}>
+                        <div className="text-center">
+                            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Confirm Deletion</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                                Are you sure you want to permanently delete this document? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="mt-6 flex justify-end space-x-3">
+                            <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                disabled={isDeleting}
+                                className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-200 dark:bg-slate-600 dark:text-slate-200 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={isDeleting}
+                                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed flex items-center"
+                            >
+                                {isDeleting && <Loader className="w-4 h-4 mr-2 animate-spin"/>}
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
-            
-            {/* The Delete Modal - This assumes a generic Modal wrapper and DeleteCaseForm component exist */}
-            {isDeleteModalOpen && (
-                 <DeleteCaseForm
-                    caseItem={documents?.find((doc: CaseDocument) => doc.document_id === selectedDocumentId) || null}
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    refetch={refetch}
-                />
-            )}
-        </div>
+        </>
     );
 };
-
-export default CaseDocumentsViewer;
