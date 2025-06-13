@@ -10,7 +10,7 @@ const NotificationBell = () => {
     pollingInterval: 1000, 
   });
 
-  const unreadCount = data?.count || 0;
+  const unreadCount = data?.unreadCount || 0;
 
   return (
     <Link to="/notifications" className="relative p-2 rounded-full text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700">

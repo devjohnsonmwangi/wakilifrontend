@@ -79,6 +79,38 @@ export interface PaymentDataTypes {
   updated_at: string;
 }
 
+// ============================================
+//         START: NEW TYPES FOR CASE PROGRESS
+// ============================================
+
+export interface CaseProgressData {
+    progress_id: number;
+    case_id: number;
+    updated_by_user_id: number | null;
+    title: string;
+    details: string | null;
+    created_at: string;
+    updater?: Partial<UserDataType> | null; // User details if fetched
+}
+
+export interface CreateCaseProgressPayload {
+    caseId: number; // Used for the URL
+    title: string;
+    details?: string;
+    updated_by_user_id?: number; // The user recording the progress
+}
+
+export interface UpdateCaseProgressPayload {
+    progressId: number; // Used for the URL
+    caseId: number;     // Needed to invalidate the correct list cache
+    title?: string;
+    details?: string;
+}
+
+// ============================================
+//         END: NEW TYPES FOR CASE PROGRESS
+// ============================================
+
 // --- API Response Types for Mutations ---
 export interface BackendCaseResponse { // For single case responses
     msg?: string;
@@ -90,7 +122,6 @@ export interface BackendAssignmentResponse {
     assignment: CaseAssigneeData;
 }
 
-
 export interface BackendSuccessMessage {
     msg: string;
 }
@@ -100,7 +131,8 @@ export const caseAndPaymentAPI = createApi({
   reducerPath: "caseAndPaymentAPI",
   baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
   refetchOnReconnect: true,
-  tagTypes: ["Cases", "Payments", "CaseAssignments"],
+  // ADDED 'CaseProgress' to tagTypes
+  tagTypes: ["Cases", "Payments", "CaseAssignments", "CaseProgress"], 
   endpoints: (builder) => ({
     // ** Case Endpoints **
     fetchCases: builder.query<CaseDataTypes[], { includeDetails?: boolean } | void>({
@@ -117,7 +149,6 @@ export const caseAndPaymentAPI = createApi({
       query: (case_id) => `cases/${case_id}`,
       providesTags: (_result,_error, case_id) => [{ type: 'Cases', id: case_id }],
     }),
-    // Renamed and updated to match new backend route and params
     getCasesByClientOwner: builder.query<CaseDataTypes[], { userId: number, includeAssignees?: boolean }>({
       query: ({ userId, includeAssignees }) =>
         `cases/client/${userId}${includeAssignees !== undefined ? `?includeAssignees=${includeAssignees}` : ''}`,
@@ -125,12 +156,11 @@ export const caseAndPaymentAPI = createApi({
         result
           ? [
               ...result.map(({ case_id }) => ({ type: 'Cases' as const, id: case_id })),
-              { type: 'Cases', id: `CLIENT_LIST_${userId}` }, // Specific tag for this client's list
+              { type: 'Cases', id: `CLIENT_LIST_${userId}` }, 
               { type: 'Cases', id: 'LIST' },
             ]
           : [{ type: 'Cases', id: `CLIENT_LIST_${userId}` }, { type: 'Cases', id: 'LIST' }],
     }),
-    // New: Get cases assigned to a specific staff member
     getCasesByAssignedStaff: builder.query<CaseDataTypes[], number>({
         query: (staffId) => `cases/staff/${staffId}`,
         providesTags: (result, _error, staffId) =>
@@ -138,14 +168,12 @@ export const caseAndPaymentAPI = createApi({
             ? [
                 ...result.map(({ case_id }) => ({ type: 'Cases' as const, id: case_id })),
                 { type: 'Cases', id: `STAFF_LIST_${staffId}` },
-                { type: 'Cases', id: 'LIST' }, // Also invalidates general list
+                { type: 'Cases', id: 'LIST' }, 
             ]
             : [{ type: 'Cases', id: `STAFF_LIST_${staffId}` }, { type: 'Cases', id: 'LIST' }],
     }),
-    // New: Get case by payment ID
     getCaseByPayment: builder.query<CaseDataTypes, number>({
         query: (paymentId) => `cases/payment/${paymentId}`,
-        // This  provide the case tag, or a more specific tag if needed
         providesTags: (result) => result ? [{ type: 'Cases', id: result.case_id }] : [],
     }),
     createCase: builder.mutation<CaseDataTypes, CreateCasePayload>({
@@ -164,23 +192,7 @@ export const caseAndPaymentAPI = createApi({
         body: rest,
       }),
       transformResponse: (response: BackendCaseResponse) => response.case,
-      async onQueryStarted({ case_id, ...patch }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          caseAndPaymentAPI.util.updateQueryData('getCaseById', case_id, (draft) => {
-            Object.assign(draft, patch); // Optimistically apply non-nested updates
-            
-          })
-        );
-        try {
-          await queryFulfilled;
-          // If successful, the cache is already updated by queryFulfilled if transformResponse returns the case
-          // But LIST still needs invalidation for any sorting/filtering changes
-          dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }, { type: 'Cases', id: case_id }]));
-        } catch {
-          patchResult.undo();
-          dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }]));
-        }
-      }
+      invalidatesTags: (result) => result ? [{ type: 'Cases', id: result.case_id }, { type: 'Cases', id: 'LIST' }] : [],
     }),
     deleteCase: builder.mutation<{ success: boolean; case_id: number; msg: string }, number>({
       query: (case_id) => ({
@@ -195,54 +207,39 @@ export const caseAndPaymentAPI = createApi({
       invalidatesTags: (_result, _error, case_id) => [
           { type: 'Cases', id: case_id },
           { type: 'Cases', id: 'LIST' },
-          { type: 'CaseAssignments', id: `CASE_${case_id}` } // Invalidate assignments for this case
+          { type: 'CaseAssignments', id: `CASE_${case_id}` } 
         ],
     }),
     triggerCaseBalanceUpdate: builder.mutation<CaseDataTypes, number>({
         query: (case_id) => ({
-            url: `cases/${case_id}/recalculate-balance`, // Corrected Hono route
-            method: 'POST', // As per Hono router
+            url: `cases/${case_id}/recalculate-balance`, 
+            method: 'POST', 
         }),
         transformResponse: (response: BackendCaseResponse) => response.case,
-        async onQueryStarted(case_id, { dispatch, queryFulfilled }) {
-            try {
-                const { data: updatedCase } = await queryFulfilled;
-                dispatch(
-                    caseAndPaymentAPI.util.updateQueryData('getCaseById', case_id, (draft) => {
-                        Object.assign(draft, updatedCase);
-                    })
-                );
-                // Potentially invalidate lists if balance/status affects sorting/filtering
-                dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: 'LIST' }]));
-            } catch {
-                dispatch(caseAndPaymentAPI.util.invalidateTags([{ type: 'Cases', id: case_id }, { type: 'Cases', id: 'LIST' }]));
-            }
-        }
+        invalidatesTags: (result) => result ? [{ type: 'Cases', id: result.case_id }, { type: 'Cases', id: 'LIST' }] : [],
     }),
 
     // ** Case Assignment Endpoints **
     getAssignedStaffForCase: builder.query<(UserDataType & { assigned_at: string })[], number>({
         query: (caseId) => `cases/${caseId}/assigned-staff`,
         providesTags: (_result, _error, caseId) => [{ type: 'CaseAssignments', id: `CASE_${caseId}` }],
-        // transformResponse might be needed if backend wraps in 'staff':
-        // transformResponse: (response: BackendStaffListResponse) => response.staff,
     }),
     assignStaffToCase: builder.mutation<CaseAssigneeData, { caseId: number, staffUserId: number }>({
         query: ({ caseId, staffUserId }) => ({
             url: `cases/${caseId}/assign-staff`,
             method: 'POST',
-            body: { staff_user_id: staffUserId }, // Backend expects staff_user_id in body
+            body: { staff_user_id: staffUserId }, 
         }),
         transformResponse: (response: BackendAssignmentResponse) => response.assignment,
         invalidatesTags: (_result, _error, { caseId }) => [
-            { type: 'Cases', id: caseId }, // To update the case's assignee list
-            { type: 'CaseAssignments', id: `CASE_${caseId}` }, // Specific tag for this case's assignments
-            { type: 'Cases', id: 'LIST' } // General list if assignees shown there
+            { type: 'Cases', id: caseId }, 
+            { type: 'CaseAssignments', id: `CASE_${caseId}` }, 
+            { type: 'Cases', id: 'LIST' }
         ],
     }),
     unassignStaffFromCase: builder.mutation<BackendSuccessMessage, { caseId: number, staffId: number }>({
         query: ({ caseId, staffId }) => ({
-            url: `cases/${caseId}/assign-staff/${staffId}`, // staffId in URL
+            url: `cases/${caseId}/assign-staff/${staffId}`, 
             method: 'DELETE',
         }),
         invalidatesTags: (_result, _error, { caseId }) => [
@@ -252,7 +249,55 @@ export const caseAndPaymentAPI = createApi({
         ],
     }),
 
-    // ** Payment Endpoints ** (Assuming structure is mostly fine)
+    // ============================================
+    //         START: NEW CASE PROGRESS ENDPOINTS
+    // ============================================
+    getCaseProgressForCase: builder.query<CaseProgressData[], number>({
+        query: (caseId) => `cases/${caseId}/progress`,
+        providesTags: (result, _error, caseId) =>
+            result
+            ? [
+                ...result.map(({ progress_id }) => ({ type: 'CaseProgress' as const, id: progress_id })),
+                { type: 'CaseProgress', id: `LIST_FOR_CASE_${caseId}` },
+              ]
+            : [{ type: 'CaseProgress', id: `LIST_FOR_CASE_${caseId}` }],
+    }),
+    createCaseProgressRecord: builder.mutation<CaseProgressData, CreateCaseProgressPayload>({
+        query: ({ caseId, ...body }) => ({
+            url: `cases/${caseId}/progress`,
+            method: 'POST',
+            body: body,
+        }),
+        invalidatesTags: (_result, _error, { caseId }) => [{ type: 'CaseProgress', id: `LIST_FOR_CASE_${caseId}` }],
+    }),
+    updateCaseProgressRecord: builder.mutation<CaseProgressData, UpdateCaseProgressPayload>({
+        query: ({ progressId, ...body }) => ({
+            url: `progress/${progressId}`,
+            method: 'PUT',
+            body: { title: body.title, details: body.details }, // Only send updatable fields
+        }),
+        invalidatesTags: (_result, _error, { progressId, caseId }) => [
+            { type: 'CaseProgress', id: progressId },
+            { type: 'CaseProgress', id: `LIST_FOR_CASE_${caseId}` }
+        ],
+    }),
+    deleteCaseProgressRecord: builder.mutation<{ success: boolean; progressId: number }, { progressId: number, caseId: number }>({
+        query: ({ progressId }) => ({
+            url: `progress/${progressId}`,
+            method: 'DELETE',
+        }),
+        transformResponse: (_response, _meta, arg) => ({
+            success: true,
+            progressId: arg.progressId
+        }),
+        invalidatesTags: (_result, _error, { progressId, caseId }) => [
+            { type: 'CaseProgress', id: progressId },
+            { type: 'CaseProgress', id: `LIST_FOR_CASE_${caseId}` }
+        ],
+    }),
+ 
+
+    // ** Payment Endpoints ** 
     fetchPayments: builder.query<PaymentDataTypes[], void>({
       query: () => "payments",
       providesTags: (result) => result ? [...result.map(({ payment_id }) => ({type: 'Payments' as const, id: payment_id})), {type: 'Payments', id: 'LIST'}] : [{type: 'Payments', id: 'LIST'}],
@@ -267,7 +312,11 @@ export const caseAndPaymentAPI = createApi({
         method: "POST",
         body: newPayment,
       }),
-      invalidatesTags: [{type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}], // Payment affects cases
+      invalidatesTags: (_result, _error, {case_id}) => [
+        {type: 'Payments', id: 'LIST'}, 
+        {type: 'Cases', id: case_id}, // Invalidate the specific case
+        {type: 'Cases', id: 'LIST'} // And the list
+      ],
     }),
     updatePayment: builder.mutation<PaymentDataTypes, Partial<PaymentDataTypes & { payment_id: number }>>({
       query: ({ payment_id, ...rest }) => ({
@@ -275,7 +324,12 @@ export const caseAndPaymentAPI = createApi({
         method: "PUT",
         body: rest,
       }),
-      invalidatesTags: (_r, _e, {payment_id}) => [{type: 'Payments', id: payment_id}, {type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}],
+      invalidatesTags: (_r, _e, {payment_id, case_id}) => [
+        {type: 'Payments', id: payment_id}, 
+        {type: 'Payments', id: 'LIST'}, 
+        {type: 'Cases', id: case_id},
+        {type: 'Cases', id: 'LIST'}
+      ],
     }),
     deletePayment: builder.mutation<{ success: boolean; payment_id: number, msg: string }, number>({
       query: (payment_id) => ({
@@ -287,7 +341,7 @@ export const caseAndPaymentAPI = createApi({
         payment_id: arg_payment_id,
         msg: response.msg,
       }),
-      invalidatesTags: (_r, _e, id) => [{type: 'Payments', id}, {type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}],
+      invalidatesTags: [{type: 'Payments', id: 'LIST'}, {type: 'Cases', id: 'LIST'}],
     }),
   }),
 });
@@ -309,6 +363,13 @@ export const {
   useGetAssignedStaffForCaseQuery, 
   useAssignStaffToCaseMutation,    
   useUnassignStaffFromCaseMutation,
+
+  // === NEW CASE PROGRESS HOOKS ===
+  useGetCaseProgressForCaseQuery,
+  useCreateCaseProgressRecordMutation,
+  useUpdateCaseProgressRecordMutation,
+  useDeleteCaseProgressRecordMutation,
+  // ==================================
 
   // Payment Hooks
   useFetchPaymentsQuery,

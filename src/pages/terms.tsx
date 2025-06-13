@@ -6,11 +6,11 @@ import { ShieldCheck, FileText, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const TermsAndServicesPage: FC = () => {
-  const lastUpdatedDate = "Always Updated  as  our  obligation"; 
+  const lastUpdatedDate = "10th June  2025"; 
   const companyName = "WakiliApp Solutions"; 
   const appName = "Wakili Application";
   const supportEmail = "support@wakiliapp.com"; 
-  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; 
+  const companyAddress = "143-10300, Kerugoya"; 
 
   // Helper component for sections to maintain consistent styling
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (
@@ -55,7 +55,7 @@ const TermsAndServicesPage: FC = () => {
 
             <Section title="2. Description of Service">
               <p>
-                The {appName} provides [**DETAILED DESCRIPTION OF YOUR APP'S FUNCTIONALITY HERE. Be specific. For example: "a platform for users to connect with legal professionals, manage legal documents, schedule consultations, and access legal information resources. The service may include features such as user account management, document storage, communication tools, a ticketing system for support and appointment requests, and information about our physical branch locations."**]. We reserve the right to withdraw or amend this Application, and any service or material we provide on the Application, in our sole discretion without notice.
+                The {appName} provides a platform for users to connect with legal professionals, manage legal documents, schedule consultations, and access legal information resources. The service  include features such as user account management, document storage, communication tools, a ticketing system for support and appointment requests, and information about our physical branch locations.. We reserve the right to withdraw or amend this Application, and any service or material we provide on the Application, in our sole discretion without notice.
               </p>
             </Section>
 
@@ -74,7 +74,7 @@ const TermsAndServicesPage: FC = () => {
               </p>
             </Section>
 
-            <Section title="4. User-Generated Content (If Applicable)">
+            <Section title="4. User-Generated Content ">
               <p>
                 If our Application allows you to post, link, store, share, or otherwise make available certain information, text, graphics, videos, or other material ("User Content"), you are responsible for the User Content that you post, including its legality, reliability, and appropriateness.
               </p>
@@ -82,7 +82,7 @@ const TermsAndServicesPage: FC = () => {
                 By posting User Content, you grant us a non-exclusive, worldwide, royalty-free, irrevocable, sub-licensable license to use, reproduce, adapt, publish, translate, and distribute it in any and all media. You retain any and all of your rights to any User Content you submit, post, or display on or through the Service and you are responsible for protecting those rights.
               </p>
               <p>
-                [**Add clauses about prohibited User Content, e.g., illegal, infringing, defamatory content.**]
+                
               </p>
             </Section>
 
@@ -101,10 +101,10 @@ const TermsAndServicesPage: FC = () => {
               </p>
             </Section>
 
-            <Section title="7. Fees and Payments (If Applicable)">
+            <Section title="7. Fees and Payments ">
               <p>
-                [**If your app has paid features, subscriptions, etc., detail them here. Example: "Certain features of the Application may be subject to payments now or in the future (the “Paid Services”). If you elect to use Paid Services, you agree to the pricing and payment terms, as we may update them from time to time. {companyName} may add new services for additional fees and charges, or amend fees and charges for existing services, at any time in its sole discretion." Include details on billing, refunds, etc.**]
-                If there are no fees, you can state: "Currently, the {appName} is provided free of charge. We reserve the right to introduce fees for certain features or services in the future, and we will notify you in advance of any such changes."
+               "Certain features of the Application may be subject to payments now or in the future . If you elect to use Paid Services, you agree to the pricing and payment terms, as we may update them from time to time. {companyName} may add new services for additional fees and charges, or amend fees and charges for existing services, at any time in its sole discretion.
+              . We reserve the right to introduce fees for certain features or services in the future, and we will notify you in advance of any such changes."
               </p>
             </Section>
 
@@ -122,7 +122,7 @@ const TermsAndServicesPage: FC = () => {
                 NEITHER {companyName} NOR ANY PERSON ASSOCIATED WITH {companyName} MAKES ANY WARRANTY OR REPRESENTATION WITH RESPECT TO THE COMPLETENESS, SECURITY, RELIABILITY, QUALITY, ACCURACY, OR AVAILABILITY OF THE APPLICATION. WITHOUT LIMITING THE FOREGOING, NEITHER {companyName} NOR ANYONE ASSOCIATED WITH {companyName} REPRESENTS OR WARRANTS THAT THE APPLICATION, ITS CONTENT, OR ANY SERVICES OR ITEMS OBTAINED THROUGH THE APPLICATION WILL BE ACCURATE, RELIABLE, ERROR-FREE, OR UNINTERRUPTED, THAT DEFECTS WILL BE CORRECTED, THAT OUR SITE OR THE SERVER THAT MAKES IT AVAILABLE ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS, OR THAT THE APPLICATION OR ANY SERVICES OR ITEMS OBTAINED THROUGH THE APPLICATION WILL OTHERWISE MEET YOUR NEEDS OR EXPECTATIONS.
               </p>
               <p>
-                **[IMPORTANT FOR A LEGAL APP: Add specific disclaimers stating that the app does not provide legal advice and that use of the app does not create an attorney-client relationship, unless that is explicitly a feature and handled appropriately. E.g., "The information provided by the {appName} is for general informational purposes only and does not constitute legal advice. No attorney-client relationship is formed by your use of this Application. You should consult with a qualified legal professional for advice regarding your specific situation." ]**
+                "The information provided by the {appName} is for general informational purposes only and does not constitute legal advice. No attorney-client relationship is formed by your use of this Application. You should consult with a qualified legal professional for advice regarding your specific situation, The  application  acts a  bridge .
               </p>
             </Section>
 
@@ -131,7 +131,7 @@ const TermsAndServicesPage: FC = () => {
                 TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL {companyName}, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, UNDER ANY LEGAL THEORY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE, OR INABILITY TO USE, THE APPLICATION, ANY WEBSITES LINKED TO IT, ANY CONTENT ON THE APPLICATION OR SUCH OTHER WEBSITES, INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO, PERSONAL INJURY, PAIN AND SUFFERING, EMOTIONAL DISTRESS, LOSS OF REVENUE, LOSS OF PROFITS, LOSS OF BUSINESS OR ANTICIPATED SAVINGS, LOSS OF USE, LOSS OF GOODWILL, LOSS OF DATA, AND WHETHER CAUSED BY TORT (INCLUDING NEGLIGENCE), BREACH OF CONTRACT, OR OTHERWISE, EVEN IF FORESEEABLE.
               </p>
               <p>
-                [**Consider if you need a cap on liability, e.g., "Our total liability to you for all claims arising from or relating to the Terms or your use of the Service is limited to the greater of (a) the amount paid by you, if any, for accessing the Service in the 12 months preceding the claim or (b) $100 USD." This needs legal review.**]
+              
               </p>
             </Section>
 
@@ -152,10 +152,10 @@ const TermsAndServicesPage: FC = () => {
 
             <Section title="13. Governing Law and Dispute Resolution">
               <p>
-                These Terms shall be governed and construed in accordance with the laws of [**Your State/Country, e.g., "the State of California, United States"**], without regard to its conflict of law provisions.
+                These Terms shall be governed and construed in accordance with the laws of Kenya Land , without regard to its conflict of law provisions.
               </p>
               <p>
-                [**Describe your dispute resolution process. E.g., "Any dispute arising from these Terms or the Application shall be resolved through binding arbitration in [Your City, State/Country] in accordance with the rules of the [Arbitration Association, e.g., American Arbitration Association]. Judgment upon the award rendered by the arbitrator(s) may be entered in any court having jurisdiction thereof." Or specify courts for litigation. THIS IS HIGHLY JURISDICTION-SPECIFIC AND NEEDS LEGAL ADVICE.**]
+                 "Any dispute arising from these Terms or the Application shall be resolved through binding arbitration in Kenya in accordance with the rules of the  Kenyan Arbitration Association. Judgment upon the award rendered by the arbitrator(s) may be entered in any court having jurisdiction thereof." Or specify courts for litigation. 
               </p>
             </Section>
 

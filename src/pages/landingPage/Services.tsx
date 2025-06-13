@@ -159,7 +159,7 @@ const Services = () => {
                         </span>
                     </h1>
                     <p className="text-lg md:text-xl text-slate-700 dark:text-gray-300 max-w-2xl transition-colors duration-300">
-                        At <strong className="font-semibold text-purple-600 dark:text-purple-400">Wakili</strong>, we are dedicated to delivering exceptional legal solutions tailored to your unique needs with utmost professionalism and care.
+                        At <strong className="font-semibold text-slate-600 dark:text-blue-400">Wakili</strong>, we are dedicated to delivering exceptional legal solutions tailored to your unique needs with utmost professionalism and care.
                     </p>
                 </div>
             </div>
@@ -174,7 +174,7 @@ const Services = () => {
                     {services.map((service, index) => (
                         <li
                             key={service.id}
-                            ref={el => serviceRefs.current[index] = el}
+                            ref={el => { serviceRefs.current[index] = el; }}
                             className="opacity-0 translate-y-10 transform transition-all duration-700 ease-out group"
                         >
                             <div

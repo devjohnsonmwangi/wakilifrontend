@@ -1,17 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CaseDataTypes } from "../../../../features/case/caseAPI";
+import { CaseProgressModal } from './progress'; // Adjust this path to your component
 import { toast } from 'sonner';
 import {
     FaTimes, FaTag,
     FaMoneyBill, FaBriefcase, FaHashtag, FaFileAlt,
     FaBalanceScale, FaUniversity, FaBuilding, FaUsers,
-    FaCreditCard, FaDollarSign 
+    FaCreditCard, FaDollarSign, FaHistory
 } from "react-icons/fa";
 
 interface ViewCaseDetailsModalProps {
     isDarkMode?: boolean; 
     selectedCase: CaseDataTypes | null;
     closeModal: () => void;
+    currentUserRole?: string; // Prop to receive the role of the logged-in user
 }
 
 // Helper function to format currency
@@ -28,16 +30,21 @@ const formatStatus = (status: string | null | undefined): string => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 };
 
-const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCase, closeModal }) => {
+const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCase, closeModal, currentUserRole }) => {
     
+    // State to manage the visibility of the CaseProgressModal
+    const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
+
     useEffect(() => {
         if (selectedCase) {
-            // Using info for viewing/closing, success is usually for actions
             toast.info(`🔍 Viewing details for Case ID: ${selectedCase.case_id}`);
         }
     }, [selectedCase]);
 
     if (!selectedCase) return null;
+
+    // Determine if the user has a read-only role for progress management
+    const isReadOnlyUser = currentUserRole === 'client' || currentUserRole === 'user';
 
     const handleClose = () => {
         toast.info(`✅ Closed details for Case ID: ${selectedCase.case_id}`);
@@ -46,9 +53,6 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
 
     const caseDetailsList = [
         { label: "Case ID", value: selectedCase.case_id ?? 'N/A', icon: FaHashtag },
-        // { label: "Client Name", value: selectedCase.user?.full_name ?? 'N/A', icon: FaUser },
-        // { label: "Client Email", value: selectedCase.user?.email ?? 'N/A', icon: FaEnvelope },
-        // { label: "Client Phone", value: selectedCase.user?.phone_number ?? 'N/A', icon: FaPhone },
         { label: "Case Type", value: selectedCase.case_type ?? 'N/A', icon: FaTag },
         { label: "Case Status", value: formatStatus(selectedCase.case_status), icon: FaBalanceScale },
         { label: "Case Number", value: selectedCase.case_number ?? 'N/A', icon: FaBriefcase },
@@ -56,24 +60,24 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
         { label: "Court", value: selectedCase.court ?? 'N/A', icon: FaUniversity },
         { label: "Station", value: selectedCase.station ?? 'N/A', icon: FaBuilding },
         { label: "Parties Involved", value: selectedCase.parties ?? 'N/A', icon: FaUsers },
-        { label: "Case Fee", value: formatCurrency(selectedCase.fee), icon: FaDollarSign }, // FaDollarSign or FaMoneyBill
+        { label: "Case Fee", value: formatCurrency(selectedCase.fee), icon: FaDollarSign },
         { label: "Payment Status", value: formatStatus(selectedCase.payment_status), icon: FaCreditCard },
-        { label: "Payment Balance", value: formatCurrency(selectedCase.payment_balance), icon: FaMoneyBill }, // FaMoneyBill or FaBalanceScale
+        { label: "Payment Balance", value: formatCurrency(selectedCase.payment_balance), icon: FaMoneyBill },
     ];
 
     return (
         <>
             {/* Modal Overlay */}
             <div 
-                className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4"
-                onClick={handleClose} // Close on backdrop click
+                className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4"
+                onClick={handleClose}
             >
                 {/* Modal Content Box */}
                 <div 
                     className={`relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl
                                border border-slate-200 dark:border-slate-700
                                max-h-[90vh] flex flex-col overflow-hidden`}
-                    onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside modal
+                    onClick={(e) => e.stopPropagation()}
                 >
                     {/* Modal Header */}
                     <header className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
@@ -100,7 +104,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                     </header>
 
                     {/* Scrollable Content Area */}
-                    <div className="p-5 sm:p-6 overflow-y-auto flex-grow styled-scrollbar"> {/* Add 'styled-scrollbar' class if you have custom scrollbar styles globally */}
+                    <div className="p-5 sm:p-6 overflow-y-auto flex-grow styled-scrollbar">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                             {caseDetailsList.map((item, index) => (
                                 <div key={index} className="py-1">
@@ -115,6 +119,25 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                        
+                        {/* Case Progress Section */}
+                        <div className="mt-6 pt-1">
+                            <label className="flex items-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                                <FaHistory size={14} className="mr-2 text-indigo-600 dark:text-indigo-400 opacity-90" />
+                                Case Timeline
+                            </label>
+                            <div className="bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600/70 p-4 rounded-lg shadow-sm flex items-center justify-between flex-wrap gap-2">
+                                <p className="text-sm text-slate-700 dark:text-slate-300">
+                                    {isReadOnlyUser ? 'View the history and progress of your case.' : 'View history or add a new progress update.'}
+                                </p>
+                                <button
+                                    onClick={() => setIsProgressModalOpen(true)}
+                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-md transition-colors"
+                                >
+                                    {isReadOnlyUser ? 'View Progress' : 'Manage Progress'}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="mt-6 pt-1">
@@ -143,6 +166,17 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
                     </footer>
                 </div>
             </div>
+
+            {/* Render the CaseProgressModal conditionally, passing the read-only flag */}
+            {isProgressModalOpen && (
+                <CaseProgressModal
+                    isOpen={isProgressModalOpen}
+                    onClose={() => setIsProgressModalOpen(false)}
+                    caseId={selectedCase.case_id}
+                    caseNumber={selectedCase.case_number}
+                    isReadOnly={isReadOnlyUser}
+                />
+            )}
         </>
     );
 };

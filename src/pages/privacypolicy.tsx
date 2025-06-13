@@ -6,11 +6,11 @@ import { Link } from 'react-router-dom';
  import Navbar from '../components/navbar/Navbar'; 
 
 const PrivacyPolicyPage: FC = () => {
-  const lastUpdatedDate = "Always updating  for  integrity"; 
-  const companyName = "WakiliApp Solutions"; 
-  const appName = "Wakili Application";
+  const lastUpdatedDate = "10th June 2025"; 
+  const companyName = "WakiliApp   Solutions"; 
+  const appName = "Wakili Application/wakili App";
   const supportEmail = "privacy@wakiliapp.com"; 
-  const companyAddress = "123 Legal Avenue, Law City, LC 54321"; 
+  const companyAddress = "146-10300, Kerugoya"; 
 
   // Helper component for sections
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (
@@ -64,7 +64,7 @@ const PrivacyPolicyPage: FC = () => {
                 If you use our ticketing system to request an appointment, we will collect the information you provide in the ticket, including the title and message detailing your appointment needs.
               </p>
               <p>
-                [**CRITICAL: If users upload documents or share sensitive case details, you MUST explicitly state what kind of information is collected here. For example: "If you choose to upload documents or provide case details through the Application, this information will be collected and stored to facilitate the services you request."**]
+                 "If you choose to upload documents or provide case details through the Application, this information will be collected and stored to facilitate the services you request.
               </p>
 
               <h3 className="text-xl font-medium text-slate-700 dark:text-slate-200 mt-6 mb-2">Information Collected Automatically</h3>
@@ -74,7 +74,7 @@ const PrivacyPolicyPage: FC = () => {
               <ul>
                 <li><strong>Log and Usage Data:</strong> IP address, browser type, operating system, access times, pages viewed, features used, and the page you visited before navigating to our Application.</li>
                 <li><strong>Device Data:</strong> Information about your computer or mobile device, such as your hardware model, operating system version, unique device identifiers, and mobile network information.</li>
-                <li><strong>Information Collected by Cookies and Other Tracking Technologies:</strong> We may use cookies, web beacons, and other tracking technologies to collect information about your interaction with our Application. [**If you use these, link to a more detailed "Cookie Policy" section or page.**]</li>
+                <li><strong>Information Collected by Cookies and Other Tracking Technologies:</strong> We may use cookies, web beacons, and other tracking technologies to collect information about your interaction with our Application.</li>
               </ul>
             </Section>
 
@@ -90,7 +90,7 @@ const PrivacyPolicyPage: FC = () => {
                 <li>Personalize and improve the Application and provide content or features that match user profiles or interests.</li>
                 <li>Detect, investigate, and prevent fraudulent transactions and other illegal activities and protect the rights and property of {companyName} and others.</li>
                 <li>Comply with legal and regulatory obligations.</li>
-                <li>[**Add any other specific uses related to the "Wakili Application" functionality.**]</li>
+                <li></li>
               </ul>
             </Section>
 
@@ -102,10 +102,10 @@ const PrivacyPolicyPage: FC = () => {
                 <li><strong>Business Transfers:</strong> We may share or transfer your information in connection with, or during negotiations of, any merger, sale of company assets, financing, or acquisition of all or a portion of our business to another company.</li>
                 <li><strong>With Your Consent:</strong> We may disclose your personal information for any other purpose with your consent.</li>
                 <li>
-                  [**CRITICAL FOR LEGAL APP: If information (e.g., ticket details, documents) is shared with specific legal professionals through the app (beyond your internal team), you MUST clearly state this. For example: "When you request an appointment or share case details intended for a specific legal professional or firm accessible through our Application, we will share the relevant information with that designated legal professional or firm to facilitate the requested service. This sharing will only occur based on your explicit action and request within the Application." Ensure you have a clear consent mechanism for this.**]
+                  If information (e.g., ticket details, documents) is shared with specific legal professionals through the app (beyond your internal team), you MUST clearly state this. For example: "When you request an appointment or share case details intended for a specific legal professional or firm accessible through our Application, we will share the relevant information with that designated legal professional or firm to facilitate the requested service. This sharing will only occur based on your explicit action and request within the Application.
                 </li>
                 <li>
-                  We do not sell your personal information to third parties. [**Confirm this is true for your app.**]
+                  We do not sell your personal information to third parties. 
                 </li>
               </ul>
             </Section>
@@ -115,7 +115,7 @@ const PrivacyPolicyPage: FC = () => {
                 We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse. Any information disclosed online is vulnerable to interception and misuse by unauthorized parties. Therefore, we cannot guarantee complete security if you provide personal information.
               </p>
               <p>
-                [**Consider mentioning specific security practices if appropriate and true, e.g., encryption, access controls, but avoid over-promising.**]
+                 We  use encryption, access controls, Token  refresh  to   protect  you  while  on the  platform.
               </p>
             </Section>
 
@@ -124,7 +124,7 @@ const PrivacyPolicyPage: FC = () => {
                 We will retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your information to the extent necessary to comply with our legal obligations (for example, if we are required to retain your data to comply with applicable laws), resolve disputes, and enforce our legal agreements and policies.
               </p>
               <p>
-                [**Be more specific if possible, e.g., "Account information is retained as long as your account is active and for a reasonable period thereafter in case you decide to re-activate the services." Ticket information might have a different retention period.**]
+                "Account information is retained as long as your account is active and for a reasonable period thereafter in case you decide to re-activate the services." Ticket information might have a different retention period.
               </p>
             </Section>
 
@@ -144,7 +144,7 @@ const PrivacyPolicyPage: FC = () => {
                 If you wish to exercise any of these rights, please contact us at <a href={`mailto:${supportEmail}`} className="text-sky-600 dark:text-sky-400 hover:underline">{supportEmail}</a>. We will respond to your request in accordance with applicable law.
               </p>
               <p>
-                [**IMPORTANT: Tailor this section to the specific rights afforded by laws applicable to your users (e.g., GDPR for EU residents, CCPA/CPRA for Californians). If you operate in specific regions, you may need to list those rights explicitly.**]
+              
               </p>
             </Section>
 
@@ -153,23 +153,23 @@ const PrivacyPolicyPage: FC = () => {
                 Your information, including personal data, may be transferred to — and maintained on — computers located outside of your state, province, country, or other governmental jurisdiction where the data protection laws may differ from those in your jurisdiction.
               </p>
               <p>
-                If you are located outside [**Your Company's Country**] and choose to provide information to us, please note that we transfer the data, including Personal Data, to [**Your Company's Country / Server Location Country**] and process it there.
+                If you are located outside KENYA and choose to provide information to us, please note that we transfer the data, including Personal Data, to Kenya and process it there.
               </p>
               <p>
                 Your consent to this Privacy Policy followed by your submission of such information represents your agreement to that transfer. We will take all steps reasonably necessary to ensure that your data is treated securely and in accordance with this Privacy Policy.
               </p>
-              <p>[**If you use specific mechanisms for international transfers like Standard Contractual Clauses for GDPR, mention them.**]</p>
+              <p></p>
             </Section>
 
             <Section title="9. Children's Privacy">
               <p>
-                Our Application is not intended for use by children under the age of [**Specify Age, e.g., 13 or 16 or 18 depending on your target and laws like COPPA/GDPR**]. We do not knowingly collect personally identifiable information from children under [**Same Age**]. If we become aware that we have collected Personal Data from children without verification of parental consent, we take steps to remove that information from our servers.
+                Our Application is not intended for use by children under the age of 16 years. We do not knowingly collect personally identifiable information from children under 16 years. If we become aware that we have collected Personal Data from children without verification of parental consent, we take steps to remove that information from our servers.
               </p>
             </Section>
 
             <Section title="10. Cookies and Tracking Technologies">
               <p>
-                We may use cookies, web beacons, tracking pixels, and other tracking technologies on the Application to help customize the Application and improve your experience. For more information about how we use cookies, please refer to our Cookie Policy [**Create a separate Cookie Policy page if your use of cookies is extensive, or detail it here if simple.**].
+                We may use cookies, web beacons, tracking pixels, and other tracking technologies on the Application to help customize the Application and improve your experience. For more information about how we use cookies, please refer to our Cookie Policy .
               </p>
               <p>
                 Most browsers are set to accept cookies by default. You can usually choose to set your browser to remove or reject browser cookies. Please note that if you choose to remove or reject cookies, this could affect the availability and functionality of our Application.

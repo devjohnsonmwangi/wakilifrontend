@@ -291,7 +291,7 @@ function HowItWorks() {
                     <button
                         className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-pink-500/50 dark:focus:ring-pink-400/50"
                     >
-                        <Link  to='/login'>Ready to Simplify Your Legal Needs?</Link>
+                        <Link  to='/dashboard/ourservices'>Ready to Simplify Your Legal Needs?</Link>
                         <ChevronRight className="inline-block ml-2 w-5 h-5" />
                     </button>
                 </div>

@@ -375,7 +375,7 @@ const OurServices: React.FC = () => {
                     {visibleServices.map((service, index) => (
                         <div
                             key={service.id}
-                            ref={el => serviceItemRefs.current[index] = el}
+                            ref={el => { serviceItemRefs.current[index] = el; }}
                             className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-500 ease-out hover:shadow-xl dark:hover:shadow-purple-600/30 hover:-translate-y-1 flex flex-col group"
                         >
                             <div className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700/50">

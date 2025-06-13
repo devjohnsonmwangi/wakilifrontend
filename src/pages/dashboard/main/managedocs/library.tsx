@@ -3,7 +3,7 @@ import { Toaster, toast } from 'sonner';
 import {
     useFetchCaseDocumentsQuery,
     useUpdateCaseDocumentMutation,
-    CaseDocumentDataTypes
+    CaseDocument
 } from "../../../../features/casedocument/casedocmentapi"; 
 import GeneralDocumentUpload from './generaldocuments';
 import DeleteCaseForm from './deleteCaseForm';
@@ -145,7 +145,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, size = 
 
 const LibDocumentList: React.FC = () => {
     const { data, isLoading, error, refetch } = useFetchCaseDocumentsQuery();
-    const documents = data as CaseDocumentDataTypes[] | undefined;
+    const documents = data as CaseDocument[] | undefined;
     const [updateCaseDocument] = useUpdateCaseDocumentMutation();
 
     const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
@@ -210,7 +210,10 @@ const LibDocumentList: React.FC = () => {
         e.preventDefault();
         if (!selectedDocumentId) return;
         try {
-            await updateCaseDocument({ document_id: selectedDocumentId, document_name: name, document_url: content }).unwrap();
+            const formData = new FormData();
+            formData.append('document_name', name);
+            formData.append('document_url', content);
+            await updateCaseDocument({ document_id: selectedDocumentId, formData }).unwrap();
             toast.success("Document updated successfully!");
             refetch();
         } catch (err) {

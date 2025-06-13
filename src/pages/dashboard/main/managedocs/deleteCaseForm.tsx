@@ -1,10 +1,10 @@
 import { Toaster, toast } from 'sonner';
 
-import { caseDocumentAPI, CaseDocumentDataTypes } from '../../../../features/casedocument/casedocmentapi';
+import { caseDocumentAPI, CaseDocument } from '../../../../features/casedocument/casedocmentapi';
 import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa';
 
 interface DeleteCaseFormProps {
-    caseItem: CaseDocumentDataTypes | null; 
+    caseItem: CaseDocument | null; 
     onClose: () => void;
     refetch: () => void;
     isDarkMode?: boolean;

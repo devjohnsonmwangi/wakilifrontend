@@ -1,12 +1,13 @@
 // src/features/notifications/components/NotificationsPage.tsx
 
-import  { useState, useEffect} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useSelector } from 'react-redux';
 import { selectCurrentUserId } from '../../users/userSlice'; // Adjust path
-import { useGetNotificationsQuery, useMarkAllAsReadMutation } from '../notificationAPI'; // Adjust path
+import { useGetNotificationsQuery, useMarkAllAsReadMutation, Notification } from '../notificationAPI'; // Adjust path. Also import the Notification type.
 import NotificationItem from './NotificationItem';
 import { BellRing, Check, BellOff, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Skeleton loader component for a better loading experience
 const NotificationSkeleton = () => (
@@ -22,42 +23,89 @@ const NotificationSkeleton = () => (
 const NotificationsPage = () => {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  
+  // This ref helps prevent the infinite scroll from triggering on the very first render.
+  const initialLoadDone = useRef(false);
+
   const limit = 15; // Number of items to fetch per page
 
   const currentUserId = useSelector(selectCurrentUserId);
-  const { ref: sentinelRef, inView } = useInView({ threshold: 0.5 });
+  const { ref: sentinelRef, inView } = useInView({ threshold: 0.1 });
   
-  const { data: notifications = [], isLoading, isFetching } = useGetNotificationsQuery(
+  // Use a local state for notifications to correctly manage infinite scroll data
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
+  
+  const { data: fetchedNotifications, isLoading, isFetching, isSuccess } = useGetNotificationsQuery(
     {
-      userId: currentUserId!,
+      // SOLUTION: Removed the non-null assertion (`!`).
+      // The `skip` option below will handle cases where currentUserId is null.
+      userId: currentUserId as number,
       onlyUnread: filter === 'unread',
       limit,
       offset,
     },
+    // This is the correct way to prevent the query from running until the user ID is available.
     { skip: !currentUserId }
   );
   
   const [markAllAsRead, { isLoading: isMarkingAllRead }] = useMarkAllAsReadMutation();
   
-  // Infinite scroll logic
+  // Effect to merge fetched data into our local state for a stable list
   useEffect(() => {
-    if (inView && !isFetching) {
-      // Check if there are more items to load
-      if (notifications.length >= offset + limit) {
-        setOffset(prev => prev + limit);
+    if (isSuccess && fetchedNotifications) {
+      if (offset === 0) {
+        // If it's the first page (offset 0), replace the list
+        setLocalNotifications(fetchedNotifications);
+      } else {
+        // For subsequent pages, append new items, avoiding duplicates
+        setLocalNotifications(prev => {
+            const existingIds = new Set(prev.map(n => n.notification_id));
+            const newItems = fetchedNotifications.filter(n => !existingIds.has(n.notification_id));
+            return [...prev, ...newItems];
+        });
       }
+      
+      // IMPROVED: More reliable check for more data
+      setHasMore(fetchedNotifications.length === limit);
+      initialLoadDone.current = true;
     }
-  }, [inView, isFetching, notifications.length, offset]);
+  }, [fetchedNotifications, isSuccess, offset]);
+
+  // Infinite scroll trigger logic
+  useEffect(() => {
+    // Only trigger if not fetching, there's more data, and the initial load is complete
+    if (inView && !isFetching && hasMore && initialLoadDone.current) {
+      setOffset(prev => prev + limit);
+    }
+  }, [inView, isFetching, hasMore]);
   
-  // Reset offset when filter changes
+  // Reset state when the filter changes
   useEffect(() => {
     setOffset(0);
-  }, [filter]);
+    setHasMore(true);
+    setLocalNotifications([]); // Clear local data to show loading skeleton
+    initialLoadDone.current = false;
+  }, [filter, currentUserId]);
 
   const handleMarkAll = () => {
-    markAllAsRead();
+    const promise = markAllAsRead().unwrap();
+    toast.promise(promise, {
+      loading: 'Marking all as read...',
+      success: 'All notifications marked as read!',
+      error: 'Failed to mark all as read.',
+    });
   };
   
+  // GUARD CLAUSE: If we are still waiting for the user ID, show a loading state.
+  if (!currentUserId) {
+    return (
+      <div className="max-w-3xl mx-auto min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-neutral-400 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto min-h-screen bg-white dark:bg-neutral-900 shadow-lg sm:rounded-lg sm:my-8">
       {/* Header */}
@@ -71,8 +119,8 @@ const NotificationsPage = () => {
           </div>
           <button
             onClick={handleMarkAll}
-            disabled={isMarkingAllRead}
-            className="flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+            disabled={isMarkingAllRead || localNotifications.filter(n => !n.is_read).length === 0}
+            className="flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isMarkingAllRead ? (
                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -111,18 +159,19 @@ const NotificationsPage = () => {
 
       {/* Notifications List */}
       <main>
+        {/* Show skeleton only on the very first load of a filter */}
         {isLoading && offset === 0 ? (
           <div>
             {Array.from({ length: 5 }).map((_, i) => <NotificationSkeleton key={i} />)}
           </div>
-        ) : notifications.length > 0 ? (
+        ) : localNotifications.length > 0 ? (
           <div>
-            {notifications.map(notification => (
+            {localNotifications.map(notification => (
               <NotificationItem key={notification.notification_id} notification={notification} />
             ))}
             {/* Sentinel for infinite scroll */}
             <div ref={sentinelRef} className="h-10 flex items-center justify-center">
-              {isFetching && <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />}
+              {isFetching && hasMore && <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />}
             </div>
           </div>
         ) : (

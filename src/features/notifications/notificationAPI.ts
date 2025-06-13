@@ -6,34 +6,51 @@ import { APIDomain } from '../../utils/APIDomain';
 
 // --- TypeScript Interfaces for the API ---
 
+export type NotificationType = 
+  | 'new_chat_message'
+  | 'event_reminder'
+  | 'upcoming_event'
+  | 'ticket_update'
+  | 'case_update'
+  | 'new_assignment'
+  | 'appointment_booked'
+  | 'appointment_confirmed'
+  | 'appointment_cancelled'
+  | 'appointment_reminder'
+  | 'general_announcement';
+
 export interface Notification {
   notification_id: number;
   user_id: number;
-  type: 'new_message' | 'new_follower' | 'booking_confirmation' | 'booking_request' | 'payment_received' | 'system_alert' | string;
+  type: NotificationType;
+  title: string | null;
   message: string;
   link_url: string | null;
   related_entity_id: number | null;
+  related_entity_type: string | null;
   is_read: boolean;
   created_at: string;
 }
 
 export interface GetNotificationsParams {
-  userId: number;
+  userId: number; // For cache key
   limit?: number;
   offset?: number;
   onlyUnread?: boolean;
 }
 
 export interface UnreadCountResponse {
-  count: number;
+  unreadCount: number;
 }
 
 // --- API Slice Definition ---
 
 export const notificationsAPI = createApi({
   reducerPath: 'notificationsAPI',
+  // SOLUTION: The baseUrl is now the root domain because your Hono app
+  // mounts the notificationRouter at app.route('/', notificationRouter).
   baseQuery: fetchBaseQuery({
-    baseUrl: `${APIDomain}/notifications`,
+    baseUrl: APIDomain,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).user?.token || localStorage.getItem('authToken');
       if (token) {
@@ -47,6 +64,7 @@ export const notificationsAPI = createApi({
   endpoints: (builder) => ({
     // === QUERIES (Fetching Data) ===
 
+    // Route: GET /?params -> Matches `notificationRouter.get('/', ...)`
     getNotifications: builder.query<Notification[], GetNotificationsParams>({
       query: ({ limit = 20, offset = 0, onlyUnread = false }) => {
         const params = new URLSearchParams();
@@ -55,6 +73,7 @@ export const notificationsAPI = createApi({
         if (onlyUnread) {
           params.append('unread', 'true');
         }
+        // SOLUTION: The path starts with '/' because the baseUrl is now the domain root.
         return `/?${params.toString()}`;
       },
       providesTags: (result) =>
@@ -65,8 +84,6 @@ export const notificationsAPI = createApi({
             ]
           : [{ type: 'NotificationList', id: 'LIST' }],
       serializeQueryArgs: ({ queryArgs }) => {
-        // CORRECTION: We must include the userId in the serialized key
-        // so that different users don't share the same notification cache.
         const { onlyUnread, userId } = queryArgs;
         return { onlyUnread, userId };
       },
@@ -79,6 +96,7 @@ export const notificationsAPI = createApi({
       },
     }),
 
+    // Route: GET /unread-count -> Matches `notificationRouter.get('/unread-count', ...)`
     getUnreadCount: builder.query<UnreadCountResponse, void>({
       query: () => '/unread-count',
       providesTags: ['UnreadCount'],
@@ -86,50 +104,38 @@ export const notificationsAPI = createApi({
 
     // === MUTATIONS (Changing Data) ===
 
+    // Route: POST /:id/read -> Matches `notificationRouter.post('/:id/read', ...)`
     markAsRead: builder.mutation<Notification, number>({
       query: (notificationId) => ({
         url: `/${notificationId}/read`,
         method: 'POST',
       }),
       async onQueryStarted(notificationId, { dispatch, queryFulfilled, getState }) {
-        // 1: Get the full state to access the current user's ID.
-        const state = getState() as unknown as RootState;
+        const state = getState() as RootState;
         const currentUserId = state.user?.user?.user_id;
+        if (!currentUserId) return;
 
-        if (!currentUserId) return; // Don't do anything if no user is logged in
-
-        //  patch both the 'all' and 'unread' lists if they are in the cache.
-        const patchPromises = [
-          // Patch the 'all' list
-          dispatch(
-            notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: false }, (draft) => {
+        const patchResults = [
+          dispatch(notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: false }, (draft) => {
               const notification = draft.find(n => n.notification_id === notificationId);
-              if (notification) {
-                notification.is_read = true;
-              }
-            })
-          ),
-          // Patch the 'unread' list (which will cause the item to be removed on next refetch)
-          dispatch(
-            notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: true }, (draft) => {
-               const notification = draft.find(n => n.notification_id === notificationId);
-               if (notification) {
-                 notification.is_read = true;
-               }
-            })
-          ),
+              if (notification) notification.is_read = true;
+          })),
+          dispatch(notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: true }, (draft) => {
+              const index = draft.findIndex(n => n.notification_id === notificationId);
+              if (index > -1) draft.splice(index, 1);
+          })),
         ];
         
         try {
           await queryFulfilled;
-          dispatch(notificationsAPI.util.invalidateTags(['UnreadCount', 'NotificationList']));
+          dispatch(notificationsAPI.util.invalidateTags(['UnreadCount', { type: 'NotificationList', id: 'LIST' }]));
         } catch {
-          // Undo both patches on failure
-          patchPromises.forEach(p => p.undo());
+          patchResults.forEach(p => p.undo());
         }
       },
     }),
     
+    // Route: POST /read-all -> Matches `notificationRouter.post('/read-all', ...)`
     markAllAsRead: builder.mutation<{ message: string }, void>({
         query: () => ({
             url: '/read-all',
@@ -138,39 +144,42 @@ export const notificationsAPI = createApi({
         invalidatesTags: ['NotificationList', 'UnreadCount'],
     }),
 
+    // Route: POST /read-multiple -> Matches `notificationRouter.post('/read-multiple', ...)`
+    markMultipleAsRead: builder.mutation<{ message: string }, number[]>({
+        query: (notificationIds) => ({
+            url: '/read-multiple',
+            method: 'POST',
+            body: { ids: notificationIds }
+        }),
+        invalidatesTags: ['NotificationList', 'UnreadCount'],
+    }),
+
+    // Route: DELETE /:id -> Matches `notificationRouter.delete('/:id', ...)`
     deleteNotification: builder.mutation<{ message: string }, number>({
       query: (notificationId) => ({
         url: `/${notificationId}`,
         method: 'DELETE',
       }),
       async onQueryStarted(notificationId, { dispatch, queryFulfilled, getState }) {
-        //  1 (same as above): Get the current user's ID from the state.
-        const state = getState() as unknown as RootState;
+        const state = getState() as RootState;
         const currentUserId = state.user?.user?.user_id;
-
         if (!currentUserId) return;
 
-        //  2: Create patch results for both 'all' and 'unread' filters.
         const patchResults = [
-          dispatch(
-            notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: false }, (draft) => {
+          dispatch(notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: false }, (draft) => {
               const index = draft.findIndex(n => n.notification_id === notificationId);
               if (index !== -1) draft.splice(index, 1);
-            })
-          ),
-          dispatch(
-            notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: true }, (draft) => {
+          })),
+          dispatch(notificationsAPI.util.updateQueryData('getNotifications', { userId: currentUserId, onlyUnread: true }, (draft) => {
               const index = draft.findIndex(n => n.notification_id === notificationId);
               if (index !== -1) draft.splice(index, 1);
-            })
-          ),
+          })),
         ];
 
         try {
           await queryFulfilled;
           dispatch(notificationsAPI.util.invalidateTags(['UnreadCount']));
         } catch {
-          // Undo all patches if the server call fails.
           patchResults.forEach(patch => patch.undo());
         }
       },
@@ -183,5 +192,6 @@ export const {
   useGetUnreadCountQuery,
   useMarkAsReadMutation,
   useMarkAllAsReadMutation,
+  useMarkMultipleAsReadMutation,
   useDeleteNotificationMutation,
 } = notificationsAPI;

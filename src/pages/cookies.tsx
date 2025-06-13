@@ -6,7 +6,7 @@ import Navbar from '../components/navbar/Navbar';
 //import { Link } from 'react-router-dom';
 
 const CookiePolicyPage: FC = () => {
-  const lastUpdatedDate = "Always  updated for  your   safety cookies policy  are  optional"; 
+  const lastUpdatedDate = "Always  updated for  your   safety: cookies policy  are  optional !"; 
   const appName = "Wakili Application";
   //const companyWebsite = "https://www.wakiliapp.com"; 
   const supportEmail = "privacy@wakiliapp.com"; 
@@ -51,7 +51,7 @@ const CookiePolicyPage: FC = () => {
 
             <Section title="2. How We Use Cookies" Icon={Settings}>
               <p>
-                We use cookies and similar tracking technologies to track the activity on our {appName} ("Service") and hold certain information. This helps us to improve our Service and to deliver a better and more personalized service. The cookies we use may include:
+                We use cookies and similar tracking technologies to track the activity on our {appName} ("Service") and hold certain information. This helps us to improve our Service and to deliver a better and more personalized service. 
               </p>
               {/* List general purposes */}
             </Section>
@@ -75,23 +75,23 @@ const CookiePolicyPage: FC = () => {
                   <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Remembering user preferences, language settings, dark mode preference if stored in a cookie.]</p>
                 </li>
                 <li>
-                  <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><Cookie className="w-5 h-5 mr-2 text-red-500"/>Targeting or Advertising Cookies (If Applicable)</h4>
+                  <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><Cookie className="w-5 h-5 mr-2 text-red-500"/>Targeting or Advertising Cookies </h4>
                   <p>
-                    [**ONLY INCLUDE THIS SECTION IF YOU USE THEM. BE VERY TRANSPARENT.**]
+                    
                     These cookies are used to deliver advertisements more relevant to you and your interests. They are also used to limit the number of times you see an advertisement as well as help measure the effectiveness of the advertising campaign. They are usually placed by advertising networks with the website operator’s permission. They remember that you have visited a website and this information is shared with other organizations such as advertisers.
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Facebook Pixel, Google Ads cookies. If you don't use these, REMOVE this entire list item.]</p>
-                  <p className="font-bold text-sm mt-2">Currently, {appName} does not use Targeting or Advertising Cookies. [**Adjust this statement based on your actual usage. If you do use them, delete this sentence and list them.**]</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Facebook Pixel, Google Ads cookies. ]</p>
+                  
                 </li>
               </ul>
               <p className="mt-4">
-                [**You might want to list specific cookies by name if you have a small, fixed set, or if required by regulations like GDPR for certain types. For many apps, categorizing them is sufficient, but transparency is key.**]
+              
               </p>
             </Section>
 
-            <Section title="4. Third-Party Cookies (If Applicable)" Icon={Globe}>
+            <Section title="4. Third-Party Cookies " Icon={Globe}>
               <p>
-                [**If you use third-party services that set their own cookies, list them here. This is very common for analytics, social media integration, etc.**]
+              
               </p>
               <p>
                 In addition to our own cookies, we may also use various third-parties cookies to report usage statistics of the Service, deliver advertisements on and through the Service, and so on. For example:
@@ -101,12 +101,12 @@ const CookiePolicyPage: FC = () => {
                   <strong>Google Analytics:</strong> We use Google Analytics to collect and analyze information about the use of the Service and report on activities and trends. This service may also collect information regarding the use of other websites, apps, and online resources. You can learn about Google’s practices by going to <a href="https://www.google.com/policies/privacy/partners/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">www.google.com/policies/privacy/partners/</a>, and opt out of them by downloading the Google Analytics opt-out browser add-on, available at <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">https://tools.google.com/dlpage/gaoptout</a>.
                 </li>
                 <li>
-                  [**List other third-party services like Facebook Pixel, Intercom, Hotjar, etc., if you use them and they set cookies.**]
+                  
                 </li>
               </ul>
               <p className="font-bold text-sm mt-2">
                 Please note that we do not control these third-party cookies and their use is governed by the privacy policies of the third parties setting them.
-                [**If you do not use ANY third-party cookies, you can state: "Currently, {appName} does not use cookies set by third-party domains."**]
+              
               </p>
             </Section>
 
@@ -125,7 +125,7 @@ const CookiePolicyPage: FC = () => {
                   <strong>Third-Party Opt-Outs:</strong> For third-party advertising cookies, you can often opt-out via industry opt-out programs like the Network Advertising Initiative (<a href="http://optout.networkadvertising.org/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">NAI</a>) or the Digital Advertising Alliance (<a href="http://optout.aboutads.info/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">DAA</a>).
                 </li>
                 <li>
-                  [**If you have a cookie consent banner/tool, refer to it here: "You can also manage your cookie preferences for our Service through our cookie consent tool, accessible [describe where/how, e.g., via the banner that appears on your first visit or a link in the footer]."**]
+          
                 </li>
               </ul>
             </Section>

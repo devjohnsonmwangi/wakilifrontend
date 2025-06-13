@@ -105,7 +105,7 @@ const ContactPage = () => {
               </a>
               <a href="https://maps.google.com/?q=123+Wakili+Street,+Nairobi,+Kenya" target="_blank" rel="noopener noreferrer" className="flex items-center hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                  <MapPin className="w-5 h-5 mr-2" />
-                 <span>123 Wakili Street, Nairobi</span>
+                 <span>143-10300, Kerugoya</span>
               </a>
             </div>
           </div>

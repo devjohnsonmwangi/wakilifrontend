@@ -128,7 +128,7 @@ const Hero = () => {
 
                     <div className="mt-8 md:mt-10 animate-fade-in-up animation-delay-700">
                         <Link
-                            to="/register"
+                            to="/dashboard/ourservices"
                             className="group inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-3.5 bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 text-white rounded-lg text-md sm:text-lg font-semibold shadow-lg hover:shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
                         >
                             Register & Explore Services

@@ -68,7 +68,7 @@ const EventListView: React.FC<EventListViewProps> = ({
     );
   }
 
-  const thClasses = "px-6 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider";
+  const thClasses = "px-6 py-3.5 text-left text-xs font-xbold text-white-500 dark:text-slate-400 uppercase tracking-wider";
   const tdClasses = "px-6 py-4 whitespace-nowrap text-sm";
   const actionButtonBaseClasses = "p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-800 transition-all duration-150";
 
@@ -76,7 +76,7 @@ const EventListView: React.FC<EventListViewProps> = ({
     <div className="bg-white dark:bg-slate-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-300">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-          <thead className="bg-slate-50 dark:bg-slate-700/50 sticky top-0 z-10"> {/* Sticky header */}
+          <thead className="bg-sky-300 dark:bg-sky-700/50 sticky top-0 z-10"> {/* Sticky header */}
             <tr>
               <th scope="col" className={`${thClasses}`}>
                 Title
