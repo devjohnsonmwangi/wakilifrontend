@@ -149,18 +149,18 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
             return (
                 <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                     <table className="min-w-full">
-                        {/* --- STYLE UPDATE: Concentrated blue table header --- */}
                         <thead className="bg-blue-600 dark:bg-blue-900">
                             <tr>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                                {/* --- UPDATE: Added whitespace-nowrap to prevent line breaks --- */}
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider whitespace-nowrap">
                                     <FileText size={16} className="inline-block mr-2 align-middle" />
                                     Document Name
                                 </th>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider whitespace-nowrap">
                                     <CalendarDays size={16} className="inline-block mr-2 align-middle" />
                                     Last Updated
                                 </th>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider whitespace-nowrap">
                                     <Settings size={16} className="inline-block mr-2 align-middle" />
                                     Actions
                                 </th>
@@ -222,7 +222,6 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
                     initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }}
                     transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
                 >
-                    {/* --- STYLE UPDATE: Concentrated blue header with white text --- */}
                     <header className="p-6 flex-shrink-0 bg-blue-700 dark:bg-blue-800">
                         <div className="flex items-center justify-between mb-4">
                              <h2 className="text-2xl font-bold text-white flex items-center gap-3">
