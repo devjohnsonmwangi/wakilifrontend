@@ -83,7 +83,6 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
             toast.dismiss();
             toast.success("Document uploaded successfully!");
             setFileToUpload(null);
-            // Auto-refetch handled by RTK Query tags
         } catch (err) {
             toast.dismiss();
             toast.error("Upload failed. Please try again.");
@@ -104,7 +103,6 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
             await deleteDocument(confirmDeleteId).unwrap();
             toast.dismiss();
             toast.success("Document deleted successfully.");
-            // Auto-refetch handled by RTK Query tags
         } catch (err) {
             toast.dismiss();
             toast.error("Failed to delete document.");
@@ -151,18 +149,18 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
             return (
                 <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg">
                     <table className="min-w-full">
-                        {/* --- STYLE CHANGE: Navy blue header with bold, white text --- */}
-                        <thead className="bg-slate-900">
+                        {/* --- STYLE UPDATE: Concentrated blue table header --- */}
+                        <thead className="bg-blue-600 dark:bg-blue-900">
                             <tr>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-slate-100 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
                                     <FileText size={16} className="inline-block mr-2 align-middle" />
                                     Document Name
                                 </th>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-slate-100 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
                                     <CalendarDays size={16} className="inline-block mr-2 align-middle" />
                                     Last Updated
                                 </th>
-                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-slate-100 uppercase tracking-wider">
+                                <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
                                     <Settings size={16} className="inline-block mr-2 align-middle" />
                                     Actions
                                 </th>
@@ -171,7 +169,6 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
                         <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                             {documents.map(doc => (
                                <tr key={doc.document_id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200">
-                                    {/* --- STYLE CHANGE: Bolder and larger font for document name --- */}
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <p className="text-base font-semibold text-slate-900 dark:text-slate-100 truncate" title={doc.document_name}>
                                             {doc.document_name}
@@ -221,52 +218,52 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
             >
                 <motion.div
-                    className="relative w-[95vw] sm:w-full max-w-4xl bg-white dark:bg-slate-900/95 dark:backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col"
+                    className="relative w-[95vw] sm:w-full max-w-4xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-transparent max-h-[90vh] flex flex-col"
                     initial={{ scale: 0.95, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 30 }}
                     transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
                 >
-                    {/* --- STYLE CHANGE: Fancier, more modern header --- */}
-                    <header className="p-6 border-b border-slate-200 dark:border-slate-700/80 flex-shrink-0 bg-slate-50/80 dark:bg-slate-800/50">
+                    {/* --- STYLE UPDATE: Concentrated blue header with white text --- */}
+                    <header className="p-6 flex-shrink-0 bg-blue-700 dark:bg-blue-800">
                         <div className="flex items-center justify-between mb-4">
-                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                <FileText size={24} className="text-blue-600 dark:text-sky-500" />
+                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <FileText size={24} className="text-blue-200" />
                                 Case Documents
                             </h2>
-                            <button onClick={onClose} title="Close" className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors focus-visible:ring-2 focus-visible:ring-slate-500">
+                            <button onClick={onClose} title="Close" className="p-2 rounded-full text-blue-200 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors focus-visible:ring-2 focus-visible:ring-white">
                                 <X size={22} />
                             </button>
                         </div>
 
                         {!isReadOnlyUser && (
-                            <div onDragEnter={handleDrag}>
+                            <div onDragEnter={handleDrag} className="p-2 bg-white/10 rounded-lg">
                                 <input ref={fileInputRef} type="file" id="file-upload-input" className="hidden" onChange={handleFileChange} />
                                 { !fileToUpload ? (
                                     <label
                                         htmlFor="file-upload-input"
                                         className={`relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors
-                                            ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 hover:border-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}
+                                            ${dragActive ? 'border-white bg-white/20' : 'border-blue-400 hover:border-white hover:bg-white/10'}`}
                                     >
-                                        <UploadCloud className="w-10 h-10 text-slate-400 mb-2" />
-                                        <span className="font-bold text-slate-700 dark:text-slate-200">Click to upload or drag and drop</span>
-                                        <span className="text-sm text-slate-500 dark:text-slate-400 mt-1">PDF, DOCX, PNG, JPG, etc.</span>
+                                        <UploadCloud className="w-10 h-10 text-blue-200 mb-2" />
+                                        <span className="font-bold text-white">Click to upload or drag and drop</span>
+                                        <span className="text-sm text-blue-200 mt-1">PDF, DOCX, PNG, JPG, etc.</span>
                                         {dragActive && <div className="absolute inset-0 w-full h-full" onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}></div>}
                                     </label>
                                 ) : (
-                                    <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700 rounded-lg shadow-inner">
+                                    <div className="flex items-center justify-between p-3 bg-blue-900/50 rounded-lg">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <FileText className="w-6 h-6 text-slate-500 flex-shrink-0"/>
-                                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{fileToUpload.name}</span>
+                                            <FileText className="w-6 h-6 text-blue-200 flex-shrink-0"/>
+                                            <span className="text-sm font-bold text-white truncate">{fileToUpload.name}</span>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                                              <button
                                                 onClick={handleFileUpload}
                                                 disabled={isUploading}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-bold text-sm disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                                                className="px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-600 font-bold text-sm disabled:bg-sky-300 disabled:cursor-not-allowed flex items-center transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400"
                                             >
                                                 {isUploading && <Loader className="w-5 h-5 mr-2 animate-spin"/>}
                                                 {isUploading ? 'Uploading' : 'Upload'}
                                             </button>
-                                            <button onClick={() => setFileToUpload(null)} title="Clear selection" className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors focus-visible:ring-2 focus-visible:ring-slate-500">
+                                            <button onClick={() => setFileToUpload(null)} title="Clear selection" className="p-2 rounded-full text-blue-200 hover:bg-blue-600 transition-colors focus-visible:ring-2 focus-visible:ring-white">
                                                 <XCircle className="w-6 h-6"/>
                                             </button>
                                         </div>
@@ -276,7 +273,7 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
                         )}
                     </header>
 
-                    <div className="p-6 overflow-y-auto flex-grow styled-scrollbar">
+                    <div className="p-6 overflow-y-auto flex-grow bg-slate-50 dark:bg-slate-900 styled-scrollbar">
                         {renderContent()}
                     </div>
                 </motion.div>
@@ -284,8 +281,8 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({ isOpen, 
 
             {confirmDeleteId && (
                 <div className="fixed inset-0 z-[102] bg-black/60 flex items-center justify-center p-4" onClick={() => setConfirmDeleteId(null)}>
-                    <motion.div 
-                        className="bg-white dark:bg-slate-800 p-7 rounded-xl shadow-xl max-w-md w-full border border-slate-200 dark:border-slate-700" 
+                    <motion.div
+                        className="bg-white dark:bg-slate-800 p-7 rounded-xl shadow-xl max-w-md w-full border border-slate-200 dark:border-slate-700"
                         onClick={e => e.stopPropagation()}
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
