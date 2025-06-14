@@ -1,6 +1,11 @@
-import { usersAPI, UserDataTypes } from "../../../features/users/usersAPI";
+// ✨ MODIFIED: Added AlertTriangle icon for the delete modal
+import { UserPlus, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import AddClientModal from './registerclients'; // Adjust path if needed
+
+import { usersAPI, UserDataTypes } from "../../../features/users/usersAPI";
 import {
   FaEnvelope,
   FaPhoneAlt,
@@ -19,32 +24,76 @@ import {
   FaPhone,
   FaMapMarkerAlt
 } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 
-
+// --- (Type definitions are unchanged) ---
 type UserRole = "user" | "admin" | "lawyer" | "client" | "clerks" | "manager" | "supports";
+interface ApiErrorResponse { message?: string; error?: string; detail?: string; }
+interface RtkQueryError { status?: number | string; data?: ApiErrorResponse | string; error?: string; message?: string; }
 
-// Define a type for API error responses from your backend's JSON payload
-interface ApiErrorResponse {
-  message?: string;
-  error?: string ;
-  detail?: string;
-}
 
-// Interface to represent the structure of errors from RTK Query
-interface RtkQueryError {
-  status?: number | string;
-  data?: ApiErrorResponse | string ;
-  error?: string;
-  message?: string;
-}
+// ✨ NEW: Confirmation Modal Component for Deletion
+const ConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  children: React.ReactNode;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-opacity"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 text-center">
+          <div className="flex justify-center text-red-500 dark:text-red-400 mb-4">
+            <AlertTriangle size={48} strokeWidth={1.5} />
+          </div>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
+          <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            {children}
+          </div>
+          <div className="mt-6 flex justify-center gap-4">
+            <button
+              onClick={onClose}
+              className="btn btn-sm sm:btn-md bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 border-none px-6"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              className="btn btn-sm sm:btn-md bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 border-none px-6"
+            >
+              Confirm Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
 function Account() {
   const navigate = useNavigate();
   const { data: usersData, isLoading: usersLoading, error: usersError, refetch: refetchUsers } = usersAPI.useFetchUsersQuery();
   const [updateUserMutation] = usersAPI.useUpdateUserMutation();
-  const [deleteUserMutation] = usersAPI.useDeleteUserMutation();
+  const [deleteUserMutation, { isLoading: isDeleting }] = usersAPI.useDeleteUserMutation(); // ✨ Get loading state for delete
+
+  // ✨ MODIFIED: State names for better clarity
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserDataTypes | null>(null);
 
   const [updatingSelectRoleId, setUpdatingSelectRoleId] = useState<number | null>(null);
   const [togglingUserAdminRoleId, setTogglingUserAdminRoleId] = useState<number | null>(null);
@@ -56,7 +105,6 @@ function Account() {
     address: '',
   });
 
-  // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('theme');
@@ -75,10 +123,7 @@ function Account() {
     }
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
   useEffect(() => {
     if (usersData) {
@@ -86,15 +131,11 @@ function Account() {
     }
   }, [usersData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFilters({ ...filters, [name]: value });
-  };
+  const handleRegistrationSuccess = () => refetchUsers();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, [e.target.name]: e.target.value });
+  const handleResetFilters = () => setFilters({ name: '', email: '', phone_number: '', address: '' });
 
-  const handleResetFilters = () => {
-    setFilters({ name: '', email: '', phone_number: '', address: '' });
-  };
-
+  // --- (getApiErrorMessage, handleRoleChangeFromSelect, handleToggleUserAdminRole are unchanged) ---
   const getApiErrorMessage = (error: unknown): string => {
     if (typeof error === 'object' && error !== null) {
       const errObj = error as RtkQueryError;
@@ -158,17 +199,24 @@ function Account() {
     }
   };
 
-  const handleDeleteUser = async (userId: number) => {
-    if (!window.confirm(`Are you sure you want to delete user ${userId}? This action cannot be undone.`)) {
-        return;
-    }
+
+  // ✨ MODIFIED: Deletion logic is now split into two functions
+  const handleDeleteUserClick = (user: UserDataTypes) => {
+    setUserToDelete(user); // This opens the confirmation modal
+  };
+
+  const executeDelete = async () => {
+    if (!userToDelete) return;
+    
     try {
-      await deleteUserMutation(userId).unwrap();
-      toast.success('🎉 User deleted successfully!');
+      await deleteUserMutation(userToDelete.user_id).unwrap();
+      toast.success(`User '${userToDelete.full_name}' deleted successfully!`);
       refetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error(`❌ Error deleting user: ${getApiErrorMessage(error)}`);
+    } finally {
+      setUserToDelete(null); // Close the modal regardless of outcome
     }
   };
 
@@ -182,6 +230,7 @@ function Account() {
     );
   }) || [];
 
+  // --- (HeaderCell, HeaderCellCenter, and StylishMessage components are unchanged) ---
   const HeaderCell = ({ icon: Icon, text }: { icon: React.ElementType, text: string }) => (
     <th className="p-4">
       <div className="flex items-center">
@@ -212,8 +261,8 @@ function Account() {
     </div>
   );
 
-
   const renderContent = () => {
+    // --- (The logic inside renderContent is mostly unchanged, except for the delete button's onClick handler) ---
     if (usersLoading) {
       return (
         <div className="text-center py-20">
@@ -301,13 +350,8 @@ function Account() {
           </thead>
           <tbody className="text-slate-700 dark:text-slate-300">
             {filteredUsers.map((user: UserDataTypes) => (
-              <tr 
-                key={user.user_id} 
-                className="hover:bg-gray-200 dark:hover:bg-slate-600 
-                           odd:bg-gray-100 even:bg-gray-50
-                           dark:odd:bg-slate-800 dark:even:bg-slate-700 
-                           transition-colors duration-150"
-              >
+              <tr key={user.user_id} className="hover:bg-gray-200 dark:hover:bg-slate-600 odd:bg-gray-100 even:bg-gray-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 transition-colors duration-150">
+                {/* --- (Table cells for user data are unchanged) --- */}
                 <td className="p-3 border-b border-slate-200 dark:border-slate-600">{/* Adjusted dark border for better contrast with slate-700/800 */}
                     <div className="flex items-center">
                         <FaFingerprint className="inline mr-1.5 text-slate-400 dark:text-slate-500" />
@@ -379,10 +423,12 @@ function Account() {
                     >
                       {togglingUserAdminRoleId === user.user_id ? 'Updating...' : (user.role === 'admin' ? 'Make User' : 'Make Admin')}
                     </button>
+                    {/* ✨ MODIFIED: The delete button now opens the modal */}
                     <button
-                      onClick={() => handleDeleteUser(user.user_id)}
+                      onClick={() => handleDeleteUserClick(user)}
                       className="btn btn-sm bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 w-full sm:w-auto px-3 flex items-center justify-center"
                       title="Delete User"
+                      disabled={isDeleting && userToDelete?.user_id === user.user_id}
                     >
                       <FaTrash />
                     </button>
@@ -402,6 +448,7 @@ function Account() {
       <Toaster richColors theme={isDarkMode ? 'dark' : 'light'} position="top-right" />
       <div className="p-4 md:p-6 bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-slate-200 transition-colors duration-300">
         <div className="mb-4 flex justify-between items-center">
+            {/* --- (Header buttons are unchanged) --- */}
             <button 
               onClick={() => navigate(-1)} 
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 shadow-md transition duration-150"
@@ -421,20 +468,51 @@ function Account() {
         </h1>
 
         <div className="mb-6 p-4 bg-white dark:bg-slate-800 shadow-lg rounded-lg">
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-100 mb-3">Filter Users</h2>
+            <div className='flex justify-between items-center mb-4'>
+              <h2 className="text-xl font-semibold text-gray-700 dark:text-slate-100">Filter Users</h2>
+              <button 
+                onClick={() => setIsAddUserModalOpen(true)}
+                className="btn btn-sm sm:btn-md bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 shadow-md transition duration-150 flex items-center gap-2"
+              >
+                  <UserPlus size={18} />
+                  <span className="hidden sm:inline">Add New User</span>
+              </button>
+            </div>
+            {/* --- (Filter inputs are unchanged) --- */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="🔍 Filter by name" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="✉️ Filter by email" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="phone_number" value={filters.phone_number} onChange={handleInputChange} placeholder="📞 Filter by phone" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
-            <input type="text" name="address" value={filters.address} onChange={handleInputChange} placeholder="📍 Filter by address" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
-            <button onClick={handleResetFilters} className="btn bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 w-full sm:w-auto sm:col-span-2 lg:col-span-1">
-                🔄 Reset Filters
-            </button>
+                <input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="🔍 Filter by name" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+                <input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="✉️ Filter by email" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+                <input type="text" name="phone_number" value={filters.phone_number} onChange={handleInputChange} placeholder="📞 Filter by phone" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+                <input type="text" name="address" value={filters.address} onChange={handleInputChange} placeholder="📍 Filter by address" className="input input-bordered w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-indigo-500 focus:border-indigo-500" />
+                <button onClick={handleResetFilters} className="btn bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 w-full sm:w-auto sm:col-span-2 lg:col-span-1">
+                    🔄 Reset Filters
+                </button>
             </div>
         </div>
 
         {renderContent()}
       </div>
+
+      {/* Render the "Add User" modal */}
+      <AddClientModal 
+        isOpen={isAddUserModalOpen}
+        onClose={() => setIsAddUserModalOpen(false)}
+        onSuccess={handleRegistrationSuccess}
+      />
+
+      {/* ✨ NEW: Render the deletion confirmation modal */}
+      <ConfirmationModal
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={executeDelete}
+        title="Confirm User Deletion"
+      >
+        Are you sure you want to permanently delete the user{' '}
+        <strong className="text-slate-800 dark:text-slate-100">
+          {userToDelete?.full_name}
+        </strong>
+        ? This action cannot be undone.
+      </ConfirmationModal>
     </>
   );
 }
