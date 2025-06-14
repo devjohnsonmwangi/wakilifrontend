@@ -68,7 +68,7 @@ const AddClientModal = ({ isOpen, onClose, onSuccess }: AddClientModalProps) => 
         phone_number: data.phone_number,
         address: data.address,
         password: data.password,
-        role: "user" 
+        role: "client" 
       };
       await createUser(formattedData).unwrap();
       toast.success("Client registered successfully!");
