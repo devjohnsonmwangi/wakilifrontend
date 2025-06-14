@@ -138,7 +138,7 @@ const Services = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-gray-100 flex flex-col transition-colors duration-300">
-            <Navbar /> {/* Ensure Navbar is also dark-mode aware */}
+            <Navbar /> 
 
             {/* Hero Section */}
             <div
@@ -146,7 +146,7 @@ const Services = () => {
                 style={{ backgroundImage: `url(${pageBackground})` }}
             >
                 {/* Overlay for contrast - adapts to dark mode */}
-                <div className="absolute inset-0 bg-white/50 dark:bg-black/70 backdrop-blur-sm transition-colors duration-300"></div>
+                <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm transition-colors duration-300"></div>
                 <div className="relative z-10 flex flex-col items-center">
                     <img
                         src={serviceHeroImage}
@@ -158,8 +158,8 @@ const Services = () => {
                             Our Premium Legal Services
                         </span>
                     </h1>
-                    <p className="text-lg md:text-xl text-slate-700 dark:text-gray-300 max-w-2xl transition-colors duration-300">
-                        At <strong className="font-semibold text-slate-600 dark:text-blue-400">Wakili</strong>, we are dedicated to delivering exceptional legal solutions tailored to your unique needs with utmost professionalism and care.
+                    <p className=" font-extrabold text-lg md:text-xl text-slate-300 dark:text-gray-300 max-w-2xl transition-colors duration-300">
+                        At <strong className="font-extrabold text-blue-400 dark:text-blue-400">Wakili</strong>, we are dedicated to delivering exceptional legal solutions tailored to your unique needs with utmost professionalism and care.
                     </p>
                 </div>
             </div>
