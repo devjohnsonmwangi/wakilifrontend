@@ -1,9 +1,9 @@
-// ✨ MODIFIED: Added AlertTriangle icon for the delete modal
+
 import { UserPlus, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import AddClientModal from './registerclients'; // Adjust path if needed
+import AddClientModal from './registerclients'; 
 
 import { usersAPI, UserDataTypes } from "../../../features/users/usersAPI";
 import {
