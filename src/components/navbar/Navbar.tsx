@@ -9,7 +9,7 @@ import {
     User, LogOut as LogOutIcon, Home, Info, Mail, UserPlus, LogIn, LayoutDashboard,
     X, ChevronDown, Settings, HelpCircle, Briefcase, BookOpen, DownloadCloud, MoreHorizontal,
     Menu,
-    Newspaper,
+    // Newspaper, // <-- Removed
     Sun, // <-- Import Sun icon
     Moon, // <-- Import Moon icon
 } from 'lucide-react';
@@ -178,7 +178,7 @@ const Navbar: FC = () => {
     const desktopNavLinksList = [
         { to: "/", icon: Home, label: "Home" },
         { to: "/howitworks", icon: BookOpen, label: "How It Works" },
-        { to: "/updates", icon: Newspaper, label: "News" },
+        // { to: "/updates", icon: Newspaper, label: "News" }, // <-- REMOVED
         { to: "/about", icon: Info, label: "About Us" },
         { to: "/services", icon: Briefcase, label: "Services" },
         ...(userRole !== 'disabled' && username ? [{ to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] : []),
@@ -305,7 +305,8 @@ const Navbar: FC = () => {
                 {username && userRole !== 'disabled' ? (
                     <Link to="/dashboard" className={bottomNavLinkClasses(location.pathname.startsWith("/dashboard"))}> <LayoutDashboard className="w-5 h-5 mb-0.5 shrink-0" /> Dashboard </Link>
                 ) : (
-                     <Link to="/updates" className={bottomNavLinkClasses(location.pathname.startsWith("/updates"))}> <Newspaper className="w-5 h-5 mb-0.5 shrink-0" /> News </Link>
+                    // MODIFIED: Replaced News with Services for non-logged-in users
+                    <Link to="/services" className={bottomNavLinkClasses(location.pathname.startsWith("/services"))}> <Briefcase className="w-5 h-5 mb-0.5 shrink-0" /> Services </Link>
                 )}
                 <Link to="/howitworks" className={bottomNavLinkClasses(location.pathname.startsWith("/howitworks"))}> <BookOpen className="w-5 h-5 mb-0.5 shrink-0" /> How It Works </Link>
                 <button type="button" onClick={toggleMobileMoreSheet} className={bottomNavLinkClasses(isMobileMoreSheetOpen)} aria-label="More options">
@@ -345,9 +346,7 @@ const Navbar: FC = () => {
 
                             {shouldShowPWAButton && (<button type="button" onClick={handlePWAInstall} className={`${PWA_BUTTON_SHARED_CLASSES} ${mobileSheetLinkClasses(false)} w-full bg-green-100 text-green-700 hover:bg-green-200 text-base px-4 py-3`}><DownloadCloud className="w-5 h-5 mr-3 shrink-0" /> Install WakiliApp</button>)}
                             
-                            {!(username && userRole !== 'disabled') && (
-                                <Link to="/updates" className={mobileSheetLinkClasses(location.pathname.startsWith("/updates"))}><Newspaper className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> News</Link>
-                            )}
+                            {/* REMOVED: News link for non-logged in users was here */}
                             <Link to="/services" className={mobileSheetLinkClasses(location.pathname === "/services")}><Briefcase className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> Services</Link>
                             <Link to="/about" className={mobileSheetLinkClasses(location.pathname === "/about")}><Info className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> About Us</Link>
                             <Link to="/contactus" className={mobileSheetLinkClasses(location.pathname === "/contactus")}><Mail className="w-5 h-5 mr-3 text-gray-500 shrink-0" /> Contact Us</Link>
