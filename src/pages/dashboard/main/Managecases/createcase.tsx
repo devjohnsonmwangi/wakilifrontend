@@ -273,7 +273,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
 
     if (!isOpen) return null;
 
-    const caseTypeOptions = [ { value: 'civil', label: 'Civil' }, { value: 'criminal', label: 'Criminal' }, { value: 'family', label: 'Family' }, { value: 'corporate', label: 'Corporate' }, { value: 'property', label: 'Property' }, { value: 'employment', label: 'Employment' }, { value: 'intellectual_property', label: 'Intellectual Property' }, { value: 'immigration', label: 'Immigration' }, { value: 'elc', label: 'ELC' }, { value: 'childrenCase', label: "Children's Case" }, { value: 'tribunal', label: 'Tribunal' }, { value: 'conveyances', label: 'Conveyances' }, ];
+    const caseTypeOptions = [ { value: 'civil', label: 'Civil' }, { value: 'criminal', label: 'Criminal' }, { value: 'family', label: 'Family' }, { value: 'corporate', label: 'Corporate' }, { value: 'property', label: 'Property' }, { value: 'employment', label: 'Employment' }, { value: 'intellectual_property', label: 'Intellectual Property' }, { value: 'immigration', label: 'Immigration' }, { value: 'elc', label: 'ELC' }, { value: 'childrenCase', label: "Children's Case" }, { value: 'Tribunal', label: 'Tribunal' }, { value: 'conveyances', label: 'Conveyances' }, ];
 
 
     return (
