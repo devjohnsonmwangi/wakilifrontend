@@ -22,7 +22,6 @@ import {
   AlertTriangle,
   CalendarDays,
   RefreshCcw,
-
   Sun,
   Moon,
   User,
@@ -32,6 +31,7 @@ import {
   Briefcase,
   Users as StaffIcon,
   ListFilter, 
+  X, // <<< ADDED: Icon for the clear button
 } from 'lucide-react';
 
 interface ApiError {
@@ -102,13 +102,8 @@ const ClientAppointments: React.FC = () => {
   const queryParamsForFetch: Omit<FetchAppointmentsArgs, 'clientId'> = useMemo(() => {
     const params: Omit<FetchAppointmentsArgs, 'clientId'> = {};
     if (searchStatus) params.status = searchStatus;
-    // Convert YYYY-MM-DD to full ISO strings if your backend expects that for dateTimeFrom/To
-    // Or send as YYYY-MM-DD and let backend handle it
     if (searchDateFrom) params.dateTimeFrom = new Date(searchDateFrom + "T00:00:00.000Z").toISOString();
     if (searchDateTo) params.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString();
-    // Add limit/offset if implementing pagination
-    // params.limit = 20;
-    // params.offset = 0;
     return params;
   }, [searchStatus, searchDateFrom, searchDateTo]);
 
@@ -169,17 +164,15 @@ const ClientAppointments: React.FC = () => {
     if (isFetchAppointmentsError && queryError) {
       const typedQueryError = queryError as ApiError;
       const errorMessage = getErrorMessage(typedQueryError);
-      if (errorMessage === NO_APPOINTMENTS_FOUND_MESSAGE || (typedQueryError.status === 404)) { // Also check for 404
+      if (errorMessage === NO_APPOINTMENTS_FOUND_MESSAGE || (typedQueryError.status === 404)) {
         noAppointmentsSignal = true;
       } else {
         currentError = typedQueryError;
       }
     } else if (!isLoadingAppointments && appointmentsData) {
-      // Check if appointmentsData itself is an error object with a message
       if (isApiMessageResponse(appointmentsData) && appointmentsData.message === NO_APPOINTMENTS_FOUND_MESSAGE) {
         noAppointmentsSignal = true;
-      }
-      else if (Array.isArray(appointmentsData) && appointmentsData.length === 0) {
+      } else if (Array.isArray(appointmentsData) && appointmentsData.length === 0) {
         noAppointmentsSignal = true;
       }
     }
@@ -189,47 +182,23 @@ const ClientAppointments: React.FC = () => {
 
   const openEditModal = (appointment: AppointmentDataTypes) => { setSelectedAppointment(appointment); setIsEditModalOpen(true); };
   const closeEditModal = () => { setSelectedAppointment(null); setIsEditModalOpen(false); };
-
-  const openReasonModal = (reason: string, party: string) => {
-    setReasonToDisplay(reason);
-    setReasonPartyName(party);
-    setIsReasonModalOpen(true);
-  };
-  const closeReasonModal = () => {
-    setIsReasonModalOpen(false);
-    setReasonToDisplay('');
-    setReasonPartyName('');
-  };
+  const openReasonModal = (reason: string, party: string) => { setReasonToDisplay(reason); setReasonPartyName(party); setIsReasonModalOpen(true); };
+  const closeReasonModal = () => { setIsReasonModalOpen(false); setReasonToDisplay(''); setReasonPartyName(''); };
 
   const handleAppointmentUpdated = () => {
     if (clientId) refetch();
     toast.success("Appointment details have been updated or your request has been submitted.");
   };
 
-  const actualAppointmentsArray: AppointmentDataTypes[] = useMemo(() => {
-    if (Array.isArray(appointmentsData)) {
-      return appointmentsData;
-    }
-    return [];
-  }, [appointmentsData]);
+  const actualAppointmentsArray: AppointmentDataTypes[] = useMemo(() => Array.isArray(appointmentsData) ? appointmentsData : [], [appointmentsData]);
 
-  // Client-side filtering after data is fetched.
-  
-  
   const filteredAppointments = useMemo(() => {
     if (!clientId || isBackendNoAppointments || displayableError) return [];
     return actualAppointmentsArray.filter(appointment => {
-      // Status filter is  handled by queryParamsForFetch (server-side) if backend supports it,
-      // but we  keep it for client-side too if needed, or remove if server handles it.
-      // const statusMatch = searchStatus ? appointment.status === searchStatus : true;
-
       const partyNameLower = appointment.party?.toLowerCase() || '';
       const assignedStaffNamesLower = appointment.assignees?.map(a => a.assignee?.full_name?.toLowerCase() || '').join(' ') || '';
       const searchLower = searchPartyOrStaff.toLowerCase();
-      const partyOrStaffMatch = searchPartyOrStaff
-        ? partyNameLower.includes(searchLower) || assignedStaffNamesLower.includes(searchLower)
-        : true;
-
+      const partyOrStaffMatch = searchPartyOrStaff ? partyNameLower.includes(searchLower) || assignedStaffNamesLower.includes(searchLower) : true;
       const locationMatch = searchLocationId ? appointment.branch_id === Number(searchLocationId) : true;
       return partyOrStaffMatch && locationMatch; 
     });
@@ -268,16 +237,13 @@ const ClientAppointments: React.FC = () => {
     </div>
   );
 
-
   if (!clientId || !currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 sm:p-6 lg:p-8 font-sans flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 font-sans flex items-center justify-center">
         <div className="max-w-md w-full bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-8 text-center">
             <LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" />
             <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">View Your Appointments</h2>
-            <p className="text-slate-500 dark:text-slate-400">
-              Please log in to see your scheduled appointments.
-            </p>
+            <p className="text-slate-500 dark:text-slate-400">Please log in to see your scheduled appointments.</p>
         </div>
       </div>
     );
@@ -287,12 +253,23 @@ const ClientAppointments: React.FC = () => {
   const isFilteringActive = !!(searchPartyOrStaff || searchLocationId || searchStatus || searchDateFrom || searchDateTo);
   const showNoAppointmentsMessage = !isActuallyLoading && !displayableError && filteredAppointments.length === 0;
 
-
-  const inputClass = "block w-full p-2.5 text-sm text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500";
+  // <<< OPTIMIZED: Centralized input styling inspired by reference code
+  const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent transition-all duration-200 shadow-sm text-sm [color-scheme:light] dark:[color-scheme:dark]`;
+  
+  // <<< ADDED: Reusable clear button component for inputs
+  const ClearButton: React.FC<{ onClick: () => void; rightClass?: string }> = ({ onClick, rightClass = 'pr-3' }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`absolute inset-y-0 right-0 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none z-10 ${rightClass}`}
+      aria-label="Clear input"
+    >
+      <X size={16} />
+    </button>
+  );
 
   const ProfilePictureFallback: React.FC<{ name?: string | null, size?: number }> = ({ name, size = 8 }) => {
     const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || '';
-    
     const classSize = `h-${size} w-${size}`; 
     const iconSize = `h-${Math.floor(size/1.5)} w-${Math.floor(size/1.5)}`;
 
@@ -303,12 +280,12 @@ const ClientAppointments: React.FC = () => {
     return <div className={`flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${classSize}`}><User className={iconSize} /></div>;
   };
 
-
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 sm:p-6 lg:p-8 font-sans transition-colors duration-300`}>
+    // <<< OPTIMIZED: Padding reduced on mobile for more content space
+    <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-8 font-sans transition-colors duration-300`}>
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
       <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden">
-        <header className="p-6 md:p-8 border-b border-slate-200 dark:border-slate-700">
+        <header className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="flex items-center">
               <div className="mr-3 flex-shrink-0">
@@ -326,25 +303,41 @@ const ClientAppointments: React.FC = () => {
           </div>
         </header>
 
-        <section className="p-6 md:p-8">
+        {/* <<< OPTIMIZED: Section padding reduced on mobile */}
+        <section className="p-4 md:p-6">
           <div className="mb-6 p-4 sm:p-6 bg-slate-50/70 dark:bg-slate-700/30 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
             <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> Filter Appointments </h2>
+            {/* <<< REWRITTEN: Grid for filters with working clearable inputs and enhanced dropdowns */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
-              <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={inputClass} />
-              <select title="Filter by location" value={searchLocationId} onChange={(e) => setSearchLocationId(e.target.value)} className={inputClass} disabled={isLoadingBranchLocations}>
-                <option value="">All Locations</option>
-                {isLoadingBranchLocations ? <option disabled>Loading locations...</option> : branchLocations?.map(loc => <option key={loc.branch_id} value={loc.branch_id}>{loc.name}</option>)}
-              </select>
-              <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={inputClass}>
-                <option value="">All Statuses</option>
-                {APPOINTMENT_STATUS_VALUES.map(statusVal => (
-                    <option key={statusVal} value={statusVal}>{getStatusDisplayName(statusVal)}</option>
-                ))}
-              </select>
-              {/* Add Date Range Filters - these will trigger refetch via queryParamsForFetch */}
+              <div className="relative">
+                <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={`${inputBaseClasses} pr-10`} />
+                {searchPartyOrStaff && <ClearButton onClick={() => setSearchPartyOrStaff('')} />}
+              </div>
+              <div className="relative">
+                <select title="Filter by location" value={searchLocationId} onChange={(e) => setSearchLocationId(e.target.value)} className={`${inputBaseClasses} font-semibold truncate pr-10 appearance-none`} disabled={isLoadingBranchLocations}>
+                  <option value="">All Locations</option>
+                  {isLoadingBranchLocations ? <option disabled>Loading...</option> : branchLocations?.map(loc => <option key={loc.branch_id} value={loc.branch_id}>{loc.name}</option>)}
+                </select>
+                {searchLocationId && <ClearButton onClick={() => setSearchLocationId('')} rightClass="pr-8" />}
+              </div>
+              <div className="relative">
+                <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={`${inputBaseClasses} font-semibold truncate pr-10 appearance-none`}>
+                  <option value="">All Statuses</option>
+                  {APPOINTMENT_STATUS_VALUES.map(statusVal => (
+                      <option key={statusVal} value={statusVal}>{getStatusDisplayName(statusVal)}</option>
+                  ))}
+                </select>
+                {searchStatus && <ClearButton onClick={() => setSearchStatus('')} rightClass="pr-8" />}
+              </div>
               <div className="grid grid-cols-2 gap-2">
-                <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={inputClass} />
-                <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={inputClass} min={searchDateFrom || undefined} />
+                <div className="relative">
+                  <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} pr-10`} />
+                  {searchDateFrom && <ClearButton onClick={() => setSearchDateFrom('')} />}
+                </div>
+                <div className="relative">
+                  <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} pr-10`} min={searchDateFrom || undefined} />
+                  {searchDateTo && <ClearButton onClick={() => setSearchDateTo('')} />}
+                </div>
               </div>
             </div>
           </div>
@@ -366,7 +359,6 @@ const ClientAppointments: React.FC = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                     {filteredAppointments.map((appointment, index) => {
-                      // Parse the appointment_datetime string into a Date object
                       const appointmentDateObj = new Date(appointment.appointment_datetime);
                       const displayDate = !isNaN(appointmentDateObj.getTime()) ? appointmentDateObj.toLocaleDateString() : 'Invalid Date';
                       const displayTime = !isNaN(appointmentDateObj.getTime()) ? appointmentDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Invalid Time';
@@ -376,7 +368,6 @@ const ClientAppointments: React.FC = () => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-200">{appointment.appointment_id}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.party}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
-                            {/* MODIFIED: Use appointment_datetime */}
                             {displayDate} at {displayTime}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
@@ -413,8 +404,8 @@ const ClientAppointments: React.FC = () => {
                                     appointment.status === 'completed' ? 'bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100' :
                                     appointment.status === 'cancelled' ? 'bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-100' :
                                     appointment.status === 'rescheduled' ? 'bg-purple-100 dark:bg-purple-700 text-purple-800 dark:text-purple-100' :
-                                    appointment.status === 'no_show' ? 'bg-orange-100 dark:bg-orange-700 text-orange-800 dark:text-orange-100' : // Added no_show
-                                    'bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-100'}`}> {/* Default for pending */}
+                                    appointment.status === 'no_show' ? 'bg-orange-100 dark:bg-orange-700 text-orange-800 dark:text-orange-100' :
+                                    'bg-yellow-100 dark:bg-yellow-700 text-yellow-800 dark:text-yellow-100'}`}>
                                   {getStatusDisplayName(appointment.status)}
                               </span>
                           </td>
@@ -437,10 +428,10 @@ const ClientAppointments: React.FC = () => {
       {isEditModalOpen && selectedAppointment && clientId && (
         <EditAppointment
           isDarkMode={isDarkMode}
-          appointment={selectedAppointment} // This appointment object will have `appointment_datetime`
+          appointment={selectedAppointment}
           onAppointmentUpdated={handleAppointmentUpdated}
           onClose={closeEditModal}
-          isClientView={true} // Set to true for client-specific edit capabilities
+          isClientView={true}
         />
       )}
 

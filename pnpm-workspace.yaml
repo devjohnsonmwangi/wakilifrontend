@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - '@tsparticles/engine'
+  - core-js
+  - esbuild
+  - react-tsparticles
+  - sharp
+  - tsparticles-engine
