@@ -1,4 +1,4 @@
-ignoredBuiltDependencies:
+onlyBuiltDependencies:
   - '@tsparticles/engine'
   - core-js
   - esbuild
