@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     useCreateAppointmentMutation,
-    CreateAppointmentPayload, 
-} from '../../../../features/appointment/appointmentapi'; 
-import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi'; 
+    CreateAppointmentPayload,
+} from '../../../../features/appointment/appointmentapi';
+import { useFetchBranchLocationsQuery, BranchLocationDataTypes } from '../../../../features/branchlocation/branchlocationapi';
 import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+// CORRECTED: Imported Variants type from framer-motion
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as UserIcon, Search, ChevronDown } from 'lucide-react';
 
 interface CreateAppointmentProps {
@@ -227,13 +228,14 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
         }
     };
 
-    const modalVariants = {
+    // CORRECTED: Added the Variants type to the object definitions
+    const modalVariants: Variants = {
         hidden: { opacity: 0, y: 50, scale: 0.95 },
         visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
         exit: { opacity: 0, y: 30, scale: 0.95, transition: { duration: 0.2, ease: "easeIn" } },
     };
 
-    const backdropVariants = {
+    const backdropVariants: Variants = {
         hidden: { opacity: 0 },
         visible: { opacity: 1, transition: { duration: 0.3 } },
         exit: { opacity: 0, transition: { duration: 0.2 } },
@@ -253,7 +255,8 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
         return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     };
 
-    const dropdownListVariants = {
+    // CORRECTED: Added the Variants type to the object definition
+    const dropdownListVariants: Variants = {
         hidden: { opacity: 0, y: -10 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
         exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } }
