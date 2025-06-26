@@ -33,7 +33,7 @@ import {
   Users as StaffIcon,
   ListFilter,
   Search,
-  ChevronDown, // <<< ADDED from reference
+  ChevronDown,
   X,
 } from 'lucide-react';
 
@@ -91,22 +91,21 @@ const ClientAppointments: React.FC = () => {
 
   const [imgError, setImgError] = useState(false);
 
-  // State for query parameters for useFetchAppointmentsByClientQuery
+  // State for filters
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
-  // For client-side filtering, not directly for the query
   const [searchPartyOrStaff, setSearchPartyOrStaff] = useState('');
   const [searchLocationId, setSearchLocationId] = useState<string | number | ''>('');
-  
-  const [searchDateFrom, setSearchDateFrom] = useState(''); // YYYY-MM-DD
-  const [searchDateTo, setSearchDateTo] = useState('');   // YYYY-MM-DD
-  
+  const [searchDateFrom, setSearchDateFrom] = useState('');
+  const [searchDateTo, setSearchDateTo] = useState('');
+
+  // State for custom dropdowns
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [isStatusFilterDropdownOpen, setIsStatusFilterDropdownOpen] = useState(false);
   
   const locationDropdownRef = useRef<HTMLDivElement>(null);
   const statusFilterDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Construct queryParams object for the hook
+  // RTK Query hooks
   const queryParamsForFetch: Omit<FetchAppointmentsArgs, 'clientId'> = useMemo(() => {
     const params: Omit<FetchAppointmentsArgs, 'clientId'> = {};
     if (searchStatus) params.status = searchStatus;
@@ -114,7 +113,6 @@ const ClientAppointments: React.FC = () => {
     if (searchDateTo) params.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString();
     return params;
   }, [searchStatus, searchDateFrom, searchDateTo]);
-
 
   const {
     data: appointmentsData,
@@ -124,24 +122,19 @@ const ClientAppointments: React.FC = () => {
     refetch,
   } = useFetchAppointmentsByClientQuery(
     { clientId: clientId as string | number, queryParams: queryParamsForFetch },
-    {
-      skip: !clientId,
-      refetchOnMountOrArgChange: true,
-    }
+    { skip: !clientId, refetchOnMountOrArgChange: true }
   );
-
 
   const { data: branchLocations, isLoading: isLoadingBranchLocations } = useFetchBranchLocationsQuery();
 
+  // Modal and other state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [reasonToDisplay, setReasonToDisplay] = useState('');
   const [reasonPartyName, setReasonPartyName] = useState('');
-
   const [displayableError, setDisplayableError] = useState<ApiError | null>(null);
   const [isBackendNoAppointments, setIsBackendNoAppointments] = useState(false);
-
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const storedPreference = localStorage.getItem('darkMode');
@@ -150,12 +143,12 @@ const ClientAppointments: React.FC = () => {
     return false;
   });
 
+  // Effects
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
     if (typeof window !== 'undefined') localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
 
-  // CORRECTED: Added click outside handler for custom dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
         if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) setIsLocationDropdownOpen(false);
@@ -165,8 +158,6 @@ const ClientAppointments: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
-
   useEffect(() => {
     setImgError(false);
   }, [profilePictureUrl]);
@@ -175,9 +166,7 @@ const ClientAppointments: React.FC = () => {
     let noAppointmentsSignal = false;
     let currentError: ApiError | null = null;
     if (!clientId) {
-        setIsBackendNoAppointments(true);
-        setDisplayableError(null);
-        return;
+      setIsBackendNoAppointments(true); setDisplayableError(null); return;
     }
     if (isFetchAppointmentsError && queryError) {
       const typedQueryError = queryError as ApiError;
@@ -198,15 +187,15 @@ const ClientAppointments: React.FC = () => {
     setDisplayableError(currentError);
   }, [isFetchAppointmentsError, queryError, appointmentsData, isLoadingAppointments, clientId]);
 
+  // Handlers
   const openEditModal = (appointment: AppointmentDataTypes) => { setSelectedAppointment(appointment); setIsEditModalOpen(true); };
   const closeEditModal = () => { setSelectedAppointment(null); setIsEditModalOpen(false); };
   const openReasonModal = (reason: string, party: string) => { setReasonToDisplay(reason); setReasonPartyName(party); setIsReasonModalOpen(true); };
   const closeReasonModal = () => { setIsReasonModalOpen(false); setReasonToDisplay(''); setReasonPartyName(''); };
-  const handleAppointmentUpdated = () => {
-    if (clientId) refetch();
-    toast.success("Appointment details have been updated or your request has been submitted.");
-  };
+  const handleAppointmentUpdated = () => { if (clientId) refetch(); toast.success("Appointment details have been updated or your request has been submitted."); };
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
+  // Derived State & Memos
   const actualAppointmentsArray: AppointmentDataTypes[] = useMemo(() => Array.isArray(appointmentsData) ? appointmentsData : [], [appointmentsData]);
 
   const filteredAppointments = useMemo(() => {
@@ -221,82 +210,34 @@ const ClientAppointments: React.FC = () => {
     });
   }, [actualAppointmentsArray, clientId, isBackendNoAppointments, displayableError, searchPartyOrStaff, searchLocationId]);
 
-  const LoadingIndicator: React.FC<{text?: string}> = ({text = "Loading your appointments..."}) => (
-    <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
-      <RefreshCcw className="h-12 w-12 animate-spin mb-4" />
-      <p className="text-lg">{text}</p>
-    </div>
-  );
-
-  const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => {
-    if (!errorToDisplay) return null;
-    const message = getErrorMessage(errorToDisplay);
-    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null;
-    return (
-        <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
-          <div className="flex items-center">
-            <AlertTriangle className="h-8 w-8 mr-3" />
-            <div>
-              <p className="font-bold text-lg">Error Loading Appointments</p>
-              <p className="text-sm">{message}</p>
-            </div>
-          </div>
-          {onRetry && <button onClick={onRetry} className="mt-4 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md text-sm flex items-center transition-colors"> <RefreshCcw className="h-4 w-4 mr-2" /> Try Again </button>}
-        </div>
-    );
-  };
-
-  const NoAppointmentsMessage: React.FC<{ isFiltering: boolean }> = ({ isFiltering }) => (
-    <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6">
-      <CalendarDays className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" />
-      <p className="text-xl font-semibold mb-2">{isFiltering ? "No appointments match your filters" : NO_APPOINTMENTS_FOUND_MESSAGE}</p>
-      <p className="text-sm text-center">{isFiltering ? "Try adjusting your search or filter criteria." : "Once an appointment is scheduled for you, it will appear here."}</p>
-    </div>
-  );
-
-  if (!clientId || !currentUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 font-sans flex items-center justify-center">
-        <div className="max-w-md w-full bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-8 text-center">
-            <LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" />
-            <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">View Your Appointments</h2>
-            <p className="text-slate-500 dark:text-slate-400">Please log in to see your scheduled appointments.</p>
-        </div>
-      </div>
-    );
-  }
-
   const isActuallyLoading = isLoadingAppointments || isLoadingBranchLocations;
   const isFilteringActive = !!(searchPartyOrStaff || searchLocationId || searchStatus || searchDateFrom || searchDateTo);
   const showNoAppointmentsMessage = !isActuallyLoading && !displayableError && filteredAppointments.length === 0;
 
+  // Reusable Components & Styles
   const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:focus:ring-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
 
-  // CORRECTED: Added dropdown variants from reference code
   const dropdownListVariants: Variants = {
     hidden: { opacity: 0, y: -10 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
     exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } }
   };
 
-  const ProfilePictureFallback: React.FC<{ name?: string | null, size?: number }> = ({ name, size = 8 }) => {
-    const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || '';
-    const classSize = `h-${size} w-${size}`;
-    const iconSize = `h-${Math.floor(size/1.5)} w-${Math.floor(size/1.5)}`;
+  const LoadingIndicator: React.FC<{text?: string}> = ({text = "Loading your appointments..."}) => ( <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400"><RefreshCcw className="h-12 w-12 animate-spin mb-4" /><p className="text-lg">{text}</p></div> );
+  const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => { if (!errorToDisplay) return null; const message = getErrorMessage(errorToDisplay); if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null; return ( <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert"><div className="flex items-center"><AlertTriangle className="h-8 w-8 mr-3" /><div><p className="font-bold text-lg">Error Loading Appointments</p><p className="text-sm">{message}</p></div></div>{onRetry && <button onClick={onRetry} className="mt-4 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md text-sm flex items-center transition-colors"> <RefreshCcw className="h-4 w-4 mr-2" /> Try Again </button>}</div> ); };
+  const NoAppointmentsMessage: React.FC<{ isFiltering: boolean }> = ({ isFiltering }) => ( <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6"><CalendarDays className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" /><p className="text-xl font-semibold mb-2">{isFiltering ? "No appointments match your filters" : NO_APPOINTMENTS_FOUND_MESSAGE}</p><p className="text-sm text-center">{isFiltering ? "Try adjusting your search or filter criteria." : "Once an appointment is scheduled for you, it will appear here."}</p></div> );
+  const ProfilePictureFallback: React.FC<{ name?: string | null, size?: number }> = ({ name, size = 8 }) => { const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || ''; const classSize = `h-${size} w-${size}`; const iconSize = `h-${Math.floor(size/1.5)} w-${Math.floor(size/1.5)}`; if (imgError && profilePictureUrl) { return <div className={`flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-300 ${classSize}`}><ImageOff className={iconSize} /></div>; } if (initials) return <div className={`flex items-center justify-center rounded-full bg-sky-500 text-white dark:bg-sky-600 text-xs font-semibold ${classSize}`}>{initials}</div>; return <div className={`flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${classSize}`}><User className={iconSize} /></div>; };
 
-    if (imgError && profilePictureUrl) {
-        return <div className={`flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-300 ${classSize}`}><ImageOff className={iconSize} /></div>;
-    }
-    if (initials) return <div className={`flex items-center justify-center rounded-full bg-sky-500 text-white dark:bg-sky-600 text-xs font-semibold ${classSize}`}>{initials}</div>;
-    return <div className={`flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ${classSize}`}><User className={iconSize} /></div>;
-  };
+  if (!clientId || !currentUser) {
+    return ( <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 font-sans flex items-center justify-center"><div className="max-w-md w-full bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-8 text-center"><LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" /><h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">View Your Appointments</h2><p className="text-slate-500 dark:text-slate-400">Please log in to see your scheduled appointments.</p></div></div> );
+  }
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-6 font-sans transition-colors duration-300`}>
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
       <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden">
         <header className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center">
               <div className="mr-3 flex-shrink-0">
                 {profilePictureUrl && !imgError ? (
@@ -316,18 +257,19 @@ const ClientAppointments: React.FC = () => {
         <section className="p-4 md:p-6">
           <div className="mb-6 p-4 bg-sky-50/70 dark:bg-sky-700/30 rounded-lg shadow-sm border border-sky-200 dark:border-sky-700">
             <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> Filter Appointments </h2>
+            {/* CORRECTED: Grid layout is robust and consistent */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
-              {/* CORRECTED: Text input with inline clear button */}
+              
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/>
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none"/>
                 <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
-                {searchPartyOrStaff && <button onClick={() => setSearchPartyOrStaff('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16} /></button>}
+                {searchPartyOrStaff && (<button type="button" onClick={() => setSearchPartyOrStaff('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16} /></button>)}
               </div>
 
-              {/* CORRECTED: Replaced select with custom dropdown */}
+              {/* CORRECTED: Custom dropdown for Location */}
               <div ref={locationDropdownRef} className="relative">
-                <button type="button" onClick={() => setIsLocationDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4 ${!searchLocationId ? 'text-slate-400 dark:text-slate-500' : ''}`} disabled={isLoadingBranchLocations}>
-                    <span className="truncate">
+                <button type="button" onClick={() => setIsLocationDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`} disabled={isLoadingBranchLocations}>
+                    <span className={`truncate font-semibold ${!searchLocationId ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>
                       {isLoadingBranchLocations ? 'Loading...' : (branchLocations?.find(b => b.branch_id.toString() === searchLocationId.toString())?.name || 'All Locations')}
                     </span>
                     <div className="flex items-center">
@@ -338,7 +280,7 @@ const ClientAppointments: React.FC = () => {
                 <AnimatePresence>
                   {isLocationDropdownOpen && !isLoadingBranchLocations && (
                       <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                          <li key="all-loc"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchLocationId(''); setIsLocationDropdownOpen(false); }}>All Locations</button></li>
+                          <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchLocationId(''); setIsLocationDropdownOpen(false); }}>All Locations</button></li>
                           {branchLocations?.map(loc => (
                               <li key={loc.branch_id}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchLocationId(loc.branch_id); setIsLocationDropdownOpen(false); }}>{loc.name}</button></li>
                           ))}
@@ -347,10 +289,10 @@ const ClientAppointments: React.FC = () => {
                 </AnimatePresence>
               </div>
 
-              {/* CORRECTED: Replaced select with custom dropdown */}
+              {/* CORRECTED: Custom dropdown for Status */}
               <div ref={statusFilterDropdownRef} className="relative">
-                  <button type="button" onClick={() => setIsStatusFilterDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4 ${!searchStatus ? 'text-slate-400 dark:text-slate-500' : ''}`}>
-                      <span className="truncate">{searchStatus ? getStatusDisplayName(searchStatus) : 'All Statuses'}</span>
+                  <button type="button" onClick={() => setIsStatusFilterDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}>
+                      <span className={`truncate font-semibold ${!searchStatus ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{searchStatus ? getStatusDisplayName(searchStatus) : 'All Statuses'}</span>
                       <div className="flex items-center">
                           {searchStatus && (<button type="button" onClick={(e) => { e.stopPropagation(); setSearchStatus(''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16}/></button>)}
                           <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isStatusFilterDropdownOpen ? 'rotate-180' : ''}`} />
@@ -359,7 +301,7 @@ const ClientAppointments: React.FC = () => {
                   <AnimatePresence>
                       {isStatusFilterDropdownOpen && (
                           <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                              <li key="all-stat"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchStatus(''); setIsStatusFilterDropdownOpen(false); }}>All Statuses</button></li>
+                              <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchStatus(''); setIsStatusFilterDropdownOpen(false); }}>All Statuses</button></li>
                               {APPOINTMENT_STATUS_VALUES.map(status => (
                                   <li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchStatus(status); setIsStatusFilterDropdownOpen(false); }}>{getStatusDisplayName(status)}</button></li>
                               ))}
@@ -368,15 +310,15 @@ const ClientAppointments: React.FC = () => {
                   </AnimatePresence>
               </div>
 
-              {/* CORRECTED: Date inputs with inline clear button */}
+              {/* CORRECTED: Date inputs with consistent clear buttons */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
                   <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} />
-                  {searchDateFrom && <button onClick={() => setSearchDateFrom('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
+                  {searchDateFrom && <button type="button" onClick={() => setSearchDateFrom('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
                 </div>
                 <div className="relative">
                   <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} min={searchDateFrom || undefined} />
-                  {searchDateTo && <button onClick={() => setSearchDateTo('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
+                  {searchDateTo && <button type="button" onClick={() => setSearchDateTo('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
                 </div>
               </div>
             </div>
@@ -418,7 +360,7 @@ const ClientAppointments: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                               {appointment.assignees && appointment.assignees.length > 0
-                                ? appointment.assignees.map((a, idx) => (
+                                ? appointment.assignees.map((a) => (
                                   <div key={a.assignee_user_id} className="flex items-center my-0.5">
                                       {a.assignee?.profile_picture ? (
                                           <img src={a.assignee.profile_picture} alt={a.assignee.full_name || ''} className="w-5 h-5 rounded-full mr-1.5 object-cover"/>
@@ -426,7 +368,6 @@ const ClientAppointments: React.FC = () => {
                                           <StaffIcon className="w-4 h-4 mr-1.5 text-slate-400 dark:text-slate-500" />
                                       )}
                                       <span className="truncate max-w-[150px]">{a.assignee?.full_name || `Staff ID: ${a.assignee_user_id}`}</span>
-                                      {idx < (appointment.assignees?.length ?? 0) -1 && <span className='mx-1'>,</span>}
                                   </div>
                                   ))
                                 : <span className="italic text-slate-500 dark:text-slate-400">Pending Assignment</span>
@@ -439,7 +380,7 @@ const ClientAppointments: React.FC = () => {
                             </button>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                              <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                   ${appointment.status === 'confirmed' ? 'bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-100' :
                                     appointment.status === 'completed' ? 'bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100' :
                                     appointment.status === 'cancelled' ? 'bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-100' :
