@@ -31,7 +31,8 @@ import {
   Briefcase,
   Users as StaffIcon,
   ListFilter, 
-  X, // <<< ADDED: Icon for the clear button
+  Search, // <<< ADDED from reference
+  X,
 } from 'lucide-react';
 
 interface ApiError {
@@ -253,11 +254,11 @@ const ClientAppointments: React.FC = () => {
   const isFilteringActive = !!(searchPartyOrStaff || searchLocationId || searchStatus || searchDateFrom || searchDateTo);
   const showNoAppointmentsMessage = !isActuallyLoading && !displayableError && filteredAppointments.length === 0;
 
-  // <<< OPTIMIZED: Centralized input styling inspired by reference code
-  const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-sky-500 focus:border-transparent transition-all duration-200 shadow-sm text-sm [color-scheme:light] dark:[color-scheme:dark]`;
+  // Centralized input styling inspired by reference code
+  const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:focus:ring-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
   
-  // <<< ADDED: Reusable clear button component for inputs
-  const ClearButton: React.FC<{ onClick: () => void; rightClass?: string }> = ({ onClick, rightClass = 'pr-3' }) => (
+  // Reusable clear button component for inputs
+  const ClearButton: React.FC<{ onClick: () => void; rightClass?: string }> = ({ onClick, rightClass = 'pr-2' }) => (
     <button
       type="button"
       onClick={onClick}
@@ -281,8 +282,8 @@ const ClientAppointments: React.FC = () => {
   };
 
   return (
-    // <<< OPTIMIZED: Padding reduced on mobile for more content space
-    <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-8 font-sans transition-colors duration-300`}>
+    // Padding updated to match reference
+    <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-6 font-sans transition-colors duration-300`}>
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
       <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden">
         <header className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700">
@@ -303,25 +304,26 @@ const ClientAppointments: React.FC = () => {
           </div>
         </header>
 
-        {/* <<< OPTIMIZED: Section padding reduced on mobile */}
+        {/* Section padding and filter styling updated to match reference */}
         <section className="p-4 md:p-6">
-          <div className="mb-6 p-4 sm:p-6 bg-slate-50/70 dark:bg-slate-700/30 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="mb-6 p-4 bg-sky-50/70 dark:bg-sky-700/30 rounded-lg shadow-sm border border-sky-200 dark:border-sky-700">
             <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> Filter Appointments </h2>
-            {/* <<< REWRITTEN: Grid for filters with working clearable inputs and enhanced dropdowns */}
+            {/* Grid for filters with styles applied from reference code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
               <div className="relative">
-                <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={`${inputBaseClasses} pr-10`} />
-                {searchPartyOrStaff && <ClearButton onClick={() => setSearchPartyOrStaff('')} />}
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/>
+                <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
+                {searchPartyOrStaff && <ClearButton onClick={() => setSearchPartyOrStaff('')} rightClass="pr-3" />}
               </div>
               <div className="relative">
-                <select title="Filter by location" value={searchLocationId} onChange={(e) => setSearchLocationId(e.target.value)} className={`${inputBaseClasses} font-semibold truncate pr-10 appearance-none`} disabled={isLoadingBranchLocations}>
+                <select title="Filter by location" value={searchLocationId} onChange={(e) => setSearchLocationId(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 font-semibold truncate pr-10 appearance-none`} disabled={isLoadingBranchLocations}>
                   <option value="">All Locations</option>
                   {isLoadingBranchLocations ? <option disabled>Loading...</option> : branchLocations?.map(loc => <option key={loc.branch_id} value={loc.branch_id}>{loc.name}</option>)}
                 </select>
                 {searchLocationId && <ClearButton onClick={() => setSearchLocationId('')} rightClass="pr-8" />}
               </div>
               <div className="relative">
-                <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={`${inputBaseClasses} font-semibold truncate pr-10 appearance-none`}>
+                <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={`${inputBaseClasses} py-2.5 px-4 font-semibold truncate pr-10 appearance-none`}>
                   <option value="">All Statuses</option>
                   {APPOINTMENT_STATUS_VALUES.map(statusVal => (
                       <option key={statusVal} value={statusVal}>{getStatusDisplayName(statusVal)}</option>
@@ -331,11 +333,11 @@ const ClientAppointments: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
-                  <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} pr-10`} />
+                  <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} />
                   {searchDateFrom && <ClearButton onClick={() => setSearchDateFrom('')} />}
                 </div>
                 <div className="relative">
-                  <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} pr-10`} min={searchDateFrom || undefined} />
+                  <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} min={searchDateFrom || undefined} />
                   {searchDateTo && <ClearButton onClick={() => setSearchDateTo('')} />}
                 </div>
               </div>
