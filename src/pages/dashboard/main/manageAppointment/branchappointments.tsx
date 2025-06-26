@@ -232,8 +232,8 @@ const BranchAppointments: React.FC = () => {
   const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:focus:ring-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
   const dropdownListVariants = {
     hidden: { opacity: 0, y: -10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-    exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" as const } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: "easeIn" as const } }
   };
 
   const LoadingIndicator: React.FC<{text?: string}> = ({text = "Loading..."}) => ( <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400"><RefreshCcw className="h-12 w-12 animate-spin mb-4" /><p className="text-lg">{text}</p></div> );

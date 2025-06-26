@@ -1,21 +1,22 @@
 // ClientAppointments.tsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
   useFetchAppointmentsByClientQuery,
-  AppointmentDataTypes, 
+  AppointmentDataTypes,
   AppointmentStatus,
-  FetchAppointmentsArgs, 
-} from '../../../../features/appointment/appointmentapi'; 
-import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi'; 
+  FetchAppointmentsArgs,
+} from '../../../../features/appointment/appointmentapi';
+import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi';
 import { Toaster, toast } from 'sonner';
 import EditAppointment from './editappointments';
 import ReasonDisplayModal from './ReasonDisplayModal';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 import {
   selectCurrentUserId,
   selectCurrentUser
-} from '../../../../features/users/userSlice'; 
+} from '../../../../features/users/userSlice';
 
 import {
   FilePenLine,
@@ -30,8 +31,9 @@ import {
   Eye,
   Briefcase,
   Users as StaffIcon,
-  ListFilter, 
-  Search, // <<< ADDED from reference
+  ListFilter,
+  Search,
+  ChevronDown, // <<< ADDED from reference
   X,
 } from 'lucide-react';
 
@@ -91,13 +93,18 @@ const ClientAppointments: React.FC = () => {
 
   // State for query parameters for useFetchAppointmentsByClientQuery
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
-  // For client-side filtering, not directly for the query 
+  // For client-side filtering, not directly for the query
   const [searchPartyOrStaff, setSearchPartyOrStaff] = useState('');
   const [searchLocationId, setSearchLocationId] = useState<string | number | ''>('');
   
   const [searchDateFrom, setSearchDateFrom] = useState(''); // YYYY-MM-DD
   const [searchDateTo, setSearchDateTo] = useState('');   // YYYY-MM-DD
-
+  
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [isStatusFilterDropdownOpen, setIsStatusFilterDropdownOpen] = useState(false);
+  
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+  const statusFilterDropdownRef = useRef<HTMLDivElement>(null);
 
   // Construct queryParams object for the hook
   const queryParamsForFetch: Omit<FetchAppointmentsArgs, 'clientId'> = useMemo(() => {
@@ -119,7 +126,7 @@ const ClientAppointments: React.FC = () => {
     { clientId: clientId as string | number, queryParams: queryParamsForFetch },
     {
       skip: !clientId,
-      refetchOnMountOrArgChange: true, 
+      refetchOnMountOrArgChange: true,
     }
   );
 
@@ -147,6 +154,16 @@ const ClientAppointments: React.FC = () => {
     document.documentElement.classList.toggle('dark', isDarkMode);
     if (typeof window !== 'undefined') localStorage.setItem('darkMode', String(isDarkMode));
   }, [isDarkMode]);
+
+  // CORRECTED: Added click outside handler for custom dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) setIsLocationDropdownOpen(false);
+        if (statusFilterDropdownRef.current && !statusFilterDropdownRef.current.contains(event.target as Node)) setIsStatusFilterDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
@@ -185,7 +202,6 @@ const ClientAppointments: React.FC = () => {
   const closeEditModal = () => { setSelectedAppointment(null); setIsEditModalOpen(false); };
   const openReasonModal = (reason: string, party: string) => { setReasonToDisplay(reason); setReasonPartyName(party); setIsReasonModalOpen(true); };
   const closeReasonModal = () => { setIsReasonModalOpen(false); setReasonToDisplay(''); setReasonPartyName(''); };
-
   const handleAppointmentUpdated = () => {
     if (clientId) refetch();
     toast.success("Appointment details have been updated or your request has been submitted.");
@@ -201,7 +217,7 @@ const ClientAppointments: React.FC = () => {
       const searchLower = searchPartyOrStaff.toLowerCase();
       const partyOrStaffMatch = searchPartyOrStaff ? partyNameLower.includes(searchLower) || assignedStaffNamesLower.includes(searchLower) : true;
       const locationMatch = searchLocationId ? appointment.branch_id === Number(searchLocationId) : true;
-      return partyOrStaffMatch && locationMatch; 
+      return partyOrStaffMatch && locationMatch;
     });
   }, [actualAppointmentsArray, clientId, isBackendNoAppointments, displayableError, searchPartyOrStaff, searchLocationId]);
 
@@ -215,7 +231,7 @@ const ClientAppointments: React.FC = () => {
   const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => {
     if (!errorToDisplay) return null;
     const message = getErrorMessage(errorToDisplay);
-    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null; 
+    if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null;
     return (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert">
           <div className="flex items-center">
@@ -254,24 +270,18 @@ const ClientAppointments: React.FC = () => {
   const isFilteringActive = !!(searchPartyOrStaff || searchLocationId || searchStatus || searchDateFrom || searchDateTo);
   const showNoAppointmentsMessage = !isActuallyLoading && !displayableError && filteredAppointments.length === 0;
 
-  // Centralized input styling inspired by reference code
   const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:focus:ring-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
-  
-  // Reusable clear button component for inputs
-  const ClearButton: React.FC<{ onClick: () => void; rightClass?: string }> = ({ onClick, rightClass = 'pr-2' }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`absolute inset-y-0 right-0 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none z-10 ${rightClass}`}
-      aria-label="Clear input"
-    >
-      <X size={16} />
-    </button>
-  );
+
+  // CORRECTED: Added dropdown variants from reference code
+  const dropdownListVariants: Variants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } }
+  };
 
   const ProfilePictureFallback: React.FC<{ name?: string | null, size?: number }> = ({ name, size = 8 }) => {
     const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || '';
-    const classSize = `h-${size} w-${size}`; 
+    const classSize = `h-${size} w-${size}`;
     const iconSize = `h-${Math.floor(size/1.5)} w-${Math.floor(size/1.5)}`;
 
     if (imgError && profilePictureUrl) {
@@ -282,7 +292,6 @@ const ClientAppointments: React.FC = () => {
   };
 
   return (
-    // Padding updated to match reference
     <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-6 font-sans transition-colors duration-300`}>
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
       <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden">
@@ -304,41 +313,70 @@ const ClientAppointments: React.FC = () => {
           </div>
         </header>
 
-        {/* Section padding and filter styling updated to match reference */}
         <section className="p-4 md:p-6">
           <div className="mb-6 p-4 bg-sky-50/70 dark:bg-sky-700/30 rounded-lg shadow-sm border border-sky-200 dark:border-sky-700">
             <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> Filter Appointments </h2>
-            {/* Grid for filters with styles applied from reference code */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
+              {/* CORRECTED: Text input with inline clear button */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/>
                 <input type="text" placeholder="Party or Staff Name..." value={searchPartyOrStaff} onChange={(e) => setSearchPartyOrStaff(e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
-                {searchPartyOrStaff && <ClearButton onClick={() => setSearchPartyOrStaff('')} rightClass="pr-3" />}
+                {searchPartyOrStaff && <button onClick={() => setSearchPartyOrStaff('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16} /></button>}
               </div>
-              <div className="relative">
-                <select title="Filter by location" value={searchLocationId} onChange={(e) => setSearchLocationId(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 font-semibold truncate pr-10 appearance-none`} disabled={isLoadingBranchLocations}>
-                  <option value="">All Locations</option>
-                  {isLoadingBranchLocations ? <option disabled>Loading...</option> : branchLocations?.map(loc => <option key={loc.branch_id} value={loc.branch_id}>{loc.name}</option>)}
-                </select>
-                {searchLocationId && <ClearButton onClick={() => setSearchLocationId('')} rightClass="pr-8" />}
+
+              {/* CORRECTED: Replaced select with custom dropdown */}
+              <div ref={locationDropdownRef} className="relative">
+                <button type="button" onClick={() => setIsLocationDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4 ${!searchLocationId ? 'text-slate-400 dark:text-slate-500' : ''}`} disabled={isLoadingBranchLocations}>
+                    <span className="truncate">
+                      {isLoadingBranchLocations ? 'Loading...' : (branchLocations?.find(b => b.branch_id.toString() === searchLocationId.toString())?.name || 'All Locations')}
+                    </span>
+                    <div className="flex items-center">
+                        {searchLocationId && (<button type="button" onClick={(e) => { e.stopPropagation(); setSearchLocationId(''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16}/></button>)}
+                        <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                </button>
+                <AnimatePresence>
+                  {isLocationDropdownOpen && !isLoadingBranchLocations && (
+                      <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <li key="all-loc"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchLocationId(''); setIsLocationDropdownOpen(false); }}>All Locations</button></li>
+                          {branchLocations?.map(loc => (
+                              <li key={loc.branch_id}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchLocationId(loc.branch_id); setIsLocationDropdownOpen(false); }}>{loc.name}</button></li>
+                          ))}
+                      </motion.ul>
+                  )}
+                </AnimatePresence>
               </div>
-              <div className="relative">
-                <select title='Filter by status' value={searchStatus} onChange={(e) => setSearchStatus(e.target.value as AppointmentStatus | '')} className={`${inputBaseClasses} py-2.5 px-4 font-semibold truncate pr-10 appearance-none`}>
-                  <option value="">All Statuses</option>
-                  {APPOINTMENT_STATUS_VALUES.map(statusVal => (
-                      <option key={statusVal} value={statusVal}>{getStatusDisplayName(statusVal)}</option>
-                  ))}
-                </select>
-                {searchStatus && <ClearButton onClick={() => setSearchStatus('')} rightClass="pr-8" />}
+
+              {/* CORRECTED: Replaced select with custom dropdown */}
+              <div ref={statusFilterDropdownRef} className="relative">
+                  <button type="button" onClick={() => setIsStatusFilterDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4 ${!searchStatus ? 'text-slate-400 dark:text-slate-500' : ''}`}>
+                      <span className="truncate">{searchStatus ? getStatusDisplayName(searchStatus) : 'All Statuses'}</span>
+                      <div className="flex items-center">
+                          {searchStatus && (<button type="button" onClick={(e) => { e.stopPropagation(); setSearchStatus(''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16}/></button>)}
+                          <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isStatusFilterDropdownOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                  </button>
+                  <AnimatePresence>
+                      {isStatusFilterDropdownOpen && (
+                          <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                              <li key="all-stat"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchStatus(''); setIsStatusFilterDropdownOpen(false); }}>All Statuses</button></li>
+                              {APPOINTMENT_STATUS_VALUES.map(status => (
+                                  <li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchStatus(status); setIsStatusFilterDropdownOpen(false); }}>{getStatusDisplayName(status)}</button></li>
+                              ))}
+                          </motion.ul>
+                      )}
+                  </AnimatePresence>
               </div>
+
+              {/* CORRECTED: Date inputs with inline clear button */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="relative">
                   <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} />
-                  {searchDateFrom && <ClearButton onClick={() => setSearchDateFrom('')} />}
+                  {searchDateFrom && <button onClick={() => setSearchDateFrom('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
                 </div>
                 <div className="relative">
                   <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} min={searchDateFrom || undefined} />
-                  {searchDateTo && <ClearButton onClick={() => setSearchDateTo('')} />}
+                  {searchDateTo && <button onClick={() => setSearchDateTo('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
                 </div>
               </div>
             </div>
@@ -378,7 +416,7 @@ const ClientAppointments: React.FC = () => {
                                   {appointment.branch?.name || 'N/A'}
                               </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300"> 
+                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                               {appointment.assignees && appointment.assignees.length > 0
                                 ? appointment.assignees.map((a, idx) => (
                                   <div key={a.assignee_user_id} className="flex items-center my-0.5">
@@ -401,7 +439,7 @@ const ClientAppointments: React.FC = () => {
                             </button>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
-                              <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                                   ${appointment.status === 'confirmed' ? 'bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-100' :
                                     appointment.status === 'completed' ? 'bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100' :
                                     appointment.status === 'cancelled' ? 'bg-red-100 dark:bg-red-700 text-red-800 dark:text-red-100' :
