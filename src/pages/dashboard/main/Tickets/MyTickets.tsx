@@ -8,10 +8,33 @@ import DeleteUserTicket from './DeleteUserTicket';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
     FilePenLine, Trash2, Wind, Plus, Search, RefreshCw, Moon, Sun,
-    AlertTriangle, CheckCircle, Loader2, Inbox, User, X, ChevronDown
+    AlertTriangle, CheckCircle, Loader2, Inbox, User, X, ChevronDown,
+    // Icons for table headers
+    Hash, Bookmark, FileText, Activity, Settings
 } from 'lucide-react';
+import { toast } from 'sonner';
+
+// --- Reusable Helper Components for Table Headers ---
+const HeaderCell = ({ icon: Icon, text }: { icon: React.ElementType; text: string; }) => (
+    <th className="px-4 py-3 text-left font-semibold tracking-wider">
+        <div className="flex items-center">
+            <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+            <span>{text}</span>
+        </div>
+    </th>
+);
+
+const HeaderCellCenter = ({ icon: Icon, text }: { icon: React.ElementType; text: string; }) => (
+     <th className="px-4 py-3 text-center font-semibold tracking-wider">
+        <div className="flex items-center justify-center">
+            <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
+            <span>{text}</span>
+        </div>
+    </th>
+);
 
 const MyTickets = () => {
+    // --- Redux and API Hooks ---
     const userState = useSelector((state: RootState) => state.user);
     const user_id = userState.user?.user_id ?? 0;
     const userFullName = userState.user?.full_name;
@@ -20,17 +43,22 @@ const MyTickets = () => {
     const { data: ticketData, isLoading: ticketLoading, error: ticketError, refetch } = TicketAPI.useGetUserTicketsQuery(user_id, {
         refetchOnMountOrArgChange: true,
     });
+    
+    const [updateTicket] = TicketAPI.useUpdateTicketMutation();
 
+    // --- Component State ---
     const [tickets, setTickets] = useState<TypeTickets[]>([]);
     const [filter, setFilter] = useState({ subject: '', description: '', status: '' });
     const [editTicket, setEditTicket] = useState<TypeTickets | null>(null);
     const [deleteTicket, setDeleteTicket] = useState<TypeTickets | null>(null);
     const [isDarkMode, setIsDarkMode] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('darkMode') === 'true' : false));
+    const [reopeningTicketId, setReopeningTicketId] = useState<number | null>(null);
 
     // --- Dropdown State & Refs ---
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const statusDropdownRef = useRef<HTMLDivElement>(null);
 
+    // --- Effects ---
     useEffect(() => { if (ticketData) setTickets(ticketData); }, [ticketData]);
     useEffect(() => { document.documentElement.classList.toggle('dark', isDarkMode); localStorage.setItem('darkMode', String(isDarkMode)); }, [isDarkMode]);
     
@@ -42,19 +70,29 @@ const MyTickets = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // --- Handlers ---
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
     const handleDeleteTicket = (ticket: TypeTickets) => { setDeleteTicket(ticket); (document.getElementById('delete_ticket_modal') as HTMLDialogElement)?.showModal(); };
     const handleEditTicket = (ticket: TypeTickets) => { setEditTicket(ticket); (document.getElementById('edit_ticket_modal') as HTMLDialogElement)?.showModal(); };
-
-    const [updateTicket, { isLoading: isUpdatingTicket }] = TicketAPI.useUpdateTicketMutation();
+    const resetFilters = () => setFilter({ subject: '', description: '', status: '' });
+    const handleClearFilter = (filterName: keyof typeof filter) => setFilter(prev => ({...prev, [filterName]: ''}));
 
     const handleReopenTicket = async (ticket: TypeTickets) => {
+        setReopeningTicketId(ticket.ticket_id);
         try {
-            await updateTicket({ ...ticket, status: 'Open' }).unwrap();
-            setTickets(prev => prev.map(t => (t.ticket_id === ticket.ticket_id ? { ...t, status: 'Open' } : t)));
-        } catch (error) { console.error('Error reopening ticket', error); }
+            const payload = { ticket_id: ticket.ticket_id, status: 'Open' as const };
+            await updateTicket(payload).unwrap();
+            refetch();
+            toast.success(`Ticket #${ticket.ticket_id} has been successfully reopened!`);
+        } catch (error) {
+            console.error('Error reopening ticket:', error);
+            toast.error('Failed to reopen ticket. Please try again.');
+        } finally {
+            setReopeningTicketId(null);
+        }
     };
 
+    // --- Memoized Data ---
     const filteredTickets = useMemo(() => {
         if (!tickets) return [];
         return tickets.filter(ticket =>
@@ -64,9 +102,7 @@ const MyTickets = () => {
         );
     }, [tickets, filter]);
 
-    const resetFilters = () => setFilter({ subject: '', description: '', status: '' });
-    const handleClearFilter = (filterName: keyof typeof filter) => setFilter(prev => ({...prev, [filterName]: ''}));
-
+    // --- Style & Animation Helpers ---
     const getStatusClassName = (status: string) => {
         switch (status.toLowerCase()) {
             case 'closed': return 'bg-green-100 text-green-800 dark:bg-green-700/30 dark:text-green-200';
@@ -133,8 +169,8 @@ const MyTickets = () => {
                                         <AnimatePresence>
                                             {isStatusDropdownOpen && (
                                                 <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                                    <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { setFilter(f => ({...f, status: ''})); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>
-                                                    {['Open', 'Closed'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { setFilter(f => ({...f, status})); setIsStatusDropdownOpen(false); }}>{status}</button></li>))}
+                                                    <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status: ''})); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>
+                                                    {['Open', 'Closed'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status})); setIsStatusDropdownOpen(false); }}>{status}</button></li>))}
                                                 </motion.ul>
                                             )}
                                         </AnimatePresence>
@@ -145,8 +181,14 @@ const MyTickets = () => {
                             <div className="overflow-x-auto shadow-md rounded-lg">
                                 {filteredTickets.length > 0 ? (
                                     <table className="table-auto w-full bg-white dark:bg-slate-800">
-                                        <thead className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase text-sm">
-                                            <tr><th className="px-4 py-3 text-left font-semibold">ID</th><th className="px-4 py-3 text-left font-semibold">Subject</th><th className="px-4 py-3 text-left font-semibold">Description</th><th className="px-4 py-3 text-left font-semibold">Status</th><th className="px-4 py-3 text-center font-semibold">Actions</th></tr>
+                                        <thead className="bg-indigo-600 text-white uppercase text-sm">
+                                            <tr>
+                                                <HeaderCell icon={Hash} text="ID" />
+                                                <HeaderCell icon={Bookmark} text="Subject" />
+                                                <HeaderCell icon={FileText} text="Description" />
+                                                <HeaderCell icon={Activity} text="Status" />
+                                                <HeaderCellCenter icon={Settings} text="Actions" />
+                                            </tr>
                                         </thead>
                                         <tbody className="text-slate-700 dark:text-slate-300">
                                             {filteredTickets.map((ticket) => (
@@ -157,7 +199,11 @@ const MyTickets = () => {
                                                     <td className="px-4 py-3"><span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getStatusClassName(ticket.status)}`}>{getStatusIcon(ticket.status)} {ticket.status}</span></td>
                                                     <td className="px-4 py-3 text-center">
                                                         <div className="flex items-center justify-center space-x-2">
-                                                            {ticket.status.toLowerCase() === 'closed' ? ( <button className="px-2 py-1.5 text-xs font-semibold rounded-md flex items-center bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-700/50 dark:text-amber-300 dark:hover:bg-amber-700" onClick={() => handleReopenTicket(ticket)} disabled={isUpdatingTicket && editTicket?.ticket_id === ticket.ticket_id} title="Reopen Ticket">{isUpdatingTicket && editTicket?.ticket_id === ticket.ticket_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Wind className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">Reopen</span></>} </button> ) : (
+                                                            {ticket.status.toLowerCase() === 'closed' ? ( 
+                                                                <button className="px-2 py-1.5 text-xs font-semibold rounded-md flex items-center bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-700/50 dark:text-amber-300 dark:hover:bg-amber-700" onClick={() => handleReopenTicket(ticket)} disabled={reopeningTicketId === ticket.ticket_id} title="Reopen Ticket">
+                                                                    {reopeningTicketId === ticket.ticket_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Wind className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">Reopen</span></>} 
+                                                                </button> 
+                                                            ) : (
                                                                 <>
                                                                     <button className="px-2 py-1.5 text-xs font-semibold rounded-md flex items-center bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-700/50 dark:text-sky-300 dark:hover:bg-sky-700" onClick={() => handleEditTicket(ticket)} title="Edit Ticket"><FilePenLine className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">Edit</span></button>
                                                                     <button className="px-2 py-1.5 text-xs font-semibold rounded-md flex items-center bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-700/50 dark:text-red-300 dark:hover:bg-red-700" onClick={() => handleDeleteTicket(ticket)} title="Delete Ticket"><Trash2 className="mr-1 h-3.5 w-3.5" /><span className="hidden sm:inline">Delete</span></button>

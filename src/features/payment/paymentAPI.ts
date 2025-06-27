@@ -59,6 +59,7 @@ export interface MpesaStkRequest {
     amount: number;
     user_id: number;
     case_id: number;
+    customer_email?: string; // Optional email for receipt
 }
 
 // Interface for Stripe Payment

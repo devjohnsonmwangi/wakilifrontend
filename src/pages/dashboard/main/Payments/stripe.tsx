@@ -1,36 +1,30 @@
 // src/components/StripePaymentModal.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
-import {
-    useFetchCasesQuery,
-    CaseDataTypes as Case, 
-    CaseStatus,
-    CaseType
-} from '../../../../features/case/caseAPI';
+import { useFetchCasesQuery, CaseDataTypes as Case } from '../../../../features/case/caseAPI';
 import { useHandleStripePaymentMutation } from '../../../../features/payment/paymentAPI';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import {
+    X, Search, ChevronDown, FileText, User, Settings, Filter, Mail, CreditCard, Loader2, Banknote // CORRECTED: Removed BadgeInfo, Added Banknote
+} from 'lucide-react';
 
 // --- Custom useDebounce Hook ---
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
+        const handler = setTimeout(() => setDebouncedValue(value), delay);
+        return () => clearTimeout(handler);
     }, [value, delay]);
     return debouncedValue;
 }
-// --- End Custom useDebounce Hook ---
 
 interface StripePaymentModalProps {
-    userId?: number; 
+    userId?: number; // Prop to receive user ID
     isOpen: boolean;
-    isDarkMode?: boolean; 
     onClose: () => void;
+    isDarkMode?: boolean; // Optional prop for dark mode
 }
 
 interface StripePaymentRequest {
@@ -40,184 +34,95 @@ interface StripePaymentRequest {
     customer_email?: string;
 }
 
-interface StripeSessionResponse {
-    sessionId: string;
-}
+interface StripeSessionResponse { sessionId: string; }
 
 const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance';
 const DEBOUNCE_DELAY = 300;
 
 const stripePromise = loadStripe('pk_test_51PbjmV2KRb5wlrNTEeIUsEuhrnk1wYAmNRO0eqkF3oLwawrZ2VgT824xa3zxkGttW0HS3TqZiSTUwxfqNhGmdTw300tJ0o4DDo');
 
-const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose }) => {
+const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose, userId }) => {
     const [selectedCase, setSelectedCase] = useState<Case | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [handleStripePayment] = useHandleStripePaymentMutation();
     const [amount, setAmount] = useState('');
-    const [customerEmail, setCustomerEmail] = useState(''); 
+    const [customerEmail, setCustomerEmail] = useState('');
     const navigate = useNavigate();
 
-    const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
-    const [typeFilter, setTypeFilter] = useState<CaseType | ''>('');
-    const [stationFilterInput, setStationFilterInput] = useState('');
-    const [caseNumberFilterInput, setCaseNumberFilterInput] = useState('');
-    const [searchTermInput, setSearchTermInput] = useState('');
+    const [filters, setFilters] = useState({ status: '', type: '', searchTerm: '' });
+    const debouncedFilters = useDebounce(filters, DEBOUNCE_DELAY);
 
-    const debouncedStationFilter = useDebounce(stationFilterInput, DEBOUNCE_DELAY);
-    const debouncedCaseNumberFilter = useDebounce(caseNumberFilterInput, DEBOUNCE_DELAY);
-    const debouncedSearchTerm = useDebounce(searchTermInput, DEBOUNCE_DELAY);
-
-    const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
+    const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases } = useFetchCasesQuery();
     const cases = useMemo(() => Array.isArray(casesData) ? casesData : [], [casesData]);
+
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const statusDropdownRef = useRef<HTMLDivElement>(null);
+    const typeDropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) setIsStatusDropdownOpen(false);
+          if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) setIsTypeDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const filteredCases = useMemo(() => {
         if (!Array.isArray(cases) || isLoadingCases) return [];
-        let tempFilteredCases = [...cases];
-
-        if (statusFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_status === statusFilter);
-        }
-        if (typeFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_type === typeFilter);
-        }
-        if (debouncedStationFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                (caseItem.station ?? '').toLowerCase().includes(debouncedStationFilter.toLowerCase())
-            );
-        }
-        if (debouncedCaseNumberFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                caseItem.case_number.toLowerCase().includes(debouncedCaseNumberFilter.toLowerCase())
-            );
-        }
-        if (debouncedSearchTerm) {
-            const term = debouncedSearchTerm.toLowerCase();
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                caseItem.case_number.toLowerCase().includes(term) ||
-                (caseItem.case_track_number && caseItem.case_track_number.toLowerCase().includes(term)) ||
-                (caseItem.parties ?? '').toLowerCase().includes(term) ||
-                (caseItem.station ?? '').toLowerCase().includes(term)
-            );
-        }
-
-        return tempFilteredCases.filter(caseItem => {
-            const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-            let numericBalance = 0;
-            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                const parsed = parseFloat(String(balanceValueFromBackend));
-                if (!isNaN(parsed)) {
-                    numericBalance = parsed;
-                }
+        return cases.filter(caseItem => {
+            const balance = parseFloat(String((caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+            if (isNaN(balance) || balance <= 0) return false;
+            
+            if (debouncedFilters.status && caseItem.case_status !== debouncedFilters.status) return false;
+            if (debouncedFilters.type && caseItem.case_type !== debouncedFilters.type) return false;
+            if (debouncedFilters.searchTerm) {
+                const term = debouncedFilters.searchTerm.toLowerCase();
+                const isInCase = caseItem.case_number.toLowerCase().includes(term) || (caseItem.case_track_number && caseItem.case_track_number.toLowerCase().includes(term)) || (caseItem.parties ?? '').toLowerCase().includes(term) || (caseItem.station ?? '').toLowerCase().includes(term) || (caseItem.owner?.full_name?.toLowerCase().includes(term));
+                if (!isInCase) return false;
             }
-            return numericBalance > 0;
+            return true;
         });
-    }, [
-        cases, isLoadingCases, statusFilter, typeFilter,
-        debouncedStationFilter, debouncedCaseNumberFilter, debouncedSearchTerm,
-    ]);
+    }, [cases, isLoadingCases, debouncedFilters]);
 
     useEffect(() => {
         if (selectedCase) {
-            const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-            let currentBalance = 0;
-            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                const parsed = parseFloat(String(balanceValueFromBackend));
-                if (!isNaN(parsed)) currentBalance = parsed;
-            }
-
-            if (currentBalance > 0) {
-                setAmount(currentBalance.toFixed(2));
-            } else {
-                const fee = parseFloat(String(selectedCase.fee));
-                if (!isNaN(fee) && fee > 0 && currentBalance <= 0) {
-                    setAmount(fee.toFixed(2));
-                } else {
-                    setAmount('0.00');
-                }
-            }
-            // Optionally pre-fill email if available on the selectedCase or associated user
-            setCustomerEmail(selectedCase.owner?.email || ''); 
+            const balanceValue = parseFloat(String(selectedCase.payment_balance ?? selectedCase.fee ?? 0));
+            setAmount(balanceValue > 0 ? balanceValue.toFixed(2) : '0.00');
+            setCustomerEmail(selectedCase.owner?.email || '');
         } else {
             setAmount('');
-            setCustomerEmail(''); // Reset email when no case is selected
+            setCustomerEmail('');
         }
     }, [selectedCase]);
+    
+    const handleFilterChange = (field: keyof typeof filters, value: string) => setFilters(prev => ({ ...prev, [field]: value }));
 
     const handleMakePaymentInternal = async () => {
-        if (!selectedCase) {
-            toast.error('Please select a case first.');
-            return;
-        }
+        if (!selectedCase) { toast.error('Please select a case first.'); return; }
+        const caseUserId = userId || selectedCase.user_id;
+        if (!caseUserId) { toast.error('User information is missing for this transaction.'); return; }
+        
         const amountNumber = parseFloat(amount);
-        if (isNaN(amountNumber) || amountNumber <= 0) {
-            toast.error('Invalid amount. Please enter a positive number.');
-            return;
-        }
-
-        const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-        let maxPayable = 0;
-        if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-            const parsed = parseFloat(String(balanceValueFromBackend));
-            if (!isNaN(parsed) && parsed > 0) maxPayable = parsed;
-        }
-        if (maxPayable <= 0) {
-            const fee = parseFloat(String(selectedCase.fee));
-            if (!isNaN(fee) && fee > 0) maxPayable = fee;
-        }
-        if (maxPayable <= 0) {
-             toast.error("This case appears to have no outstanding balance. Payment cannot be recorded.");
-             return;
-        }
-        if (amountNumber > maxPayable) {
-            toast.error(`Amount (${amountNumber.toFixed(2)}) cannot exceed the outstanding balance of ${maxPayable.toFixed(2)}.`);
-            return;
-        }
-
-        // Email validation (optional if email is optional, required if email is mandatory for receipt)
-        if (!customerEmail) { // If email is mandatory for receipt
-             toast.error("Customer email is required for the receipt.");
-             return;
-        }
-        if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-            toast.error("Please enter a valid email address.");
-            return;
-        }
+        if (isNaN(amountNumber) || amountNumber <= 0) { toast.error('Invalid amount. Please enter a positive number.'); return; }
+        const balance = parseFloat(String(selectedCase.payment_balance ?? 0));
+        if (amountNumber > balance) { toast.error(`Amount cannot exceed the outstanding balance of ${balance.toFixed(2)}.`); return; }
+        if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) { toast.error("A valid customer email is required for the receipt."); return; }
 
         setIsSubmitting(true);
         try {
-            const paymentData: StripePaymentRequest = {
-                case_id: selectedCase.case_id,
-                user_id: selectedCase.user_id,
-                amount: amountNumber,
-                customer_email: customerEmail || undefined, // Pass email if provided
-            };
-
+            const paymentData: StripePaymentRequest = { case_id: selectedCase.case_id, user_id: caseUserId, amount: amountNumber, customer_email: customerEmail };
             const paymentResponse = await handleStripePayment(paymentData).unwrap() as StripeSessionResponse;
-
             const stripe = await stripePromise;
             if (paymentResponse.sessionId && stripe) {
                 localStorage.setItem('redirectAfterStripe', '/dashboard/payments');
-                const { error } = await stripe.redirectToCheckout({
-                    sessionId: paymentResponse.sessionId,
-                });
-                if (error) {
-                    toast.error(error.message || 'Error redirecting to Stripe checkout.');
-                    localStorage.removeItem('redirectAfterStripe');
-                }
-            } else {
-                toast.error("Failed to get Stripe session ID. Please try again.");
-            }
+                const { error } = await stripe.redirectToCheckout({ sessionId: paymentResponse.sessionId });
+                if (error) { toast.error(error.message || 'Error redirecting to Stripe checkout.'); localStorage.removeItem('redirectAfterStripe'); }
+            } else { toast.error("Failed to get Stripe session ID. Please try again."); }
         } catch (error: unknown) {
-            let errorMessage = 'Payment initiation failed. Please try again.';
-            if (typeof error === 'object' && error !== null) {
-                type ErrorWithData = { data?: { message?: string }, message?: string };
-                const err = error as ErrorWithData;
-                if (err.data && typeof err.data.message === 'string') {
-                    errorMessage = err.data.message;
-                } else if (typeof err.message === 'string') {
-                    errorMessage = err.message;
-                }
-            }
+            const err = error as { data?: { message?: string }, message?: string };
+            const errorMessage = err.data?.message || err.message || 'Payment initiation failed. Please try again.';
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -228,241 +133,62 @@ const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ isOpen, onClose
         const query = new URLSearchParams(window.location.search);
         const success = query.get('stripe_payment_success');
         const canceled = query.get('stripe_payment_canceled');
-        const redirectPath = localStorage.getItem('redirectAfterStripe');
-
-        if (success) {
-            toast.success('Payment completed successfully!');
-            if (redirectPath) {
-                navigate(redirectPath, { replace: true });
-                localStorage.removeItem('redirectAfterStripe');
-            } else {
-                navigate('/dashboard/payments', {replace: true}); // Default success path
-            }
-        } else if (canceled) {
-            toast.warning('Payment was canceled.');
-            if (redirectPath) {
-                 // Attempt to remove query params before navigating back
-                const cleanPath = window.location.pathname;
-                navigate(redirectPath.startsWith('/') ? redirectPath : cleanPath, { replace: true });
-                localStorage.removeItem('redirectAfterStripe');
-            } else {
-                 const cleanPath = window.location.pathname;
-                 navigate(cleanPath, {replace: true}); // Go back to modal's path
-            }
-        }
-         // Clean up query parameters from URL if they exist, regardless of localStorage item
-        if (success || canceled) {
-            const cleanURL = window.location.pathname + (redirectPath && redirectPath.includes('?') ? redirectPath.substring(redirectPath.indexOf('?')) : '');
-            window.history.replaceState({}, document.title, cleanURL);
-        }
-
+        if (success) { toast.success('Payment completed successfully!'); navigate('/dashboard/payments', { replace: true }); }
+        if (canceled) { toast.warning('Payment was canceled.'); navigate('/dashboard/payments', { replace: true }); }
+        if (success || canceled) window.history.replaceState({}, document.title, window.location.pathname);
     }, [navigate]);
 
     const handleModalClose = () => {
-        setSelectedCase(null);
-        setAmount('');
-        setCustomerEmail(''); // Reset customer email
-        setStatusFilter('');
-        setTypeFilter('');
-        setStationFilterInput('');
-        setCaseNumberFilterInput('');
-        setSearchTermInput('');
+        setSelectedCase(null); setAmount(''); setCustomerEmail('');
+        setFilters({ status: '', type: '', searchTerm: '' });
         setIsSubmitting(false);
         onClose();
     };
 
     if (!isOpen) return null;
-
-    const inputClassName = "shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white";
-    const labelClassName = "block text-sm font-bold text-gray-700 dark:text-gray-300";
+    
+    const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
+    const dropdownListVariants: Variants = { hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } }, exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } } };
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 overflow-auto">
-            <div className="relative p-4 w-full max-w-4xl h-full md:h-auto">
-                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-xl dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[90vh]">
-                    <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-                         <span role="img" aria-label="stripe" className="h-8 w-8 text-indigo-500 mr-2 text-3xl">💳</span>
-                        <h3 className="text-3xl font-extrabold text-blue-600 text-center">Stripe Payment</h3>
-                        <button
-                            type="button"
-                            className="text-gray-500 bg-transparent hover:bg-gray-300 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            onClick={handleModalClose}
-                            title="Close"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-                        </button>
-                    </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4">
+            <div className="relative bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+                <header className="flex items-center justify-between p-4 border-b rounded-t dark:border-slate-700 flex-shrink-0">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3"><CreditCard className="h-6 w-6 text-indigo-500"/>Stripe Payment</h3>
+                    <button type="button" className="p-1.5 rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700" onClick={handleModalClose} title="Close"><X className="h-5 w-5" /></button>
+                </header>
 
-                    <div className="p-6">
-                        <h4 className="text-xl font-semibold text-blue-500 mb-3">Select Case For Payment (Outstanding Balance Only):</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            <div>
-                                <label htmlFor="stripeStatusFilter" className={labelClassName}>Filter by Status:</label>
-                                <select id="stripeStatusFilter" className={inputClassName} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as CaseStatus | '')}>
-                                    <option value="">All Statuses</option>
-                                    <option value="open">Open</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="closed">Closed</option>
-                                    <option value="on_hold">On Hold</option>
-                                    <option value="resolved">Resolved</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="stripeTypeFilter" className={labelClassName}>Filter by Type:</label>
-                                <select id="stripeTypeFilter" className={inputClassName} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as CaseType | '')}>
-                                    <option value="">All Types</option>
-                                    <option value="criminal">Criminal</option>
-                                    <option value="civil">Civil</option>
-                                    <option value="family">Family</option>
-                                    <option value="corporate">Corporate</option>
-                                    <option value="property">Property</option>
-                                    <option value="employment">Employment</option>
-                                    <option value="intellectual_property">Intellectual Property</option>
-                                    <option value="immigration">Immigration</option>
-                                    <option value="elc">ELC</option>
-                                    <option value="childrenCase">Children Case</option>
-                                    <option value="tribunal">Tribunal</option>
-                                    <option value="conveyances">Conveyances</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="stripeStationFilter" className={labelClassName}>Filter by Station:</label>
-                                <input type="text" id="stripeStationFilter" className={inputClassName} placeholder="Enter Station" value={stationFilterInput} onChange={(e) => setStationFilterInput(e.target.value)} />
-                            </div>
-                            <div>
-                                <label htmlFor="stripeCaseNumberFilter" className={labelClassName}>Filter by Case Number:</label>
-                                <input type="text" id="stripeCaseNumberFilter" className={inputClassName} placeholder="Enter Case Number" value={caseNumberFilterInput} onChange={(e) => setCaseNumberFilterInput(e.target.value)} />
-                            </div>
-                            <div className="lg:col-span-2">
-                                <label htmlFor="stripeSearchTerm" className={labelClassName}>Search (Parties, Track No., etc.):</label>
-                                <input type="text" id="stripeSearchTerm" className={inputClassName} placeholder="Search..." value={searchTermInput} onChange={(e) => setSearchTermInput(e.target.value)} />
-                            </div>
+                <div className="p-4 md:p-6 space-y-4 overflow-y-auto">
+                    <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800/50">
+                        <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center"><Filter className="mr-2 h-5 w-5 text-indigo-500"/>Select Case</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                            <div ref={statusDropdownRef} className="relative"><button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!filters.status ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filters.status ? filters.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Statuses'}</span><div className="flex items-center">{filters.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleFilterChange('status', ''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}<ChevronDown size={20} className={`text-slate-400 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isStatusDropdownOpen && (<motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-30 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>{['open', 'in_progress', 'closed', 'on_hold', 'resolved'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>))}</motion.ul>)}</AnimatePresence></div>
+                            <div ref={typeDropdownRef} className="relative"><button type="button" onClick={() => setIsTypeDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!filters.type ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filters.type ? filters.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Types'}</span><div className="flex items-center">{filters.type && (<button type="button" onClick={(e) => { e.stopPropagation(); handleFilterChange('type', ''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}<ChevronDown size={20} className={`text-slate-400 ${isTypeDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isTypeDropdownOpen && (<motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-30 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('type', ''); setIsTypeDropdownOpen(false); }}>All Types</button></li>{['criminal', 'civil', 'family', 'corporate', 'property', 'employment', 'intellectual_property', 'immigration', 'elc', 'childrenCase', 'tribunal', 'conveyances'].map(type => (<li key={type}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('type', type); setIsTypeDropdownOpen(false); }}>{type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>))}</motion.ul>)}</AnimatePresence></div>
+                            <div className="relative sm:col-span-2 lg:col-span-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/><input type="text" placeholder="Search..." value={filters.searchTerm} onChange={(e) => handleFilterChange('searchTerm', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filters.searchTerm && (<button type="button" onClick={() => handleFilterChange('searchTerm', '')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}</div>
                         </div>
-
-                        {isLoadingCases ? (
-                            <p className="text-center text-gray-500 dark:text-gray-400">Loading cases...</p>
-                        ) : isErrorCases ? (
-                            <p className="text-center text-red-500 dark:text-red-400">Error loading cases: {errorCases instanceof Error ? errorCases.message : 'Unknown error'}</p>
-                        ) : (
-                            <div className="overflow-x-auto rounded-lg shadow-md max-h-72">
-                                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                                    <thead className="bg-blue-50 dark:bg-blue-900 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case ID</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">User ID</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case Fee</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Payment Balance</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Type</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Station</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case Number</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-300 dark:bg-gray-700 dark:divide-gray-600">
-                                        {filteredCases.map((caseItem) => {
-                                            const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-                                            let displayBalance = "0.00";
-                                            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                                                const parsed = parseFloat(String(balanceValueFromBackend));
-                                                if (!isNaN(parsed) && parsed > 0) {
-                                                    displayBalance = parsed.toFixed(2);
-                                                }
-                                            }
-                                            return (
-                                                <tr key={caseItem.case_id} className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${selectedCase?.case_id === caseItem.case_id ? "bg-blue-100 dark:bg-blue-900" : ""}`}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{caseItem.case_id}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.user_id}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{parseFloat(String(caseItem.fee)).toFixed(2)}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{displayBalance}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_status}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_type}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.station}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_number}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <button
-                                                            onClick={() => setSelectedCase(caseItem)}
-                                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors duration-200"
-                                                            title="Select Case"
-                                                        >
-                                                            Select
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                                {filteredCases.length === 0 && !isLoadingCases && (
-                                    <p className="text-center py-4 text-gray-500 dark:text-gray-400">No cases with outstanding payments match your filters.</p>
-                                )}
-                            </div>
-                        )}
+                        <div className="overflow-x-auto max-h-60 border dark:border-slate-600 rounded-md">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gradient-to-r from-blue-600 to-sky-600 text-white dark:from-blue-700 dark:to-sky-700 sticky top-0 z-10"><tr>{[ { icon: FileText, text: 'Case #' }, { icon: Banknote, text: 'Balance' }, { icon: User, text: 'Client' }, { icon: Settings, text: 'Action' } ].map(h => <th key={h.text} className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider"><div className="flex items-center gap-2"><h.icon className="h-4 w-4" />{h.text}</div></th>)}</tr></thead>
+                                <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">{isLoadingCases ? (<tr><td colSpan={4} className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-500" /></td></tr>) : isErrorCases ? (<tr><td colSpan={4} className="text-center py-4 text-red-500">Error loading cases.</td></tr>) : filteredCases.length > 0 ? (filteredCases.map(c => ( <tr key={c.case_id} className={`hover:bg-slate-100 dark:hover:bg-slate-700/50 ${selectedCase?.case_id === c.case_id ? 'bg-blue-100 dark:bg-blue-900/50' : ''}`}><td className="px-3 py-2 whitespace-nowrap text-sm">{c.case_number}</td><td className="px-3 py-2 whitespace-nowrap text-sm font-semibold">KES {parseFloat(String(c.payment_balance ?? c.fee ?? 0)).toFixed(2)}</td><td className="px-3 py-2 whitespace-nowrap text-sm truncate max-w-xs">{c.owner?.full_name || 'N/A'}</td><td className="px-3 py-2"><button type="button" onClick={() => setSelectedCase(c)} className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-500 text-white hover:bg-indigo-600">Select</button></td></tr> ))) : (<tr><td colSpan={4} className="text-center py-4 text-slate-500 italic">No cases match filters or have a balance.</td></tr>)}</tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    <div className="p-6">
-                        <h4 className="text-xl font-semibold text-blue-500 mb-3">Payment Details</h4>
-                        {selectedCase && (
-                            <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleMakePaymentInternal(); }}>
-                                <div>
-                                    <label htmlFor="stripeAmount" className={labelClassName}>Amount to Pay:</label>
-                                    <input
-                                        type="number"
-                                        id="stripeAmount"
-                                        className={inputClassName}
-                                        placeholder="Amount"
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        required
-                                        disabled={!selectedCase}
-                                        step="0.01"
-                                    />
-                                </div>
-                                <div> {/* New Customer Email Field */}
-                                    <label htmlFor="stripeCustomerEmail" className={labelClassName}>
-                                        Customer Email (for receipt):
-                                    </label>
-                                    <input
-                                        type="email"
-                                        id="stripeCustomerEmail"
-                                        className={inputClassName}
-                                        placeholder="customer@example.com"
-                                        value={customerEmail}
-                                        onChange={(e) => setCustomerEmail(e.target.value)}
-                                        disabled={!selectedCase}
-                                        required // Make it required if receipts are essential
-                                    />
-                                </div>
-                                <div className="flex justify-between pt-2">
-                                    <button
-                                        type="submit"
-                                        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isSubmitting || !selectedCase ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        disabled={isSubmitting || !selectedCase}
-                                    >
-                                        {isSubmitting ? (
-                                            <div className='flex items-center justify-center'>
-                                                <span className="loading loading-spinner text-white mr-2"></span>
-                                                Processing...
-                                            </div>
-                                        ) : (
-                                            "Pay with Stripe"
-                                        )}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 ml-2 transition duration-300"
-                                        onClick={handleModalClose}
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
+                    <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800/50">
+                        <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center"><CreditCard className="mr-2 h-5 w-5 text-indigo-500"/>Payment Details</h4>
+                        {selectedCase ? (
+                            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleMakePaymentInternal(); }}>
+                                <div><label htmlFor="stripeAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount to Pay (KES) *</label><input type="number" id="stripeAmount" value={amount} onChange={e => setAmount(e.target.value)} className={inputBaseClasses} placeholder="Amount" step="0.01" required/></div>
+                                <div className="relative"><label htmlFor="stripeCustomerEmail" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Email (for receipt) *</label><Mail className="absolute left-3 top-10 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="email" id="stripeCustomerEmail" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} className={`${inputBaseClasses} pl-9`} placeholder="customer@example.com" required/></div>
                             </form>
-                        )}
-                        {!selectedCase && (
-                            <p className="text-center text-gray-500 dark:text-gray-400">Please select a case to proceed with payment.</p>
-                        )}
+                        ) : ( <p className="text-center text-slate-500 dark:text-slate-400 py-4">Please select a case to proceed with payment.</p> )}
                     </div>
                 </div>
+
+                <footer className="flex items-center justify-end p-4 space-x-2 border-t rounded-b dark:border-slate-700 flex-shrink-0">
+                    <button type="button" onClick={handleModalClose} className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">Cancel</button>
+                    <button onClick={handleMakePaymentInternal} disabled={isSubmitting || !selectedCase} className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">{isSubmitting && <Loader2 className="animate-spin h-5 w-5 mr-2" />}Pay with Stripe</button>
+                </footer>
             </div>
         </div>
     );

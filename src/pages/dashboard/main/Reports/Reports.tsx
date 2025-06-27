@@ -1,7 +1,8 @@
 // src/pages/dashboard/main/Reports/Reports.tsx
 
 import React, { useState, useMemo } from 'react';
-import Footer from "../../../landingPage/Footer";
+//import Footer from "../../../landingPage/Footer";
+import { Link } from 'react-router-dom';
 import CasesPerMonth from "./casesPerMonth";
 import CardsReport from "./CardsReport";
 import TicketReport from "./TicketReport";
@@ -69,9 +70,9 @@ const Reports: React.FC = () => {
 
     return (
         <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
-            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+            {/* MODIFIED: Reduced padding for more content space */}
+            <div className="max-w-7xl mx-auto p-2 sm:p-4">
                 <div className="mb-8">
-                    {/* FIX: Applied blue text color to the main header */}
                     <h1 className="text-4xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
                         Analytics & Reports
                     </h1>
@@ -108,6 +109,7 @@ const Reports: React.FC = () => {
                                     <div className="p-4 sm:p-6">
                                         <Component />
                                     </div>
+                                    
                                 </div>
                             </section>
                         ))
@@ -122,8 +124,12 @@ const Reports: React.FC = () => {
                     )}
                 </div>
             </div>
-            
-            <Footer />
+                   <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
+                                    <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                                    <p className="mt-1">
+                                      <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
+                                    </p>
+                                  </footer>
         </div>
     );
 };

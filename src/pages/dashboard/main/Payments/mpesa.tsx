@@ -1,729 +1,219 @@
 // src/components/MpesaPayment.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
-  useFetchCasesQuery,
-  CaseDataTypes as Case, 
-  CaseStatus,
-  CaseType,
+    useFetchCasesQuery,
+    CaseDataTypes as Case,
 } from '../../../../features/case/caseAPI';
-
+import { useInitiateMpesaStkPushMutation } from '../../../../features/payment/paymentAPI';
 import {
-  useInitiateMpesaStkPushMutation,
-  // useFetchPaymentsQuery, 
-} from '../../../../features/payment/paymentAPI';
+    X, Search, Filter, FileText, Banknote, Info, Settings, ChevronDown,
+    Loader2, PartyPopper, XCircle, Mail, Phone, BadgeInfo, User // CORRECTED: Added BadgeInfo and User
+} from 'lucide-react';
 
 // --- Custom useDebounce Hook ---
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
     useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
+        const handler = setTimeout(() => { setDebouncedValue(value); }, delay);
+        return () => { clearTimeout(handler); };
     }, [value, delay]);
     return debouncedValue;
 }
-// --- End Custom useDebounce Hook ---
 
 const MPESA_ICON_URL = "https://stagepass.co.ke/theme/images/clients/WEB-LOGOS-14.jpg";
-const DEBOUNCE_DELAY = 300; // milliseconds
-const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance'; 
-
-// --- Constants for localStorage suggestions ---
+const DEBOUNCE_DELAY = 300;
+const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance';
 const LAST_USED_PHONE_NUMBERS_KEY = 'mpesaPayment_lastUsedPhoneNumbers';
 const LAST_USED_EMAILS_KEY = 'mpesaPayment_lastUsedEmails';
-const MAX_SUGGESTIONS = 5; // Max number of suggestions to store and display
-
-
+const MAX_SUGGESTIONS = 5;
 
 interface MpesaPaymentProps {
-  userId?:number;
+  userId?: number;
   isOpen: boolean;
-  isDarkMode?: boolean; // Optional prop for dark mode
   onClose: () => void;
 }
 
-interface CreateMpesaPaymentVariables {
-  case_id: number;
-  user_id: number;
-  amount: number;
-  phoneNumber: string;
-  customer_email?: string;
-}
-
-interface MpesaTransactionDetails {
-  success: boolean;
-  message: string;
-  amount?: string;
-  transactionId?: string;
-  phoneNumber?: string;
-  status?: string;
-  payerName?: string;
-}
-
-interface ApiError {
-  response?: {
-    data?: {
-      success: boolean;
-      message?: string;
-      status?: string;
-    };
-    status?: number;
-  };
-  message?: string;
-}
+interface MpesaTransactionDetails { success: boolean; message: string; }
+interface ApiError { response?: { data?: { success: boolean; message?: string; status?: string; }; status?: number; }; message?: string; }
 
 const MpesaPayment: React.FC<MpesaPaymentProps> = ({ isOpen, onClose }) => {
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [clientSideIsLoading, setClientSideIsLoading] = useState(false);
-  const [initiateMpesaStkPush, { isLoading: isMutationLoading }] = useInitiateMpesaStkPushMutation();
-  const navigate = useNavigate();
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [amount, setAmount] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [isFailModalOpen, setIsFailModalOpen] = useState(false);
-  const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
+    const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [initiateMpesaStkPush, { isLoading: isMutationLoading }] = useInitiateMpesaStkPushMutation();
+    const navigate = useNavigate();
+    const [paymentError, setPaymentError] = useState<string | null>(null);
+    const [amount, setAmount] = useState('');
+    const [customerEmail, setCustomerEmail] = useState('');
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isFailModalOpen, setIsFailModalOpen] = useState(false);
+    const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
-  const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
-  const [typeFilter, setTypeFilter] = useState<CaseType | ''>('');
-  const [stationFilterInput, setStationFilterInput] = useState('');
-  const [caseNumberFilterInput, setCaseNumberFilterInput] = useState('');
-  const [searchTermInput, setSearchTermInput] = useState('');
+    const [filters, setFilters] = useState({ status: '', type: '', searchTerm: '' });
+    const debouncedFilters = useDebounce(filters, DEBOUNCE_DELAY);
 
-  const debouncedStationFilter = useDebounce(stationFilterInput, DEBOUNCE_DELAY);
-  const debouncedCaseNumberFilter = useDebounce(caseNumberFilterInput, DEBOUNCE_DELAY);
-  const debouncedSearchTerm = useDebounce(searchTermInput, DEBOUNCE_DELAY);
+    const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases } = useFetchCasesQuery();
+    const cases = useMemo(() => Array.isArray(casesData) ? casesData : [], [casesData]);
 
-  const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
-  const cases = useMemo(() => Array.isArray(casesData) ? casesData : [], [casesData]);
+    const [lastUsedPhoneNumbers, setLastUsedPhoneNumbers] = useState<string[]>([]);
+    const [lastUsedEmails, setLastUsedEmails] = useState<string[]>([]);
 
-  // --- State for input suggestions ---
-  const [lastUsedPhoneNumbers, setLastUsedPhoneNumbers] = useState<string[]>([]);
-  const [lastUsedEmails, setLastUsedEmails] = useState<string[]>([]);
-  // --- End State for input suggestions ---
-
-  // --- Effect to load suggestions from localStorage ---
-  useEffect(() => {
-    try {
-      const storedPhones = localStorage.getItem(LAST_USED_PHONE_NUMBERS_KEY);
-      if (storedPhones) {
-        setLastUsedPhoneNumbers(JSON.parse(storedPhones));
-      }
-    } catch (e) {
-      console.error("Failed to load last used phone numbers from localStorage:", e);
-      // Optionally clear corrupted data: localStorage.removeItem
-    }
-
-    try {
-      const storedEmails = localStorage.getItem(LAST_USED_EMAILS_KEY);
-      if (storedEmails) {
-        setLastUsedEmails(JSON.parse(storedEmails));
-      }
-    } catch (e) {
-      console.error("Failed to load last used emails from localStorage:", e);
-      // Optionally clear corrupted data: localStorage.removeItem
-    }
-  }, []); // Empty dependency array ensures it runs only on mount
-  // --- End Effect to load suggestions ---
-
-  // --- Function to update and save last used values ---
-  const updateLastUsedValues = (type: 'phone' | 'email', newValue: string) => {
-    if (!newValue || !newValue.trim()) return; // Don't save empty or whitespace-only values
-
-    if (type === 'phone') {
-      setLastUsedPhoneNumbers(prev => {
-        const updated = [newValue, ...prev.filter(p => p !== newValue)].slice(0, MAX_SUGGESTIONS);
-        try {
-          localStorage.setItem(LAST_USED_PHONE_NUMBERS_KEY, JSON.stringify(updated));
-        } catch (e) {
-          console.error("Failed to save last used phone numbers to localStorage:", e);
-        }
-        return updated;
-      });
-    } else if (type === 'email') {
-      setLastUsedEmails(prev => {
-        const updated = [newValue, ...prev.filter(e => e !== newValue)].slice(0, MAX_SUGGESTIONS);
-        try {
-          localStorage.setItem(LAST_USED_EMAILS_KEY, JSON.stringify(updated));
-        } catch (e) {
-          console.error("Failed to save last used emails to localStorage:", e);
-        }
-        return updated;
-      });
-    }
-  };
-  // --- End Function to update and save last used values ---
-
-
-  const filteredCases = useMemo(() => {
-    if (!Array.isArray(cases) || isLoadingCases) return [];
-    let tempFilteredCases = [...cases];
-
-    if (statusFilter) {
-      tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_status === statusFilter);
-    }
-    if (typeFilter) {
-      tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_type === typeFilter);
-    }
-    if (debouncedStationFilter) {
-      tempFilteredCases = tempFilteredCases.filter(caseItem =>
-        (caseItem.station ?? '').toLowerCase().includes(debouncedStationFilter.toLowerCase())
-      );
-    }
-    if (debouncedCaseNumberFilter) {
-      tempFilteredCases = tempFilteredCases.filter(caseItem =>
-        caseItem.case_number.toLowerCase().includes(debouncedCaseNumberFilter.toLowerCase())
-      );
-    }
-    if (debouncedSearchTerm) {
-      const term = debouncedSearchTerm.toLowerCase();
-      tempFilteredCases = tempFilteredCases.filter(caseItem =>
-        caseItem.case_number.toLowerCase().includes(term) ||
-        (caseItem.case_track_number && caseItem.case_track_number.toLowerCase().includes(term)) ||
-        (caseItem.parties ?? '').toLowerCase().includes(term) ||
-        (caseItem.station ?? '').toLowerCase().includes(term)
-      );
-    }
-
-    return tempFilteredCases.filter(caseItem => {
-      const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-      let numericBalance = 0;
-
-      if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-        const parsed = parseFloat(String(balanceValueFromBackend));
-        if (!isNaN(parsed)) {
-          numericBalance = parsed;
-        }
-      }
-      return numericBalance > 0;
-    });
-  }, [
-    cases,
-    isLoadingCases,
-    statusFilter,
-    typeFilter,
-    debouncedStationFilter,
-    debouncedCaseNumberFilter,
-    debouncedSearchTerm,
-  ]);
-
-  useEffect(() => {
-    if (selectedCase) {
-      const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-      let currentBalance = 0;
-
-      if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-        const parsed = parseFloat(String(balanceValueFromBackend));
-        if (!isNaN(parsed)) {
-          currentBalance = parsed;
-        }
-      }
-
-      if (currentBalance > 0) {
-        setAmount(currentBalance.toFixed(2));
-      } else {
-        const fee = parseFloat(String(selectedCase.fee));
-        if (!isNaN(fee) && fee > 0 && currentBalance <= 0) {
-           console.warn(
-                `MpesaPayment: Case ID ${selectedCase.case_id} was selected, but its backend balance ('${BALANCE_FIELD_NAME_FROM_BACKEND}': ${balanceValueFromBackend}) is not positive. ` +
-                `Falling back to the full case fee for the amount field.`
-            );
-          setAmount(fee.toFixed(2));
-        } else {
-          setAmount('0.00');
-        }
-      }
-    } else {
-      setAmount('');
-    }
-  }, [selectedCase]);
-
-  const handlePayment = async () => {
-    if (!phoneNumber) {
-      toast.error("Phone number is required.");
-      setPhoneNumberError("Phone number is required.");
-      return;
-    }
-    if (!selectedCase) {
-      toast.error("Case needs to be selected.");
-      return;
-    }
-    if (!amount) {
-      toast.error("Amount is required.");
-      return;
-    }
-    const numericAmount = Number(amount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      toast.error('Please enter a valid positive amount.');
-      return;
-    }
-
-    const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-    let maxPayable = 0;
-    if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-        const parsed = parseFloat(String(balanceValueFromBackend));
-        if (!isNaN(parsed) && parsed > 0) {
-            maxPayable = parsed;
-        }
-    }
-    if (maxPayable <= 0) {
-        const fee = parseFloat(String(selectedCase.fee));
-        if (!isNaN(fee) && fee > 0) {
-            maxPayable = fee;
-            console.warn(`MpesaPayment: Submitting for Case ID ${selectedCase.case_id}: Backend balance ('${BALANCE_FIELD_NAME_FROM_BACKEND}') was not positive/available. Using full case fee as max payable.`);
-        }
-    }
-    if (maxPayable <= 0) {
-        toast.error("This case appears to have no outstanding balance, or balance information is unavailable. Payment cannot be recorded.");
-        return;
-    }
-    if (numericAmount > maxPayable) {
-        toast.error(`Amount (${numericAmount.toFixed(2)}) cannot exceed the outstanding balance of ${maxPayable.toFixed(2)}.`);
-        return;
-    }
-
-
-    if (!customerEmail) {
-      toast.error("Customer email is required for the receipt.");
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(customerEmail)) {
-      toast.error("Please enter a valid email address.");
-      return;
-    }
-    const isValid = isValidPhoneNumber(phoneNumber);
-    if (!isValid) {
-      toast.error("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
-      setPhoneNumberError("Please enter a valid Kenyan phone number starting with 01 or 07 and has 10 digits.");
-      return;
-    }
-
-    setClientSideIsLoading(true);
-    setPaymentError(null);
-    setPhoneNumberError(null);
-
-    try {
-      const paymentData: CreateMpesaPaymentVariables = {
-        case_id: selectedCase.case_id,
-        user_id: selectedCase.user_id,
-        amount: numericAmount,
-        phoneNumber: phoneNumber,
-        customer_email: customerEmail,
-      };
-      const response = await initiateMpesaStkPush(paymentData).unwrap() as MpesaTransactionDetails;
-      if (response.success) {
-        toast.success(response.message);
-        setIsSuccessModalOpen(true);
-        // Update last used values on successful payment
-        updateLastUsedValues('phone', phoneNumber);
-        updateLastUsedValues('email', customerEmail);
-      } else {
-        const rawErrorMessage = response.message || "Payment Failed";
-        toast.error(rawErrorMessage);
-        setPaymentError(rawErrorMessage);
-        setIsFailModalOpen(true);
-      }
-    } catch (error) {
-      const err = error as ApiError;
-      console.error("M-Pesa Payment Error:", error);
-      let rawErrorMessage = "Failed to initiate M-Pesa payment.";
-      if (err.response?.data?.message) {
-        rawErrorMessage = err.response.data.message;
-      } else if (err.message) {
-        rawErrorMessage = err.message;
-      } else {
-        rawErrorMessage = JSON.stringify(err);
-      }
-      try {
-           const parsedError = JSON.parse(rawErrorMessage);
-            rawErrorMessage = parsedError?.data?.message || parsedError.message || rawErrorMessage;
-      } catch (parseError) { /* Ignore */ }
-      toast.error(rawErrorMessage);
-      setPaymentError(rawErrorMessage);
-      setIsFailModalOpen(true);
-    } finally {
-      setClientSideIsLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    setSelectedCase(null);
-    setPhoneNumber('');
-    setAmount('');
-    setCustomerEmail('');
-    setPaymentError(null);
-    setPhoneNumberError(null);
-    setIsSuccessModalOpen(false);
-    setIsFailModalOpen(false);
-    setClientSideIsLoading(false);
-    setStatusFilter('');
-    setTypeFilter('');
-    setStationFilterInput('');
-    setCaseNumberFilterInput('');
-    setSearchTermInput('');
-    onClose();
-  };
-
-  const SuccessModal = () => { 
-    const [showFireworks, setShowFireworks] = useState(true);
-    const encouragementQuotes = [
-      "The only way to do great work is to love what you do.",
-      "Believe you can and you're halfway there.",
-      "The future belongs to those who believe in the beauty of their dreams.",
-      "Success is not final, failure is not fatal: It is the courage to continue that counts.",
-      "Don't watch the clock; do what it does. Keep going."
-    ];
-    const randomQuote = encouragementQuotes[Math.floor(Math.random() * encouragementQuotes.length)];
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const statusDropdownRef = useRef<HTMLDivElement>(null);
+    const typeDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-      const timer = setTimeout(() => {
-        setShowFireworks(false);
-      }, 5000);
-      return () => clearTimeout(timer);
+        try {
+            const storedPhones = localStorage.getItem(LAST_USED_PHONE_NUMBERS_KEY);
+            if (storedPhones) setLastUsedPhoneNumbers(JSON.parse(storedPhones));
+            const storedEmails = localStorage.getItem(LAST_USED_EMAILS_KEY);
+            if (storedEmails) setLastUsedEmails(JSON.parse(storedEmails));
+        } catch (e) { console.error("Failed to load suggestions from localStorage:", e); }
     }, []);
 
-    const fireworkStyle = (): React.CSSProperties => ({
-      position: 'absolute', width: '10px', height: '10px',
-      transformOrigin: 'bottom center', animation: 'fireworkExplode 2s ease-out forwards, fireworkRise 2s ease-out forwards',
-      animationDelay: `${Math.random() * 2}s`, left: `${Math.random() * 100}%`, top: `${Math.random() * 30 + 50}%`,
-    });
-    const sparkStyle = (): React.CSSProperties => ({
-      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '50%',
-      transformOrigin: 'center', animation: 'fireworkSpark 1s ease-out forwards',
-      animationDelay: `${Math.random() * 0.05}s`, backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`,
-    });
-    const fireworksContainerStyle: React.CSSProperties = {
-      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-      overflow: 'hidden', pointerEvents: 'none', zIndex: 1,
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) setIsStatusDropdownOpen(false);
+          if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) setIsTypeDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const updateLastUsedValues = (type: 'phone' | 'email', newValue: string) => {
+        if (!newValue || !newValue.trim()) return;
+        const key = type === 'phone' ? LAST_USED_PHONE_NUMBERS_KEY : LAST_USED_EMAILS_KEY;
+        const setFunction = type === 'phone' ? setLastUsedPhoneNumbers : setLastUsedEmails;
+        setFunction(prev => {
+            const updated = [newValue, ...prev.filter(v => v !== newValue)].slice(0, MAX_SUGGESTIONS);
+            try { localStorage.setItem(key, JSON.stringify(updated)); } catch (e) { console.error(`Failed to save last used ${type}s to localStorage:`, e); }
+            return updated;
+        });
+    };
+    
+    const filteredCases = useMemo(() => {
+        if (!Array.isArray(cases) || isLoadingCases) return [];
+        return cases.filter(caseItem => {
+            const balance = parseFloat(String((caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+            if (isNaN(balance) || balance <= 0) return false;
+            
+            if (debouncedFilters.status && caseItem.case_status !== debouncedFilters.status) return false;
+            if (debouncedFilters.type && caseItem.case_type !== debouncedFilters.type) return false;
+            if (debouncedFilters.searchTerm) {
+                const term = debouncedFilters.searchTerm.toLowerCase();
+                const isInCase = caseItem.case_number.toLowerCase().includes(term) || (caseItem.case_track_number && caseItem.case_track_number.toLowerCase().includes(term)) || (caseItem.parties ?? '').toLowerCase().includes(term) || (caseItem.station ?? '').toLowerCase().includes(term);
+                if (!isInCase) return false;
+            }
+            return true;
+        });
+    }, [cases, isLoadingCases, debouncedFilters]);
+
+    useEffect(() => {
+        if (selectedCase) {
+            const balance = parseFloat(String((selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+            setAmount(balance > 0 ? balance.toFixed(2) : '0.00');
+        } else { setAmount(''); }
+    }, [selectedCase]);
+
+    const handleFilterChange = (field: keyof typeof filters, value: string) => setFilters(prev => ({ ...prev, [field]: value }));
+
+    const handlePayment = async () => {
+        if (!selectedCase) { toast.error("Please select a case first."); return; }
+        const numericAmount = Number(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) { toast.error('Please enter a valid positive amount.'); return; }
+        const balance = parseFloat(String((selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+        if (numericAmount > balance) { toast.error(`Amount cannot exceed the outstanding balance of ${balance.toFixed(2)}.`); return; }
+        if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) { toast.error("Please enter a valid email address for the receipt."); return; }
+        const isValid = /^(01[0-9]{8}|07[0-9]{8})$/.test(phoneNumber);
+        if (!isValid) { toast.error("Please enter a valid 10-digit Kenyan phone number (07... or 01...)."); setPhoneNumberError("Invalid phone number format."); return; }
+        
+        setPaymentError(null); setPhoneNumberError(null);
+        try {
+            const response = await initiateMpesaStkPush({ case_id: selectedCase.case_id, user_id: selectedCase.user_id, amount: numericAmount, phoneNumber, customer_email: customerEmail }).unwrap() as MpesaTransactionDetails;
+            if (response.success) {
+                toast.success(response.message);
+                setIsSuccessModalOpen(true);
+                updateLastUsedValues('phone', phoneNumber);
+                updateLastUsedValues('email', customerEmail);
+            } else {
+                setPaymentError(response.message || "Payment Failed");
+                setIsFailModalOpen(true);
+            }
+        } catch (error) {
+            const err = error as ApiError;
+            const message = err.response?.data?.message || err.message || "Failed to initiate payment. Please try again.";
+            toast.error(message);
+            setPaymentError(message);
+            setIsFailModalOpen(true);
+        }
     };
 
-    return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-        <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700 text-center">
-          {showFireworks && (
-            <div className="fireworks-container" style={fireworksContainerStyle}>
-              {[...Array(15)].map((_, i) => (
-                <div key={i} className="firework" style={fireworkStyle()}>
-                  {[...Array(10)].map((_, j) => ( <div key={j} className="spark" style={sparkStyle()}></div> ))}
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex items-center justify-center mb-4 relative">
-            <svg className="h-12 w-12 text-green-500 animate-bounce relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-            <h3 className="text-3xl font-extrabold text-green-600 animate-pulse relative z-10">Payment Successful!</h3>
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 text-center mb-4 relative z-10">Thank you for your payment! We appreciate you always.</p>
-          <p className="text-lg italic text-gray-500 dark:text-gray-400 mb-6 relative z-10">"{randomQuote}"</p>
-          <button
-            onClick={() => { setIsSuccessModalOpen(false); handleClose(); navigate('/dashboard') }}
-            className="mt-6 px-6 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-full hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-600 transition duration-300 block mx-auto relative z-10"
-          >Okay</button>
-        </div>
-      </div>
+    const handleClose = () => {
+        setSelectedCase(null); setPhoneNumber(''); setAmount(''); setCustomerEmail(''); setPaymentError(null);
+        setPhoneNumberError(null); setIsSuccessModalOpen(false); setIsFailModalOpen(false);
+        setFilters({ status: '', type: '', searchTerm: '' });
+        onClose();
+    };
+
+    const SuccessModal = () => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"><div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center"><div className="flex justify-center text-green-500 mb-4"><PartyPopper size={48} strokeWidth={1.5} /></div><h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Payment Initiated!</h3><p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Please check your phone to enter your M-Pesa PIN and complete the transaction.</p><div className="mt-6 flex justify-center"><button onClick={() => { setIsSuccessModalOpen(false); handleClose(); navigate('/dashboard/my-cases') }} className="px-6 py-2.5 text-sm font-semibold bg-green-600 text-white hover:bg-green-700 rounded-lg">Okay</button></div></div></div>
     );
-  };
+    const FailModal = () => (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4"><div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center"><div className="flex justify-center text-red-500 mb-4"><XCircle size={48} strokeWidth={1.5} /></div><h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Payment Failed</h3><p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{paymentError || "An unknown error occurred."}</p><div className="mt-6 flex justify-center"><button onClick={() => setIsFailModalOpen(false)} className="px-6 py-2.5 text-sm font-semibold bg-red-600 text-white hover:bg-red-700 rounded-lg">Try Again</button></div></div></div>
+    );
 
-  const FailModal = () => (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-        <div className="relative p-4 bg-white rounded-lg shadow dark:bg-gray-700">
-          <div className="flex items-center justify-center mb-4">
-            <svg className="h-12 w-12 text-red-500 animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            <h3 className="text-2xl font-semibold text-red-500">Payment Unsuccessful!</h3>
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 text-center">Oops, something went wrong. Please try again.</p>
-          <p className="text-red-700 dark:text-red-300 text-center">Message: {paymentError}</p>
-          <button
-            onClick={() => setIsFailModalOpen(false)}
-            className="mt-6 px-6 py-3 bg-red-500 text-white rounded-full hover:bg-red-700 transition duration-300 block mx-auto"
-          >Okay</button>
-        </div>
-      </div>
-  );
+    if (!isOpen) return null;
+    
+    const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
+    const dropdownListVariants: Variants = { hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } }, exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } } };
+    
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 p-4">
+            <div className="relative bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-5xl h-full md:h-auto max-h-[95vh] flex flex-col">
+                <header className="flex items-center justify-between p-4 border-b rounded-t dark:border-slate-700 flex-shrink-0">
+                    <div className="flex items-center gap-3"><img src={MPESA_ICON_URL} alt="Mpesa Icon" className="h-8 w-auto rounded" /><h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">M-Pesa Payment Portal</h3></div>
+                    <button type="button" className="p-1.5 rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700" onClick={handleClose} title="Close"><X className="h-5 w-5" /></button>
+                </header>
 
-  if (!isOpen) return null;
+                <div className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
+                    <div>
+                        <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center"><Filter className="mr-2 h-5 w-5 text-indigo-500" /> Filter Cases</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div ref={statusDropdownRef} className="relative"><button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!filters.status ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filters.status ? filters.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Statuses'}</span><div className="flex items-center">{filters.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleFilterChange('status', ''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}<ChevronDown size={20} className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isStatusDropdownOpen && (<motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>{['open', 'in_progress', 'closed', 'on_hold', 'resolved'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>))}</motion.ul>)}</AnimatePresence></div>
+                            <div ref={typeDropdownRef} className="relative"><button type="button" onClick={() => setIsTypeDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!filters.type ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filters.type ? filters.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Types'}</span><div className="flex items-center">{filters.type && (<button type="button" onClick={(e) => { e.stopPropagation(); handleFilterChange('type', ''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}<ChevronDown size={20} className={`text-slate-400 transition-transform ${isTypeDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isTypeDropdownOpen && (<motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('type', ''); setIsTypeDropdownOpen(false); }}>All Types</button></li>{['criminal', 'civil', 'family', 'corporate', 'property', 'employment', 'intellectual_property', 'immigration', 'elc', 'childrenCase', 'tribunal', 'conveyances'].map(type => (<li key={type}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('type', type); setIsTypeDropdownOpen(false); }}>{type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>))}</motion.ul>)}</AnimatePresence></div>
+                            <div className="relative md:col-span-2 lg:col-span-1"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/><input type="text" placeholder="Search All Fields..." value={filters.searchTerm} onChange={(e) => handleFilterChange('searchTerm', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filters.searchTerm && (<button type="button" onClick={() => handleFilterChange('searchTerm', '')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}</div>
+                        </div>
+                    </div>
 
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 overflow-auto">
-      <div className="relative p-4 w-full max-w-4xl h-full md:h-auto">
-        <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-xl dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[90vh]">
-          <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-            <span role="img" aria-label="mpesa" className="h-12 w-auto text-green-500 mr-2 text-4xl">
-              <img src={MPESA_ICON_URL} alt="Mpesa Icon" className="h-8 w-8" />
-            </span>
-            <h3 className="text-3xl font-extrabold text-green-600 text-center">M-Pesa Payment Portal</h3>
-            <button
-              type="button"
-              className="text-gray-500 bg-transparent hover:bg-gray-300 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-              onClick={handleClose}
-              title="Close"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-            </button>
-          </div>
+                    <div className="overflow-x-auto rounded-lg shadow-md max-h-72 border border-slate-200 dark:border-slate-700">
+                        <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-700">
+                            <thead className="bg-gradient-to-r from-blue-600 to-sky-600 text-white dark:from-blue-700 dark:to-sky-700 sticky top-0 z-10"><tr>{[ { icon: BadgeInfo, text: 'Case ID' }, { icon: User, text: 'Client' }, { icon: FileText, text: 'Case Number' }, { icon: Banknote, text: 'Balance' }, { icon: Info, text: 'Status' }, { icon: Settings, text: 'Action' } ].map(h => <th key={h.text} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"><div className="flex items-center gap-2"><h.icon className="h-4 w-4" />{h.text}</div></th>)}</tr></thead>
+                            <tbody className="bg-white divide-y divide-slate-200 dark:bg-slate-800 dark:divide-slate-700">{isLoadingCases ? (<tr><td colSpan={6} className="text-center py-4"><Loader2 className="h-6 w-6 animate-spin mx-auto text-indigo-500" /></td></tr>) : isErrorCases ? (<tr><td colSpan={6} className="text-center py-4 text-red-500">Error loading cases...</td></tr>) : filteredCases.length > 0 ? (filteredCases.map(caseItem => ( <tr key={caseItem.case_id} className={`hover:bg-slate-100 dark:hover:bg-slate-700/50 ${selectedCase?.case_id === caseItem.case_id ? "bg-blue-100 dark:bg-blue-900/50" : ""}`}><td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-white">{caseItem.case_id}</td><td className="px-4 py-3 whitespace-nowrap text-sm">{caseItem.owner?.full_name || 'N/A'}</td><td className="px-4 py-3 whitespace-nowrap text-sm">{caseItem.case_number}</td><td className="px-4 py-3 whitespace-nowrap text-sm font-semibold">KES {parseFloat(String(caseItem.payment_balance)).toFixed(2)}</td><td className="px-4 py-3 whitespace-nowrap text-sm">{caseItem.case_status}</td><td className="px-4 py-3 whitespace-nowrap text-sm font-medium"><button onClick={() => setSelectedCase(caseItem)} className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-500 text-white hover:bg-indigo-600">Select</button></td></tr> ))) : (<tr><td colSpan={6} className="text-center py-4 text-slate-500 italic">No cases with outstanding payments match your filters.</td></tr>)}</tbody>
+                        </table>
+                    </div>
 
-          <div className="p-6">
-            <h4 className="text-xl font-semibold text-green-500 mb-3">Select Case To Make Payment (only cases with outstanding balance):</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-              {/* Filter inputs remain the same */}
-              <div>
-                <label htmlFor="mpesaStatusFilter" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Filter by Status:</label>
-                <select
-                  id="mpesaStatusFilter"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as CaseStatus | '')}
-                >
-                  <option value="">All Statuses</option>
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="closed">Closed</option>
-                  <option value="on_hold">On Hold</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="mpesaTypeFilter" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Filter by Type:</label>
-                <select
-                  id="mpesaTypeFilter"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as CaseType | '')}
-                >
-                  <option value="">All Types</option>
-                  <option value="criminal">Criminal</option>
-                  <option value="civil">Civil</option>
-                  <option value="family">Family</option>
-                  <option value="corporate">Corporate</option>
-                  <option value="property">Property</option>
-                  <option value="employment">Employment</option>
-                  <option value="intellectual_property">Intellectual Property</option>
-                  <option value="immigration">Immigration</option>
-                  <option value="elc">ELC</option>
-                  <option value="childrenCase">Children Case</option>
-                  <option value="tribunal">Tribunal</option>
-                  <option value="conveyances">Conveyances</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="mpesaStationFilter" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Filter by Station:</label>
-                <input
-                  type="text"
-                  id="mpesaStationFilter"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  placeholder="Enter Station"
-                  value={stationFilterInput}
-                  onChange={(e) => setStationFilterInput(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="mpesaCaseNumberFilter" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Filter by Case Number:</label>
-                <input
-                  type="text"
-                  id="mpesaCaseNumberFilter"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  placeholder="Enter Case Number"
-                  value={caseNumberFilterInput}
-                  onChange={(e) => setCaseNumberFilterInput(e.target.value)}
-                />
-              </div>
-              <div className="lg:col-span-2">
-                <label htmlFor="mpesaSearchTerm" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Search (Parties, Track No., etc.):</label>
-                <input
-                  type="text"
-                  id="mpesaSearchTerm"
-                  className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                  placeholder="Search..."
-                  value={searchTermInput}
-                  onChange={(e) => setSearchTermInput(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {isLoadingCases ? (
-              <p className="text-center text-gray-500 dark:text-gray-400">Loading cases...</p>
-            ) : isErrorCases ? (
-              <p className="text-center text-red-500 dark:text-red-400">Error loading cases: {errorCases instanceof Error ? errorCases.message : 'Unknown error'}</p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg shadow-md max-h-72">
-                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead className="bg-green-50 dark:bg-green-900 sticky top-0 z-10">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Case ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">User ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Case Fee</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Payment Balance</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Station</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Case Number</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 dark:text-green-300 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-300 dark:bg-gray-700 dark:divide-gray-600">
-                    {filteredCases.map((caseItem) => {
-                      const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-                      let displayBalance = "0.00";
-                      if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                          const parsed = parseFloat(String(balanceValueFromBackend));
-                          if (!isNaN(parsed) && parsed > 0) {
-                              displayBalance = parsed.toFixed(2);
-                          }
-                      }
-                      return (
-                        <tr key={caseItem.case_id} className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${selectedCase?.case_id === caseItem.case_id ? "bg-blue-100 dark:bg-blue-900" : ""}`}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{caseItem.case_id}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.user_id}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{parseFloat(String(caseItem.fee)).toFixed(2)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                            {displayBalance}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_status}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_type}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.station}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_number}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => setSelectedCase(caseItem)}
-                              className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors duration-200"
-                              title="Select Case"
-                            >
-                              Select
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                {filteredCases.length === 0 && !isLoadingCases && (
-                  <p className="text-center py-4 text-gray-500 dark:text-gray-400">No cases with outstanding payments match your filters.</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="p-6">
-            <h4 className="text-xl font-semibold text-green-500 mb-3">Payment Details</h4>
-            <div className="mb-6">
-              <label htmlFor="mpesaAmount" className="block text-sm font-bold text-gray-700 dark:text-gray-300">Amount to Pay:</label>
-              <input
-                type="number"
-                id="mpesaAmount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Enter amount"
-                disabled={!selectedCase}
-                step="0.01"
-              />
-            </div>
-            <div className="mb-6">
-              <label htmlFor="mpesaCustomerEmail" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
-                <div className="flex items-center">
-                  <span role="img" aria-label="email" className="h-5 w-5 text-gray-500 mr-2 text-xl">📧</span>
-                  Customer Email (for receipt):
+                    <div>
+                        <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center"><Banknote className="mr-2 h-5 w-5 text-indigo-500"/> Payment Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label htmlFor="mpesaAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount to Pay (KES)</label><input type="number" id="mpesaAmount" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputBaseClasses} placeholder="Enter amount" disabled={!selectedCase} step="0.01"/></div>
+                            <div className="relative"><label htmlFor="mpesaCustomerEmail" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Customer Email (for receipt)</label><Mail className="absolute left-3 top-10 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/><input type="email" id="mpesaCustomerEmail" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className={`${inputBaseClasses} pl-9`} placeholder="Enter customer's email" list="lastUsedEmailsDatalist"/><datalist id="lastUsedEmailsDatalist">{lastUsedEmails.map((email, i) => <option key={i} value={email} />)}</datalist></div>
+                            <div className="md:col-span-2 relative"><label htmlFor="mpesaPhoneNumber" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Phone Number (Safaricom)</label><Phone className="absolute left-3 top-10 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/><input type="tel" id="mpesaPhoneNumber" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); setPhoneNumberError(null); }} className={`${inputBaseClasses} pl-9 ${phoneNumberError ? 'border-red-500 ring-red-500' : ''}`} placeholder="e.g., 0712345678" list="lastUsedPhoneNumbersDatalist"/><datalist id="lastUsedPhoneNumbersDatalist">{lastUsedPhoneNumbers.map((phone, i) => <option key={i} value={phone} />)}</datalist>{phoneNumberError && <p className="mt-1 text-xs text-red-500">{phoneNumberError}</p>}</div>
+                        </div>
+                    </div>
                 </div>
-              </label>
-              <input
-                type="email"
-                id="mpesaCustomerEmail"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Enter customer's email address"
-                list="lastUsedEmailsDatalist" 
-              />
-              <datalist id="lastUsedEmailsDatalist">
-                {lastUsedEmails.map((email, index) => (
-                  <option key={`email-suggestion-${index}`} value={email} />
-                ))}
-              </datalist>
-            </div>
-            <div className="mb-6">
-              <label htmlFor="mpesaPhoneNumber" className="block text-sm font-bold text-gray-700 dark:text-gray-300">
-                <div className="flex items-center">
-                  <span role="img" aria-label="phone" className="h-5 w-5 text-gray-500 mr-2 text-xl">📞</span>
-                  Phone Number:
+
+                <div className="flex justify-end items-center p-4 border-t dark:border-slate-700 gap-3 flex-shrink-0">
+                    <button type="button" className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500" onClick={handleClose}>Cancel</button>
+                    <button onClick={handlePayment} className="px-6 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center" disabled={isMutationLoading || !selectedCase || !!phoneNumberError} >{isMutationLoading ? <><Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing...</> : 'Make Payment'}</button>
                 </div>
-              </label>
-              <input
-                type="tel"
-                id="mpesaPhoneNumber"
-                value={phoneNumber}
-                onChange={(e) => {
-                  setPhoneNumber(e.target.value);
-                  setPhoneNumberError(null);
-                }}
-                className={`shadow-sm bg-gray-50 border ${phoneNumberError ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
-                placeholder="Enter M-Pesa phone number (e.g., 07XXXXXXXX or 01XXXXXXXX)"
-                list="lastUsedPhoneNumbersDatalist" 
-              />
-              <datalist id="lastUsedPhoneNumbersDatalist"> 
-                {lastUsedPhoneNumbers.map((phone, index) => (
-                  <option key={`phone-suggestion-${index}`} value={phone} />
-                ))}
-              </datalist>
-              {phoneNumberError && (
-                <p className="mt-2 text-sm text-red-600 dark:text-red-500">{phoneNumberError}</p>
-              )}
             </div>
-
-            {(clientSideIsLoading || isMutationLoading) && (
-              <div className="p-4 rounded-md bg-yellow-100 border border-yellow-400 mb-4">
-                <p className="text-gray-700">
-                  Processing M-Pesa payment... Please check your phone to complete the payment. This may take up to 60 seconds.
-                </p>
-              </div>
-            )}
-            {paymentError && !isFailModalOpen && (
-              <div className="p-4 rounded-md bg-red-100 border border-red-400 mb-4">
-                <h3 className="text-lg font-semibold text-red-700">Payment Unsuccessful!</h3>
-                <p className="text-gray-700">Message: {paymentError}</p>
-              </div>
-            )}
-
-            <div className="flex justify-between pt-2">
-              <button
-                onClick={handlePayment}
-                className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${clientSideIsLoading || isMutationLoading || !selectedCase || !!phoneNumberError ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={clientSideIsLoading || isMutationLoading || !selectedCase || !!phoneNumberError}
-              >
-                {clientSideIsLoading || isMutationLoading ? (
-                  <div className='flex items-center justify-center'>
-                    <span className="loading loading-spinner text-white mr-2"></span>
-                    <span> Processing...</span>
-                  </div>
-                ) : 'Make Payment'}
-              </button>
-              <button
-                type="button"
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 ml-2 transition duration-300"
-                onClick={handleClose}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+            {isSuccessModalOpen && <SuccessModal />}
+            {isFailModalOpen && <FailModal />}
         </div>
-      </div>
-      {isSuccessModalOpen && <SuccessModal />}
-      {isFailModalOpen && <FailModal />}
-    </div>
-  );
-
-  function isValidPhoneNumber(phoneNum: string): boolean {
-    const phoneRegex = /^(01[0-9]{8}|07[0-9]{8})$/;
-    return phoneRegex.test(phoneNum);
-  }
+    );
 };
 
 export default MpesaPayment;

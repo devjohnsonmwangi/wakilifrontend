@@ -52,14 +52,14 @@ interface ApiError {
 
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.3, ease: "easeInOut" } },
-  exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } },
+  visible: { opacity: 1, transition: { duration: 0.3, ease: "easeInOut" as const } },
+  exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" as const } },
 };
 
 const modalPanelVariants = {
   hidden: { opacity: 0, scale: 0.9, y: 20 },
-  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
-  exit: { opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2, ease: "easeIn" } },
+  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" as const } },
+  exit: { opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2, ease: "easeIn" as const } },
 };
 
 // Using a known M-PESA logo URL. Consider hosting this asset locally if possible.

@@ -1,18 +1,117 @@
-import { UserPlus, AlertTriangle, Fingerprint, UserCircle, User, Mail, Phone, MapPin, Tag, Settings, Shield, Trash2, Sun, Moon, Search, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { UserPlus, AlertTriangle, Fingerprint, UserCircle, User, Mail, Phone, MapPin, Tag, Settings, Shield, Trash2, Sun, Moon, Search, X, ChevronDown, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import AddClientModal from './registerclients';
 
 import { usersAPI, UserDataTypes } from "../../../features/users/usersAPI";
 
-// --- (Type definitions are unchanged) ---
+// --- Type Definitions ---
 type UserRole = "user" | "admin" | "lawyer" | "client" | "clerks" | "manager" | "supports";
 interface ApiErrorResponse { message?: string; error?: string; detail?: string; }
 interface RtkQueryError { status?: number | string; data?: ApiErrorResponse | string; error?: string; message?: string; }
 
+// --- Constant for Roles ---
+const ROLES: { value: UserRole; label: string }[] = [
+    { value: 'user', label: 'User' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'lawyer', label: 'Lawyer' },
+    { value: 'clerks', label: 'Clerk' },
+    { value: 'client', label: 'Client' },
+    { value: 'supports', label: 'Support' },
+];
 
-// Confirmation Modal Component (Unchanged)
+
+// --- NEW: Custom Role Dropdown Component ---
+const CustomRoleDropdown = ({
+  userId,
+  currentRole,
+  onRoleChange,
+  isLoading,
+  isOpen,
+  onToggle,
+  onClose
+}: {
+  userId: number;
+  currentRole: UserRole;
+  onRoleChange: (userId: number, newRole: UserRole) => void;
+  isLoading: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const currentRoleLabel = ROLES.find(r => r.value === currentRole)?.label || 'Unknown Role';
+
+  // Effect to handle clicking outside the dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  const handleSelect = (newRole: UserRole) => {
+    onRoleChange(userId, newRole);
+    onClose();
+  };
+
+  return (
+    <div className="relative w-32" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={isLoading}
+        className="relative w-full text-left bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm px-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors flex items-center justify-between"
+      >
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Updating...
+          </span>
+        ) : (
+          <>
+            <span className="truncate">{currentRoleLabel}</span>
+            <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          </>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-20 mt-1 w-full rounded-md bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <ul className="py-1 max-h-60 overflow-auto">
+            {ROLES.map((role) => (
+              <li
+                key={role.value}
+                onClick={() => handleSelect(role.value)}
+                className={`cursor-pointer select-none relative py-2 pl-3 pr-9 text-sm ${
+                  currentRole === role.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-900 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span className={`block truncate ${currentRole === role.value ? 'font-semibold' : 'font-normal'}`}>
+                  {role.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+// --- Confirmation Modal Component (Unchanged) ---
 const ConfirmationModal = ({
   isOpen,
   onClose,
@@ -77,6 +176,9 @@ function Account() {
 
   const [updatingSelectRoleId, setUpdatingSelectRoleId] = useState<number | null>(null);
   const [togglingUserAdminRoleId, setTogglingUserAdminRoleId] = useState<number | null>(null);
+  
+  // NEW: State to manage which dropdown is open
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
 
   const [filters, setFilters] = useState({
     name: '',
@@ -114,9 +216,7 @@ function Account() {
   const handleRegistrationSuccess = () => refetchUsers();
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => setFilters({ ...filters, [e.target.name]: e.target.value });
   const handleResetFilters = () => setFilters({ name: '', email: '', phone_number: '', address: '' });
-  // CORRECTED: Added handler for clearing individual filters
   const handleClearFilter = (filterName: keyof typeof filters) => setFilters(prev => ({ ...prev, [filterName]: '' }));
-
 
   // --- (Helper functions are unchanged) ---
   const getApiErrorMessage = (error: unknown): string => {
@@ -206,7 +306,6 @@ function Account() {
     <div className="text-center py-12 px-6 my-8 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700"><div className="text-6xl mb-6 text-indigo-500 dark:text-indigo-400 flex justify-center">{icon}</div><h3 className="text-3xl font-semibold text-slate-700 dark:text-slate-100 mb-3">{title}</h3>{message && <p className="text-slate-500 dark:text-slate-400 text-lg">{message}</p>}{children && <div className="mt-6">{children}</div>}</div>
   );
 
-  // CORRECTED: Centralized input styling
   const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
 
   const renderContent = () => {
@@ -239,7 +338,20 @@ function Account() {
                 <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600 whitespace-nowrap"><a href={`mailto:${user.email}`} className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline flex items-center"><Mail className="inline mr-2 h-4 w-4" />{user.email}</a></td>
                 <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600 whitespace-nowrap">{user.phone_number ? <a href={`tel:${user.phone_number}`} className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:underline flex items-center"><Phone className="inline mr-2 h-4 w-4" />{user.phone_number}</a> : <span className="text-slate-400 dark:text-slate-500">N/A</span>}</td>
                 <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600 whitespace-nowrap">{user.address ? <span className="flex items-center"><MapPin className="inline mr-2 h-4 w-4 text-red-500 dark:text-red-400" />{user.address}</span> : <span className="text-slate-400 dark:text-slate-500">N/A</span>}</td>
-                <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600 whitespace-nowrap"><select title="Change Role" className={`${inputBaseClasses} py-2`} value={user.role} onChange={(e) => handleRoleChangeFromSelect(user.user_id, e.target.value as UserRole)} disabled={updatingSelectRoleId === user.user_id}><option value="user">User</option><option value="admin">Admin</option><option value="manager">Manager</option><option value="lawyer">Lawyer</option><option value="clerks">Clerk</option><option value="client">Client</option><option value="supports">Support</option></select></td>
+                
+                {/* --- REPLACED with CustomRoleDropdown --- */}
+                <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600">
+                  <CustomRoleDropdown
+                    userId={user.user_id}
+                    currentRole={user.role as UserRole}
+                    onRoleChange={handleRoleChangeFromSelect}
+                    isLoading={updatingSelectRoleId === user.user_id}
+                    isOpen={openDropdownId === user.user_id}
+                    onToggle={() => setOpenDropdownId(openDropdownId === user.user_id ? null : user.user_id)}
+                    onClose={() => setOpenDropdownId(null)}
+                  />
+                </td>
+                
                 <td className="px-2 py-3 md:p-4 border-b border-slate-200 dark:border-slate-600 whitespace-nowrap"><div className="flex flex-row gap-2 items-center justify-center"><button onClick={() => handleToggleUserAdminRole(user.user_id, user.role as UserRole)} className="px-2 py-1.5 text-xs font-semibold rounded-md bg-sky-500 text-white hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 transition-transform active:scale-95 flex items-center justify-center" disabled={togglingUserAdminRoleId === user.user_id} title={user.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}><Shield size={16} /><span className="hidden sm:inline ml-1.5">{togglingUserAdminRoleId === user.user_id ? '...' : (user.role === 'admin' ? 'User' : 'Admin')}</span></button><button onClick={() => handleDeleteUserClick(user)} className="px-2 py-1.5 text-xs font-semibold rounded-md bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 flex items-center justify-center transition-transform active:scale-95" title="Delete User" disabled={isDeleting && userToDelete?.user_id === user.user_id}><Trash2 size={14} /><span className="hidden sm:inline ml-1.5">Delete</span></button></div></td>
               </tr>
             ))}
@@ -275,7 +387,6 @@ function Account() {
               </button>
             </div>
             
-            {/* CORRECTED: Grid layout with consistent, responsive, clearable inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
                 {/* Name Filter */}
                 <div className="relative lg:col-span-1">

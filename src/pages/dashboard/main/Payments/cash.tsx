@@ -16,7 +16,7 @@ function useDebounce<T>(value: T, delay: number): T {
 const LAST_USED_CASH_EMAILS_KEY = 'cashPayment_lastUsedEmails';
 const MAX_CASH_EMAIL_SUGGESTIONS = 5;
 
-interface CashPaymentModalProps { isOpen: boolean; onClose: () => void; }
+interface CashPaymentModalProps { isOpen: boolean; onClose: () => void; userId: number | string;isDarkMode?: boolean; }
 
 const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance';
 const DEBOUNCE_DELAY = 300;
