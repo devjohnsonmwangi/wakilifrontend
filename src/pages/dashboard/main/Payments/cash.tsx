@@ -1,57 +1,25 @@
 // src/components/CashPaymentModal.tsx
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-    useCreateCashPaymentMutation,
-} from '../../../../features/payment/paymentAPI';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useCreateCashPaymentMutation } from '../../../../features/payment/paymentAPI';
 import { toast } from 'sonner';
-import {
-    useFetchCasesQuery,
-    CaseDataTypes as Case,
-    CaseStatus,
-    CaseType,
-} from '../../../../features/case/caseAPI';
+import { useFetchCasesQuery, CaseDataTypes as Case, CaseStatus, CaseType } from '../../../../features/case/caseAPI';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { Banknote, X, Loader2, Search, Filter, Info, ChevronDown, ListFilter, Tag, Wallet, FileDigit, Hash, Settings } from 'lucide-react';
 
 // --- Custom useDebounce Hook ---
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-
+    useEffect(() => { const handler = setTimeout(() => { setDebouncedValue(value); }, delay); return () => { clearTimeout(handler); }; }, [value, delay]);
     return debouncedValue;
 }
-// --- End Custom useDebounce Hook ---
 
-// --- Constants for localStorage suggestions for Cash Payments ---
 const LAST_USED_CASH_EMAILS_KEY = 'cashPayment_lastUsedEmails';
-const MAX_CASH_EMAIL_SUGGESTIONS = 5; // Max number of email suggestions for cash payments
-// --- End Constants ---
+const MAX_CASH_EMAIL_SUGGESTIONS = 5;
 
-
-interface CashPaymentModalProps {
-    userId?: number; // Optional user ID prop for flexibility
-    isOpen: boolean;
-    isDarkMode?: boolean; // Optional prop to handle dark mode styles
-    onClose: () => void;
-}
-
-interface CreateCashPaymentPayload {
-    case_id: number;
-    user_id: number;
-    amount: number;
-    payment_notes?: string;
-    customer_email?: string;
-}
+interface CashPaymentModalProps { isOpen: boolean; onClose: () => void; }
 
 const BALANCE_FIELD_NAME_FROM_BACKEND = 'payment_balance';
-const DEBOUNCE_DELAY = 300; // milliseconds
+const DEBOUNCE_DELAY = 300;
 
 const CashPaymentModal: React.FC<CashPaymentModalProps> = ({ isOpen, onClose }) => {
     const [selectedCase, setSelectedCase] = useState<Case | null>(null);
@@ -61,442 +29,151 @@ const CashPaymentModal: React.FC<CashPaymentModalProps> = ({ isOpen, onClose }) 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [createCashPayment] = useCreateCashPaymentMutation();
 
-    // States for immediate input values
     const [statusFilter, setStatusFilter] = useState<CaseStatus | ''>('');
     const [typeFilter, setTypeFilter] = useState<CaseType | ''>('');
     const [stationFilterInput, setStationFilterInput] = useState('');
     const [caseNumberFilterInput, setCaseNumberFilterInput] = useState('');
     const [searchTermInput, setSearchTermInput] = useState('');
 
-    // Debounced values for filtering
     const debouncedStationFilter = useDebounce(stationFilterInput, DEBOUNCE_DELAY);
     const debouncedCaseNumberFilter = useDebounce(caseNumberFilterInput, DEBOUNCE_DELAY);
     const debouncedSearchTerm = useDebounce(searchTermInput, DEBOUNCE_DELAY);
 
-    const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases, error: errorCases } = useFetchCasesQuery();
-
+    const { data: casesData, isLoading: isLoadingCases, isError: isErrorCases } = useFetchCasesQuery();
     const cases = useMemo(() => Array.isArray(casesData) ? casesData : [], [casesData]);
-
-    // --- State for email input suggestions ---
     const [lastUsedCashEmails, setLastUsedCashEmails] = useState<string[]>([]);
-    // --- End State for email input suggestions ---
-
-    // --- Effect to load email suggestions from localStorage ---
+    
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const statusDropdownRef = useRef<HTMLDivElement>(null);
+    const typeDropdownRef = useRef<HTMLDivElement>(null);
+    
+    useEffect(() => { try { const storedEmails = localStorage.getItem(LAST_USED_CASH_EMAILS_KEY); if (storedEmails) setLastUsedCashEmails(JSON.parse(storedEmails)); } catch (e) { console.error("Failed to load last used emails:", e); } }, []);
+    
     useEffect(() => {
-        try {
-            const storedEmails = localStorage.getItem(LAST_USED_CASH_EMAILS_KEY);
-            if (storedEmails) {
-                setLastUsedCashEmails(JSON.parse(storedEmails));
-            }
-        } catch (e) {
-            console.error("Failed to load last used cash emails from localStorage:", e);
-            // Optionally clear corrupted data: localStorage.removeItem(LAST_USED_CASH_EMAILS_KEY);
-        }
-    }, []); // Empty dependency array ensures it runs only on mount
-    // --- End Effect to load email suggestions ---
+        const handleClickOutside = (event: MouseEvent) => {
+            if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) setIsStatusDropdownOpen(false);
+            if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) setIsTypeDropdownOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-    // --- Function to update and save last used email ---
     const updateLastUsedCashEmail = (newEmail: string) => {
-        if (!newEmail || !newEmail.trim()) return; // Don't save empty or whitespace-only values
-
+        if (!newEmail?.trim()) return;
         setLastUsedCashEmails(prev => {
             const updated = [newEmail, ...prev.filter(e => e !== newEmail)].slice(0, MAX_CASH_EMAIL_SUGGESTIONS);
-            try {
-                localStorage.setItem(LAST_USED_CASH_EMAILS_KEY, JSON.stringify(updated));
-            } catch (e) {
-                console.error("Failed to save last used cash email to localStorage:", e);
-            }
+            try { localStorage.setItem(LAST_USED_CASH_EMAILS_KEY, JSON.stringify(updated)); } catch (e) { console.error("Failed to save email:", e); }
             return updated;
         });
     };
-    // --- End Function to update and save last used email ---
 
     const filteredCases = useMemo(() => {
-        if (isLoadingCases) return [];
-        if (!cases.length) return [];
+        if (isLoadingCases || !cases.length) return [];
+        let tempCases = cases.filter(c => { const balance = parseFloat(String((c as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0)); return !isNaN(balance) && balance > 0; });
 
-        let tempFilteredCases = [...cases];
-
-        if (statusFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_status === statusFilter);
-        }
-        if (typeFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem => caseItem.case_type === typeFilter);
-        }
-        if (debouncedStationFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                (caseItem.station ?? '').toLowerCase().includes(debouncedStationFilter.toLowerCase())
-            );
-        }
-        if (debouncedCaseNumberFilter) {
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                caseItem.case_number.toLowerCase().includes(debouncedCaseNumberFilter.toLowerCase())
-            );
-        }
+        if (statusFilter) tempCases = tempCases.filter(c => c.case_status === statusFilter);
+        if (typeFilter) tempCases = tempCases.filter(c => c.case_type === typeFilter);
+        if (debouncedStationFilter) tempCases = tempCases.filter(c => (c.station ?? '').toLowerCase().includes(debouncedStationFilter.toLowerCase()));
+        if (debouncedCaseNumberFilter) tempCases = tempCases.filter(c => c.case_number.toLowerCase().includes(debouncedCaseNumberFilter.toLowerCase()));
         if (debouncedSearchTerm) {
             const term = debouncedSearchTerm.toLowerCase();
-            tempFilteredCases = tempFilteredCases.filter(caseItem =>
-                caseItem.case_number.toLowerCase().includes(term) ||
-                (caseItem.case_track_number && caseItem.case_track_number.toLowerCase().includes(term)) ||
-                (caseItem.parties ?? '').toLowerCase().includes(term) ||
-                (caseItem.station ?? '').toLowerCase().includes(term)
-            );
+            tempCases = tempCases.filter(c => c.case_number.toLowerCase().includes(term) || c.case_track_number?.toLowerCase().includes(term) || c.parties?.toLowerCase().includes(term) || c.station?.toLowerCase().includes(term));
         }
-
-        return tempFilteredCases.filter(caseItem => {
-            const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-            let numericBalance = 0;
-
-            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                const parsed = parseFloat(String(balanceValueFromBackend));
-                if (!isNaN(parsed)) {
-                    numericBalance = parsed;
-                }
-            }
-            return numericBalance > 0;
-        });
-    }, [
-        cases,
-        isLoadingCases,
-        statusFilter,
-        typeFilter,
-        debouncedStationFilter,
-        debouncedCaseNumberFilter,
-        debouncedSearchTerm,
-    ]);
+        return tempCases;
+    }, [cases, isLoadingCases, statusFilter, typeFilter, debouncedStationFilter, debouncedCaseNumberFilter, debouncedSearchTerm]);
 
     useEffect(() => {
         if (selectedCase) {
-            const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-            let currentBalance = 0;
-
-            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                const parsed = parseFloat(String(balanceValueFromBackend));
-                if (!isNaN(parsed)) {
-                    currentBalance = parsed;
-                }
-            }
-
-            if (currentBalance > 0) {
-                setAmount(currentBalance.toFixed(2));
-            } else {
-                const fee = parseFloat(String(selectedCase.fee));
-                if (!isNaN(fee) && fee > 0 && currentBalance <= 0) {
-                    console.warn(
-                        `CashPaymentModal: Case ID ${selectedCase.case_id} was selected, but its backend balance ('${BALANCE_FIELD_NAME_FROM_BACKEND}': ${balanceValueFromBackend}) is not positive. ` +
-                        `Falling back to the full case fee for the amount field.`
-                    );
-                    setAmount(fee.toFixed(2));
-                } else {
-                    setAmount('0.00');
-                }
-            }
+            const balance = parseFloat(String((selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+            setAmount(balance > 0 ? balance.toFixed(2) : '0.00');
         } else {
-            setAmount('');
-            setPaymentNotes('');
-            setCustomerEmail('');
+            setAmount(''); setPaymentNotes(''); setCustomerEmail('');
         }
     }, [selectedCase]);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!selectedCase) {
-            toast.error("Please select a case to record payment.");
-            return;
-        }
-
+        if (!selectedCase) { toast.error("Please select a case."); return; }
         const enteredAmount = Number(amount);
-        if (isNaN(enteredAmount) || enteredAmount <= 0) {
-            toast.error('Please enter a valid positive amount.');
-            return;
-        }
-
-        const balanceValueFromBackend = (selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-        let maxPayable = 0;
-
-        if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-            const parsed = parseFloat(String(balanceValueFromBackend));
-            if (!isNaN(parsed) && parsed > 0) {
-                maxPayable = parsed;
-            }
-        }
+        if (isNaN(enteredAmount) || enteredAmount <= 0) { toast.error('Please enter a valid positive amount.'); return; }
         
-        if (maxPayable <= 0) {
-            const fee = parseFloat(String(selectedCase.fee));
-             if (!isNaN(fee) && fee > 0) {
-                maxPayable = fee;
-                console.warn(`CashPaymentModal: Submitting payment for Case ID ${selectedCase.case_id}: Backend balance ('${BALANCE_FIELD_NAME_FROM_BACKEND}') was not positive or available. Using full case fee as max payable.`);
-            }
-        }
-
-        if (maxPayable <= 0) {
-            toast.error("This case appears to have no outstanding balance, or balance information is unavailable. Payment cannot be recorded.");
-            return;
-        }
-
-        if (enteredAmount > maxPayable) {
-            toast.error(`Amount (${enteredAmount.toFixed(2)}) cannot exceed the outstanding balance of ${maxPayable.toFixed(2)}.`);
-            return;
-        }
-
-        if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-            toast.error("Please enter a valid email address or leave it blank.");
-            return;
-        }
+        const maxPayable = parseFloat(String((selectedCase as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case] ?? 0));
+        if (maxPayable <= 0) { toast.error("This case has no outstanding balance."); return; }
+        if (enteredAmount > maxPayable) { toast.error(`Amount cannot exceed the balance of ${maxPayable.toFixed(2)}.`); return; }
+        if (customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) { toast.error("Please enter a valid email address."); return; }
 
         setIsSubmitting(true);
-        const paymentData: CreateCashPaymentPayload = {
-            case_id: selectedCase.case_id,
-            user_id: selectedCase.user_id,
-            amount: enteredAmount,
-            payment_notes: paymentNotes || undefined,
-            customer_email: customerEmail || undefined,
-        };
-
         try {
-            await createCashPayment(paymentData).unwrap();
+            await createCashPayment({ case_id: selectedCase.case_id, user_id: selectedCase.user_id, amount: enteredAmount, payment_notes: paymentNotes || undefined, customer_email: customerEmail || undefined }).unwrap();
             toast.success("Cash payment recorded successfully!");
-            // Update last used email on successful payment if email was provided
-            if (customerEmail) {
-                updateLastUsedCashEmail(customerEmail);
-            }
+            if (customerEmail) updateLastUsedCashEmail(customerEmail);
             handleClose();
         } catch (err: unknown) {
-            console.error("API Payment Creation Error", err);
-            let errorMessage = 'Failed to record cash payment.';
-            if (typeof err === 'object' && err !== null) {
-                const apiErr = err as { data?: { message?: string }, error?: string };
-                if (apiErr.data && typeof apiErr.data.message === 'string') {
-                    errorMessage = apiErr.data.message;
-                } else if (typeof apiErr.error === 'string') {
-                    errorMessage = apiErr.error;
-                } else if (err instanceof Error) {
-                    errorMessage = err.message;
-                }
-            }
-            toast.error(errorMessage);
+            const apiErr = err as { data?: { message?: string }, error?: string };
+            toast.error(apiErr.data?.message || apiErr.error || 'Failed to record payment.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleClose = () => {
-        setSelectedCase(null);
-        setAmount('');
-        setPaymentNotes('');
-        setCustomerEmail('');
-        setStatusFilter('');
-        setTypeFilter('');
-        setStationFilterInput('');
-        setCaseNumberFilterInput('');
-        setSearchTermInput('');
+        setSelectedCase(null); setAmount(''); setPaymentNotes(''); setCustomerEmail('');
+        setStatusFilter(''); setTypeFilter(''); setStationFilterInput(''); setCaseNumberFilterInput(''); setSearchTermInput('');
         onClose();
     };
 
     if (!isOpen) return null;
-
-    const inputClassName = "shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white";
-    const labelClassName = "block text-sm font-bold text-gray-700 dark:text-gray-300";
+    
+    const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:focus:ring-indigo-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
+    const dropdownListVariants: Variants = { hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } }, exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } } };
+    const caseTypes: CaseType[] = ['criminal', 'civil', 'family', 'corporate', 'property', 'employment', 'intellectual_property', 'immigration', 'elc', 'childrenCase', 'Tribunal', 'conveyances'];
+    const caseStatuses: CaseStatus[] = ['open', 'in_progress', 'closed', 'on_hold', 'resolved'];
+    const tableHeaders = [{ text: 'ID', icon: Hash }, { text: 'Fee', icon: Banknote }, { text: 'Balance', icon: Wallet }, { text: 'Status', icon: Info }, { text: 'Type', icon: Tag }, { text: 'Number', icon: FileDigit }, { text: 'Action', icon: Settings }];
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50 overflow-auto">
-            <div className="relative p-4 w-full max-w-4xl h-full md:h-auto">
-                <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl shadow-xl dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[90vh]">
-                    <div className="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
-                        <span role="img" aria-label="cash" className="h-8 w-8 text-green-500 mr-2 text-3xl">💰</span>
-                        <h3 className="text-3xl font-extrabold text-blue-600 text-center">Record Cash Payment</h3>
-                        <button
-                            type="button"
-                            className="text-gray-500 bg-transparent hover:bg-gray-300 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            onClick={handleClose}
-                            title="Close"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-                        </button>
-                    </div>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
+                <header className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+                    <div className="flex items-center gap-3"><Banknote className="h-8 w-8 text-green-500" /><h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Record Cash Payment</h3></div>
+                    <button type="button" onClick={handleClose} className="p-2 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"><X className="h-5 w-5" /></button>
+                </header>
 
-                    <div className="p-6">
-                        <h4 className="text-xl font-semibold text-blue-500 mb-3">Select Case To Make Payment (only cases with outstanding balance):</h4>
+                <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-6">
+                    <section>
+                        <h4 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center"><Filter className="h-5 w-5 mr-2"/>Select Case (Balance greater 0)</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            {/* Filter inputs remain the same */}
-                            <div>
-                                <label htmlFor="cashStatusFilter" className={labelClassName}>Filter by Status:</label>
-                                <select id="cashStatusFilter" className={inputClassName} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as CaseStatus | '')}>
-                                    <option value="">All Statuses</option>
-                                    <option value="open">Open</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="closed">Closed</option>
-                                    <option value="on_hold">On Hold</option>
-                                    <option value="resolved">Resolved</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="cashTypeFilter" className={labelClassName}>Filter by Type:</label>
-                                <select id="cashTypeFilter" className={inputClassName} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as CaseType | '')}>
-                                    <option value="">All Types</option>
-                                    <option value="criminal">Criminal</option>
-                                    <option value="civil">Civil</option>
-                                    {/* ... other types ... */}
-                                    <option value="family">Family</option>
-                                    <option value="corporate">Corporate</option>
-                                    <option value="property">Property</option>
-                                    <option value="employment">Employment</option>
-                                    <option value="intellectual_property">Intellectual Property</option>
-                                    <option value="immigration">Immigration</option>
-                                    <option value="elc">ELC</option>
-                                    <option value="childrenCase">Children Case</option>
-                                    <option value="tribunal">Tribunal</option>
-                                    <option value="conveyances">Conveyances</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="cashStationFilter" className={labelClassName}>Filter by Station:</label>
-                                <input type="text" id="cashStationFilter" className={inputClassName} placeholder="Enter Station" value={stationFilterInput} onChange={(e) => setStationFilterInput(e.target.value)} />
-                            </div>
-                            <div>
-                                <label htmlFor="cashCaseNumberFilter" className={labelClassName}>Filter by Case Number:</label>
-                                <input type="text" id="cashCaseNumberFilter" className={inputClassName} placeholder="Enter Case Number" value={caseNumberFilterInput} onChange={(e) => setCaseNumberFilterInput(e.target.value)} />
-                            </div>
-                            <div className="lg:col-span-2">
-                                <label htmlFor="cashSearchTerm" className={labelClassName}>Search (Parties, Track No., etc.):</label>
-                                <input type="text" id="cashSearchTerm" className={inputClassName} placeholder="Search..." value={searchTermInput} onChange={(e) => setSearchTermInput(e.target.value)} />
+                            <div ref={statusDropdownRef} className="relative"><label className="text-xs font-semibold mb-1 block flex items-center gap-1.5"><Info size={14}/>Status</label><button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!statusFilter ? 'text-slate-400 font-normal' : ''}`}>{statusFilter ? statusFilter.replace(/_/g, ' ') : 'All Statuses'}</span><ChevronDown size={20} /></button><AnimatePresence>{isStatusDropdownOpen && <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button className="w-full text-left p-2.5 text-sm hover:bg-blue-50 dark:hover:bg-slate-700" onClick={() => { setStatusFilter(''); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>{caseStatuses.map(s => <li key={s}><button className="w-full text-left p-2.5 text-sm hover:bg-blue-50 dark:hover:bg-slate-700" onClick={() => { setStatusFilter(s); setIsStatusDropdownOpen(false); }}>{s.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>)}</motion.ul>}</AnimatePresence></div>
+                            <div ref={typeDropdownRef} className="relative"><label className="text-xs font-semibold mb-1 block flex items-center gap-1.5"><Tag size={14}/>Case Type</label><button type="button" onClick={() => setIsTypeDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}><span className={`truncate font-semibold ${!typeFilter ? 'text-slate-400 font-normal' : ''}`}>{typeFilter ? typeFilter.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Types'}</span><ChevronDown size={20} /></button><AnimatePresence>{isTypeDropdownOpen && <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border rounded-lg shadow-lg max-h-60 overflow-y-auto"><li><button className="w-full text-left p-2.5 text-sm hover:bg-blue-50 dark:hover:bg-slate-700" onClick={() => { setTypeFilter(''); setIsTypeDropdownOpen(false); }}>All Types</button></li>{caseTypes.map(t => <li key={t}><button className="w-full text-left p-2.5 text-sm hover:bg-blue-50 dark:hover:bg-slate-700" onClick={() => { setTypeFilter(t); setIsTypeDropdownOpen(false); }}>{t.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>)}</motion.ul>}</AnimatePresence></div>
+                            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="relative"><label className="text-xs font-semibold mb-1 block">Station</label><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="text" className={`${inputBaseClasses} py-2.5 pl-9 pr-8`} placeholder="Filter by Station" value={stationFilterInput} onChange={(e) => setStationFilterInput(e.target.value)} />{stationFilterInput && <button onClick={() => setStationFilterInput('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 rounded-full"><X size={16}/></button>}</div>
+                                <div className="relative"><label className="text-xs font-semibold mb-1 block">Case Number</label><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="text" className={`${inputBaseClasses} py-2.5 pl-9 pr-8`} placeholder="Filter by Case Number" value={caseNumberFilterInput} onChange={(e) => setCaseNumberFilterInput(e.target.value)} />{caseNumberFilterInput && <button onClick={() => setCaseNumberFilterInput('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 rounded-full"><X size={16}/></button>}</div>
+                                <div className="relative"><label className="text-xs font-semibold mb-1 block">General Search</label><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="text" className={`${inputBaseClasses} py-2.5 pl-9 pr-8`} placeholder="Parties, Track No..." value={searchTermInput} onChange={(e) => setSearchTermInput(e.target.value)} />{searchTermInput && <button onClick={() => setSearchTermInput('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 rounded-full"><X size={16}/></button>}</div>
                             </div>
                         </div>
+                        {isLoadingCases ? <div className="text-center p-6"><Loader2 className="animate-spin h-8 w-8 text-indigo-500 mx-auto"/></div> : isErrorCases ? <p className="text-center text-red-500">Error loading cases.</p> : <div className="overflow-x-auto rounded-lg shadow-md max-h-72 border border-slate-200 dark:border-slate-700"><table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                            <thead className="bg-blue-600 dark:bg-blue-700 text-white sticky top-0 z-10"><tr>{tableHeaders.map(({text, icon: Icon}) => <th key={text} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider"><div className="flex items-center gap-2"><Icon className="h-4 w-4" />{text}</div></th>)}</tr></thead>
+                            <tbody className="bg-white divide-y divide-slate-200 dark:bg-slate-800 dark:divide-slate-700">{filteredCases.map(c => <tr key={c.case_id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/50 ${selectedCase?.case_id === c.case_id ? "bg-indigo-100 dark:bg-indigo-900/50" : ""}`}><td className="px-4 py-2 text-sm">{c.case_id}</td><td className="px-4 py-2 text-sm">{parseFloat(String(c.fee)).toFixed(2)}</td><td className="px-4 py-2 text-sm font-bold text-green-600 dark:text-green-400">{parseFloat(String(c[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case])).toFixed(2)}</td><td className="px-4 py-2 text-sm">{c.case_status}</td><td className="px-4 py-2 text-sm">{c.case_type}</td><td className="px-4 py-2 text-sm">{c.case_number}</td><td className="px-4 py-2 text-right text-sm"><button onClick={() => setSelectedCase(c)} className="font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">Select</button></td></tr>)}{filteredCases.length === 0 && <tr><td colSpan={tableHeaders.length} className="text-center py-4 text-slate-500">No cases with a balance match your filters.</td></tr>}</tbody>
+                        </table></div>}
+                    </section>
 
-                        {isLoadingCases ? (
-                            <p className="text-center text-gray-500 dark:text-gray-400">Loading cases...</p>
-                        ) : isErrorCases ? (
-                            <p className="text-center text-red-500 dark:text-red-400">Error loading cases: {errorCases instanceof Error ? errorCases.message : 'Unknown error'}</p>
-                        ) : (
-                            <div className="overflow-x-auto rounded-lg shadow-md max-h-72">
-                                <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                                    <thead className="bg-blue-50 dark:bg-blue-900 sticky top-0 z-10">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case ID</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">User ID</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case Fee</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Payment Balance</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Type</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Station</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Case Number</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-300 dark:bg-gray-700 dark:divide-gray-600">
-                                        {filteredCases.map((caseItem) => {
-                                            const balanceValueFromBackend = (caseItem as Case)[BALANCE_FIELD_NAME_FROM_BACKEND as keyof Case];
-                                            let displayBalance = "0.00"; 
-
-                                            if (balanceValueFromBackend !== null && balanceValueFromBackend !== undefined) {
-                                                const parsed = parseFloat(String(balanceValueFromBackend));
-                                                if (!isNaN(parsed) && parsed > 0) {
-                                                    displayBalance = parsed.toFixed(2);
-                                                }
-                                            }
-                                            return (
-                                                <tr key={caseItem.case_id} className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${selectedCase?.case_id === caseItem.case_id ? "bg-blue-100 dark:bg-blue-900" : ""}`}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{caseItem.case_id}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.user_id}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{parseFloat(String(caseItem.fee)).toFixed(2)}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{displayBalance}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_status}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_type}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.station}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{caseItem.case_number}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <button
-                                                            onClick={() => setSelectedCase(caseItem)}
-                                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200 transition-colors duration-200"
-                                                            title="Select Case"
-                                                        >
-                                                            Select
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                                {filteredCases.length === 0 && !isLoadingCases && (
-                                    <p className="text-center py-4 text-gray-500 dark:text-gray-400">No cases with outstanding payments match your filters.</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Payment Form */}
-                    <div className="p-6">
-                        <h4 className="text-xl font-semibold text-blue-500 mb-3">Payment Details</h4>
-                        <form className="space-y-6" onSubmit={handleSubmit}>
-                            <div>
-                                <label htmlFor="cashAmount" className={labelClassName}>Amount to Pay:</label>
-                                <input
-                                    type="number"
-                                    id="cashAmount"
-                                    className={inputClassName}
-                                    placeholder="Enter Amount"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    required
-                                    disabled={!selectedCase}
-                                    step="0.01"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="cashCustomerEmail" className={labelClassName}>Customer Email (Optional):</label>
-                                <input
-                                    type="email"
-                                    id="cashCustomerEmail"
-                                    className={inputClassName}
-                                    placeholder="customer@example.com"
-                                    value={customerEmail}
-                                    onChange={(e) => setCustomerEmail(e.target.value)}
-                                    disabled={!selectedCase}
-                                    list="lastUsedCashEmailsDatalist"
-                                />
-                                <datalist id="lastUsedCashEmailsDatalist"> {/* Added datalist element */}
-                                    {lastUsedCashEmails.map((email, index) => (
-                                        <option key={`cash-email-suggestion-${index}`} value={email} />
-                                    ))}
-                                </datalist>
-                            </div>
-                            <div>
-                                <label htmlFor="cashPaymentNotes" className={labelClassName}>Payment Notes (Optional):</label>
-                                <textarea
-                                    id="cashPaymentNotes"
-                                    rows={3}
-                                    className={inputClassName}
-                                    placeholder="Add any notes for this cash payment..."
-                                    value={paymentNotes}
-                                    onChange={(e) => setPaymentNotes(e.target.value)}
-                                    disabled={!selectedCase}
-                                />
-                            </div>
-                            <div className="flex justify-between pt-2">
-                                <button
-                                    type="submit"
-                                    className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 transition duration-300 ${isSubmitting || !selectedCase ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    disabled={isSubmitting || !selectedCase}
-                                >
-                                    {isSubmitting ? (
-                                        <div className='flex items-center justify-center'>
-                                            <span className="loading loading-spinner text-white mr-2"></span>Processing...
-                                        </div>
-                                    ) : "Record Payment"}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-1/2 ml-2 transition duration-300"
-                                    onClick={handleClose}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                    <section className="border-t border-slate-200 dark:border-slate-700 pt-6">
+                        <h4 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center"><ListFilter className="h-5 w-5 mr-2"/>Payment Details</h4>
+                        <form id="cash-payment-form" className="space-y-4" onSubmit={handleSubmit}>
+                            <div><label htmlFor="cashAmount" className="block text-sm font-medium mb-1.5">Amount to Pay</label><input type="number" id="cashAmount" className={`${inputBaseClasses} py-2.5 px-4`} placeholder="Enter Amount" value={amount} onChange={(e) => setAmount(e.target.value)} required disabled={!selectedCase} step="0.01"/></div>
+                            <div><label htmlFor="cashCustomerEmail" className="block text-sm font-medium mb-1.5">Customer Email (Optional)</label><input type="email" id="cashCustomerEmail" className={`${inputBaseClasses} py-2.5 px-4`} placeholder="customer@example.com" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} disabled={!selectedCase} list="lastUsedCashEmailsDatalist"/><datalist id="lastUsedCashEmailsDatalist">{lastUsedCashEmails.map((email, i) => <option key={i} value={email} />)}</datalist></div>
+                            <div><label htmlFor="cashPaymentNotes" className="block text-sm font-medium mb-1.5">Payment Notes (Optional)</label><textarea id="cashPaymentNotes" rows={3} className={`${inputBaseClasses} py-2.5 px-4`} placeholder="Add notes for this payment..." value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} disabled={!selectedCase} /></div>
                         </form>
-                    </div>
+                    </section>
                 </div>
-            </div>
+
+                <footer className="flex justify-end p-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0 gap-3">
+                    <button type="button" onClick={handleClose} className="px-4 py-2.5 text-sm font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600">Cancel</button>
+                    <button type="submit" form="cash-payment-form" className="px-4 py-2.5 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 disabled:opacity-50" disabled={isSubmitting || !selectedCase}>
+                        {isSubmitting ? <><Loader2 className="animate-spin h-5 w-5"/>Processing...</> : <><Banknote className="h-5 w-5"/>Record Payment</>}
+                    </button>
+                </footer>
+            </motion.div>
         </div>
     );
 };

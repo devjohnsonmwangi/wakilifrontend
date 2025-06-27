@@ -73,6 +73,7 @@ export interface CashPaymentRequest {
     amount: number;
     user_id: number;
     case_id: number;
+    customer_email?: string; // Optional email for receipt
     payment_notes?: string;
 }
 
