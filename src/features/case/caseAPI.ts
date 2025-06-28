@@ -1,21 +1,22 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; // Ensure this path is correct
+// ACTION REQUIRED: Make sure this path points to your Redux store configuration
+import type { RootState } from '../../app/store';
 
 // --- Enums
 export type CaseType = 'criminal' | 'civil' | 'family' | 'corporate' | 'property' | 'employment' | 'intellectual_property' | 'immigration' | 'elc' | 'childrenCase' | 'Tribunal' | 'conveyances'|'succession';
 export type CaseStatus = "open" | "in_progress" | "closed" | "on_hold" | "resolved";
-export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue"; //  'partially_paid' is valid in backend schema
-export type PaymentStatus = "pending" | "completed" | "failed" | "refunded"; // For paymentTable
+export type PaymentStatusOnCase = "pending" | "partially_paid" | "paid" | "failed" | "refunded" | "overdue";
+export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
 
 // --- Data Types ---
-export interface UserDataType { // Basic user details for owner/assignee
+export interface UserDataType {
     user_id: number;
     full_name: string | null;
     email: string;
     phone_number: string | null;
     role: string;
     profile_picture?: string | null;
-  
     created_at?: string;
     updated_at?: string;
 }
@@ -24,14 +25,14 @@ export interface CaseAssigneeData {
     case_id: number;
     assignee_user_id: number;
     assigned_at: string;
-    assignee: UserDataType | null; // The staff member details
+    assignee: UserDataType | null;
 }
 
 export interface CaseDataTypes {
   case_id: number;
-  user_id: number; // Client owner's ID
-  owner?: Partial<UserDataType> | null; // Client owner details
-  assignees?: CaseAssigneeData[]; // Staff assigned to the case
+  user_id: number;
+  owner?: Partial<UserDataType> | null;
+  assignees?: CaseAssigneeData[];
   case_type: CaseType;
   case_status: CaseStatus;
   case_description: string | null;
@@ -40,9 +41,9 @@ export interface CaseDataTypes {
   court: string | null;
   station: string | null;
   parties: string | null;
-  fee: string; // Backend schema uses decimal, often string in transit
-  payment_status: PaymentStatusOnCase; // Ensure this matches backend logic, including 'partially_paid'
-  payment_balance: string; // Backend schema uses decimal
+  fee: string;
+  payment_status: PaymentStatusOnCase;
+  payment_balance: string;
   created_at: string;
   updated_at: string;
 }
@@ -50,7 +51,7 @@ export interface CaseDataTypes {
 export interface CreateCasePayload {
     user_id: number;
     case_type: CaseType;
-    fee: number; // Frontend sends number, backend service handles string conversion if needed
+    fee: number;
     case_number: string;
     case_track_number: string;
     case_description?: string | null;
@@ -79,10 +80,6 @@ export interface PaymentDataTypes {
   updated_at: string;
 }
 
-// ============================================
-//         START: NEW TYPES FOR CASE PROGRESS
-// ============================================
-
 export interface CaseProgressData {
     progress_id: number;
     case_id: number;
@@ -90,29 +87,25 @@ export interface CaseProgressData {
     title: string;
     details: string | null;
     created_at: string;
-    updater?: Partial<UserDataType> | null; // User details if fetched
+    updater?: Partial<UserDataType> | null;
 }
 
 export interface CreateCaseProgressPayload {
-    caseId: number; // Used for the URL
+    caseId: number;
     title: string;
     details?: string;
-    updated_by_user_id?: number; // The user recording the progress
+    updated_by_user_id?: number;
 }
 
 export interface UpdateCaseProgressPayload {
-    progressId: number; // Used for the URL
-    caseId: number;     // Needed to invalidate the correct list cache
+    progressId: number;
+    caseId: number;
     title?: string;
     details?: string;
 }
 
-// ============================================
-//         END: NEW TYPES FOR CASE PROGRESS
-// ============================================
-
 // --- API Response Types for Mutations ---
-export interface BackendCaseResponse { // For single case responses
+export interface BackendCaseResponse {
     msg?: string;
     case: CaseDataTypes;
 }
@@ -129,9 +122,21 @@ export interface BackendSuccessMessage {
 // Combined API Slice
 export const caseAndPaymentAPI = createApi({
   reducerPath: "caseAndPaymentAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+  // ✨ MODIFICATION: Updated baseQuery to automatically add the auth token
+  baseQuery: fetchBaseQuery({
+    baseUrl: APIDomain,
+    prepareHeaders: (headers, { getState }) => {
+        // Get the token from the user slice in the Redux store
+        const token = (getState() as RootState).user.token;
+
+        // If the token exists, add it to the authorization header
+        if (token) {
+            headers.set('authorization', `Bearer ${token}`);
+        }
+        return headers;
+    },
+  }),
   refetchOnReconnect: true,
-  // ADDED 'CaseProgress' to tagTypes
   tagTypes: ["Cases", "Payments", "CaseAssignments", "CaseProgress"], 
   endpoints: (builder) => ({
     // ** Case Endpoints **
@@ -249,9 +254,7 @@ export const caseAndPaymentAPI = createApi({
         ],
     }),
 
-    // ============================================
-    //         START: NEW CASE PROGRESS ENDPOINTS
-    // ============================================
+    // ** Case Progress Endpoints **
     getCaseProgressForCase: builder.query<CaseProgressData[], number>({
         query: (caseId) => `cases/${caseId}/progress`,
         providesTags: (result, _error, caseId) =>
@@ -274,7 +277,7 @@ export const caseAndPaymentAPI = createApi({
         query: ({ progressId, ...body }) => ({
             url: `progress/${progressId}`,
             method: 'PUT',
-            body: { title: body.title, details: body.details }, // Only send updatable fields
+            body: { title: body.title, details: body.details },
         }),
         invalidatesTags: (_result, _error, { progressId, caseId }) => [
             { type: 'CaseProgress', id: progressId },
@@ -296,7 +299,6 @@ export const caseAndPaymentAPI = createApi({
         ],
     }),
  
-
     // ** Payment Endpoints ** 
     fetchPayments: builder.query<PaymentDataTypes[], void>({
       query: () => "payments",
@@ -314,8 +316,8 @@ export const caseAndPaymentAPI = createApi({
       }),
       invalidatesTags: (_result, _error, {case_id}) => [
         {type: 'Payments', id: 'LIST'}, 
-        {type: 'Cases', id: case_id}, // Invalidate the specific case
-        {type: 'Cases', id: 'LIST'} // And the list
+        {type: 'Cases', id: case_id},
+        {type: 'Cases', id: 'LIST'}
       ],
     }),
     updatePayment: builder.mutation<PaymentDataTypes, Partial<PaymentDataTypes & { payment_id: number }>>({
@@ -348,7 +350,6 @@ export const caseAndPaymentAPI = createApi({
 
 // Export hooks for usage in components
 export const {
-  // Case Hooks
   useFetchCasesQuery,
   useGetCaseByIdQuery,
   useGetCasesByClientOwnerQuery,    
@@ -358,20 +359,13 @@ export const {
   useUpdateCaseMutation,
   useDeleteCaseMutation,
   useTriggerCaseBalanceUpdateMutation,
-
-  // Case Assignment Hooks
   useGetAssignedStaffForCaseQuery, 
   useAssignStaffToCaseMutation,    
   useUnassignStaffFromCaseMutation,
-
-  // === NEW CASE PROGRESS HOOKS ===
   useGetCaseProgressForCaseQuery,
   useCreateCaseProgressRecordMutation,
   useUpdateCaseProgressRecordMutation,
   useDeleteCaseProgressRecordMutation,
-  // ==================================
-
-  // Payment Hooks
   useFetchPaymentsQuery,
   useGetPaymentByIdQuery,
   useCreatePaymentMutation,

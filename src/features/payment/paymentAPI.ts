@@ -1,31 +1,40 @@
 // src/features/payment/paymentAPI.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain";
+// ACTION REQUIRED: Make sure this path points to your Redux store configuration
+import type { RootState } from "../../app/store";
 
 // Enums for Payment Table
-export type PaymentStatus = "pending" | "paid" | "failed" | "completed";
-export type PaymentGateway = "stripe" | "mpesa" | "cash" | "bank_transfer" | "manual"; // Added "manual"
+export type PaymentStatus = "pending" | "paid" | "failed" | "completed" | "pending_mpesa_confirmation";
+export type PaymentGateway = "stripe" | "mpesa" | "cash" | "bank_transfer" | "manual";
 
-// Payment Data Types - Updated for clarity
+// --- API Response Type for fetching all payments ---
+export interface FetchPaymentsResponse {
+  payments: PaymentDataTypes[];
+  message?: string; // Optional message
+}
+
+// Payment Data Types
 export interface PaymentDataTypes {
   payment_id: number;
   case_id: number;
   user_id: number;
-  payment_amount: string; // Backend stores as decimal (string), frontend might treat as number after parsing
-  payment_status: PaymentStatus; // Status of this specific payment transaction (e.g., pending, completed, failed)
-  payment_gateway: string; // Consider an enum: 'mpesa' | 'stripe' | 'cash' etc.
-  session_id?: string | null; // For Stripe
-  checkout_request_id?: string | null; // For M-Pesa
-  transaction_id?: string | null; // Actual transaction reference
+  payment_amount: string;
+  payment_status: PaymentStatus;
+  payment_gateway: string;
+  session_id?: string | null;
+  checkout_request_id?: string | null;
+  transaction_id?: string | null;
   payment_note?: string | null;
   receipt_url?: string | null;
   customer_email?: string | null;
-  mpesa_message ?:string | null; // M-Pesa specific message
-  payment_date: string; // ISO date string (from paymentTable.payment_date)
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
+  mpesa_message?: string | null;
+  payment_date: string;
+  created_at: string;
+  updated_at: string;
 }
-//M-Pesa callback
+
+// M-Pesa Callback
 export interface MpesaCallbackData {
     Body: {
         stkCallback: {
@@ -33,74 +42,89 @@ export interface MpesaCallbackData {
             CheckoutRequestID: string;
             ResultCode: number;
             ResultDesc: string;
-            CallbackMetadata?: {
-                Item: { Name: string; Value: string }[];
-            };
+            CallbackMetadata?: { Item: { Name: string; Value: string }[] };
         };
     };
 }
 
 // Stripe Webhook Data Type
 export interface StripeWebhookData {
-    id: string; // Event ID
-    type: string; // Event type
-    data: {
-        object: {
-            id: string;
-            amount: number;
-            status: string; // e.g., "succeeded", "failed"
-        };
-    };
+    id: string;
+    type: string;
+    data: { object: { id: string; amount: number; status: string; } };
 }
 
-// Interface for Mpesa STK Request
+// Interface for Mpesa STK Request (Case-specific)
 export interface MpesaStkRequest {
     phoneNumber: string;
     amount: number;
     user_id: number;
     case_id: number;
-    customer_email?: string; // Optional email for receipt
+    customer_email?: string;
 }
 
-// Interface for Stripe Payment
+// Interface for Stripe Payment (Case-specific)
 export interface StripePaymentRequest {
     amount: number;
     user_id: number;
     case_id: number;
 }
 
-//Interface for Cash Payment
+// Interface for Cash Payment (Case-specific)
 export interface CashPaymentRequest {
     amount: number;
     user_id: number;
     case_id: number;
-    customer_email?: string; // Optional email for receipt
+    customer_email?: string;
     payment_notes?: string;
 }
 
-// Interface for Manual Payment Request
+// Interface for Manual Payment (Case-specific)
 export interface ManualPaymentRequest {
   case_id: number;
   user_id: number;
-  payment_amount: number; // Frontend sends number, backend can parse/handle
+  payment_amount: number;
   payment_status: PaymentStatus;
-  payment_gateway: string; // e.g., "bank_transfer", "cheque", "manual_entry"
-  payment_date: string; // ISO date string for when the payment was made/recorded
+  payment_gateway: string;
+  payment_date: string;
   transaction_id?: string | null;
   payment_note?: string | null;
   customer_email?: string | null;
 }
 
+// Interface for the General Payment Portal Request
+export interface GeneralPaymentRequest {
+    customerName: string;
+    customerEmail?: string;
+    phoneNumber?: string;
+    amount: number;
+    paymentMethod: PaymentGateway; // Uses the main gateway type
+    paymentNote?: string;
+}
 
 // Payment API Slice
 export const paymentAPI = createApi({
     reducerPath: "paymentAPI",
-    baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+    baseQuery: fetchBaseQuery({
+        baseUrl: APIDomain,
+        prepareHeaders: (headers, { getState }) => {
+            // Get the token from the Redux store, aligning with userSlice.ts
+            // ✨ CORRECTION: Changed `state.auth.token` to `state.user.token`
+            const token = (getState() as RootState).user.token;
+
+            // If we have a token, set the Authorization header
+            if (token) {
+                headers.set('authorization', `Bearer ${token}`);
+            }
+
+            return headers;
+        },
+    }),
     refetchOnReconnect: true,
     tagTypes: ["Payments"],
     endpoints: (builder) => ({
         // Fetch all payments
-        fetchPayments: builder.query<PaymentDataTypes[], void>({
+        fetchPayments: builder.query<FetchPaymentsResponse, void>({
             query: () => "payments",
             providesTags: ["Payments"],
         }),
@@ -108,22 +132,26 @@ export const paymentAPI = createApi({
         // Get a payment by ID
         getPaymentById: builder.query<PaymentDataTypes, number>({
             query: (paymentId) => `payments/${paymentId}`,
-            providesTags: ["Payments"],
+            providesTags: (_result, _error, arg) => [{ type: "Payments", id: arg }],
         }),
 
         // Get payments by case ID
         getPaymentsByCaseId: builder.query<PaymentDataTypes[], number>({
             query: (caseId) => `payments/case/${caseId}`,
-            providesTags: ["Payments"],
+            providesTags: (_result, _error, arg) => [{ type: "Payments", caseId: arg }],
+        }),
+        
+        // Endpoint for initiating a general payment
+        initiateGeneralPayment: builder.mutation<{ success: boolean; sessionId?: string; message?: string }, GeneralPaymentRequest>({
+            query: (body) => ({
+                url: 'payments/general',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ["Payments"],
         }),
 
-        // Get payments by case parties
-        getPaymentsByCaseParties: builder.query<PaymentDataTypes[], string>({
-            query: (parties) => `payments/parties/${parties}`,
-            providesTags: ["Payments"],
-        }),
-
-        // Initiate M-Pesa STK Push
+        // Initiate M-Pesa STK Push (Case-specific)
         initiateMpesaStkPush: builder.mutation<{ success: boolean; message: string; MerchantRequestID: string, CheckoutRequestID: string }, MpesaStkRequest>({
             query: (body) => ({
                 url: 'payments/mpesa',
@@ -133,17 +161,7 @@ export const paymentAPI = createApi({
             invalidatesTags: ["Payments"],
         }),
 
-        // Handle M-Pesa callback
-        mpesaCallback: builder.mutation<{ success: boolean; message: string }, MpesaCallbackData>({
-            query: (callbackData) => ({
-                url: 'payments/mpesa/callback',
-                method: 'POST',
-                body: callbackData,
-            }),
-            invalidatesTags: ["Payments"],
-        }),
-
-        // Create cash payment
+        // Create cash payment (Case-specific)
         createCashPayment: builder.mutation<PaymentDataTypes, CashPaymentRequest>({
             query: (body) => ({
                 url: 'payments/cash',
@@ -153,32 +171,22 @@ export const paymentAPI = createApi({
             invalidatesTags: ["Payments"],
         }),
 
-        // Add Manual Payment
+        // Add Manual Payment (Case-specific)
         addManualPayment: builder.mutation<PaymentDataTypes, ManualPaymentRequest>({
             query: (body) => ({
-                url: 'payments/manual', // New endpoint for manual payments
+                url: 'payments/manual',
                 method: 'POST',
                 body,
             }),
             invalidatesTags: ["Payments"],
         }),
 
-        // Handle Stripe Payment
+        // Handle Stripe Payment (Case-specific)
         handleStripePayment: builder.mutation<{ success: boolean; sessionId: string }, StripePaymentRequest>({
             query: (body) => ({
                 url: 'payments/stripe',
                 method: 'POST',
                 body,
-            }),
-            invalidatesTags: ["Payments"],
-        }),
-
-        // Stripe Webhook handling
-        stripeWebhook: builder.mutation<{ received: boolean }, StripeWebhookData>({
-            query: (webhookData) => ({
-                url: 'payments/stripe/webhook',
-                method: 'POST',
-                body: webhookData,
             }),
             invalidatesTags: ["Payments"],
         }),
@@ -190,7 +198,7 @@ export const paymentAPI = createApi({
                 method: 'PUT',
                 body: patch,
             }),
-            invalidatesTags: ["Payments"],
+            invalidatesTags: (_result, _error, arg) => [{ type: 'Payments', id: arg.paymentId }],
         }),
 
         // Delete a payment by ID
@@ -209,13 +217,11 @@ export const {
     useFetchPaymentsQuery,
     useGetPaymentByIdQuery,
     useGetPaymentsByCaseIdQuery,
-    useGetPaymentsByCasePartiesQuery,
+    useInitiateGeneralPaymentMutation,
     useInitiateMpesaStkPushMutation,
-    useMpesaCallbackMutation,
     useCreateCashPaymentMutation,
-    useAddManualPaymentMutation, // Exported new hook
+    useAddManualPaymentMutation,
     useHandleStripePaymentMutation,
-    useStripeWebhookMutation,
     useUpdatePaymentMutation,
     useDeletePaymentMutation,
 } = paymentAPI;

@@ -1,7 +1,9 @@
+// src/features/documents/caseDocumentAPI.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain";
+// ACTION REQUIRED: Make sure this path points to your Redux store configuration
+import type { RootState } from "../../app/store";
 
-// --- vvv UPDATED INTERFACES vvv ---
 // A simple interface for the nested case details returned by the API
 export interface CaseDetails {
     case_id: number;
@@ -23,13 +25,24 @@ export interface CaseDocument {
     checksum: string; 
     case?: CaseDetails | null; // The nested case object from the API
 }
-// --- ^^^ UPDATED INTERFACES ^^^ ---
-
 
 // API Slice for Case Documents
 export const caseDocumentAPI = createApi({
     reducerPath: "caseDocumentAPI",
-    baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+    // ✨ MODIFICATION: Updated baseQuery to automatically add the auth token
+    baseQuery: fetchBaseQuery({
+        baseUrl: APIDomain,
+        prepareHeaders: (headers, { getState }) => {
+            // Get the token from the user slice in the Redux store
+            const token = (getState() as RootState).user.token;
+
+            // If the token exists, add it to the authorization header
+            if (token) {
+                headers.set('authorization', `Bearer ${token}`);
+            }
+            return headers;
+        },
+    }),
     refetchOnReconnect: true,
     tagTypes: ["Document"],
     endpoints: (builder) => ({
@@ -38,6 +51,7 @@ export const caseDocumentAPI = createApi({
             query: () => "documents",
             providesTags: ["Document"],
         }),
+
         // Fetch case document by ID (returns a Blob for direct download)
         getCaseDocumentById: builder.query<Blob, number>({
             query: (document_id) => ({
@@ -47,7 +61,6 @@ export const caseDocumentAPI = createApi({
             providesTags: (_result, _error, document_id) => [{ type: "Document", id: document_id }],
         }),
         
-        // --- vvv NEW ENDPOINT TO FETCH BY CASE ID vvv ---
         /**
          * Fetches all documents associated with a specific case ID.
          * @param case_id - The ID of the case.
@@ -56,7 +69,6 @@ export const caseDocumentAPI = createApi({
             query: (case_id) => `documents/case/${case_id}`,
             providesTags: ["Document"],
         }),
-        // --- ^^^ NEW ENDPOINT TO FETCH BY CASE ID ^^^ ---
 
         // Create a new case document
         createCaseDocument: builder.mutation<CaseDocument, FormData>({
@@ -89,15 +101,12 @@ export const caseDocumentAPI = createApi({
     }),
 });
 
-// --- vvv UPDATED EXPORTS vvv ---
 // Export hooks for usage in components
 export const {
     useFetchCaseDocumentsQuery,
     useGetCaseDocumentByIdQuery,
-    // The new hook is now available:
     useFetchCaseDocumentsByCaseIdQuery,
     useCreateCaseDocumentMutation,
     useUpdateCaseDocumentMutation,
     useDeleteCaseDocumentMutation,
 } = caseDocumentAPI;
-// --- ^^^ UPDATED EXPORTS ^^^ ---

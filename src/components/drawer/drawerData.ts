@@ -43,7 +43,8 @@ export const drawerData: DrawerData[] = [
     { id: 14, name: 'System Logs', icon: FileClock, link: '/dashboard/activity-log', adminOnly: true, category: 'Admin', iconBgColor: '#FCE7F3' }, // Light Pink
     { id: 5, name: 'View Support Tickets', icon: Ticket, link: '/dashboard/supporttickets', adminOnly: true, category: 'Admin', iconBgColor: '#FFEDD5' }, // Light Orange
     { id: 21, name: 'Clients Appointments', icon: CalendarCheck, link: '/dashboard/myclientsappointments', adminOnly: true, category: 'Admin', iconBgColor: '#FEE2E2' }, // Light Red
-
+    //general payments
+    { id: 28, name: 'General Payments', icon: CreditCard, link: '/dashboard/generalpayments', adminOnly: true, category: 'Admin', iconBgColor: '#F3E8FF' }, // Light Purple
     // --- General / Common ---
     { id: 10, name: 'Events', icon: CalendarDays, link: '/dashboard/events', adminOnly: true, category: 'General', iconBgColor: '#FEF3C7' }, // Light Yellow
     { id: 26, name: 'Chats', icon: MessageSquareText, link: '/dashboard/chats', adminOnly: false, category: 'General', iconBgColor: '#CCFBF1' }, // Light Teal

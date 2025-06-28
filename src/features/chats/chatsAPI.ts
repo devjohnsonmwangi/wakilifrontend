@@ -1,6 +1,5 @@
 // src/features/chats/chatsAPI.ts
 
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { APIDomain } from '../../utils/APIDomain';
 import { RootState } from '../../app/store';
@@ -35,7 +34,6 @@ export interface Conversation {
   participants?: UserSummary[];
 }
 
-
 export interface CreateConversationPayload {
   creator_id: number;
   participant_user_ids: number[];
@@ -62,14 +60,14 @@ export interface AddUserToGroupPayload {
   user_id_to_add: number;
 }
 
-const getToken = (state: RootState) => state?.user?.token || localStorage.getItem('authToken');
-
 export const chatsAPI = createApi({
   reducerPath: 'chatsAPI',
+  // ✨ MODIFICATION: Simplified and standardized baseQuery
   baseQuery: fetchBaseQuery({
     baseUrl: APIDomain,
     prepareHeaders: (headers, { getState }) => {
-      const token = getToken(getState() as RootState);
+      // Get token directly from the Redux store state
+      const token = (getState() as RootState).user.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -130,7 +128,7 @@ export const chatsAPI = createApi({
         const state = getState() as RootState;
         
         const senderDetails = state.user?.user?.user_id === sender_id ? state.user.user : undefined;
-        const queryArgs = { conversationId: conversation_id, requestingUserId: sender_id };
+        const queryArgs = { conversationId: conversation_id, requestingUserId: sender_id, limit: 30, offset: 0 }; // Ensure args match query
 
         const patchResult = dispatch(
           chatsAPI.util.updateQueryData('getMessagesForConversation', queryArgs, (draft) => {
@@ -168,13 +166,7 @@ export const chatsAPI = createApi({
             if (convo) convo.unread_count = 0;
           })
         );
-        try {
-          queryFulfilled.then(() => {
-              dispatch(chatsAPI.util.invalidateTags([{ type: 'ConversationList', id: user_id }]));
-          });
-        } catch {
-          patchResult.undo();
-        }
+        queryFulfilled.catch(patchResult.undo);
       }
     }),
 

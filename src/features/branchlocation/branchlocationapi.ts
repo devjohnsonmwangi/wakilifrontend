@@ -1,5 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain";
+// ACTION REQUIRED: Make sure this path points to your Redux store configuration
+import type { RootState } from "../../app/store";
 
 // Define Branch Location Types
 export interface BranchLocationDataTypes {
@@ -12,7 +14,20 @@ export interface BranchLocationDataTypes {
 // API Slice for Branch Locations
 export const locationBranchAPI = createApi({
   reducerPath: "locationBranchAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+  // ✨ MODIFICATION: Updated baseQuery to automatically add the auth token
+  baseQuery: fetchBaseQuery({
+    baseUrl: APIDomain,
+    prepareHeaders: (headers, { getState }) => {
+        // Get the token from the user slice in the Redux store
+        const token = (getState() as RootState).user.token;
+
+        // If the token exists, add it to the authorization header
+        if (token) {
+            headers.set('authorization', `Bearer ${token}`);
+        }
+        return headers;
+    },
+  }),
   refetchOnReconnect: true,
   tagTypes: ["BranchLocation"],
   endpoints: (builder) => ({
@@ -24,7 +39,7 @@ export const locationBranchAPI = createApi({
     // Fetch branch location by ID
     getBranchLocationById: builder.query<BranchLocationDataTypes, number>({
       query: (branch_id) => `branchLocations/${branch_id}`,
-      providesTags: ["BranchLocation"],
+      providesTags: (_result, _error, branch_id) => [{ type: "BranchLocation", id: branch_id }],
     }),
     // Create a new branch location
     createBranchLocation: builder.mutation<BranchLocationDataTypes, Partial<BranchLocationDataTypes>>({
@@ -42,10 +57,10 @@ export const locationBranchAPI = createApi({
         method: "PUT",
         body: rest,
       }),
-      invalidatesTags: ["BranchLocation"],
+      invalidatesTags: (_result, _error, { branch_id }) => [{ type: "BranchLocation", id: branch_id }, "BranchLocation"],
     }),
     // Delete a branch location
-     deleteBranchLocation: builder.mutation<{ success?: boolean; branch_id?: number }, number>({ // Modify to reflect what your service now returns
+     deleteBranchLocation: builder.mutation<{ success?: boolean; branch_id?: number }, number>({
       query: (branch_id) => ({
         url: `branchLocations/${branch_id}`,
         method: "DELETE",

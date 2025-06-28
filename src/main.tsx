@@ -66,6 +66,7 @@ import BookAppointmentPage from './pages/dashboard/howtoappoint.tsx';
 import ClientAppointments from './pages/dashboard/main/manageAppointment/clientsappointments.tsx';
 import ChatPage from './pages/ChatPage.tsx';
 import NotificationsPage from './features/notifications/components/NotificationsPage.tsx';
+import GeneralPaymentPortal from './pages/dashboard/main/Payments/generalpayments.tsx';
 
 // --- Router Definition ---
 const router = createBrowserRouter([
@@ -119,6 +120,7 @@ const router = createBrowserRouter([
       { path: 'myappointments', element: <ClientAppointments /> },
       { path: 'chats', element: <ChatPage /> },
       {path:'notifications', element:<NotificationsPage />},
+      {path:'generalpayments',element:<GeneralPaymentPortal />},
     ],
   },
   { path: '*', element: <Error /> }
