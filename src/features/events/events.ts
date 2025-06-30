@@ -1,6 +1,7 @@
 // src/features/events/events.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain"; 
+import { RootState } from "../../app/store";
 
 // Define Event Types
 export type EventType = "meeting" | "hearing" | "consultation" | "reminder" | "court_date";
@@ -45,7 +46,20 @@ export interface UpdateEventPayload extends Partial<CreateEventPayload> {
 
 export const eventAndReminderAPI = createApi({
   reducerPath: "eventAndReminderAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+  baseQuery: fetchBaseQuery({ baseUrl: APIDomain ,
+
+        prepareHeaders: (headers, { getState }) => {
+            // Get the token from the user slice in the Redux store
+            const token = (getState() as RootState).user.token;
+    
+            // If the token exists, add it to the authorization header
+            if (token) {
+                headers.set('authorization', `Bearer ${token}`);
+            }
+            return headers;
+          }
+
+  }),
   refetchOnReconnect: true,
   tagTypes: ["Event", "EventReminder"],
   endpoints: (builder) => ({

@@ -6,7 +6,7 @@ import {
     Banknote, User, Mail, Phone, Sun, Moon, CreditCard, X, Loader2,
     Table as TableIcon, AlertTriangle, RefreshCw, ExternalLink, ShieldCheck, Clock, Info, FileText,
     Wallet, Hash, MessageSquare, Plus, ChevronDown, Landmark, Filter, Search, Download, Calculator,
-    PieChart as PieChartIcon, TrendingUp, Ban, Users, TrendingDown, BookOpen, Trash2, CheckCircle2, CalendarDays
+    PieChart as PieChartIcon, TrendingUp, Ban, Users, TrendingDown, BookOpen, Trash2, CheckCircle2, CalendarDays, Eye
 } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useFetchPaymentsQuery, useInitiateGeneralPaymentMutation, PaymentDataTypes, GeneralPaymentRequest } from '../../../../features/payment/paymentAPI';
@@ -14,7 +14,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 // --- CONFIGURATION ---
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string);
-const GENERAL_CASE_ID = 1;
 const ITEMS_PER_PAGE = 10;
 type PaymentMethod = 'mpesa' | 'stripe' | 'cash' | 'bank_transfer';
 type Tab = 'dashboard' | 'analytics' | 'activity';
@@ -48,12 +47,12 @@ const SummaryCard: FC<{ title: string; value: string; icon: React.ElementType; i
 const TabButton: FC<{ text: string; icon: React.ElementType; isActive: boolean; onClick: () => void; }> = ({ text, icon: Icon, isActive, onClick }) => ( <button onClick={onClick} className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors duration-200 ${isActive ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'}`}><Icon size={16}/>{text}</button> );
 
 // --- TRANSACTION DETAIL PANEL ---
-const TransactionDetailPanel: FC<{ payment: PaymentDataTypes | null; onClose: () => void; onCheckStatus: (transactionId: string) => void;}> = ({ payment, onClose, onCheckStatus }) => (
+const TransactionDetailPanel: FC<{ payment: PaymentDataTypes | null; onClose: () => void; onCheckStatus: (transactionId: string) => void; onViewReceipt: (receiptUrl: string | null) => void; }> = ({ payment, onClose, onCheckStatus, onViewReceipt }) => (
     <AnimatePresence>
         {payment && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/60 z-50">
-                <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()} className="absolute right-0 top-0 h-full w-full max-w-md bg-slate-50 dark:bg-slate-900 shadow-2xl flex flex-col">
-                    <header className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()} className="absolute right-0 top-0 h-full w-full max-w-md bg-slate-50 dark:bg-slate-900 shadow-2xl flex flex-col max-h-screen">
+                    <header className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
                         <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Transaction Details</h3>
                         <button onClick={onClose} className="p-1 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"><X size={20}/></button>
                     </header>
@@ -70,8 +69,8 @@ const TransactionDetailPanel: FC<{ payment: PaymentDataTypes | null; onClose: ()
                             <div><dt className="font-semibold text-slate-600 dark:text-slate-300 mb-1">Notes</dt><dd className="text-sm p-3 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-600 dark:text-slate-400">{payment.payment_note || 'No notes provided.'}</dd></div>
                         </dl>
                     </div>
-                    <footer className="p-4 border-t border-slate-200 dark:border-slate-800 flex gap-2">
-                        {payment.receipt_url && <a href={payment.receipt_url} target="_blank" rel="noopener noreferrer" className="flex-1 text-center font-semibold py-2 px-4 rounded-lg text-white bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2">View Receipt <ExternalLink size={16}/></a>}
+                    <footer className="p-4 border-t border-slate-200 dark:border-slate-800 flex gap-2 flex-shrink-0">
+                        {payment.receipt_url && <button onClick={() => onViewReceipt(payment.receipt_url ?? null)} className="flex-1 text-center font-semibold py-2 px-4 rounded-lg text-white bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2">View Receipt <ExternalLink size={16}/> </button>}
                         {payment.payment_status === 'pending_mpesa_confirmation' && payment.transaction_id && <button onClick={() => onCheckStatus(payment.transaction_id!)} className="flex-1 text-center font-semibold py-2 px-4 rounded-lg text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2">Check Status <RefreshCw size={16}/> </button>}
                     </footer>
                 </motion.div>
@@ -125,8 +124,49 @@ const PaymentModal: FC<{ isOpen: boolean; onClose: () => void; onSuccess: () => 
 
     const inputBaseClasses = `block w-full text-base text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-700/50 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder-slate-400 dark:placeholder-slate-500`;
 
-    return ( <AnimatePresence>{isOpen && ( <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}><motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg relative" onClick={(e) => e.stopPropagation()}><button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"><X size={24} /></button><div className="p-6 sm:p-8"><div className="mb-6"><div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600"><Banknote className="w-6 h-6 text-white" /></div><h2 className="text-2xl font-bold text-slate-800 dark:text-white">Create a Transaction</h2><p className="text-slate-500 dark:text-slate-400 mt-1">Required fields are marked with *</p></div><form onSubmit={handleFormSubmit} className="space-y-6"><div className="relative"><User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="text" placeholder="Customer Full Name*" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} required />{customerName && (<button type="button" onClick={() => setCustomerName('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div><div className="relative"><Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="email" placeholder="Customer Email (for receipt)" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} />{customerEmail && (<button type="button" onClick={() => setCustomerEmail('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-semibold text-slate-400 dark:text-slate-500">KES</span><input type="number" placeholder="Amount*" value={amount} onChange={(e) => setAmount(e.target.value)} className={`${inputBaseClasses} py-3 pl-14 pr-10`} required min="1" />{amount && (<button type="button" onClick={() => setAmount('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div><div ref={methodDropdownRef} className="relative"><p className="text-sm font-semibold mb-2 text-slate-600 dark:text-slate-300">Payment Method*</p><button type="button" onClick={() => setIsMethodDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-3 px-4`}><span className={`truncate font-semibold ${!paymentMethod ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{paymentMethod.length ? paymentMethod.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Select a method...'}</span><ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isMethodDropdownOpen ? 'rotate-180' : ''}`} /></button><AnimatePresence>{isMethodDropdownOpen && (<motion.ul initial={{opacity:0, y: -5}} animate={{opacity:1, y: 0}} exit={{opacity:0, y: -5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg"><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('mpesa'); setIsMethodDropdownOpen(false); }}><Phone className="mr-2 h-4 w-4 text-green-500" /> M-Pesa</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('stripe'); setIsMethodDropdownOpen(false); }}><CreditCard className="mr-2 h-4 w-4 text-blue-500" /> Credit/Debit Card</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('cash'); setIsMethodDropdownOpen(false); }}><Wallet className="mr-2 h-4 w-4 text-yellow-500" /> Cash</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('bank_transfer'); setIsMethodDropdownOpen(false); }}><Landmark className="mr-2 h-4 w-4 text-purple-500" /> Bank Transfer</button></li></motion.ul>)}</AnimatePresence></div><AnimatePresence>{paymentMethod === 'mpesa' && (<motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="relative overflow-hidden"><Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="tel" placeholder="Safaricom Phone Number* (e.g. 07...)" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))} className={`${inputBaseClasses} py-3 pl-12 pr-10`} required />{phoneNumber && (<button type="button" onClick={() => setPhoneNumber('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</motion.div>)}</AnimatePresence><div className="relative"><MessageSquare className="absolute left-3.5 top-5 h-5 w-5 text-slate-400 dark:text-slate-500"/><textarea placeholder="Payment Notes (e.g., Invoice #, Service Rendered)" value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} rows={2} /></div><div className="pt-3"><motion.button type="submit" disabled={isSubmitting} className="w-full font-semibold py-3 px-6 rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/50 dark:hover:shadow-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 focus:ring-indigo-500 transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>{isSubmitting ? ( <><Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing...</> ) : ( `Submit Payment` )}</motion.button></div></form></div></motion.div></motion.div>)}</AnimatePresence> );
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors z-10"><X size={24} /></button>
+                        
+                        <div className="p-6 sm:p-8 flex-shrink-0 border-b border-slate-200 dark:border-slate-700">
+                            <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600"><Banknote className="w-6 h-6 text-white" /></div>
+                            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Create a Transaction</h2>
+                            <p className="text-slate-500 dark:text-slate-400 mt-1">Required fields are marked with *</p>
+                        </div>
+                        
+                        <form onSubmit={handleFormSubmit} className="flex-grow contents">
+                            <div className="p-6 sm:p-8 flex-grow overflow-y-auto styled-scrollbar">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                                    <div className="relative"><User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="text" placeholder="Customer Full Name*" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} required />{customerName && (<button type="button" onClick={() => setCustomerName('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div>
+                                    <div className="relative"><Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="email" placeholder="Customer Email (for receipt)" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} />{customerEmail && (<button type="button" onClick={() => setCustomerEmail('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div>
+                                    <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-semibold text-slate-400 dark:text-slate-500">KES</span><input type="number" placeholder="Amount*" value={amount} onChange={(e) => setAmount(e.target.value)} className={`${inputBaseClasses} py-3 pl-14 pr-10`} required min="1" />{amount && (<button type="button" onClick={() => setAmount('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</div>
+                                    <div ref={methodDropdownRef} className="relative"><p className="text-sm font-semibold mb-2 text-slate-600 dark:text-slate-300">Payment Method*</p><button type="button" onClick={() => setIsMethodDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-3 px-4`}><span className={`truncate font-semibold ${!paymentMethod ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{paymentMethod.length ? paymentMethod.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Select a method...'}</span><ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isMethodDropdownOpen ? 'rotate-180' : ''}`} /></button><AnimatePresence>{isMethodDropdownOpen && (<motion.ul initial={{opacity:0, y: -5}} animate={{opacity:1, y: 0}} exit={{opacity:0, y: -5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg"><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('mpesa'); setIsMethodDropdownOpen(false); }}><Phone className="mr-2 h-4 w-4 text-green-500" /> M-Pesa</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('stripe'); setIsMethodDropdownOpen(false); }}><CreditCard className="mr-2 h-4 w-4 text-blue-500" /> Credit/Debit Card</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('cash'); setIsMethodDropdownOpen(false); }}><Wallet className="mr-2 h-4 w-4 text-yellow-500" /> Cash</button></li><li><button type="button" className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700/50 flex items-center" onClick={() => { setPaymentMethod('bank_transfer'); setIsMethodDropdownOpen(false); }}><Landmark className="mr-2 h-4 w-4 text-purple-500" /> Bank Transfer</button></li></motion.ul>)}</AnimatePresence></div>
+                                    <AnimatePresence>{paymentMethod === 'mpesa' && (<motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="relative overflow-hidden md:col-span-2"><Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500"/><input type="tel" placeholder="Safaricom Phone Number* (e.g. 07...)" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))} className={`${inputBaseClasses} py-3 pl-12 pr-10`} required />{phoneNumber && (<button type="button" onClick={() => setPhoneNumber('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-full"><X size={16} /></button>)}</motion.div>)}</AnimatePresence>
+                                    <div className="relative md:col-span-2"><MessageSquare className="absolute left-3.5 top-5 h-5 w-5 text-slate-400 dark:text-slate-500"/><textarea placeholder="Payment Notes (e.g., Invoice #, Service Rendered)" value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputBaseClasses} py-3 pl-12 pr-10`} rows={3} /></div>
+                                </div>
+                            </div>
+                            
+                            <div className="p-6 sm:p-8 flex-shrink-0 border-t border-slate-200 dark:border-slate-700">
+                                <motion.button type="submit" disabled={isSubmitting} className="w-full font-semibold py-3 px-6 rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-indigo-500/50 dark:hover:shadow-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-800 focus:ring-indigo-500 transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>{isSubmitting ? ( <><Loader2 className="animate-spin h-5 w-5 mr-2" /> Processing...</> ) : ( `Submit Payment` )}</motion.button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 };
+
 
 // --- MAIN PORTAL COMPONENT ---
 const GeneralPaymentPortal = () => {
@@ -136,7 +176,7 @@ const GeneralPaymentPortal = () => {
     const { data: apiResponse, isLoading: isLoadingPayments, isError, refetch } = useFetchPaymentsQuery();
 
     const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-    const [filters, setFilters] = useState({ term: '', method: '', dateFrom: '', dateTo: '' });
+    const [filters, setFilters] = useState({ term: '', method: '', dateFrom: '', dateTo: '', transactionId: '' });
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedPayments, setSelectedPayments] = useState<number[]>([]);
     const [selectedPaymentDetail, setSelectedPaymentDetail] = useState<PaymentDataTypes | null>(null);
@@ -144,7 +184,7 @@ const GeneralPaymentPortal = () => {
 
     // --- DATA MEMOIZATION & DERIVED STATE ---
     const allPayments = useMemo(() => apiResponse?.payments || [], [apiResponse]);
-    const generalPayments = useMemo(() => allPayments.filter((p: PaymentDataTypes) => p.case_id === GENERAL_CASE_ID), [allPayments]);
+    const generalPayments = useMemo(() => allPayments.filter((p: PaymentDataTypes) => !p.case_id && !p.user_id), [allPayments]);
 
     useEffect(() => {
         if(generalPayments.length > 0 && activityLogs.length === 0) {
@@ -166,7 +206,8 @@ const GeneralPaymentPortal = () => {
                 const methodMatch = filters.method ? p.payment_gateway === filters.method : true;
                 const dateFromMatch = filters.dateFrom ? new Date(p.payment_date) >= new Date(filters.dateFrom) : true;
                 const dateToMatch = filters.dateTo ? new Date(p.payment_date) <= new Date(filters.dateTo + 'T23:59:59') : true;
-                return termMatch && methodMatch && dateFromMatch && dateToMatch;
+                const transactionIdMatch = filters.transactionId ? (p.transaction_id || '').toLowerCase().includes(filters.transactionId.toLowerCase()) : true;
+                return termMatch && methodMatch && dateFromMatch && dateToMatch && transactionIdMatch;
             })
             .sort((a: PaymentDataTypes, b: PaymentDataTypes) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime());
     }, [generalPayments, filters]);
@@ -216,19 +257,65 @@ const GeneralPaymentPortal = () => {
     // --- HANDLERS ---
     useEffect(() => { document.documentElement.classList.toggle('dark', isDarkMode); localStorage.setItem('theme', isDarkMode ? 'dark' : 'light'); }, [isDarkMode]);
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
-    const handleResetFilters = () => { setFilters({ term: '', method: '', dateFrom: '', dateTo: '' }); setCurrentPage(1); toast.info("Filters have been reset."); };
+    const handleResetFilters = () => { setFilters({ term: '', method: '', dateFrom: '', dateTo: '', transactionId: '' }); setCurrentPage(1); toast.info("Filters have been reset."); };
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); setCurrentPage(1); };
     const handleCheckStatus = (transactionId: string) => { toast.promise(new Promise(res => setTimeout(res, 1500)), { loading: `Checking status for ${transactionId}...`, success: 'Status updated!', error: 'Failed to update.' }); refetch(); };
     const handleModalSuccess = () => { setIsModalOpen(false); refetch(); addActivityLog(Plus, 'text-blue-500', 'A new transaction was created.'); };
+    
+    const handleViewReceipt = async (receiptUrl: string | null) => {
+        if (!receiptUrl) {
+            toast.error("No receipt URL available for this transaction.");
+            return;
+        }
+
+        const receiptPromise = fetch(receiptUrl);
+
+        await toast.promise(receiptPromise, {
+            loading: 'Fetching receipt...',
+            success: async (response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const htmlContent = await response.text();
+                const newWindow = window.open("", "_blank");
+                if (newWindow) {
+                    newWindow.document.open();
+                    newWindow.document.write(htmlContent);
+                    newWindow.document.close();
+                    newWindow.document.title = "Payment Receipt";
+                } else {
+                    throw new Error("Pop-up blocker might be enabled.");
+                }
+                return 'Receipt opened successfully!';
+            },
+            error: (err) => `Failed to open receipt: ${err.message}`
+        });
+    };
+    
     const handleExportCSV = () => {
-        if (filteredAndSortedPayments.length === 0) { toast.error("No data available to export."); return; }
+        if (filteredAndSortedPayments.length === 0) {
+            toast.error("No data available to export.");
+            return;
+        }
         const headers = ["Customer", "Email", "Amount (KES)", "Method", "Date", "Status", "Transaction ID", "Notes", "Receipt URL"];
         const csvContent = [headers.join(',')];
+
         filteredAndSortedPayments.forEach((p: PaymentDataTypes) => {
             const customerName = (p.payment_note || '').replace('General payment from ', '') || 'N/A';
-            const rowData = [ `"${customerName.replace(/"/g, '""')}"`, `"${(p.customer_email || 'N/A').replace(/"/g, '""')}"`, parseFloat(p.payment_amount).toFixed(2), p.payment_gateway, new Date(p.payment_date).toLocaleString(), p.payment_status, p.transaction_id, `"${(p.payment_note || '').replace(/"/g, '""')}"`, p.receipt_url || 'N/A' ];
+            const rowData = [
+                `"${customerName.replace(/"/g, '""')}"`,
+                `"${(p.customer_email || 'N/A').replace(/"/g, '""')}"`,
+                parseFloat(p.payment_amount).toFixed(2),
+                p.payment_gateway,
+                new Date(p.payment_date).toLocaleString(),
+                p.payment_status,
+                p.transaction_id || 'N/A',
+                `"${(p.payment_note || '').replace(/"/g, '""')}"`,
+                p.receipt_url || 'N/A'
+            ];
             csvContent.push(rowData.join(','));
         });
+
         const blob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -273,11 +360,12 @@ const GeneralPaymentPortal = () => {
             </div>
             <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 mt-8">Transaction History</h3>
             <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                    <div className="lg:col-span-2"><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="term" placeholder="Name or Email..." value={filters.term} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 pl-10 pr-4" /></div></div>
-                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Method</label><select name="method" value={filters.method} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-4"><option value="">All Methods</option><option value="mpesa">M-Pesa</option><option value="stripe">Card</option><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option></select></div>
-                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Date Range</label><div className="grid grid-cols-2 gap-2"><input type="date" name="dateFrom" value={filters.dateFrom} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-2" /><input type="date" name="dateTo" value={filters.dateTo} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-2" min={filters.dateFrom}/></div></div>
-                    <button onClick={handleResetFilters} className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 lg:mt-5 transition-colors shadow"><Filter size={16}/> Reset</button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end">
+                    <div className="lg:col-span-1 xl:col-span-1"><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Name/Email</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="term" placeholder="Name or Email..." value={filters.term} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 pl-10 pr-4" /></div></div>
+                    <div className="lg:col-span-1 xl:col-span-1"><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Transaction ID</label><div className="relative"><Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="transactionId" placeholder="Transaction ID..." value={filters.transactionId} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 pl-10 pr-4" /></div></div>
+                    <div className="xl:col-span-1"><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Method</label><select name="method" value={filters.method} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-4"><option value="">All Methods</option><option value="mpesa">M-Pesa</option><option value="stripe">Card</option><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option></select></div>
+                    <div className="lg:col-span-1 xl:col-span-1"><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Date Range</label><div className="grid grid-cols-2 gap-2"><input type="date" name="dateFrom" value={filters.dateFrom} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-2" /><input type="date" name="dateTo" value={filters.dateTo} onChange={handleFilterChange} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-2" min={filters.dateFrom}/></div></div>
+                    <button onClick={handleResetFilters} className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow"><Filter size={16}/> Reset</button>
                 </div>
             </div>
 
@@ -298,26 +386,41 @@ const GeneralPaymentPortal = () => {
                         <tr>
                             <th className="p-4"><input type="checkbox" className="form-checkbox bg-blue-500 border-white" checked={isAllSelectedOnPage} onChange={handleSelectAll}/></th>
                             <HeaderCell text="Customer" icon={User} />
-                            <HeaderCell text="Transaction ID" icon={Hash} />
+                            <HeaderCell text="Transaction ID" icon={Hash} className="whitespace-nowrap" />
                             <HeaderCell text="Amount" icon={Banknote} />
                             <HeaderCell text="Method" icon={CreditCard} />
                             <HeaderCell text="Date" icon={Clock} />
                             <HeaderCell text="Status" icon={Info} />
-                            <HeaderCell text="Receipt" icon={FileText} />
+                            <HeaderCell text="Actions" icon={Eye} className="text-center" />
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                         {isLoadingPayments && [1,2,3,4,5].map(i => <SkeletonRow key={i} columns={8}/>)}
                         {!isLoadingPayments && paginatedPayments.map((p) => (
-                           <tr key={p.payment_id} onClick={() => setSelectedPaymentDetail(p)} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-200 cursor-pointer">
-                                <td className="p-4" onClick={(e) => e.stopPropagation()}><input type="checkbox" className="form-checkbox" checked={selectedPayments.includes(p.payment_id)} onChange={(e) => handleSelectOne(p.payment_id, e.target.checked)}/></td>
-                                <td className="p-4"><div className="font-medium text-slate-800 dark:text-slate-100">{(p.payment_note || '').replace('General payment from ', '') || 'N/A'}</div><div className="text-xs text-slate-500">{p.customer_email}</div></td>
-                                <td className="p-4"><div className="font-mono text-xs">{p.transaction_id || 'N/A'}</div></td>
+                           <tr key={p.payment_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors duration-200">
+                                <td className="p-4"><input type="checkbox" className="form-checkbox" checked={selectedPayments.includes(p.payment_id)} onChange={(e) => handleSelectOne(p.payment_id, e.target.checked)}/></td>
+                                <td className="p-4">
+                                    <div className="font-semibold text-slate-800 dark:text-slate-100">{(p.payment_note || '').replace('General payment from ', '') || 'N/A'}</div>
+                                    <div className="text-xs text-slate-500">{p.customer_email || 'No Email'}</div>
+                                </td>
+                                <td className="p-4 font-mono text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">{p.transaction_id || 'N/A'}</td>
                                 <td className="p-4"><div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-white"><span>KES {parseFloat(p.payment_amount).toFixed(2)}</span></div></td>
-                                <td className="p-4"><div className="flex items-center gap-2 capitalize">{getMethodIcon(p.payment_gateway)}<span>{p.payment_gateway.replace('_', ' ')}</span></div></td>
-                                <td className="p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-slate-400"/><span>{new Date(p.payment_date).toLocaleDateString()}</span></div></td>
+                                <td className="p-4"><div className="flex items-center gap-2 capitalize">{getMethodIcon(p.payment_gateway)}<span className="font-semibold">{p.payment_gateway.replace('_', ' ')}</span></div></td>
+                                <td className="p-4"><div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-slate-400"/><span className="font-semibold">{new Date(p.payment_date).toLocaleDateString()}</span></div></td>
                                 <td className="p-4">{statusBadge(p.payment_status)}</td>
-                                <td className="p-4 text-center">{p.receipt_url ? <a href={p.receipt_url} target="_blank" rel="noopener noreferrer" className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 inline-block"><ExternalLink size={16}/></a> : <span className="text-slate-400">-</span>}</td>
+                                <td className="p-4 text-center">
+                                    <div className='flex items-center justify-center gap-1'>
+                                        <button onClick={() => setSelectedPaymentDetail(p)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200" title="View Details">
+                                            <Eye size={14}/> View
+                                        </button>
+                                        {/* MODIFIED: Fixed TypeScript error with '?? null' */}
+                                        {p.receipt_url && (
+                                            <button onClick={() => handleViewReceipt(p.receipt_url ?? null)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-blue-100 hover:bg-blue-200 dark:bg-blue-800/50 dark:hover:bg-blue-800/80 text-blue-700 dark:text-blue-200" title="View Receipt">
+                                                <FileText size={14}/> Receipt
+                                            </button>
+                                        )}
+                                    </div>
+                                </td>
                            </tr>
                         ))}
                     </tbody>
@@ -428,7 +531,7 @@ const GeneralPaymentPortal = () => {
                 </div>
             </div>
             <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={handleModalSuccess} />
-            <TransactionDetailPanel payment={selectedPaymentDetail} onClose={() => setSelectedPaymentDetail(null)} onCheckStatus={handleCheckStatus}/>
+            <TransactionDetailPanel payment={selectedPaymentDetail} onClose={() => setSelectedPaymentDetail(null)} onCheckStatus={handleCheckStatus} onViewReceipt={handleViewReceipt} />
         </>
     );
 };

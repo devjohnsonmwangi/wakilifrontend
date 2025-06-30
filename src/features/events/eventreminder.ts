@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { APIDomain } from "../../utils/APIDomain";
+import type { RootState } from "../../app/store";
 
 // Define Event Reminder Types
 export interface EventReminderDataTypes {
@@ -14,7 +15,19 @@ export interface EventReminderDataTypes {
 // API Slice for Event Reminders
 export const eventReminderAPI = createApi({
   reducerPath: "eventReminderAPI",
-  baseQuery: fetchBaseQuery({ baseUrl: APIDomain }),
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: APIDomain,
+    prepareHeaders: (headers, { getState }) => {
+      // Get the token from the user slice in the Redux store
+      const token = (getState() as RootState).user.token;
+
+      // If the token exists, add it to the authorization header
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    }
+  }),
   refetchOnReconnect: true,
   tagTypes: ["EventReminder"],
   endpoints: (builder) => ({
