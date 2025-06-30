@@ -1,10 +1,19 @@
-// src/app/store.ts (or your store setup file) - UPDATED
+// src/app/store.ts
 
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from "redux-persist";
+import {
+    persistStore,
+    persistReducer,
+    FLUSH,
+    REHYDRATE,
+    PAUSE,
+    PERSIST,
+    PURGE,
+    REGISTER,
+} from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 
-// all API slices
+// All API slices
 import { usersAPI } from "../features/users/usersAPI";
 import { caseAndPaymentAPI } from "../features/case/caseAPI";
 import { paymentAPI } from "../features/payment/paymentAPI";
@@ -19,22 +28,48 @@ import { appointmentAPI } from "../features/appointment/appointmentapi";
 import { loginAPI } from "../features/login/loginAPI";
 import { teamApi } from "../features/team/teamApi";
 import { chatsAPI } from "../features/chats/chatsAPI";
-import { notificationsAPI } from "../features/notifications/notificationAPI"; 
-//import   news  api
-import {newsApi}  from   "../features/news/newsAPI";
+import { notificationsAPI } from "../features/notifications/notificationAPI";
+import { newsApi } from "../features/news/newsAPI";
 
-
+// Regular Redux Slices
 import userReducer from "../features/users/userSlice";
 import onlineStatusReducer from "../features/online/online";
 
-// Persist configuration
+// --- Persist Configuration ---
+// This tells redux-persist what to save.
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["user"], 
+    version: 1, // It's good practice to version your persisted state.
+    
+    // Whitelist: The slices of state you WANT to save to storage.
+    // We are now saving the user auth slice and the state of ALL API calls.
+    whitelist: [
+        "user", // Persist user auth info (like tokens, user details)
+        usersAPI.reducerPath,
+        caseAndPaymentAPI.reducerPath,
+        paymentAPI.reducerPath,
+        logAPI.reducerPath,
+        feedbackAPI.reducerPath,
+        TicketAPI.reducerPath,
+        eventAndReminderAPI.reducerPath,
+        eventReminderAPI.reducerPath,
+        locationBranchAPI.reducerPath,
+        caseDocumentAPI.reducerPath,
+        appointmentAPI.reducerPath,
+        loginAPI.reducerPath,
+        teamApi.reducerPath,
+        chatsAPI.reducerPath,
+        notificationsAPI.reducerPath,
+        newsApi.reducerPath,
+    ],
+    
+    // Blacklist: The slices of state you DON'T want to save.
+    // 'onlineStatus' should reflect the real-time status, not a saved one.
+    blacklist: ["onlineStatus"],
 };
 
-// Combine reducers
+// Combine all reducers
 const rootReducer = combineReducers({
     // API Reducers
     [teamApi.reducerPath]: teamApi.reducer,
@@ -51,28 +86,29 @@ const rootReducer = combineReducers({
     [appointmentAPI.reducerPath]: appointmentAPI.reducer,
     [loginAPI.reducerPath]: loginAPI.reducer,
     [chatsAPI.reducerPath]: chatsAPI.reducer,
-    [notificationsAPI.reducerPath]: notificationsAPI.reducer, // <<< 2. ADD the new notifications reducer
-    [newsApi.reducerPath]: newsApi.reducer, 
+    [notificationsAPI.reducerPath]: notificationsAPI.reducer,
+
+    [newsApi.reducerPath]: newsApi.reducer,
 
     // Regular Reducers
     user: userReducer,
     onlineStatus: onlineStatusReducer,
 });
 
-//  persist reducer
+// Create a persisted reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-//  store
+// Configure the store with the persisted reducer
 export const store = configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
-                ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/REGISTER', 'persist/PURGE'],
+                // This is required to ignore the non-serializable actions that redux-persist dispatches.
+                ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
             },
         }).concat(
             // Concatenate all API middlewares
-            newsApi.middleware,
             usersAPI.middleware,
             caseAndPaymentAPI.middleware,
             paymentAPI.middleware,
@@ -87,12 +123,14 @@ export const store = configureStore({
             loginAPI.middleware,
             teamApi.middleware,
             chatsAPI.middleware,
-            notificationsAPI.middleware 
-        )
+            notificationsAPI.middleware,
+            newsApi.middleware
+        ),
 });
 
+// Create the persistor
 export const persistor = persistStore(store);
 
-// Define RootState based on the rootReducer to get the clean state shape
+// Define RootState and AppDispatch types
 export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;
