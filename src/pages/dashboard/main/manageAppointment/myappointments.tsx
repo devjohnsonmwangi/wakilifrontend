@@ -1,165 +1,104 @@
-// UserAppointments.tsx
+// myappointments.tsx
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { Toaster, toast } from 'sonner';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+
 import {
-  useFetchAppointmentsByAssigneeQuery,
+  useListAppointmentsQuery,
   useUpdateAppointmentMutation,
   useDeleteAppointmentMutation,
-  AppointmentDataTypes,
+  Appointment,
   AppointmentStatus,
-  UpdateAppointmentPayload,
-  FetchAppointmentsArgs,
+  ListAppointmentsArgs,
+  
 } from '../../../../features/appointment/appointmentapi';
 import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi';
-import { Toaster, toast } from 'sonner';
+import { selectCurrentUserId, selectCurrentUser } from '../../../../features/users/userSlice';
+
 import CreateAppointment from './createappointment';
 import EditAppointment from './editappointments';
 import ConfirmationModal from './deletion';
 import ReasonDisplayModal from './ReasonDisplayModal';
-import { motion, AnimatePresence, Variants } from 'framer-motion'; // Added motion imports
 
-import {
-  selectCurrentUserId,
-  selectCurrentUser
-} from '../../../../features/users/userSlice';
+import { PlusCircle, FilePenLine, Trash2, AlertTriangle, CalendarDays, RefreshCcw, Sun, Moon, User as UserProfileIcon, LogIn, ImageOff, Eye, Briefcase, ListFilter, Search, ChevronDown, X } from 'lucide-react';
 
-import {
-  PlusCircle,
-  FilePenLine,
-  Trash2,
-  AlertTriangle,
-  CalendarDays,
-  RefreshCcw,
-  Sun,
-  Moon,
-  User as UserProfileIcon,
-  LogIn,
-  ImageOff,
-  Eye,
-  Users as ClientLucideIcon,
-  Briefcase,
-  ListFilter,
-  Search,         // Added Search
-  ChevronDown,    // Added ChevronDown
-  X,              // Added X
-} from 'lucide-react';
-
+// --- Type and Helper Function Definitions ---
 interface ApiError {
   status?: number | string;
-  data?: { message?: string; error?: string; errors?: Array<{ field: string; message: string }>; [key: string]: unknown; };
-  message?: string;
-  error?: string;
-}
-
-interface ApiMessageResponse { message: string; }
-
-function isApiMessageResponse(data: unknown): data is ApiMessageResponse {
-  return data !== null && typeof data === 'object' && 'message' in data && typeof (data as ApiMessageResponse).message === 'string';
+  data?: { message?: string; error?: string; };
 }
 
 const NO_APPOINTMENTS_FOUND_MESSAGE = "You have no appointments assigned to you.";
 
+// --- ACTION: Corrected the getErrorMessage function ---
 const getErrorMessage = (error: ApiError | null | undefined): string => {
-  if (!error) return 'An unknown error occurred. Please try again.';
-  const data = error.data;
-  if (data) {
-    if (typeof data === 'string') return data;
-    if (data.message) return data.message;
-    if (data.error) return data.error;
-    if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-        return data.errors.map(e => `${e.field ? `${e.field}: ` : ''}${e.message}`).join('; ');
-    }
-  }
-  if (error.message) return error.message;
-  if (error.error) return error.error;
-  if (error.status) return `An error occurred (Status: ${error.status}).`;
-  return 'Failed to load. Please check network and try refreshing.';
+  if (!error) return 'An unknown error occurred.';
+  // Prioritize the nested message from the backend `data` object.
+  if (error.data?.message) return error.data.message;
+  if (error.data?.error) return error.data.error;
+  // Fallback for other error structures
+  return `Error (Status: ${error.status || 'N/A'}). Please try again.`;
 };
 
-const getStatusDisplayName = (status: string): string => {
-  if (!status) return "N/A";
-  return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
-};
-
-const truncateText = (text: string | null | undefined, maxLength: number): string => {
-  if (!text) return '';
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
-};
-
-const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled", "rescheduled", "no_show"];
+const getStatusDisplayName = (status: string): string => status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+const truncateText = (text: string | null | undefined, maxLength: number): string => !text || text.length <= maxLength ? text || '' : `${text.substring(0, maxLength)}...`;
+const APPOINTMENT_STATUS_VALUES: AppointmentStatus[] = ["pending", "confirmed", "completed", "cancelled"];
 
 const UserAppointments: React.FC = () => {
+  // Redux & User State
   const assigneeId = useSelector(selectCurrentUserId);
   const currentUser = useSelector(selectCurrentUser);
   const userFullName = currentUser?.full_name || "User";
   const profilePictureUrl = currentUser?.profile_picture || null;
-
-  // State for filters
   const [imgError, setImgError] = useState(false);
+
+  // Filters
   const [searchStatus, setSearchStatus] = useState<AppointmentStatus | ''>('');
-  const [searchPartyOrClient, setSearchPartyOrClient] = useState('');
-  const [searchLocationId, setSearchLocationId] = useState<string | number | ''>('');
+  const [searchClientName, setSearchClientName] = useState('');
+  const [searchBranchId, setSearchBranchId] = useState<number | ''>('');
   const [searchDateFrom, setSearchDateFrom] = useState('');
   const [searchDateTo, setSearchDateTo] = useState('');
 
-  // State for custom dropdowns
+  // UI State
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [isStatusFilterDropdownOpen, setIsStatusFilterDropdownOpen] = useState(false);
-  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
+  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+  const [reasonToDisplay, setReasonToDisplay] = useState('');
+  const [reasonContextName, setReasonContextName] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('darkMode') === 'true' : false);
+
+  // Refs
   const locationDropdownRef = useRef<HTMLDivElement>(null);
   const statusFilterDropdownRef = useRef<HTMLDivElement>(null);
-  
-  // RTK Query hooks
-  const queryParamsForFetch: Omit<FetchAppointmentsArgs, 'assigneeId'> = useMemo(() => {
-    const params: Omit<FetchAppointmentsArgs, 'assigneeId'> = {};
-    if (searchStatus) params.status = searchStatus;
-    if (searchDateFrom) params.dateTimeFrom = new Date(searchDateFrom + "T00:00:00.000Z").toISOString();
-    if (searchDateTo) params.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString();
-    return params;
-  }, [searchStatus, searchDateFrom, searchDateTo]);
 
-  const {
-    data: appointmentsData,
-    isLoading: isLoadingAppointments,
-    isError: isFetchAppointmentsError,
-    error: queryError,
-    refetch,
-  } = useFetchAppointmentsByAssigneeQuery(
-    { assigneeId: assigneeId as string | number, queryParams: queryParamsForFetch },
-    { skip: !assigneeId, refetchOnMountOrArgChange: true }
+  // RTK Query Hooks
+  const queryArgs: ListAppointmentsArgs | undefined = useMemo(() => {
+    if (!assigneeId) return undefined;
+    // --- ACTION: This now correctly matches the updated ListAppointmentsArgs type ---
+    const args: ListAppointmentsArgs = { assigneeId }; 
+    if (searchStatus) args.status = searchStatus;
+    if (searchBranchId) args.branchId = searchBranchId;
+    if (searchDateFrom) args.dateTimeFrom = new Date(searchDateFrom + "T00:00:00.000Z").toISOString();
+    if (searchDateTo) args.dateTimeTo = new Date(searchDateTo + "T23:59:59.999Z").toISOString();
+    return args;
+  }, [assigneeId, searchStatus, searchBranchId, searchDateFrom, searchDateTo]);
+
+  const { data: appointmentsData, isLoading: isLoadingAppointments, isError, error: queryError, refetch } = useListAppointmentsQuery(
+    queryArgs!, { skip: !assigneeId, refetchOnMountOrArgChange: true }
   );
 
   const { data: branchLocations, isLoading: isLoadingBranchLocations } = useFetchBranchLocationsQuery();
   const [updateAppointment, { isLoading: isStatusUpdating }] = useUpdateAppointmentMutation();
   const [deleteAppointment, { isLoading: isDeletingAppointment }] = useDeleteAppointmentMutation();
 
-  // Modal and other component state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentDataTypes | null>(null);
-  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
-  const [appointmentToDelete, setAppointmentToDelete] = useState<AppointmentDataTypes | null>(null);
-  const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
-  const [reasonToDisplay, setReasonToDisplay] = useState('');
-  const [reasonContextName, setReasonContextName] = useState('');
-  const [displayableError, setDisplayableError] = useState<ApiError | null>(null);
-  const [isBackendNoAppointments, setIsBackendNoAppointments] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedPreference = localStorage.getItem('darkMode');
-      return storedPreference ? storedPreference === 'true' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
-
-  // --- Effects ---
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    if (typeof window !== 'undefined') localStorage.setItem('darkMode', String(isDarkMode));
-  }, [isDarkMode]);
-
-  // Click outside handler for dropdowns
+  // Effects
+  useEffect(() => { document.documentElement.classList.toggle('dark', isDarkMode); localStorage.setItem('darkMode', String(isDarkMode)); }, [isDarkMode]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
         if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) setIsLocationDropdownOpen(false);
@@ -168,256 +107,91 @@ const UserAppointments: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   useEffect(() => { setImgError(false); }, [profilePictureUrl]);
 
-  useEffect(() => {
-    let noAppointmentsSignal = false;
-    let currentError: ApiError | null = null;
-    if (!assigneeId) {
-      setIsBackendNoAppointments(true); setDisplayableError(null); return;
-    }
-    if (isFetchAppointmentsError && queryError) {
-      const typedQueryError = queryError as ApiError;
-      const errorMessage = getErrorMessage(typedQueryError);
-      if (errorMessage === NO_APPOINTMENTS_FOUND_MESSAGE || typedQueryError.status === 404) {
-        noAppointmentsSignal = true;
-      } else {
-        currentError = typedQueryError;
-      }
-    } else if (!isLoadingAppointments && appointmentsData) {
-      if (isApiMessageResponse(appointmentsData) && appointmentsData.message === NO_APPOINTMENTS_FOUND_MESSAGE) {
-        noAppointmentsSignal = true;
-      } else if (Array.isArray(appointmentsData) && appointmentsData.length === 0) {
-        noAppointmentsSignal = true;
-      }
-    }
-    setIsBackendNoAppointments(noAppointmentsSignal);
-    setDisplayableError(currentError);
-  }, [isFetchAppointmentsError, queryError, appointmentsData, isLoadingAppointments, assigneeId]);
-
-  // --- Handlers ---
+  // Handlers
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
   const openCreateModal = () => setIsCreateModalOpen(true);
   const closeCreateModal = () => setIsCreateModalOpen(false);
-  const openEditModal = (appointment: AppointmentDataTypes) => { setSelectedAppointment(appointment); setIsEditModalOpen(true); };
+  const openEditModal = (appointment: Appointment) => { setSelectedAppointment(appointment); setIsEditModalOpen(true); };
   const closeEditModal = () => { setSelectedAppointment(null); setIsEditModalOpen(false); };
-  const openReasonModal = (reason: string, party: string, clientName?: string | null) => { setReasonToDisplay(reason); setReasonContextName(clientName || party); setIsReasonModalOpen(true); };
-  const closeReasonModal = () => { setIsReasonModalOpen(false); setReasonToDisplay(''); setReasonContextName(''); };
-  const handleAppointmentCreated = () => { if (assigneeId) refetch(); };
-  const handleAppointmentUpdated = () => { if (assigneeId) refetch(); };
+  const openReasonModal = (reason: string, clientName?: string) => { setReasonToDisplay(reason); setReasonContextName(clientName || 'the client'); setIsReasonModalOpen(true); };
+  const closeReasonModal = () => setIsReasonModalOpen(false);
+  const handleAppointmentCreated = () => toast.success("Appointment created successfully!");
+  const handleAppointmentUpdated = () => toast.success("Appointment updated successfully!");
+  const requestDeleteAppointment = (appointment: Appointment) => { setAppointmentToDelete(appointment); setIsConfirmDeleteModalOpen(true); };
+  const cancelDeleteAppointment = () => setAppointmentToDelete(null);
 
   const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
-    const payload: UpdateAppointmentPayload = { appointment_id: appointmentId, status: newStatus };
     try {
-      await updateAppointment(payload).unwrap();
-      toast.success(`Appointment status updated to ${getStatusDisplayName(newStatus)}!`);
+      await updateAppointment({ appointment_id: appointmentId, updates: { status: newStatus } }).unwrap();
+      toast.success(`Status updated to ${getStatusDisplayName(newStatus)}!`);
     } catch (err) { toast.error(`Failed to update status: ${getErrorMessage(err as ApiError)}`); }
   };
 
-  const requestDeleteAppointment = (appointment: AppointmentDataTypes) => { setAppointmentToDelete(appointment); setIsConfirmDeleteModalOpen(true); };
-  const confirmDeleteAppointment = async () => { if (!appointmentToDelete) return; try { await deleteAppointment(appointmentToDelete.appointment_id).unwrap(); toast.success(`Appointment with ${appointmentToDelete.client?.full_name || appointmentToDelete.party} has been deleted.`); setAppointmentToDelete(null); setIsConfirmDeleteModalOpen(false); } catch (err) { toast.error(`Failed to delete appointment: ${getErrorMessage(err as ApiError)}`); } };
-  const cancelDeleteAppointment = () => { setAppointmentToDelete(null); setIsConfirmDeleteModalOpen(false); };
-
-  // --- Memos and Derived State ---
-  const actualAppointmentsArray: AppointmentDataTypes[] = useMemo(() => Array.isArray(appointmentsData) ? appointmentsData : [], [appointmentsData]);
-
-  const filteredAppointments = useMemo(() => {
-    if (!assigneeId || isBackendNoAppointments || displayableError) return [];
-    return actualAppointmentsArray.filter(appointment => {
-      const partyNameLower = appointment.party?.toLowerCase() || '';
-      const clientNameLower = appointment.client?.full_name?.toLowerCase() || '';
-      const searchLower = searchPartyOrClient.toLowerCase();
-      const partyOrClientMatch = searchPartyOrClient ? partyNameLower.includes(searchLower) || clientNameLower.includes(searchLower) : true;
-      const locationMatch = searchLocationId ? appointment.branch_id === Number(searchLocationId) : true;
-      return partyOrClientMatch && locationMatch;
-    });
-  }, [actualAppointmentsArray, assigneeId, isBackendNoAppointments, displayableError, searchPartyOrClient, searchLocationId]);
-
-  const isActuallyLoading = isLoadingAppointments || isLoadingBranchLocations;
-  const isFilteringActive = !!(searchPartyOrClient || searchLocationId || searchStatus || searchDateFrom || searchDateTo);
-  const showNoAppointmentsMessage = !isActuallyLoading && !displayableError && filteredAppointments.length === 0;
-
-  // --- Reusable Components and Styles ---
-  const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent dark:focus:ring-sky-400 transition-colors placeholder-slate-400 dark:placeholder-slate-500`;
-
-  const dropdownListVariants: Variants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-    exit: { opacity: 0, y: -10, transition: { duration: 0.15, ease: 'easeIn' } }
+  const confirmDeleteAppointment = async () => {
+    if (!appointmentToDelete) return;
+    try {
+      await deleteAppointment(appointmentToDelete.appointment_id).unwrap();
+      toast.success(`Appointment with ${appointmentToDelete.client?.full_name} has been deleted.`);
+      setAppointmentToDelete(null); 
+      setIsConfirmDeleteModalOpen(false);
+    } catch (err) { toast.error(`Failed to delete appointment: ${getErrorMessage(err as ApiError)}`); }
   };
 
-  const LoadingIndicator: React.FC<{text?: string}> = ({ text = "Loading your assigned appointments..." }) => ( <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400"><RefreshCcw className="h-12 w-12 animate-spin mb-4" /><p className="text-lg">{text}</p></div> );
-  const ErrorDisplay: React.FC<{ errorToDisplay: ApiError | null, onRetry?: () => void }> = ({ errorToDisplay, onRetry }) => { if (!errorToDisplay) return null; const message = getErrorMessage(errorToDisplay); if (message === NO_APPOINTMENTS_FOUND_MESSAGE && !onRetry) return null; return ( <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 dark:border-red-400 text-red-700 dark:text-red-300 p-6 rounded-md shadow-md my-6" role="alert"><div className="flex items-center"><AlertTriangle className="h-8 w-8 mr-3" /><div><p className="font-bold text-lg">Error Loading Appointments</p><p className="text-sm">{message}</p></div></div>{onRetry && <button onClick={onRetry} className="mt-4 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md text-sm flex items-center transition-colors"><RefreshCcw className="h-4 w-4 mr-2" />Try Again</button>}</div> ); };
-  const NoAppointmentsMessage: React.FC<{ isFiltering: boolean }> = ({ isFiltering }) => ( <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 rounded-lg shadow my-6 p-6"><CalendarDays className="h-16 w-16 mb-4 text-slate-400 dark:text-slate-500" /><p className="text-xl font-semibold mb-2">{isFiltering ? "No assigned appointments match your filters" : NO_APPOINTMENTS_FOUND_MESSAGE}</p><p className="text-sm text-center">{isFiltering ? "Try adjusting your search criteria." : "When appointments are assigned to you, they will appear here."}</p></div> );
-  const ProfilePictureFallback: React.FC<{ name?: string | null, sizeClass?: string, iconSizeClass?: string }> = ({ name, sizeClass = "h-8 w-8", iconSizeClass = "h-5 w-5" }) => { const initials = name?.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() || ''; if (imgError && profilePictureUrl) { return <div className={`${sizeClass} flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-300`}><ImageOff className={iconSizeClass} /></div>; } if (initials) return <div className={`${sizeClass} flex items-center justify-center rounded-full bg-sky-500 text-white dark:bg-sky-600 text-xs font-semibold`}>{initials}</div>; return <div className={`${sizeClass} flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400`}><UserProfileIcon className={iconSizeClass} /></div>; };
+  // Memos and Derived State
+  const filteredAppointments = useMemo(() => {
+    const appointments = Array.isArray(appointmentsData) ? appointmentsData : [];
+    if (!searchClientName) return appointments;
+    return appointments.filter(appointment => appointment.client?.full_name?.toLowerCase().includes(searchClientName.toLowerCase()));
+  }, [appointmentsData, searchClientName]);
 
-  if (!assigneeId || !currentUser) {
-    return ( <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-4 font-sans flex items-center justify-center"><div className="max-w-md w-full bg-white dark:bg-slate-800 shadow-2xl rounded-xl p-8 text-center"><LogIn className="h-16 w-16 mx-auto mb-6 text-sky-500 dark:text-sky-400" /><h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200 mb-3">Access Denied</h2><p className="text-slate-500 dark:text-slate-400">Please log in to view your assigned appointments.</p></div></div> );
-  }
+  const isActuallyLoading = isLoadingAppointments || isLoadingBranchLocations;
+  const isFilteringActive = !!(searchClientName || searchBranchId || searchStatus || searchDateFrom || searchDateTo);
+  const showNoAppointmentsMessage = !isActuallyLoading && !queryError && filteredAppointments.length === 0;
+
+  // Reusable UI Components
+  const inputBaseClasses = `block w-full text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-colors placeholder:text-slate-400`;
+  const dropdownListVariants: Variants = { hidden: { opacity: 0, y: -10 }, visible: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
+  const ProfilePictureFallback = () => <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-400 dark:bg-slate-600 dark:text-slate-300"><ImageOff className="h-6 w-6" /></div>;
+
+  if (!assigneeId || !currentUser) return <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4 dark:bg-slate-900"><div className="w-full max-w-md rounded-xl bg-white p-8 text-center shadow-2xl dark:bg-slate-800"><LogIn className="mx-auto mb-6 h-16 w-16 text-sky-500" /><h2 className="mb-3 text-2xl font-semibold text-slate-700 dark:text-slate-200">Access Denied</h2><p className="text-slate-500 dark:text-slate-400">Please log in to view your assigned appointments.</p></div></div>;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-950 p-2 sm:p-4 lg:p-6 font-sans transition-colors duration-300`}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-sky-100 p-2 font-sans dark:from-slate-900 dark:to-sky-950 sm:p-4 lg:p-6">
       <Toaster richColors closeButton position="top-right" theme={isDarkMode ? 'dark' : 'light'} />
-      <div className="max-w-full lg:max-w-7xl mx-auto bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden">
-        <header className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex items-center">
-              <div className="mr-3 flex-shrink-0">
-                {profilePictureUrl && !imgError ? (
-                  <img src={profilePictureUrl} alt={userFullName} className="h-10 w-10 rounded-full object-cover border-2 border-sky-200 dark:border-sky-700" onError={() => setImgError(true)} />
-                ) : ( <ProfilePictureFallback name={userFullName} sizeClass="h-10 w-10" iconSizeClass="h-6 w-6" /> )}
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100">
-                My Assigned Appointments
-              </h1>
-            </div>
-            <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-              <button onClick={toggleDarkMode} className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}> {isDarkMode ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />} </button>
-              <button onClick={openCreateModal} className="flex items-center bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md text-sm"> <PlusCircle className="h-5 w-5 mr-2" /> New Appointment </button>
-            </div>
+      <div className="mx-auto max-w-full overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-slate-800 lg:max-w-7xl">
+        <header className="border-b border-slate-200 p-4 dark:border-slate-700 md:p-6">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex items-center"><div className="mr-3 flex-shrink-0">{profilePictureUrl && !imgError ? <img src={profilePictureUrl} alt={userFullName} className="h-10 w-10 rounded-full border-2 border-sky-200 object-cover dark:border-sky-700" onError={() => setImgError(true)} /> : <ProfilePictureFallback />}</div><h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">My Assigned Appointments</h1></div>
+            <div className="mt-4 flex items-center space-x-3 sm:mt-0"><button onClick={toggleDarkMode} className="rounded-full p-2 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700" title="Toggle Dark Mode">{isDarkMode ? <Sun /> : <Moon />}</button><button onClick={openCreateModal} className="flex items-center rounded-lg bg-emerald-500 py-2.5 px-4 text-sm font-semibold text-white shadow-md hover:bg-emerald-600"><PlusCircle className="mr-2 h-5 w-5" />New Appointment</button></div>
           </div>
         </header>
 
         <section className="p-4 md:p-6">
-          <div className="mb-6 p-4 bg-sky-50/70 dark:bg-sky-700/30 rounded-lg shadow-sm border border-sky-200 dark:border-sky-700">
-            <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4 flex items-center"> <ListFilter className="h-5 w-5 mr-2 text-slate-500 dark:text-slate-400" /> Filter Assigned Appointments </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-end">
-              
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none"/>
-                <input type="text" placeholder="Party or Client Name..." value={searchPartyOrClient} onChange={(e) => setSearchPartyOrClient(e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
-                {searchPartyOrClient && (<button type="button" onClick={() => setSearchPartyOrClient('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16} /></button>)}
-              </div>
-
-              <div ref={locationDropdownRef} className="relative">
-                <button type="button" onClick={() => setIsLocationDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`} disabled={isLoadingBranchLocations}>
-                    <span className={`truncate font-semibold ${!searchLocationId ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>
-                      {isLoadingBranchLocations ? 'Loading...' : (branchLocations?.find(b => b.branch_id.toString() === searchLocationId.toString())?.name || 'All Locations')}
-                    </span>
-                    <div className="flex items-center">
-                        {searchLocationId && (<button type="button" onClick={(e) => { e.stopPropagation(); setSearchLocationId(''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16}/></button>)}
-                        <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                </button>
-                <AnimatePresence>
-                  {isLocationDropdownOpen && !isLoadingBranchLocations && (
-                      <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                          <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchLocationId(''); setIsLocationDropdownOpen(false); }}>All Locations</button></li>
-                          {branchLocations?.map(loc => (
-                              <li key={loc.branch_id}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchLocationId(loc.branch_id); setIsLocationDropdownOpen(false); }}>{loc.name}</button></li>
-                          ))}
-                      </motion.ul>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div ref={statusFilterDropdownRef} className="relative">
-                  <button type="button" onClick={() => setIsStatusFilterDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}>
-                      <span className={`truncate font-semibold ${!searchStatus ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{searchStatus ? getStatusDisplayName(searchStatus) : 'All Statuses'}</span>
-                      <div className="flex items-center">
-                          {searchStatus && (<button type="button" onClick={(e) => { e.stopPropagation(); setSearchStatus(''); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full"><X size={16}/></button>)}
-                          <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isStatusFilterDropdownOpen ? 'rotate-180' : ''}`} />
-                      </div>
-                  </button>
-                  <AnimatePresence>
-                      {isStatusFilterDropdownOpen && (
-                          <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                              <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 text-slate-800 dark:text-slate-200" onClick={() => { setSearchStatus(''); setIsStatusFilterDropdownOpen(false); }}>All Statuses</button></li>
-                              {APPOINTMENT_STATUS_VALUES.map(status => (
-                                  <li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700/50" onClick={() => { setSearchStatus(status); setIsStatusFilterDropdownOpen(false); }}>{getStatusDisplayName(status)}</button></li>
-                              ))}
-                          </motion.ul>
-                      )}
-                  </AnimatePresence>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
-                  <input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} />
-                  {searchDateFrom && <button type="button" onClick={() => setSearchDateFrom('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
-                </div>
-                <div className="relative">
-                  <input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} min={searchDateFrom || undefined} />
-                  {searchDateTo && <button type="button" onClick={() => setSearchDateTo('')} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full focus:outline-none"><X size={16} /></button>}
-                </div>
-              </div>
+          <div className="mb-6 rounded-lg border border-sky-200 bg-sky-50/70 p-4 shadow-sm dark:border-sky-700 dark:bg-sky-700/30">
+            <h2 className="mb-4 flex items-center text-lg font-semibold text-slate-700 dark:text-slate-200"><ListFilter className="mr-2 h-5 w-5 text-slate-500" />Filter My Appointments</h2>
+            <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" /><input type="text" placeholder="Client Name..." value={searchClientName} onChange={(e) => setSearchClientName(e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{searchClientName && <button onClick={() => setSearchClientName('')} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:text-slate-600"><X size={16} /></button>}</div>
+              <div ref={locationDropdownRef} className="relative"><button onClick={() => setIsLocationDropdownOpen(p => !p)} className={`${inputBaseClasses} flex items-center justify-between py-2.5 px-4 text-left`} disabled={isLoadingBranchLocations}><span className={`truncate font-semibold ${!searchBranchId ? 'font-normal text-slate-400' : ''}`}>{isLoadingBranchLocations ? 'Loading...' : branchLocations?.find(b => b.branch_id === searchBranchId)?.name || 'All Locations'}</span><div className="flex items-center">{searchBranchId && <button onClick={(e) => { e.stopPropagation(); setSearchBranchId(''); }} className="mr-1 rounded-full p-1 text-slate-400 hover:text-slate-600"><X size={16} /></button>}<ChevronDown size={20} className={`text-slate-400 transition-transform ${isLocationDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isLocationDropdownOpen && <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border bg-white shadow-lg dark:border-slate-600 dark:bg-slate-900"><li><button onClick={() => { setSearchBranchId(''); setIsLocationDropdownOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50">All Locations</button></li>{branchLocations?.map(loc => <li key={loc.branch_id}><button onClick={() => { setSearchBranchId(loc.branch_id); setIsLocationDropdownOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50">{loc.name}</button></li>)}</motion.ul>}</AnimatePresence></div>
+              <div ref={statusFilterDropdownRef} className="relative"><button onClick={() => setIsStatusFilterDropdownOpen(p => !p)} className={`${inputBaseClasses} flex items-center justify-between py-2.5 px-4 text-left`}><span className={`truncate font-semibold ${!searchStatus ? 'font-normal text-slate-400' : ''}`}>{searchStatus ? getStatusDisplayName(searchStatus) : 'All Statuses'}</span><div className="flex items-center">{searchStatus && <button onClick={(e) => { e.stopPropagation(); setSearchStatus(''); }} className="mr-1 rounded-full p-1 text-slate-400 hover:text-slate-600"><X size={16} /></button>}<ChevronDown size={20} className={`text-slate-400 transition-transform ${isStatusFilterDropdownOpen ? 'rotate-180' : ''}`} /></div></button><AnimatePresence>{isStatusFilterDropdownOpen && <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border bg-white shadow-lg dark:border-slate-600 dark:bg-slate-900"><li><button onClick={() => { setSearchStatus(''); setIsStatusFilterDropdownOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50">All Statuses</button></li>{APPOINTMENT_STATUS_VALUES.map(status => <li key={status}><button onClick={() => { setSearchStatus(status); setIsStatusFilterDropdownOpen(false); }} className="w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50">{getStatusDisplayName(status)}</button></li>)}</motion.ul>}</AnimatePresence></div>
+              <div className="grid grid-cols-2 gap-2"><div className="relative"><input type="date" title="Date From" value={searchDateFrom} onChange={e => setSearchDateFrom(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} />{searchDateFrom && <button onClick={() => setSearchDateFrom('')} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400"><X size={16} /></button>}</div><div className="relative"><input type="date" title="Date To" value={searchDateTo} onChange={e => setSearchDateTo(e.target.value)} className={`${inputBaseClasses} py-2.5 px-4 pr-8`} min={searchDateFrom || undefined} />{searchDateTo && <button onClick={() => setSearchDateTo('')} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400"><X size={16} /></button>}</div></div>
             </div>
           </div>
-
+          
           <main className="mt-2">
-            {isActuallyLoading ? ( <LoadingIndicator /> ) :
-             displayableError ? ( <ErrorDisplay errorToDisplay={displayableError} onRetry={refetch} /> ) :
-             showNoAppointmentsMessage ? ( <NoAppointmentsMessage isFiltering={isFilteringActive} /> ) : (
-              <div className="overflow-x-auto shadow-lg rounded-lg border border-slate-200 dark:border-slate-700">
-                <table className="min-w-full leading-normal">
-                  <thead className="bg-sky-600 dark:bg-sky-700">
-                    <tr>
-                      {['ID', 'Client', 'Party', 'Date & Time', 'Branch', 'Reason', 'Status', 'Actions'].map(header => (
-                        <th key={header} scope="col" className="px-4 py-3 text-left text-xs font-semibold text-white dark:text-sky-100 uppercase tracking-wider whitespace-nowrap">
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-                    {filteredAppointments.map((appointment, index) => {
-                      const appointmentDateObj = new Date(appointment.appointment_datetime);
-                      const displayDate = !isNaN(appointmentDateObj.getTime()) ? appointmentDateObj.toLocaleDateString() : 'Invalid Date';
-                      const displayTime = !isNaN(appointmentDateObj.getTime()) ? appointmentDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Invalid Time';
-
-                      return (
-                        <tr key={appointment.appointment_id} className={`${index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50/70 dark:bg-slate-900/50'} hover:bg-sky-50 dark:hover:bg-slate-700/60 transition-colors`}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-200">{appointment.appointment_id}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
-                            <div className="flex items-center">
-                                {appointment.client?.profile_picture ? (
-                                    <img src={appointment.client.profile_picture} alt={appointment.client.full_name || 'Client'} className="w-6 h-6 rounded-full mr-2 object-cover" />
-                                ) : ( <ClientLucideIcon className="w-5 h-5 mr-2 text-slate-400" /> )}
-                                {appointment.client?.full_name || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">{appointment.party}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
-                            {displayDate} at {displayTime}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
-                            <div className="flex items-center">
-                                <Briefcase className="w-4 h-4 mr-1.5 text-slate-400" />
-                                {appointment.branch?.name || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 max-w-xs whitespace-nowrap">
-                            <button onClick={() => openReasonModal(appointment.reason, appointment.party, appointment.client?.full_name)} className="flex items-center text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700 text-xs" title="View Full Reason">
-                              <Eye className="h-4 w-4 mr-1 flex-shrink-0" />
-                              <span>{truncateText(appointment.reason, 25)}</span>
-                            </button>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 min-w-[140px]">
-                            <select title="Change Status" value={appointment.status} onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)} className="block text-xs bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-md focus:ring-sky-500 focus:border-sky-500 dark:focus:ring-sky-400 dark:focus:border-sky-400 w-full p-1.5 shadow-sm transition-colors disabled:opacity-70" disabled={isStatusUpdating}>
-                              {APPOINTMENT_STATUS_VALUES.map(statusValue => ( <option key={statusValue} value={statusValue}>{getStatusDisplayName(statusValue)}</option> ))}
-                            </select>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center space-x-2">
-                                <button onClick={() => openEditModal(appointment)} className="text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 transition-colors p-1 rounded-md hover:bg-sky-100 dark:hover:bg-slate-700" title="Edit Appointment"><FilePenLine className="h-5 w-5" /></button>
-                                <button onClick={() => requestDeleteAppointment(appointment)} className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 rounded-md hover:bg-rose-100 dark:hover:bg-slate-700 disabled:opacity-50" disabled={isDeletingAppointment && appointmentToDelete?.appointment_id === appointment.appointment_id} title="Delete Appointment"><Trash2 className="h-5 w-5" /></button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            {isActuallyLoading ? <div className="flex items-center justify-center py-10"><RefreshCcw className="h-8 w-8 animate-spin text-sky-500 mr-3" /> Loading appointments...</div> :
+             isError ? <div className="my-6 rounded-lg border-l-4 border-red-500 bg-red-100 p-4 text-red-800 shadow dark:bg-red-900/30 dark:text-red-300"><div className="flex items-center"><AlertTriangle className="mr-3 h-6 w-6" /><p className="font-semibold">{getErrorMessage(queryError as ApiError)}</p></div><button onClick={refetch} className="mt-3 rounded-md bg-red-200 px-3 py-1 text-sm font-medium hover:bg-red-300 dark:bg-red-800/50 dark:hover:bg-red-800">Try Again</button></div> :
+             showNoAppointmentsMessage ? <div className="my-6 rounded-lg bg-slate-50 p-6 text-center shadow dark:bg-slate-700/50"><CalendarDays className="mx-auto mb-4 h-16 w-16 text-slate-400" /><p className="text-xl font-semibold">{isFilteringActive ? "No appointments match your filters" : NO_APPOINTMENTS_FOUND_MESSAGE}</p><p className="text-sm">{isFilteringActive ? "Try adjusting your search criteria." : "New assignments will appear here."}</p></div> :
+             (<div className="overflow-x-auto rounded-lg border border-slate-200 shadow-lg dark:border-slate-700"><table className="min-w-full leading-normal"><thead className="bg-sky-600 dark:bg-sky-700"><tr>{['ID', 'Client', 'Date & Time', 'Branch', 'Reason', 'Status', 'Actions'].map(header => <th key={header} scope="col" className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-white">{header}</th>)}</tr></thead><tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-700 dark:bg-slate-800">{filteredAppointments.map(appointment => <tr key={appointment.appointment_id} className="hover:bg-sky-50 dark:hover:bg-slate-700/60"><td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-200">{appointment.appointment_id}</td><td className="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-slate-300"><div className="flex items-center"><UserProfileIcon className="mr-2 h-5 w-5 text-slate-400" />{appointment.client?.full_name || 'N/A'}</div></td><td className="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{new Date(appointment.appointment_datetime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td><td className="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-slate-300"><div className="flex items-center"><Briefcase className="mr-1.5 h-4 w-4 text-slate-400" />{appointment.branch?.name || 'N/A'}</div></td><td className="max-w-xs whitespace-nowrap px-4 py-3 text-sm"><button onClick={() => openReasonModal(appointment.reason, appointment.client?.full_name)} className="flex items-center rounded-md p-1 text-xs text-sky-600 hover:text-sky-800 dark:text-sky-400" title="View Reason"><Eye className="mr-1 h-4 w-4 shrink-0" /><span>{truncateText(appointment.reason, 25)}</span></button></td><td className="min-w-[140px] whitespace-nowrap px-4 py-3 text-sm"><select title="Change Status" value={appointment.status} onChange={(e) => handleStatusChange(appointment.appointment_id, e.target.value as AppointmentStatus)} className={`${inputBaseClasses} w-full p-1.5 text-xs`} disabled={isStatusUpdating}>{APPOINTMENT_STATUS_VALUES.map(statusValue => <option key={statusValue} value={statusValue}>{getStatusDisplayName(statusValue)}</option>)}</select></td><td className="whitespace-nowrap px-4 py-3 text-sm font-medium"><div className="flex items-center space-x-2"><button onClick={() => openEditModal(appointment)} className="rounded-md p-1 text-sky-600 hover:text-sky-800 dark:text-sky-400" title="Edit"><FilePenLine className="h-5 w-5" /></button><button onClick={() => requestDeleteAppointment(appointment)} className="rounded-md p-1 text-rose-500 hover:text-rose-700 dark:text-rose-400" title="Delete" disabled={isDeletingAppointment && appointmentToDelete?.appointment_id === appointment.appointment_id}><Trash2 className="h-5 w-5" /></button></div></td></tr>)}</tbody></table></div>)
+            }
           </main>
         </section>
       </div>
 
-      {isCreateModalOpen && ( <CreateAppointment isDarkMode={isDarkMode} onAppointmentCreated={handleAppointmentCreated} onClose={closeCreateModal} /> )}
-      {isEditModalOpen && selectedAppointment && ( <EditAppointment isDarkMode={isDarkMode} appointment={selectedAppointment} onAppointmentUpdated={handleAppointmentUpdated} onClose={closeEditModal} /> )}
-      <ConfirmationModal isOpen={isConfirmDeleteModalOpen} onClose={cancelDeleteAppointment} onConfirm={confirmDeleteAppointment} title="Confirm Deletion" message={ appointmentToDelete ? ( <> Are you sure you want to delete the appointment for <strong className="font-semibold">{appointmentToDelete.client?.full_name || appointmentToDelete.party}</strong> on {new Date(appointmentToDelete.appointment_datetime).toLocaleDateString()} at {new Date(appointmentToDelete.appointment_datetime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}? This action cannot be undone. </> ) : ("Are you sure?") } confirmText="Yes, Delete It" cancelText="No, Keep It" isLoading={isDeletingAppointment} isDarkMode={isDarkMode} />
+      {isCreateModalOpen && <CreateAppointment isDarkMode={isDarkMode} onAppointmentCreated={handleAppointmentCreated} onClose={closeCreateModal} />}
+      {isEditModalOpen && selectedAppointment && <EditAppointment isDarkMode={isDarkMode} appointment={selectedAppointment} onAppointmentUpdated={handleAppointmentUpdated} onClose={closeEditModal} />}
+      <ConfirmationModal isOpen={isConfirmDeleteModalOpen} onClose={cancelDeleteAppointment} onConfirm={confirmDeleteAppointment} title="Confirm Deletion" message={appointmentToDelete ? <>Are you sure you want to delete the appointment for <strong className="font-semibold">{appointmentToDelete.client?.full_name}</strong> on {new Date(appointmentToDelete.appointment_datetime).toLocaleDateString()}?</> : "Are you sure?"} confirmText="Yes, Delete" cancelText="Cancel" isLoading={isDeletingAppointment}  />
       <ReasonDisplayModal isOpen={isReasonModalOpen} onClose={closeReasonModal} reason={reasonToDisplay} partyName={reasonContextName} isDarkMode={isDarkMode} />
     </div>
   );

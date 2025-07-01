@@ -1,100 +1,74 @@
-// src/redux/features/appointments/appointmentAPISlice.ts (or your preferred path)
-
+// src/features/appointments/appointmentsApi.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { APIDomain } from "../../utils/APIDomain"; 
-// ACTION REQUIRED: Make sure this path points to your Redux store configuration
-import type { RootState } from "../../app/store"; 
+import { APIDomain } from "../../utils/APIDomain";
+import type { RootState } from "../../app/store";
 
-// Define User and Branch basic types as returned by the backend
-interface BasicUser {
+// --- Data Type Definitions (Matching the Backend) ---
+
+// A summary of a user, used for clients and assignees
+export interface UserSummary {
   user_id: number;
-  full_name: string | null;
-  email?: string | null;
-  role?: string | null;
-  profile_picture?: string | null;
+  full_name: string;
+  email: string;
 }
 
-interface Branch {
+// The related branch location data
+export interface BranchLocation {
   branch_id: number;
   name: string;
   address: string;
-  contact_phone: string; 
-  created_at: string;    // ISO string
-  updated_at: string;    // ISO string
+  contact_phone: string;
+  // Add other fields from your locationBranchTable schema if they exist
 }
 
-export type AppointmentStatus = "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled" | "no_show";
+// A single assignee's details
+export interface AppointmentAssignee {
+  assignee_user_id: number;
+  assigned_at: string; // Dates are serialized as strings in JSON
+  appointment_id: number;
+  assignee?: UserSummary;
+}
 
-// Define the structure of an Appointment object as returned by the API
-export interface AppointmentDataTypes {
+// The main appointment status enum
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+
+// The full Appointment object, matching the backend's `AppointmentWithDetails`
+export interface Appointment {
   appointment_id: number;
   client_user_id: number;
-  branch_id: number;
-  party: string;
+  location_branch_id: number;
+  appointment_datetime: string; // Dates are serialized as strings in JSON
   reason: string;
-  appointment_datetime: string; // Single ISO string from backend
   status: AppointmentStatus;
-  notes_by_client?: string | null;
-  notes_by_staff?: string | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
-  client?: BasicUser;
-  branch?: Branch;
-  assignees?: Array<{
-    assignee_user_id: number;
-    assigned_at: string;
-    appointment_id: number; 
-    assignee?: BasicUser;
-  }>;
+  deleted_at?: string | null; // For soft deletes
+
+  // Relational data
+  client?: UserSummary;
+  branch?: BranchLocation;
+  assignees?: AppointmentAssignee[];
 }
 
-// Define the payload for creating an appointment
-export interface CreateAppointmentPayload {
-  client_user_id: number;
-  branch_id: number;
-  party: string;
-  reason: string;
-  appointmentDateTimeISO: string; // Frontend sends combined ISO string
+// --- ACTION: Update the arguments interface to include assigneeId ---
+export interface ListAppointmentsArgs {
   status?: AppointmentStatus;
-  notes_by_client?: string;
-  assigneeIds?: number[];
+  branchId?: number;
+  clientId?: number;
+  assigneeId?: number; // <-- ADD THIS PROPERTY
+  dateTimeFrom?: string;
+  dateTimeTo?: string;
 }
 
-// Define the payload for updating an appointment
-export interface UpdateAppointmentPayload {
-  appointment_id: number; // Used in URL, not body
-  branch_id?: number;
-  party?: string;
-  reason?: string;
-  appointmentDateTimeISO?: string; // Optional for updating date/time
-  status?: AppointmentStatus;
-  notes_by_client?: string;
-  notes_by_staff?: string;
-  assigneeIds?: number[];
-}
-
-// Arguments for fetching a list of appointments
-export interface FetchAppointmentsArgs {
-  clientId?: number | string;
-  assigneeId?: number | string;
-  branchId?: number | string;
-  status?: AppointmentStatus;
-  dateTimeFrom?: string; // ISO string for start of date range
-  dateTimeTo?: string;   // ISO string for end of date range
-  limit?: number;
-  offset?: number;
-}
+// --- API Slice Definition ---
 
 export const appointmentAPI = createApi({
-  reducerPath: "appointmentAPI",
-  // ✨ MODIFICATION: Updated baseQuery to automatically add the auth token
+  reducerPath: "appointmentsApi",
   baseQuery: fetchBaseQuery({
     baseUrl: APIDomain,
-    prepareHeaders: (headers, { getState }) => { 
-      // Get the token from the user slice in the Redux store
+    prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).user.token;
-
-      // If the token exists, add it to the authorization header
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -102,150 +76,113 @@ export const appointmentAPI = createApi({
     },
   }),
   refetchOnReconnect: true,
-  tagTypes: ["Appointments"], // Main tag for invalidation
+  tagTypes: ["Appointment"], 
   endpoints: (builder) => ({
-    fetchAppointments: builder.query<AppointmentDataTypes[], FetchAppointmentsArgs | void>({
+    
+    // --- ACTION: Update the query function to handle the new assigneeId property ---
+    listAppointments: builder.query<Appointment[], ListAppointmentsArgs | void>({
       query: (args) => {
         const params = new URLSearchParams();
-        if (args) {
-          if (args.clientId !== undefined) params.append('clientId', String(args.clientId));
-          if (args.assigneeId !== undefined) params.append('assigneeId', String(args.assigneeId));
-          if (args.branchId !== undefined) params.append('branchId', String(args.branchId));
-          if (args.status) params.append('status', args.status);
-          if (args.dateTimeFrom) params.append('dateTimeFrom', args.dateTimeFrom);
-          if (args.dateTimeTo) params.append('dateTimeTo', args.dateTimeTo);
-          if (args.limit !== undefined) params.append('limit', String(args.limit));
-          if (args.offset !== undefined) params.append('offset', String(args.offset));
+
+        if (args?.status) {
+          params.append('status', args.status);
         }
-        return `appointments?${params.toString()}`;
+        if (args?.branchId) {
+          params.append('branchId', args.branchId.toString());
+        }
+        if (args?.clientId) {
+          params.append('clientId', args.clientId.toString());
+        }
+        // This is the new logic that enables filtering by assignee
+        if (args?.assigneeId) {
+          params.append('assigneeId', args.assigneeId.toString());
+        }
+        if (args?.dateTimeFrom) {
+          params.append('dateTimeFrom', args.dateTimeFrom);
+        }
+        if (args?.dateTimeTo) {
+          params.append('dateTimeTo', args.dateTimeTo);
+        }
+        
+        const queryString = params.toString();
+        return `appointments${queryString ? `?${queryString}` : ''}`;
       },
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ appointment_id }) => ({ type: "Appointments" as const, id: appointment_id })),
-              { type: "Appointments", id: 'LIST' },
+              ...result.map(({ appointment_id }) => ({ type: 'Appointment' as const, id: appointment_id })),
+              { type: 'Appointment', id: 'LIST' },
             ]
-          : [{ type: "Appointments", id: 'LIST' }],
+          : [{ type: 'Appointment', id: 'LIST' }],
     }),
 
-    getAppointmentById: builder.query<AppointmentDataTypes, number>({
-      query: (appointment_id) => `appointments/${appointment_id}`,
-      providesTags: (_result, _error, appointment_id) =>
-        _result ? [{ type: "Appointments", id: appointment_id }] : [],
+    // Corresponds to `appointmentService.getAppointmentById`
+    getAppointmentById: builder.query<Appointment, number>({
+      query: (id) => `appointments/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Appointment", id }],
     }),
 
-    fetchAppointmentsByClient: builder.query<AppointmentDataTypes[], { clientId: number | string; queryParams?: Omit<FetchAppointmentsArgs, 'clientId'> }>({
-        query: ({ clientId, queryParams }) => {
-            const params = new URLSearchParams();
-            if(queryParams){
-                if (queryParams.status) params.append('status', queryParams.status);
-                if (queryParams.dateTimeFrom) params.append('dateTimeFrom', queryParams.dateTimeFrom);
-                if (queryParams.dateTimeTo) params.append('dateTimeTo', queryParams.dateTimeTo);
-                if (queryParams.limit !== undefined) params.append('limit', String(queryParams.limit));
-                if (queryParams.offset !== undefined) params.append('offset', String(queryParams.offset));
-            }
-            return `appointments/client/${clientId}?${params.toString()}`;
-        },
-        providesTags: (result, _error, { clientId }) =>
-            result
-            ? [
-                ...result.map(({ appointment_id }) => ({ type: "Appointments" as const, id: appointment_id })),
-                { type: "Appointments", id: `CLIENT-${clientId}` },
-                { type: "Appointments", id: 'LIST' },
-                ]
-            : [{ type: "Appointments", id: `CLIENT-${clientId}` }, { type: "Appointments", id: 'LIST' }],
-    }),
-
-    fetchAppointmentsByAssignee: builder.query<AppointmentDataTypes[], { assigneeId: number | string; queryParams?: Omit<FetchAppointmentsArgs, 'assigneeId'> }>({
-        query: ({ assigneeId, queryParams }) => {
-            const params = new URLSearchParams();
-             if(queryParams){
-                if (queryParams.status) params.append('status', queryParams.status);
-                if (queryParams.dateTimeFrom) params.append('dateTimeFrom', queryParams.dateTimeFrom);
-                if (queryParams.dateTimeTo) params.append('dateTimeTo', queryParams.dateTimeTo);
-                if (queryParams.limit !== undefined) params.append('limit', String(queryParams.limit));
-                if (queryParams.offset !== undefined) params.append('offset', String(queryParams.offset));
-            }
-            return `appointments/assignee/${assigneeId}?${params.toString()}`;
-        },
-        providesTags: (result, _error, { assigneeId }) =>
-            result
-            ? [
-                ...result.map(({ appointment_id }) => ({ type: "Appointments"as const, id: appointment_id })),
-                { type: "Appointments", id: `ASSIGNEE-${assigneeId}` },
-                { type: "Appointments", id: 'LIST' },
-                ]
-            : [{ type: "Appointments", id: `ASSIGNEE-${assigneeId}` }, { type: "Appointments", id: 'LIST' }],
-    }),
-
-    fetchAppointmentsByBranch: builder.query<AppointmentDataTypes[], { branchId: number | string; queryParams?: Omit<FetchAppointmentsArgs, 'branchId'> }>({
-        query: ({ branchId, queryParams }) => {
-            const params = new URLSearchParams();
-             if(queryParams){
-                if (queryParams.status) params.append('status', queryParams.status);
-                if (queryParams.dateTimeFrom) params.append('dateTimeFrom', queryParams.dateTimeFrom);
-                if (queryParams.dateTimeTo) params.append('dateTimeTo', queryParams.dateTimeTo);
-                if (queryParams.clientId !== undefined) params.append('clientId', String(queryParams.clientId));
-                if (queryParams.assigneeId !== undefined) params.append('assigneeId', String(queryParams.assigneeId));
-                if (queryParams.limit !== undefined) params.append('limit', String(queryParams.limit));
-                if (queryParams.offset !== undefined) params.append('offset', String(queryParams.offset));
-            }
-            return `appointments/branch/${branchId}?${params.toString()}`;
-        },
-        providesTags: (result, _error, { branchId }) =>
-            result
-            ? [
-                ...result.map(({ appointment_id }) => ({ type: "Appointments"as const, id: appointment_id })),
-                { type: "Appointments", id: `BRANCH-${branchId}` },
-                { type: "Appointments", id: 'LIST' },
-                ]
-            : [{ type: "Appointments", id: `BRANCH-${branchId}` }, { type: "Appointments", id: 'LIST' }],
-    }),
-
-    createAppointment: builder.mutation<AppointmentDataTypes, CreateAppointmentPayload>({
-      query: (newAppointmentPayload) => ({
+    // Corresponds to `appointmentService.createAppointment`
+    createAppointment: builder.mutation<
+      Appointment,
+      {
+        appointmentData: Omit<Appointment, 'appointment_id' | 'created_at' | 'updated_at' | 'deleted_at' | 'client' | 'branch' | 'assignees'>;
+        assigneeIds: number[];
+      }
+    >({
+      query: (newAppointment) => ({
         url: "appointments",
         method: "POST",
-        body: newAppointmentPayload,
+        body: newAppointment,
       }),
-      invalidatesTags: (_result, _error, args) => [
-        { type: "Appointments", id: 'LIST' },
-        { type: "Appointments", id: `CLIENT-${args.client_user_id}` },
+      invalidatesTags: [{ type: "Appointment", id: "LIST" }],
+    }),
+
+    // Corresponds to `appointmentService.updateAppointment`
+    updateAppointment: builder.mutation<
+      Appointment,
+      {
+        appointment_id: number;
+        updates: Partial<Omit<Appointment, 'appointment_id' | 'created_at' | 'client_user_id' | 'deleted_at'>>;
+        newAssigneeIds?: number[];
+      }
+    >({
+      query: ({ appointment_id, ...body }) => ({
+        url: `appointments/${appointment_id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { appointment_id }) => [
+        { type: "Appointment", id: appointment_id },
+        { type: "Appointment", id: "LIST" },
       ],
     }),
 
-    updateAppointment: builder.mutation<AppointmentDataTypes, UpdateAppointmentPayload>({
-      query: ({ appointment_id, ...payload }) => ({
-        url: `appointments/${appointment_id}`,
-        method: "PUT",
-        body: payload,
-      }),
-      invalidatesTags: (result, _error, { appointment_id }) => [
-          { type: "Appointments", id: appointment_id },
-          { type: "Appointments", id: 'LIST' },
-          ...(result ? [{ type: "Appointments" as const, id: `CLIENT-${result.client_user_id}` }] : []),
-        ],
-    }),
-
-    deleteAppointment: builder.mutation<{ message: string; success?: boolean }, number>({
-      query: (appointment_id) => ({
-        url: `appointments/${appointment_id}`,
+    // Corresponds to `appointmentService.softDeleteAppointment`
+    deleteAppointment: builder.mutation<
+      { success: boolean; id: number },
+      number
+    >({
+      query: (id) => ({
+        url: `appointments/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, appointment_id) => [
-          { type: "Appointments", id: appointment_id },
-          { type: "Appointments", id: 'LIST' },
-        ],
+      transformResponse: (response: { success: boolean }, _meta, arg: number) => ({
+          ...response,
+          id: arg,
+      }),
+      invalidatesTags: (_result, _error, id) => [
+          { type: "Appointment", id },
+          { type: "Appointment", id: "LIST" },
+      ],
     }),
   }),
 });
 
+// Export hooks for usage in components
 export const {
-  useFetchAppointmentsQuery,
+  useListAppointmentsQuery,
   useGetAppointmentByIdQuery,
-  useFetchAppointmentsByClientQuery,
-  useFetchAppointmentsByAssigneeQuery,
-  useFetchAppointmentsByBranchQuery,
   useCreateAppointmentMutation,
   useUpdateAppointmentMutation,
   useDeleteAppointmentMutation,

@@ -3,7 +3,7 @@ import {
   useCreateBranchLocationMutation,
 } from '../../../../features/branchlocation/branchlocationapi'; 
 import { toast } from 'sonner'; 
-import { motion } from 'framer-motion';
+import { motion, easeOut, easeIn } from 'framer-motion';
 import { X, Building, MapPin, Phone, Briefcase } from 'lucide-react';
 
 interface BranchLocationDataTypes {
@@ -103,8 +103,8 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.9 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: "easeIn" } },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: easeOut } },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: easeIn } },
   };
 
   const backdropVariants = {
