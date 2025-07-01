@@ -32,7 +32,7 @@ import PrivacyPolicyPage from './pages/privacypolicy.tsx';
 import CookiePolicyPage from './pages/cookies.tsx';
 
 // Authentication & Account
-import ResetPasswordForm from './components/resetpass.tsx';
+//import ResetPasswordForm from './components/resetpass.tsx';
 import { RequestPasswordResetForm } from './components/resetpassrequest.tsx';
 import Logout from './components/logout/logout.tsx';
 
@@ -67,6 +67,7 @@ import ClientAppointments from './pages/dashboard/main/manageAppointment/clients
 import ChatPage from './pages/ChatPage.tsx';
 import NotificationsPage from './features/notifications/components/NotificationsPage.tsx';
 import GeneralPaymentPortal from './pages/dashboard/main/Payments/generalpayments.tsx';
+import ResetPasswordPage from './pages/resetpasswordpage.tsx';
 
 // --- Router Definition ---
 const router = createBrowserRouter([
@@ -79,7 +80,7 @@ const router = createBrowserRouter([
   { path: 'services', element: <Services />, errorElement: <Error /> },
   { path: 'about', element: <About />, errorElement: <Error /> },
   { path: 'forgot-password', element: <RequestPasswordResetForm />, errorElement: <Error /> },
-  { path: 'reset-password', element: <ResetPasswordForm token="someToken" mode="reset" />, errorElement: <Error /> },
+  { path: 'reset-password', element: <ResetPasswordPage />, errorElement: <Error /> },
   { path: 'privacy-policy', element: <PrivacyPolicyPage />, errorElement: <Error /> },
   { path: 'terms', element: <TermsAndServicesPage />, errorElement: <Error /> },
   { path: 'cookies', element: <CookiePolicyPage />, errorElement: <Error /> },

@@ -1,4 +1,6 @@
-// src/components/auth/ResetPasswordForm.tsx
+// This file is correct. It is now being used by `ResetPasswordPage.tsx`
+// which extracts the token from the URL and passes it here.
+
 import React, { useState, FormEvent, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useResetPasswordMutation, useChangePasswordMutation } from '../features/users/usersAPI';
