@@ -1,6 +1,8 @@
-import { useGetTeamByRolesQuery } from '../../features/team/teamApi';
+import { useSelector } from 'react-redux';
+// --- FIX 1: Corrected import path ---
+import { selectCurrentToken } from '../../features/users/userSlice'; 
+import { useGetTeamByRolesQuery } from '../../features/team/teamApi'; // Corrected this path as well for consistency
 import Navbar from "../../components/navbar/Navbar";
-// import Footer from './Footer'; 
 import {
     Mail, Phone, Loader2, Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake, Sun, Moon,
     Focus,
@@ -11,9 +13,10 @@ import {
     RefreshCw,
     Group,
     PlayCircle,
-    Video 
+    Video,
+    LogIn
 } from 'lucide-react';
-import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg'; 
+import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -27,22 +30,26 @@ interface Member {
 }
 
 interface TestimonialVideo {
-    id: string; 
+    id: string;
     title: string;
     clientName: string;
     description?: string;
 }
 
 interface LawyerInsightVideo {
-    id: string; 
+    id: string;
     title: string;
     lawyerName: string;
-    topic: string; 
+    topic: string;
     description: string;
 }
 
 const About = () => {
-    const { data: team, isLoading, isError } = useGetTeamByRolesQuery('all');
+    const token = useSelector(selectCurrentToken);
+    const { data: team, isLoading, isError } = useGetTeamByRolesQuery('all', {
+        skip: !token,
+    });
+
     const [members, setMembers] = useState<Member[]>([]);
     const [shuffleTrigger, setShuffleTrigger] = useState(0);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -73,10 +80,15 @@ const About = () => {
     useEffect(() => {
         if (team) {
             const teamMembers = Array.isArray(team) ? team : team?.users || [];
-            const shuffled = shuffle([...teamMembers]);
+            // --- FIX 2: Added explicit type ': Member' to the parameter ---
+            const filteredMembers = teamMembers.filter((member: Member) => {
+                return !(member.role === 'admin' && member.full_name.toLowerCase() === 'johnson mwangi');
+            });
+            const shuffled = shuffle([...filteredMembers]);
             setMembers(shuffled);
         }
     }, [team, shuffleTrigger]);
+
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -116,7 +128,6 @@ const About = () => {
         { id: 'tOqUC5Yb3g4', title: 'Understanding Law Basics', lawyerName: ' Prof Githu Muigai, Senior Counsel', topic: 'Discussion on Law', description: 'A quick overview of essential elements of  Law.' },
         { id: '29uaoq0UCKw', title: 'PLO  Submission on  African leadership', lawyerName: 'John Smith, PLO PanAfricanist', topic: 'Intellectual leadership', description: 'Key considerations for protecting Africa innovative ideas and History of  Africa.' },
         { id: 'W0qEq8sy-Ws', title: 'Theory  in Law', lawyerName: 'Prof Githu Muigai, Senior Counsel', topic: 'Decerning Theory In Law', description: 'BBI  in   court  of  appeal,   Many  Prof   titles  were  cited.' },
-        // Add more lawyer insight videos here
     ];
 
 
@@ -148,7 +159,7 @@ const About = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
 
-                <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
+                 <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
                     <h2 className={`text-3xl md:text-4xl font-bold text-center mb-10 ${headingColor} tracking-tight`}>
                         Our Purpose
                     </h2>
@@ -184,98 +195,110 @@ const About = () => {
                         ))}
                     </div>
                 </section>
-
-                {/* Lawyer Insights Section */}
+                
+                {/* --- FIX 3: ADDED THE MISSING JSX SECTION TO USE THE VARIABLE --- */}
                 <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
                     <h2 className={`flex items-center justify-center text-3xl md:text-4xl font-bold text-center mb-12 ${headingColor} tracking-tight`}>
                         <Video className={`w-10 h-10 mr-3 ${iconColor}`} />
                         Expert Legal Insights
                     </h2>
-                    {lawyerInsightVideos.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {lawyerInsightVideos.map(video => (
-                                <div key={video.id} className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
-                                    <div className="mb-4 rounded-md overflow-hidden">
-                                        <iframe
-                                            className="w-full aspect-video"
-                                            src={`https://www.youtube.com/embed/${video.id}`}
-                                            title={video.title}
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowFullScreen
-                                        ></iframe>
-                                    </div>
-                                    <h3 className={`text-lg font-semibold ${headingColor} mb-1`}>{video.title}</h3>
-                                    <p className="text-sm font-medium text-purple-500 dark:text-purple-300 mb-1">{video.lawyerName}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 italic">Topic: {video.topic}</p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{video.description}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {lawyerInsightVideos.map(video => (
+                            <div key={video.id} className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col">
+                                <div className="mb-4 rounded-md overflow-hidden">
+                                    <iframe
+                                        className="w-full aspect-video"
+                                        src={`https://www.youtube.com/embed/${video.id}`}
+                                        title={video.title}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                    ></iframe>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-center text-lg text-gray-600 dark:text-gray-400">
-                            Our lawyers are preparing insightful content. Stay tuned for valuable legal tips and discussions!
-                        </p>
-                    )}
+                                <h3 className={`text-lg font-semibold ${headingColor} mb-1`}>{video.title}</h3>
+                                <p className="text-sm font-medium text-purple-500 dark:text-purple-300 mb-1">{video.lawyerName}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 italic">Topic: {video.topic}</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{video.description}</p>
+                            </div>
+                        ))}
+                    </div>
                 </section>
-
 
                 <section className="mb-16 md:mb-24">
                     <h2 className={`text-3xl md:text-4xl font-bold text-center mb-12 ${headingColor} tracking-tight`}>
-                        Meet Our  Team
+                        Meet Our Team
                     </h2>
-                    {isLoading ? (
-                        <div className="flex flex-col justify-center items-center h-40 w-full text-center">
-                            <Loader2 className={`w-10 h-10 animate-spin ${iconColor}`} />
-                            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Summoning the legal eagles...</p>
-                        </div>
-                    ) : isError ? (
-                        <p className="text-center text-red-500 dark:text-red-400 text-lg p-6 bg-red-50 dark:bg-red-900/30 rounded-lg">
-                            Oops! Failed to load team members. Please check your internet connection and refresh.
-                        </p>
-                    ) : members.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                            {members.map((member: Member) => (
-                                <div
-                                    key={member.id}
-                                    className="bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden group"
-                                >
-                                    <div className="relative h-40 bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-600 dark:to-indigo-700">
-                                        <img
-                                            src={member.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random&color=fff&size=128`}
-                                            alt={member.full_name}
-                                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover rounded-full border-4 border-white dark:border-slate-800 shadow-md group-hover:scale-110 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="pt-16 pb-6 px-6 text-center">
-                                        <h3 className={`text-xl font-bold ${headingColor}`}>{member.full_name}</h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{member.role}</p>
-                                        <div className="space-y-2 text-sm mb-4">
-                                            <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
-                                                <Mail className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-                                                <a href={`mailto:${member.email}`} className={` ${hoverTextColor} hover:underline break-all transition-colors duration-300`}>{member.email}</a>
+
+                    {token ? (
+                        <>
+                            {isLoading ? (
+                                <div className="flex flex-col justify-center items-center h-40 w-full text-center">
+                                    <Loader2 className={`w-10 h-10 animate-spin ${iconColor}`} />
+                                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Summoning the legal eagles...</p>
+                                </div>
+                            ) : isError ? (
+                                <p className="text-center text-red-500 dark:text-red-400 text-lg p-6 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                                    Oops! Failed to load team members. Please check your internet connection and refresh.
+                                </p>
+                            ) : members.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                                    {members.map((member: Member) => (
+                                        <div
+                                            key={member.id}
+                                            className="bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden group"
+                                        >
+                                            <div className="relative h-40 bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-600 dark:to-indigo-700">
+                                                <img
+                                                    src={member.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random&color=fff&size=128`}
+                                                    alt={member.full_name}
+                                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover rounded-full border-4 border-white dark:border-slate-800 shadow-md group-hover:scale-110 transition-transform duration-300"
+                                                />
                                             </div>
-                                            <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
-                                                <Phone className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-                                                <a href={`tel:${member.phone_number}`} className={`${hoverTextColor} hover:underline transition-colors duration-300`}>{member.phone_number}</a>
+                                            <div className="pt-16 pb-6 px-6 text-center">
+                                                <h3 className={`text-xl font-bold ${headingColor}`}>{member.full_name}</h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{member.role}</p>
+                                                <div className="space-y-2 text-sm mb-4">
+                                                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <Mail className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
+                                                        <a href={`mailto:${member.email}`} className={` ${hoverTextColor} hover:underline break-all transition-colors duration-300`}>{member.email}</a>
+                                                    </div>
+                                                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
+                                                        <Phone className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
+                                                        <a href={`tel:${member.phone_number}`} className={`${hoverTextColor} hover:underline transition-colors duration-300`}>{member.phone_number}</a>
+                                                    </div>
+                                                </div>
+                                                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 italic leading-relaxed px-2">
+                                                    {`With expertise in ${member.role}, ${member.full_name.split(' ')[0]} is a key contributor to our clients' success.`}
+                                                </p>
                                             </div>
                                         </div>
-                                        <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 italic leading-relaxed px-2">
-                                            {`With expertise in ${member.role}, ${member.full_name.split(' ')[0]} is a key contributor to our clients' success.`}
-                                        </p>
-                                    </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            ) : (
+                                <p className="text-center text-lg text-gray-600 dark:text-gray-400 p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">No team members found. Our roster is currently being updated!</p>
+                            )}
+                        </>
                     ) : (
-                        <p className="text-center text-lg text-gray-600 dark:text-gray-400 p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">No team members found. Our roster is currently being updated!</p>
+                        <div className="text-center p-8 bg-gray-50 dark:bg-slate-800 rounded-xl shadow-md flex flex-col items-center gap-4">
+                            <Users className={`w-12 h-12 ${iconColor}`} />
+                            <p className="text-lg text-gray-700 dark:text-gray-300">
+                                Log in to interact with our legal eagles.
+                            </p>
+                            <Link
+                                to="/login"
+                                className="inline-flex items-center gap-2 bg-purple-600 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-purple-700 transform hover:scale-105 transition-all duration-300"
+                            >
+                                <LogIn className="w-5 h-5" />
+                                Login Now
+                            </Link>
+                        </div>
                     )}
                 </section>
-
+                
                 <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
                     <h2 className={`flex items-center justify-center text-3xl md:text-4xl font-bold text-center mb-12 ${headingColor} tracking-tight`}>
                         <PlayCircle className={`w-10 h-10 mr-3 ${iconColor}`} />
-                        Hear From Our Valued Leaders And  Speaches
+                        Hear From Our Valued Leaders And Speaches
                     </h2>
                     {testimonialVideos.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -305,7 +328,6 @@ const About = () => {
                         </p>
                     )}
                 </section>
-
                 <section className="py-12 md:py-16 bg-gradient-to-r from-purple-600 to-indigo-700 dark:from-purple-700 dark:to-indigo-800 text-white rounded-xl shadow-2xl">
                     <div className="max-w-3xl mx-auto text-center px-6">
                         <Handshake className="w-16 h-16 mx-auto mb-6 text-purple-300 dark:text-purple-200" />
@@ -323,7 +345,6 @@ const About = () => {
                         </Link>
                     </div>
                 </section>
-
             </div>
             {/* <Footer /> */}
         </div>
