@@ -1,7 +1,7 @@
 // src/components/AppointmentStatusReport.tsx
 
 import { useEffect, useState } from 'react';
-import { appointmentAPI, AppointmentDataTypes } from '../../../../features/appointment/appointmentapi';
+import { appointmentAPI} from '../../../../features/appointment/appointmentapi';
 import {
     PieChart, Pie, Cell, Tooltip as RechartsTooltip, BarChart, Bar,
     XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LineChart, Line
@@ -10,6 +10,22 @@ import {
     ClipboardCheck, ClipboardX, CalendarClock, Ban, CheckCircle, Hourglass, 
     AlertTriangle, Info
 } from 'lucide-react';
+
+//appointment data types
+// type AppointmentDataTypes = {
+//     appointment_id: number;
+//     client: {
+//         full_name: string;
+//         email: string;
+//     };
+//     appointment_datetime: string;
+//     status: string;
+//     reason?: string;
+//     assignee?: {
+//         full_name: string;
+//         email: string;
+//     };
+// };
 
 // --- THEME & COLOR CONFIGURATION ---
 
@@ -81,7 +97,7 @@ const SkeletonLoader = () => (
 
 const AppointmentStatusReport = () => {
     const theme = useTheme();
-    const { data: appointmentsData = [], isLoading, isError, error, refetch } = appointmentAPI.useFetchAppointmentsQuery(undefined, {
+    const { data: appointmentsData = [], isLoading, isError, error, refetch } = appointmentAPI.useListAppointmentsQuery(undefined, {
         refetchOnMountOrArgChange: true,
     });
 
@@ -105,7 +121,7 @@ const AppointmentStatusReport = () => {
     // Process data when it arrives
     useEffect(() => {
         if (!isLoading && appointmentsData.length > 0) {
-            const statusCounts = appointmentsData.reduce((acc, appointment: AppointmentDataTypes) => {
+            const statusCounts = appointmentsData.reduce((acc: Record<string, number>, appointment: typeof appointmentsData[number]) => {
                 const status = appointment.status || 'Unknown';
                 acc[status] = (acc[status] || 0) + 1;
                 return acc;
