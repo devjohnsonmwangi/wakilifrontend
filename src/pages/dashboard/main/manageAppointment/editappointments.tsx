@@ -74,11 +74,14 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
   // Effect to populate form when appointment prop changes
   useEffect(() => {
     if (appointment) {
-        setLocationBranchId(appointment.location_branch_id.toString());
+        // --- FIX APPLIED HERE ---
+        // Safely access location_branch_id and provide a default empty string if it's null or undefined.
+        setLocationBranchId(appointment.location_branch_id?.toString() ?? '');
+
         setAppointmentDateTime(formatDateForInput(appointment.appointment_datetime));
         setAssigneeIds(appointment.assignees?.map(a => a.assignee_user_id) || []);
         setReason(appointment.reason || '');
-        setStatus(appointment.status);
+        setStatus(appointment.status ?? 'pending'); // Added safety for status as well
         setNotes(appointment.notes || '');
     }
   }, [appointment]);
