@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-// --- ACTION: Removed 'ChevronDown' as it is unused ---
 import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as UserIcon, Search } from 'lucide-react';
 
+// --- ACTION: Import the specific payload type to enforce the contract ---
 import {
     useCreateAppointmentMutation,
-    Appointment,
+    CreateAppointmentPayload, // Import the payload type
     BranchLocation,
+     // Import the status type itself
 } from '../../../../features/appointment/appointmentapi';
 import { useFetchBranchLocationsQuery } from '../../../../features/branchlocation/branchlocationapi';
 import { useFetchUsersQuery, UserDataTypes } from '../../../../features/users/usersAPI';
@@ -21,7 +22,6 @@ interface CreateAppointmentProps {
     onClose: () => void;
 }
 
-// --- ACTION: Added a proper props interface for the SearchableDropdown helper ---
 interface SearchableDropdownProps<T> {
     label: string;
     Icon: React.ElementType;
@@ -77,6 +77,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
     const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
     const [appointmentDate, setAppointmentDate] = useState('');
     const [appointmentTime, setAppointmentTime] = useState('');
+    const [party, setParty] = useState('');
     const [reason, setReason] = useState('');
     const [notes, setNotes] = useState('');
     const [formError, setFormError] = useState<string | null>(null);
@@ -120,8 +121,8 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
         e.preventDefault();
         setFormError(null);
 
-        if (!locationBranchId || !clientUserId || !appointmentDate || !appointmentTime || !reason) {
-            const msg = "Please fill in all required fields: Branch, Client, Date, Time, and Reason.";
+        if (!locationBranchId || !clientUserId || !appointmentDate || !appointmentTime || !party || !reason) {
+            const msg = "Please fill in all required fields: Branch, Client, Party, Date, Time, and Reason.";
             setFormError(msg);
             toast.error(msg);
             return;
@@ -130,16 +131,19 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
         try {
             const appointment_datetime = new Date(`${appointmentDate}T${appointmentTime}`).toISOString();
             
-            const appointmentData: Omit<Appointment, 'appointment_id' | 'created_at' | 'updated_at' | 'deleted_at' | 'client' | 'branch' | 'assignees'> = {
+            // <<< CORRECTED: Explicitly type the payload object to ensure full compliance with the API contract.
+            const finalPayload: CreateAppointmentPayload = {
                 client_user_id: Number(clientUserId),
-                location_branch_id: Number(locationBranchId),
-                appointment_datetime,
+                branch_id: Number(locationBranchId),
+                party: party.trim(),
                 reason: reason.trim(),
-                status: 'pending',
-                notes: notes.trim() || null,
+                appointment_datetime,
+                status: 'pending', // Now TypeScript knows this 'pending' is of type AppointmentStatus
+                notes_by_client: notes.trim() || null,
+                assigneeIds: assigneeIds,
             };
 
-            await createAppointment({ appointmentData, assigneeIds }).unwrap();
+            await createAppointment(finalPayload).unwrap();
 
             toast.success('Appointment created successfully!');
             onAppointmentCreated?.();
@@ -158,7 +162,6 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
     const inputBaseClasses = `w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition-shadow text-sm disabled:opacity-70`;
     const labelBaseClasses = "flex items-center text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5";
     
-    // --- ACTION: Typed the helper function's props using the new interface ---
     const SearchableDropdown = <T,>({ label, Icon, value, setValue, setSelectedId, setOpen, isOpen, dropdownRef, filteredItems, renderItem, placeholder, disabled, required }: SearchableDropdownProps<T>) => (
         <div ref={dropdownRef} className="relative">
             <label className={labelBaseClasses}><Icon size={16} className="mr-2" /> {label} {required && '*'}</label>
@@ -179,12 +182,29 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
                         (<motion.form key="form" onSubmit={handleSubmit} className="space-y-4">
                             <SearchableDropdown<BranchLocation> label="Branch" Icon={MapPin} value={branchSearch} setValue={setBranchSearch} setSelectedId={setLocationBranchId} setOpen={setIsBranchDropdownOpen} isOpen={isBranchDropdownOpen} dropdownRef={branchDropdownRef} filteredItems={filteredBranches} renderItem={(b) => <li key={b.branch_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectBranch(b)}>{b.name}</button></li>} placeholder="Search for a branch..." disabled={!!forBranchId} required={true} />
                             <SearchableDropdown<UserDataTypes> label="Client" Icon={UserIcon} value={clientSearch} setValue={setClientSearch} setSelectedId={setClientUserId} setOpen={setIsClientDropdownOpen} isOpen={isClientDropdownOpen} dropdownRef={clientDropdownRef} filteredItems={filteredClients} renderItem={(u) => <li key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectClient(u)}>{u.full_name}</button></li>} placeholder="Search for a client..." disabled={!!preselectedClientId} required={true} />
+                            
+                            <div>
+                                <label htmlFor="party" className={labelBaseClasses}>
+                                    <Users size={16} className="mr-2" /> Party Name *
+                                </label>
+                                <input
+                                    id="party"
+                                    type="text"
+                                    className={inputBaseClasses}
+                                    value={party}
+                                    onChange={(e) => setParty(e.target.value)}
+                                    placeholder="e.g., John Doe vs. ABC Corp"
+                                    required
+                                />
+                            </div>
+
                             <SearchableDropdown<UserDataTypes> label="Assign To (Staff)" Icon={UserCheck} value={staffSearch} setValue={setStaffSearch} setSelectedId={(id) => setAssigneeIds(id ? [id] : [])} setOpen={setIsStaffDropdownOpen} isOpen={isStaffDropdownOpen} dropdownRef={staffDropdownRef} filteredItems={filteredStaff} renderItem={(u) => <li key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectStaff(u)}>{u.full_name}</button></li>} placeholder="Search for staff..." required={false} disabled={false} />
+                            
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label htmlFor="appointmentDate" className={labelBaseClasses}><CalendarPlus size={16} className="mr-2" /> Date *</label><input type="date" id="appointmentDate" className={inputBaseClasses} value={appointmentDate} min={new Date().toISOString().split('T')[0]} onChange={(e) => setAppointmentDate(e.target.value)} required /></div>
                                 <div><label htmlFor="appointmentTime" className={labelBaseClasses}><Clock size={16} className="mr-2" /> Time *</label><select id="appointmentTime" className={inputBaseClasses} value={appointmentTime} onChange={(e) => setAppointmentTime(e.target.value)} required><option value="" disabled>Select time</option>{TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}</select></div>
                             </div>
-                            <div><label htmlFor="reason" className={labelBaseClasses}><MessageSquare size={16} className="mr-2" /> Reason / Case Name *</label><textarea id="reason" className={`${inputBaseClasses} resize-y min-h-[70px]`} value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g., Initial Consultation for John Doe vs. ABC Corp" required /></div>
+                            <div><label htmlFor="reason" className={labelBaseClasses}><MessageSquare size={16} className="mr-2" /> Reason / Subject *</label><textarea id="reason" className={`${inputBaseClasses} resize-y min-h-[70px]`} value={reason} onChange={(e) => setReason(e.target.value)} rows={2} placeholder="e.g., Initial Consultation" required /></div>
                             <div><label htmlFor="notes" className={labelBaseClasses}><Users size={16} className="mr-2" /> Notes (Optional)</label><textarea id="notes" className={`${inputBaseClasses} resize-y min-h-[70px]`} value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Any additional details or internal notes..." /></div>
                             {formError && <p className="text-xs text-center text-red-500 dark:text-red-400 flex items-center justify-center"><AlertCircle size={14} className="mr-1.5" />{formError}</p>}
                             <div className="pt-2 flex flex-col-reverse sm:flex-row-reverse gap-3">

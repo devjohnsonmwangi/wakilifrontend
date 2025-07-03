@@ -124,7 +124,7 @@ const UserAppointments: React.FC = () => {
 
   const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
     try {
-      await updateAppointment({ appointment_id: appointmentId, updates: { status: newStatus } }).unwrap();
+      await updateAppointment({ id: appointmentId, payload: { status: newStatus } }).unwrap();
       toast.success(`Status updated to ${getStatusDisplayName(newStatus)}!`);
     } catch (err) { toast.error(`Failed to update status: ${getErrorMessage(err as ApiError)}`); }
   };

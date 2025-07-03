@@ -181,8 +181,8 @@ const ListAppointments: React.FC = () => {
     try {
       // ACTION: Updated mutation payload to match the new API slice structure
       await updateAppointment({ 
-        appointment_id: appointmentId, 
-        updates: { status: newStatus } 
+        id: appointmentId, 
+        payload: { status: newStatus } 
       }).unwrap();
       toast.success(`Appointment status updated to ${getStatusDisplayName(newStatus)}!`);
     } catch (err) {
