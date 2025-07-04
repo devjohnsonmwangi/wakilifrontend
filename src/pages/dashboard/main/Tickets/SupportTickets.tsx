@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Link } from "react-router-dom"; // Restored for breadcrumbs
 import { TicketAPI, TypeTickets } from "../../../../features/Tickets/AllTickets";
-import { logAPI } from "../../../../features/log/logsapi";
+//import { logAPI } from "../../../../features/log/logsapi";
 import { RootState } from "../../../../app/store";
 import AnimatedLoader from "../../../../components/AnimatedLoader"; // Restored for loading screen
 import { useSelector } from "react-redux";
@@ -136,7 +136,7 @@ const AllTicket = () => {
     const [updateTicket] = TicketAPI.useUpdateTicketMutation();
     const { user } = useSelector((state: RootState) => state.user);
     const user_id = user?.user_id;
-    const [addLog] = logAPI.useCreateLogMutation();
+   // const [addLog] = logAPI.useCreateLogMutation();
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error' | 'loading' | null>(null);
     const [loadingTicketId, setLoadingTicketId] = useState<number | null>(null);
@@ -152,7 +152,7 @@ const AllTicket = () => {
     useEffect(() => { const handleClickOutside = (event: MouseEvent) => { if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) setIsStatusDropdownOpen(false); }; document.addEventListener('mousedown', handleClickOutside); return () => document.removeEventListener('mousedown', handleClickOutside); }, []);
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'loading', duration: number = 3000) => { setToastMessage(message); setToastType(type); if (type !== 'loading') { const timer = setTimeout(() => { setToastMessage(null); setToastType(null); }, duration); return () => clearTimeout(timer); } }, []);
     useEffect(() => { if (isError && allUserTickets && allUserTickets.length > 0 && !isLoading) showToast('⚠️ Could not refresh ticket data.', 'error', 5000); }, [isError, allUserTickets, isLoading, showToast]);
-    const handleUpdateStatus = useCallback(async (ticket_id: number, status: string) => { if (!user_id) { showToast('User not identified. Cannot update ticket.', 'error'); return; } setLoadingTicketId(ticket_id); showToast(`Updating ticket #${ticket_id}...`, 'loading'); try { await updateTicket({ ticket_id, status }).unwrap(); await addLog({ user_id, action: `Ticket ${ticket_id} status updated to ${status}` }).unwrap(); showToast(`Ticket #${ticket_id} status updated successfully!`, 'success'); if (ticketToView?.ticket_id === ticket_id) { setTicketToView(prev => prev ? {...prev, status: 'Closed'} : null); } } catch (err) { showToast(`Failed to update ticket #${ticket_id}.`, 'error'); } finally { setLoadingTicketId(null); if (toastType === 'loading') { setToastMessage(null); setToastType(null); } } }, [updateTicket, addLog, user_id, showToast, toastType, ticketToView]);
+    const handleUpdateStatus = useCallback(async (ticket_id: number, status: string) => { if (!user_id) { showToast('User not identified. Cannot update ticket.', 'error'); return; } setLoadingTicketId(ticket_id); showToast(`Updating ticket #${ticket_id}...`, 'loading'); try { await updateTicket({ ticket_id, status }).unwrap(); showToast(`Ticket #${ticket_id} status updated successfully!`, 'success'); if (ticketToView?.ticket_id === ticket_id) { setTicketToView(prev => prev ? {...prev, status: 'Closed'} : null); } } catch (err) { showToast(`Failed to update ticket #${ticket_id}.`, 'error'); } finally { setLoadingTicketId(null); if (toastType === 'loading') { setToastMessage(null); setToastType(null); } } }, [updateTicket,  user_id, showToast, toastType, ticketToView]);
     const filteredTickets = useMemo(() => tickets.filter((ticket) => (filters.full_name ? ticket.creator.full_name.toLowerCase().includes(filters.full_name.toLowerCase()) : true) && (filters.email ? ticket.creator.email.toLowerCase().includes(filters.email.toLowerCase()) : true) && (filters.subject ? ticket.subject.toLowerCase().includes(filters.subject.toLowerCase()) : true) && (filters.status ? ticket.status.toLowerCase() === filters.status.toLowerCase() : true)), [tickets, filters]);
     const resetFilters = useCallback(() => { setFilters({ full_name: '', email: '', subject: '', status: '' }); showToast('Filters have been reset.', 'success', 1500); }, [showToast]);
     const handleClearFilter = (filterName: keyof typeof filters) => setFilters(prev => ({...prev, [filterName]: ''}));
