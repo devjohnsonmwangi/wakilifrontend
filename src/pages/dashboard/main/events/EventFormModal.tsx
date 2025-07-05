@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './EventFormModal.css'; // We'll add a small CSS file for the date picker theme
+//import './EventFormModal.css'; // We'll add a small CSS file for the date picker theme
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
