@@ -1,415 +1,255 @@
 // src/pages/dashboard/main/events/EventFormModal.tsx
 import React, { useState, useEffect, forwardRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns'; 
+import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; 
-// import '../styles/datepicker-theme.css'; 
+import 'react-datepicker/dist/react-datepicker.css';
+import './EventFormModal.css'; // We'll add a small CSS file for the date picker theme
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
-  Calendar as CalendarIcon,
-  Clock,
-  Type as TypeIcon, 
-  FileText,
-  Briefcase,
-  Save,
-  X as XIcon,
-  Tag,
-  Loader2,
-  User, 
+  Calendar as CalendarIcon, Clock, Type as TypeIcon, FileText, Briefcase, Save, X as XIcon, Tag, User, Info,
 } from 'lucide-react';
+import Select, { StylesConfig, SingleValue } from 'react-select';
 
 import {
   useCreateEventMutation,
   useUpdateEventMutation,
   EventDataTypes,
-  EventType as RawEventType,
+  CreateEventPayload,
+  UpdateEventPayload,
 } from '../../../../features/events/events';
-import { selectCurrentUserId } from '../../../../features/users/userSlice';
+import { selectCurrentUser } from '../../../../features/users/userSlice';
+import {
+  useFetchCasesQuery,
+  useGetCasesByClientOwnerQuery,
+  CaseDataTypes,
+} from '../../../../features/case/caseAPI';
 
-type AppEventType = RawEventType | 'meeting' | 'hearing' | 'consultation' | 'reminder' | 'court_date';
+// --- TYPE DEFINITIONS ---
+type AppEventType = 'meeting' | 'hearing' | 'consultation' | 'reminder' | 'court_date';
+interface ApiError { data?: { msg?: string; errors?: Record<string, string>; }; }
+interface EventFormModalProps { open: boolean; onClose: () => void; eventToEdit?: Partial<EventDataTypes> | null; }
+interface CaseOptionType { value: number; label: string; }
+interface CustomDateInputProps { value?: string; onClick?: () => void; hasError?: boolean; placeholder?: string; disabled?: boolean; }
 
-interface ApiError {
-  data?: {
-    msg?: string;
-    errors?: Record<string, string>;
-  };
-}
-
-interface EventFormModalProps {
-  open: boolean;
-  onClose: () => void;
-  eventToEdit?: Partial<EventDataTypes> | null;
-  //currentUserId: number;
-  // currentUserId prop is removed as we get it from Redux
-}
-
+// --- HELPER FUNCTIONS ---
 const getValidEventType = (eventType?: string): AppEventType => {
   const validTypes: AppEventType[] = ['meeting', 'hearing', 'consultation', 'reminder', 'court_date'];
-  if (eventType && validTypes.includes(eventType as AppEventType)) {
-    return eventType as AppEventType;
-  }
-  return 'meeting'; // Default event type
+  if (eventType && validTypes.includes(eventType as AppEventType)) return eventType as AppEventType;
+  return 'meeting';
 };
 
-const getInitialFormState = (
-  eventToEdit?: Partial<EventDataTypes> | null,
-  currentUserId?: number | null
-) => {
-  let initialDateStr = '';
-  let initialTimeStr = '';
-
+const getInitialFormState = (eventToEdit?: Partial<EventDataTypes> | null, currentUserId?: number | null) => {
+  let initialDateStr = '', initialTimeStr = '';
   if (eventToEdit?.start_time) {
     try {
-      const dt = parseISO(eventToEdit.start_time); // Use parseISO for reliability
+      const dt = parseISO(eventToEdit.start_time);
       if (isValid(dt)) {
         initialDateStr = format(dt, 'yyyy-MM-dd');
-        // Check if original was all-day (time part can be omitted or set to 00:00:00)
-        if (eventToEdit.start_time.length === 10 && !eventToEdit.start_time.includes('T')) {
-          initialTimeStr = '00:00:00'; // Or '00:00'  HH:mm for time picker
-        } else {
-          initialTimeStr = format(dt, 'HH:mm:ss'); // Or 'HH:mm'
-        }
+        initialTimeStr = format(dt, 'HH:mm');
       }
-    } catch (e) { console.error("Error parsing eventToEdit.start_time for form", e); }
+    } catch (e) { console.error("Error parsing date", e); }
   }
-
   return {
     event_title: eventToEdit?.event_title || '',
     event_type: getValidEventType(eventToEdit?.event_type),
     form_date_part: initialDateStr,
     form_time_part: initialTimeStr,
     event_description: eventToEdit?.event_description || '',
-    case_id: eventToEdit?.case_id ? String(eventToEdit.case_id) : '',
     user_id: eventToEdit?.user_id || currentUserId || 0,
   };
 };
 
-// Enhanced base classes
-const baseInputStyles = "block w-full text-sm rounded-md shadow-sm placeholder-slate-400 dark:placeholder-slate-500 transition-colors duration-150";
-const labelBaseClasses = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center";
-const formFieldWrapperClasses = "space-y-1"; 
-
-interface CustomDateInputProps {
-  value?: string;
-  onClick?: () => void;
-  
-  hasError?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-}
-
+// --- CUSTOM STYLED COMPONENTS ---
 const CustomDateInput = forwardRef<HTMLInputElement, CustomDateInputProps>(
   ({ value, onClick, hasError, placeholder, disabled }, ref) => (
-    <input
-      type="text"
-      className={`${baseInputStyles} px-3 py-2.5 border ${ 
-        hasError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                 : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'
-      } focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 cursor-pointer read-only:bg-slate-100 dark:read-only:bg-slate-600`}
-      onClick={onClick}
-      value={value}
-      ref={ref}
-      readOnly
-      placeholder={placeholder}
-      disabled={disabled}
-    />
+    <div className="relative">
+      <input type="text" className={`w-full h-11 pl-3 pr-10 text-sm rounded-lg shadow-sm placeholder-slate-400 transition-colors duration-150 border ${hasError ? 'border-red-400 focus:ring-red-500/50' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500/50'} focus:outline-none focus:ring-2 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-200 cursor-pointer`} onClick={onClick} value={value} ref={ref} readOnly placeholder={placeholder} disabled={disabled} />
+      <CalendarIcon size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+    </div>
   )
 );
 CustomDateInput.displayName = 'CustomDateInput';
 
-
-const EventFormModal: React.FC<EventFormModalProps> = ({
-  open,
-  onClose,
-  eventToEdit,
-}) => {
-  const currentUserIdFromStore = useSelector(selectCurrentUserId);
-  const currentUserId = typeof currentUserIdFromStore === 'number' ? currentUserIdFromStore : null;
-
-
-  const initialFormState = useMemo(() => getInitialFormState(eventToEdit, currentUserId), [eventToEdit, currentUserId]);
+// --- MAIN MODAL COMPONENT ---
+const EventFormModal: React.FC<EventFormModalProps> = ({ open, onClose, eventToEdit }) => {
+  const currentUser = useSelector(selectCurrentUser);
+  const initialFormState = useMemo(() => getInitialFormState(eventToEdit, currentUser?.user_id), [eventToEdit, currentUser]);
 
   const [formData, setFormData] = useState(initialFormState);
+  const [selectedCase, setSelectedCase] = useState<SingleValue<CaseOptionType>>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
   const [updateEvent, { isLoading: isUpdating }] = useUpdateEventMutation();
   const anyOperationLoading = isCreating || isUpdating;
 
+  // --- ROLE-BASED DATA FETCHING ---
+  const isAdminOrManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  const isClient = currentUser?.role === 'client';
+  const { data: adminCasesData = [], isLoading: isLoadingAdminCases } = useFetchCasesQuery(undefined, { skip: !isAdminOrManager || !open });
+  const { data: clientCasesData = [], isLoading: isLoadingClientCases } = useGetCasesByClientOwnerQuery({ userId: currentUser?.user_id as number }, { skip: !isClient || !open || !currentUser?.user_id });
+  const isLoadingCases = isLoadingAdminCases || isLoadingClientCases;
+  const casesData = isAdminOrManager ? adminCasesData : clientCasesData;
+
+  const caseOptions = useMemo<CaseOptionType[]>(() => casesData.map((c: CaseDataTypes) => ({ value: c.case_id, label: `${c.case_number} - ${c.owner?.full_name || 'N/A'}` })), [casesData]);
+
   useEffect(() => {
     if (open) {
-      setFormData(getInitialFormState(eventToEdit, currentUserId));
+      setFormData(getInitialFormState(eventToEdit, currentUser?.user_id));
       setErrors({});
+      if (eventToEdit?.case_id && caseOptions.length > 0) {
+        setSelectedCase(caseOptions.find(opt => opt.value === eventToEdit.case_id) || null);
+      } else {
+        setSelectedCase(null);
+      }
     }
-  }, [eventToEdit, open, currentUserId]);
+  }, [eventToEdit, open, currentUser, caseOptions]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'event_type' ? getValidEventType(value) : value }));
-    if (errors[name] && value.trim()) {
-      setErrors(prev => { const newErrors = { ...prev }; delete newErrors[name]; return newErrors; });
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+  const handleDateChange = (date: Date | null, field: 'form_date_part' | 'form_time_part') => {
+    const formatStr = field === 'form_date_part' ? 'yyyy-MM-dd' : 'HH:mm';
+    setFormData(prev => ({ ...prev, [field]: date ? format(date, formatStr) : '' }));
+    if (errors.start_time) setErrors(prev => ({ ...prev, start_time: '' }));
   };
 
-  const handleDatePartChange = (date: Date | null) => {
-    const newDateString = date && isValid(date) ? format(date, 'yyyy-MM-dd') : '';
-    setFormData(prev => ({ ...prev, form_date_part: newDateString }));
-    if (errors.start_time && newDateString && formData.form_time_part) {
-      setErrors(prev => { const newErrors = { ...prev }; delete newErrors.start_time; return newErrors; });
-    }
-  };
-
-  const handleTimePartChange = (time: Date | null) => {
-    // Using HH:mm for user display/input, backend will get full ISO.
-    const newTimeString = time && isValid(time) ? format(time, 'HH:mm') : '';
-    setFormData(prev => ({ ...prev, form_time_part: newTimeString }));
-    if (errors.start_time && newTimeString && formData.form_date_part) {
-      setErrors(prev => { const newErrors = { ...prev }; delete newErrors.start_time; return newErrors; });
-    }
-  };
-
-  const validateForm = () => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.event_title.trim()) newErrors.event_title = "Title is required.";
     if (!formData.form_date_part) newErrors.start_time = "Date is required.";
-    if (!formData.form_time_part) {
-        newErrors.start_time = (newErrors.start_time || "") + (newErrors.start_time ? " and Time are required." : "Time is required.");
-    }
-    if (!formData.case_id || isNaN(Number(formData.case_id))) newErrors.case_id = "A valid Case ID is required.";
-    if (!formData.user_id) newErrors.user_id = "User information is missing. Please re-login or refresh.";
+    if (!formData.form_time_part && !newErrors.start_time) newErrors.start_time = "Time is required.";
+    if (!formData.user_id) newErrors.user_id = "User information is missing. Please re-login.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-        toast.error("Please check the form for errors.");
-        return;
+      toast.error("Please fill in all required fields.");
+      return;
     }
-
-    if (!formData.user_id) { 
-        toast.error("User information is missing. Cannot save event.");
-        return;
-    }
-
     let combinedStartDateTime: Date | null = null;
     try {
-        const datePartDate = parse(formData.form_date_part, 'yyyy-MM-dd', new Date());
-        const timePartDate = parse(formData.form_time_part, 'HH:mm', new Date()); // Parsed from HH:mm
-
-        if (isValid(datePartDate) && isValid(timePartDate)) {
-            let tempDate = startOfDay(datePartDate);
-            tempDate = setHours(tempDate, timePartDate.getHours());
-            tempDate = setMinutes(tempDate, timePartDate.getMinutes());
-            tempDate = setSeconds(tempDate, 0); // Explicitly set seconds to 0
-            combinedStartDateTime = tempDate;
-        }
-    } catch (e) { console.error("Error combining date and time for submission", e); }
-
-    if (!combinedStartDateTime || !isValid(combinedStartDateTime)) {
-        setErrors(prev => ({ ...prev, start_time: "Invalid date or time combination." }));
-        toast.error("Invalid date or time selected.");
-        return;
+      const datePart = parse(formData.form_date_part, 'yyyy-MM-dd', new Date());
+      const timePart = parse(formData.form_time_part, 'HH:mm', new Date());
+      if (isValid(datePart) && isValid(timePart)) {
+        combinedStartDateTime = setSeconds(setMinutes(setHours(startOfDay(datePart), timePart.getHours()), timePart.getMinutes()), 0);
+      }
+    } catch (e) { /* ignore */ }
+    if (!combinedStartDateTime) {
+      toast.error("Invalid date or time selected.");
+      return;
     }
-
-    interface EventPayloadForApi {
-        event_title: string;
-        event_type: AppEventType;
-        start_time: string;
-        event_description?: string;
-        case_id: number;
-        user_id: number;
-    }
-
-    const payload: EventPayloadForApi = {
+    
+    const finalPayload = {
       event_title: formData.event_title.trim(),
-      event_type: formData.event_type,
+      event_type: formData.event_type as AppEventType,
       start_time: combinedStartDateTime.toISOString(),
-      event_description: formData.event_description?.trim() || undefined, 
-      case_id: Number(formData.case_id),
-      user_id: Number(formData.user_id),
+      event_description: formData.event_description?.trim() || undefined,
+      user_id: currentUser?.user_id as number,
+      case_id: selectedCase ? selectedCase.value : undefined,
     };
 
     try {
       if (eventToEdit?.event_id) {
-        await updateEvent({ event_id: eventToEdit.event_id, ...payload }).unwrap();
+        await updateEvent({ event_id: eventToEdit.event_id, ...finalPayload } as UpdateEventPayload & { event_id: number }).unwrap();
         toast.success("Event updated successfully!");
       } else {
-        await createEvent(payload).unwrap();
-        toast.success("Event created successfully!");
+        await createEvent(finalPayload as CreateEventPayload).unwrap();
+        toast.success("Event and reminders created successfully!");
       }
       onClose();
     } catch (err) {
       const error = err as ApiError;
       console.error("Failed to save event:", error);
-      const errorMessage = error.data?.msg || 'Failed to save event. Please try again.';
-      toast.error(errorMessage);
-      if (error.data?.errors) {
-        setErrors(prev => ({ ...prev, ...error.data!.errors! }));
-      }
+      toast.error(error.data?.msg || 'An unexpected error occurred.');
+      if (error.data?.errors) setErrors(prev => ({ ...prev, ...error.data!.errors! }));
     }
   };
 
-  const selectedDateForPicker = useMemo(() =>
-    formData.form_date_part ? parse(formData.form_date_part, 'yyyy-MM-dd', new Date()) : null,
-    [formData.form_date_part]
-  );
+  const selectedDateForPicker = useMemo(() => formData.form_date_part ? parse(formData.form_date_part, 'yyyy-MM-dd', new Date()) : null, [formData.form_date_part]);
+  const selectedTimeForPicker = useMemo(() => formData.form_time_part ? parse(formData.form_time_part, 'HH:mm', new Date()) : null, [formData.form_time_part]);
 
-  const selectedTimeForPicker = useMemo(() =>
-    formData.form_time_part ? parse(formData.form_time_part, 'HH:mm', new Date()) : null, // Expects HH:mm
-    [formData.form_time_part]
-  );
-
-  const modalVariants = {
-    hidden: { opacity: 0, scale: 0.95, y: -20 },
-    visible: { opacity: 1, scale: 1, y: 0 },
-    exit: { opacity: 0, scale: 0.95, y: -20 },
+  const selectStyles: StylesConfig<CaseOptionType, false> = {
+    control: (base, state) => ({ ...base, minHeight: '44px', backgroundColor: 'var(--bg-secondary)', border: `1px solid ${state.isFocused ? 'var(--color-indigo-500)' : 'var(--border-color)'}`, boxShadow: state.isFocused ? '0 0 0 2px var(--color-indigo-200)' : 'none', borderRadius: '0.5rem', '&:hover': { borderColor: 'var(--color-indigo-500)' }, }),
+    input: (base) => ({ ...base, color: 'var(--text-primary)' }),
+    singleValue: (base) => ({ ...base, color: 'var(--text-primary)', fontWeight: '500' }),
+    menu: (base) => ({ ...base, backgroundColor: 'var(--bg-menu)', zIndex: 9999, borderRadius: '0.5rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }),
+    menuPortal: base => ({ ...base, zIndex: 9999 }),
+    option: (base, state) => ({ ...base, fontWeight: '600', backgroundColor: state.isSelected ? 'var(--color-indigo-500)' : state.isFocused ? 'var(--color-indigo-100)' : 'transparent', color: state.isSelected ? '#fff' : 'var(--text-primary)', '&:active': { backgroundColor: 'var(--color-indigo-500)' }, }),
+    placeholder: (base) => ({...base, color: '#9ca3af'})
   };
 
-  const buttonBaseClasses = "px-4 py-2.5 text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-60 transition-all duration-150 flex items-center justify-center gap-2";
+  const modalVariants = { hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.95 } };
+  const baseInputStyles = "w-full h-11 pl-3 text-sm rounded-lg shadow-sm placeholder-slate-400 transition-colors duration-150 border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50";
+  const labelBaseClasses = "block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-2";
+  const buttonBaseClasses = "px-5 py-2.5 text-sm font-semibold rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 transition-all duration-150 flex items-center justify-center gap-2";
 
   return (
     <AnimatePresence>
       {open && (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm z-50 p-4"
-          onClick={() => !anyOperationLoading && onClose()}
-        >
-          <motion.div
-            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            transition={{ type: 'spring', damping: 20, stiffness: 220 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                {eventToEdit?.event_id ? 'Edit Event' : 'Create New Event'}
-              </h2>
-              <button 
-                onClick={() => !anyOperationLoading && onClose()} 
-                disabled={anyOperationLoading}
-                className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 transition-colors" 
-                aria-label="Close modal">
-                <XIcon size={20} />
-              </button>
-            </div>
-
-            <form
-              onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
-              className="p-6 space-y-5 max-h-[75vh] overflow-y-auto"
-            >
-              <div className={formFieldWrapperClasses}>
-                <label htmlFor="event_title" className={labelBaseClasses}>
-                  <TypeIcon size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Title *
-                </label>
-                <input id="event_title" name="event_title" value={formData.event_title} onChange={handleChange} disabled={anyOperationLoading}
-                  className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_title ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`} 
-                  placeholder="e.g., Client Meeting" />
-                {errors.event_title && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_title}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
-                <div className={formFieldWrapperClasses}>
-                  <label htmlFor="event_type" className={labelBaseClasses}>
-                    <Tag size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Event Type *
-                  </label>
-                  <select id="event_type" name="event_type" value={formData.event_type} onChange={handleChange} disabled={anyOperationLoading}
-                    className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_type ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 appearance-none`}>
-                    <option value="meeting">Meeting</option>
-                    <option value="hearing">Hearing</option>
-                    <option value="consultation">Consultation</option>
-                    <option value="reminder">General Event/Reminder</option>
-                    <option value="court_date">Court Date</option>
-                  </select>
-                  {errors.event_type && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_type}</p>}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4" onClick={() => !anyOperationLoading && onClose()}>
+          <motion.div className="bg-slate-50 dark:bg-slate-800/80 dark:backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 dark:border-slate-700" variants={modalVariants} initial="hidden" animate="visible" exit="exit" onClick={(e) => e.stopPropagation()}>
+            <header className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{eventToEdit?.event_id ? 'Edit Event' : 'Schedule New Event'}</h2>
+              <button onClick={() => !anyOperationLoading && onClose()} disabled={anyOperationLoading} className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700" aria-label="Close"><XIcon size={20} /></button>
+            </header>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* Event Details Section */}
+              <section className="space-y-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div>
+                  <label htmlFor="event_title" className={labelBaseClasses}><TypeIcon size={16} className="text-indigo-500" /> Title *</label>
+                  <input id="event_title" name="event_title" value={formData.event_title} onChange={handleChange} disabled={anyOperationLoading} className={`${baseInputStyles} ${errors.event_title ? 'border-red-400' : ''}`} placeholder="e.g., Client Strategy Meeting" />
+                  {errors.event_title && <p className="mt-1 text-xs text-red-500">{errors.event_title}</p>}
                 </div>
-                <div className={formFieldWrapperClasses}>
-                  <label htmlFor="case_id" className={labelBaseClasses}>
-                    <Briefcase size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Case ID *
-                  </label>
-                  <input id="case_id" name="case_id" type="number" value={formData.case_id} onChange={handleChange} disabled={anyOperationLoading}
-                    className={`${baseInputStyles} px-3 py-2.5 border ${errors.case_id ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`} 
-                    placeholder="e.g., 123" />
-                  {errors.case_id && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.case_id}</p>}
+                <div>
+                  <label htmlFor="event_description" className={labelBaseClasses}><FileText size={16} className="text-indigo-500" /> Description</label>
+                  <textarea id="event_description" name="event_description" value={formData.event_description || ''} disabled={anyOperationLoading} onChange={handleChange} rows={3} className={`${baseInputStyles} pt-2`} placeholder="Add any relevant details, notes, or agenda..." />
                 </div>
-              </div>
+              </section>
 
-              <div className={formFieldWrapperClasses}> {/* Group for Date/Time and their shared error */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-5">
-                    <div>
-                        <label htmlFor="form_date_part" className={labelBaseClasses}>
-                            <CalendarIcon size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Date *
-                        </label>
-                        <DatePicker
-                            id="form_date_part"
-                            selected={selectedDateForPicker && isValid(selectedDateForPicker) ? selectedDateForPicker : null}
-                            onChange={handleDatePartChange}
-                            dateFormat="yyyy-MM-dd"
-                            customInput={<CustomDateInput hasError={!!errors.start_time?.includes("Date")} placeholder="YYYY-MM-DD" disabled={anyOperationLoading}/>}
-                            wrapperClassName="w-full"
-                            disabled={anyOperationLoading}
-                            isClearable showPopperArrow={false} popperPlacement="bottom-start"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="form_time_part" className={labelBaseClasses}>
-                            <Clock size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Time *
-                        </label>
-                        <DatePicker
-                            id="form_time_part"
-                            selected={selectedTimeForPicker && isValid(selectedTimeForPicker) ? selectedTimeForPicker : null}
-                            onChange={handleTimePartChange}
-                            showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time"
-                            dateFormat="HH:mm" // User sees HH:mm
-                            customInput={<CustomDateInput hasError={!!errors.start_time?.includes("Time")} placeholder="HH:MM" disabled={anyOperationLoading}/>}
-                            wrapperClassName="w-full"
-                            disabled={anyOperationLoading}
-                            isClearable showPopperArrow={false} popperPlacement="bottom-start"
-                        />
-                    </div>
+              {/* Scheduling Section */}
+              <section className="space-y-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelBaseClasses}><CalendarIcon size={16} className="text-indigo-500" /> Date *</label>
+                    <DatePicker selected={selectedDateForPicker} onChange={(d) => handleDateChange(d, 'form_date_part')} dateFormat="yyyy-MM-dd" customInput={<CustomDateInput hasError={!!errors.start_time} placeholder="YYYY-MM-DD" disabled={anyOperationLoading} />} wrapperClassName="w-full" disabled={anyOperationLoading} popperPlacement="bottom-start" />
+                  </div>
+                  <div>
+                    <label className={labelBaseClasses}><Clock size={16} className="text-indigo-500" /> Time *</label>
+                    <DatePicker selected={selectedTimeForPicker} onChange={(t) => handleDateChange(t, 'form_time_part')} showTimeSelect showTimeSelectOnly timeIntervals={15} dateFormat="HH:mm" customInput={<CustomDateInput hasError={!!errors.start_time} placeholder="HH:MM" disabled={anyOperationLoading} />} wrapperClassName="w-full" disabled={anyOperationLoading} popperPlacement="bottom-start" />
+                  </div>
                 </div>
-                {errors.start_time && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.start_time}</p>}
-              </div>
+                {errors.start_time && <p className="mt-1 text-xs text-red-500 flex items-center gap-1"><Info size={14}/>{errors.start_time}</p>}
+              </section>
 
-              <div className={formFieldWrapperClasses}>
-                <label htmlFor="event_description" className={labelBaseClasses}>
-                  <FileText size={15} className="mr-2 text-indigo-500 dark:text-indigo-400" /> Description
-                </label>
-                <textarea id="event_description" name="event_description" value={formData.event_description} disabled={anyOperationLoading}
-                  onChange={handleChange} rows={4}
-                  className={`${baseInputStyles} px-3 py-2.5 border ${errors.event_description ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 dark:border-slate-600 focus:ring-indigo-500 focus:border-indigo-500'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200`}
-                  placeholder="Add any relevant details..." />
-                {errors.event_description && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.event_description}</p>}
-              </div>
+              {/* Categorization Section */}
+              <section className="space-y-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="event_type" className={labelBaseClasses}><Tag size={16} className="text-indigo-500" /> Event Type *</label>
+                    <select id="event_type" name="event_type" value={formData.event_type} onChange={handleChange} disabled={anyOperationLoading} className={`${baseInputStyles} appearance-none`}>
+                      <option value="meeting">Meeting</option><option value="hearing">Hearing</option><option value="consultation">Consultation</option><option value="reminder">General Reminder</option><option value="court_date">Court Date</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelBaseClasses}><Briefcase size={16} className="text-indigo-500" /> Related Case (Optional)</label>
+                    <Select options={caseOptions} value={selectedCase} onChange={(option) => setSelectedCase(option)} isLoading={isLoadingCases} isDisabled={isLoadingCases || anyOperationLoading} isClearable isSearchable placeholder="Select or search for a case..." styles={selectStyles} menuPortalTarget={document.body} />
+                  </div>
+                </div>
+              </section>
               
-              {/* User ID Info - Non-editable, for info/debugging or if there's an error */}
-              {errors.user_id && (
-                 <div className={`${formFieldWrapperClasses} p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-700`}>
-                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center">
-                        <User size={14} className="mr-2" /> {errors.user_id}
-                    </p>
-                 </div>
-              )}
-
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700 mt-6">
-                <button type="button" onClick={() => !anyOperationLoading && onClose()} disabled={anyOperationLoading}
-                  className={`${buttonBaseClasses} text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-500 focus:ring-slate-400`}>
-                  <XIcon size={16} /> Cancel
-                </button>
-                <button type="submit" disabled={anyOperationLoading || !formData.user_id}
-                  className={`${buttonBaseClasses} text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 disabled:bg-indigo-400 dark:disabled:bg-indigo-700/50 disabled:cursor-not-allowed`}>
-                  {anyOperationLoading ? (<Loader2 size={16} className="animate-spin" />) : (<Save size={16} />)}
-                  {anyOperationLoading ? 'Saving...' : (eventToEdit?.event_id ? 'Update Event' : 'Create Event')}
-                </button>
-              </div>
+              {errors.user_id && <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg border border-red-200 dark:border-red-700/50"><p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2"><User size={16} /> {errors.user_id}</p></div>}
+              
+              <footer className="flex justify-end gap-3 pt-5 border-t border-slate-200 dark:border-slate-700">
+                <button type="button" onClick={() => !anyOperationLoading && onClose()} disabled={anyOperationLoading} className={`${buttonBaseClasses} text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-slate-400`}><XIcon size={18} /> Cancel</button>
+                <button type="submit" disabled={anyOperationLoading || !currentUser?.user_id} className={`${buttonBaseClasses} text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 disabled:bg-indigo-500/50 disabled:cursor-not-allowed`}><Save size={18} /> {anyOperationLoading ? 'Saving...' : (eventToEdit?.event_id ? 'Update Event' : 'Create Event')}</button>
+              </footer>
             </form>
           </motion.div>
         </div>
