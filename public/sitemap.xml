@@ -2,25 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- PRIORITY 1.0: HOME & NEWEST CONTENT -->
   <url>
-    <loc>https://yoursite.com/</loc>
+    <loc>https://kenyalaw.co.ke/</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/occupational-health-safety-kenya</loc>
+    <loc>https://kenyalaw.co.ke/occupational-health-safety-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/termination-redundancy-severance-kenya</loc>
+    <loc>https://kenyalaw.co.ke/termination-redundancy-severance-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/labour-dispute-resolution-kenya</loc>
+    <loc>https://kenyalaw.co.ke/labour-dispute-resolution-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -28,19 +28,19 @@
 
   <!-- PRIORITY 0.95: CORE EMPLOYMENT & TAX PAGES -->
   <url>
-    <loc>https://yoursite.com/employment-contracts-kenya</loc>
+    <loc>https://kenyalaw.co.ke/employment-contracts-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/kenya-employment-labour-laws</loc>
+    <loc>https://kenyalaw.co.ke/kenya-employment-labour-laws</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/business-tax-obligations-kenya</loc>
+    <loc>https://kenyalaw.co.ke/business-tax-obligations-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
@@ -48,31 +48,31 @@
 
   <!-- PRIORITY 0.90: BUSINESS SETUP PAGES -->
   <url>
-    <loc>https://yoursite.com/company-annual-returns-and-filing-kenya</loc>
+    <loc>https://kenyalaw.co.ke/company-annual-returns-and-filing-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/kra-pin-and-tax-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/kra-pin-and-tax-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/business-permits-licenses-kenya</loc>
+    <loc>https://kenyalaw.co.ke/business-permits-licenses-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/how-to-register-business-kenya</loc>
+    <loc>https://kenyalaw.co.ke/how-to-register-business-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/kra-pin-for-business-kenya</loc>
+    <loc>https://kenyalaw.co.ke/kra-pin-for-business-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.90</priority>
@@ -80,49 +80,49 @@
 
   <!-- PRIORITY 0.85: BUSINESS REGISTRATION PAGES -->
   <url>
-    <loc>https://yoursite.com/limited-company-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/limited-company-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/sole-proprietorship-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/sole-proprietorship-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/partnership-llp-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/partnership-llp-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/ngo-cbo-society-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/ngo-cbo-society-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/closing-or-deregistering-company-kenya</loc>
+    <loc>https://kenyalaw.co.ke/closing-or-deregistering-company-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/company-cr12-and-search-kenya</loc>
+    <loc>https://kenyalaw.co.ke/company-cr12-and-search-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/company-annual-returns-kenya</loc>
+    <loc>https://kenyalaw.co.ke/company-annual-returns-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/business-name-search-kenya</loc>
+    <loc>https://kenyalaw.co.ke/business-name-search-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -130,25 +130,25 @@
 
   <!-- PRIORITY 0.80: FAMILY LAW PAGES -->
   <url>
-    <loc>https://yoursite.com/family-law-divorce-kenya</loc>
+    <loc>https://kenyalaw.co.ke/family-law-divorce-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/divorce-in-kenya</loc>
+    <loc>https://kenyalaw.co.ke/divorce-in-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/divorce-law-in-kenya</loc>
+    <loc>https://kenyalaw.co.ke/divorce-law-in-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/child-law-kenya</loc>
+    <loc>https://kenyalaw.co.ke/child-law-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
@@ -156,25 +156,25 @@
 
   <!-- PRIORITY 0.80: SUCCESSION & PROBATE PAGES -->
   <url>
-    <loc>https://yoursite.com/succession-inheritance-law-kenya</loc>
+    <loc>https://kenyalaw.co.ke/succession-inheritance-law-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/how-to-write-a-will-kenya</loc>
+    <loc>https://kenyalaw.co.ke/how-to-write-a-will-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/letters-of-administration-probate-kenya</loc>
+    <loc>https://kenyalaw.co.ke/letters-of-administration-probate-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/land-transfer-after-death</loc>
+    <loc>https://kenyalaw.co.ke/land-transfer-after-death</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
@@ -182,61 +182,61 @@
 
   <!-- PRIORITY 0.80: LAND & PROPERTY PAGES -->
   <url>
-    <loc>https://yoursite.com/land-ownership-title-deed-verification-kenya</loc>
+    <loc>https://kenyalaw.co.ke/land-ownership-title-deed-verification-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/land-transfer-process-kenya</loc>
+    <loc>https://kenyalaw.co.ke/land-transfer-process-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/how-to-buy-land-safely-kenya</loc>
+    <loc>https://kenyalaw.co.ke/how-to-buy-land-safely-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/land-disputes-kenya</loc>
+    <loc>https://kenyalaw.co.ke/land-disputes-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/adverse-possession-kenya</loc>
+    <loc>https://kenyalaw.co.ke/adverse-possession-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/leasehold-freehold-kenya</loc>
+    <loc>https://kenyalaw.co.ke/leasehold-freehold-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/lost-title-deed-replacement-kenya</loc>
+    <loc>https://kenyalaw.co.ke/lost-title-deed-replacement-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/land-rates-property-taxes-kenya</loc>
+    <loc>https://kenyalaw.co.ke/land-rates-property-taxes-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/subdivision-survey-process-kenya</loc>
+    <loc>https://kenyalaw.co.ke/subdivision-survey-process-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/planning-permission-zoning-laws-kenya</loc>
+    <loc>https://kenyalaw.co.ke/planning-permission-zoning-laws-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
@@ -244,91 +244,91 @@
 
   <!-- PRIORITY 0.80: ELECTIONS & VOTING PAGES -->
   <url>
-    <loc>https://yoursite.com/understanding-iebc-kenya</loc>
+    <loc>https://kenyalaw.co.ke/understanding-iebc-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/how-to-register-as-a-voter-kenya</loc>
+    <loc>https://kenyalaw.co.ke/how-to-register-as-a-voter-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/how-to-check-voter-status-kenya</loc>
+    <loc>https://kenyalaw.co.ke/how-to-check-voter-status-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/elections-in-kenya</loc>
+    <loc>https://kenyalaw.co.ke/elections-in-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/types-of-elections-kenya</loc>
+    <loc>https://kenyalaw.co.ke/types-of-elections-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/presidential-parliamentary-county-elections-kenya</loc>
+    <loc>https://kenyalaw.co.ke/presidential-parliamentary-county-elections-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/election-results-declaration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/election-results-declaration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/political-parties-registration-kenya</loc>
+    <loc>https://kenyalaw.co.ke/political-parties-registration-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/election-petitions-disputes-kenya</loc>
+    <loc>https://kenyalaw.co.ke/election-petitions-disputes-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/citizens-rights-duties-elections-kenya</loc>
+    <loc>https://kenyalaw.co.ke/citizens-rights-duties-elections-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/iebc-forms-downloads-kenya</loc>
+    <loc>https://kenyalaw.co.ke/iebc-forms-downloads-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/iebc-forms-downloads</loc>
+    <loc>https://kenyalaw.co.ke/iebc-forms-downloads</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/become-candidate-kenya</loc>
+    <loc>https://kenyalaw.co.ke/become-candidate-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/election-offences-penalties-kenya</loc>
+    <loc>https://kenyalaw.co.ke/election-offences-penalties-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/iebc-contacts-offices-kenya</loc>
+    <loc>https://kenyalaw.co.ke/iebc-contacts-offices-kenya</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
@@ -336,19 +336,19 @@
 
   <!-- PRIORITY 0.75: MAIN NAVIGATION PAGES -->
   <url>
-    <loc>https://yoursite.com/services</loc>
+    <loc>https://kenyalaw.co.ke/services</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/howitworks</loc>
+    <loc>https://kenyalaw.co.ke/howitworks</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/updates</loc>
+    <loc>https://kenyalaw.co.ke/updates</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
@@ -356,13 +356,13 @@
 
   <!-- PRIORITY 0.70: COMPANY INFO PAGES -->
   <url>
-    <loc>https://yoursite.com/about</loc>
+    <loc>https://kenyalaw.co.ke/about</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/contactus</loc>
+    <loc>https://kenyalaw.co.ke/contactus</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.70</priority>
@@ -370,19 +370,19 @@
 
   <!-- PRIORITY 0.65: LEGAL & POLICY PAGES -->
   <url>
-    <loc>https://yoursite.com/privacy-policy</loc>
+    <loc>https://kenyalaw.co.ke/privacy-policy</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/terms</loc>
+    <loc>https://kenyalaw.co.ke/terms</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/cookies</loc>
+    <loc>https://kenyalaw.co.ke/cookies</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.65</priority>
@@ -390,25 +390,25 @@
 
   <!-- PRIORITY 0.60: AUTHENTICATION PAGES (robots meta no-index recommended) -->
   <url>
-    <loc>https://yoursite.com/register</loc>
+    <loc>https://kenyalaw.co.ke/register</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.60</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/login</loc>
+    <loc>https://kenyalaw.co.ke/login</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.60</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/forgot-password</loc>
+    <loc>https://kenyalaw.co.ke/forgot-password</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.60</priority>
   </url>
   <url>
-    <loc>https://yoursite.com/reset-password</loc>
+    <loc>https://kenyalaw.co.ke/reset-password</loc>
     <lastmod>2026-02-07</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.60</priority>
