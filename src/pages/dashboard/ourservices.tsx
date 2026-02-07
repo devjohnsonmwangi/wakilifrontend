@@ -244,12 +244,14 @@ const OurServices: React.FC = () => {
     
     useEffect(() => {
         const currentRefs = serviceItemRefs.current;
+        if (!currentRefs || currentRefs.length === 0) return;
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.remove('opacity-0', 'translate-y-5');
-                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                    if (entry.isIntersecting && entry.target) {
+                        entry.target.classList?.remove('opacity-0', 'translate-y-5');
+                        entry.target.classList?.add('opacity-100', 'translate-y-0');
                         observer.unobserve(entry.target);
                     }
                 });
@@ -257,8 +259,18 @@ const OurServices: React.FC = () => {
             { threshold: 0.1, rootMargin: '0px 0px -20px 0px' }
         );
 
-        currentRefs.forEach(ref => { if (ref) { ref.classList.add('opacity-0', 'translate-y-5'); observer.observe(ref); } });
-        return () => { currentRefs.forEach(ref => { if (ref) observer.unobserve(ref); }); };
+        currentRefs.forEach(ref => { 
+            if (ref && ref.classList) { 
+                ref.classList.add('opacity-0', 'translate-y-5'); 
+                observer.observe(ref); 
+            } 
+        });
+        
+        return () => { 
+            currentRefs.forEach(ref => { 
+                if (ref && ref.classList) observer.unobserve(ref); 
+            }); 
+        };
     }, [visibleServices]);
 
     const handleServiceNavigation = (slug: string) => navigate(`/dashboard/servicesdetails/${slug}`);

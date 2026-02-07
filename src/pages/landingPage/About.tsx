@@ -1,10 +1,7 @@
-import { useSelector } from 'react-redux';
 // --- FIX 1: Corrected import path ---
-import { selectCurrentToken } from '../../features/users/userSlice'; 
-import { useGetTeamByRolesQuery } from '../../features/team/teamApi'; // Corrected this path as well for consistency
 import Navbar from "../../components/navbar/Navbar";
 import {
-    Mail, Phone, Loader2, Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake, Sun, Moon,
+    Eye, Target, ShieldCheck, Users, TrendingUp, Lightbulb, Handshake, Sun, Moon,
     Focus,
     Puzzle,
     Zap,
@@ -13,21 +10,10 @@ import {
     RefreshCw,
     Group,
     PlayCircle,
-    Video,
-    LogIn
+    Video
 } from 'lucide-react';
-import backgroundImage from '../../assets/images/landingPage/coverimage3.jpeg';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
-interface Member {
-    id: number;
-    full_name: string;
-    role: string;
-    email: string;
-    phone_number: string;
-    profile_picture?: string;
-}
 
 interface TestimonialVideo {
     id: string;
@@ -45,13 +31,6 @@ interface LawyerInsightVideo {
 }
 
 const About = () => {
-    const token = useSelector(selectCurrentToken);
-    const { data: team, isLoading, isError } = useGetTeamByRolesQuery('all', {
-        skip: !token,
-    });
-
-    const [members, setMembers] = useState<Member[]>([]);
-    const [shuffleTrigger, setShuffleTrigger] = useState(0);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
     useEffect(() => {
@@ -67,41 +46,8 @@ const About = () => {
         setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
     };
 
-    const shuffle = (array: Member[]) => {
-        let currentIndex = array.length, randomIndex;
-        while (currentIndex !== 0) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex--;
-            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-        }
-        return array;
-    };
-
-    useEffect(() => {
-        if (team) {
-            const teamMembers = Array.isArray(team) ? team : team?.users || [];
-            // --- FIX 2: Added explicit type ': Member' to the parameter ---
-            const filteredMembers = teamMembers.filter((member: Member) => {
-                return !(member.role === 'admin' && member.full_name.toLowerCase() === 'johnson mwangi');
-            });
-            const shuffled = shuffle([...filteredMembers]);
-            setMembers(shuffled);
-        }
-    }, [team, shuffleTrigger]);
-
-
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            setShuffleTrigger(prevTrigger => prevTrigger + 1);
-        }, 10000);
-
-        return () => clearInterval(intervalId);
-    }, []);
-
     const iconColor = "text-purple-600 dark:text-purple-400";
     const headingColor = "text-purple-700 dark:text-purple-300";
-    const strongTextColor = "text-black-600 dark:text-blue-400";
-    const hoverTextColor = "hover:text-purple-500 dark:hover:text-purple-300";
 
     const coreValues = [
         { icon: ShieldCheck, title: "Integrity", text: "Operating with unwavering ethical standards, ensuring honesty and fairness in all our actions." },
@@ -142,18 +88,24 @@ const About = () => {
                 {theme === 'light' ? <Moon className="w-5 h-5 text-purple-600" /> : <Sun className="w-5 h-5 text-yellow-400" />}
             </button>
 
-            <div
-                className="relative py-20 md:py-32 px-4 md:px-6 bg-cover bg-center"
-                style={{ backgroundImage: `url(${backgroundImage})` }}
-            >
-                <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
-                <div className="relative z-10 max-w-4xl mx-auto text-center">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 drop-shadow-lg">
-                        Discover <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">Wakili</span>
+            <div className="relative py-16 md:py-24 px-4 md:px-6 bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white">
+                <div className="max-w-5xl mx-auto text-center">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4">
+                        Legal Help for Everyday Kenyan Problems
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-200 dark:text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
-                        At <strong className={strongTextColor}>Wakili</strong>, we are revolutionizing legal access. Our mission is to empower you with transparent, client-focused solutions, built on a foundation of trust and innovation.
+                    <p className="text-lg md:text-xl text-purple-100 mb-6 leading-relaxed max-w-3xl mx-auto">
+                        Wakili helps you solve real legal issues fast — from rent disputes and land ownership problems to workplace termination, debt recovery, divorce, child custody, and business contracts. Get practical legal advice, document drafting, and court representation from verified Kenyan advocates.
                     </p>
+                    <p className="text-base md:text-lg text-purple-100/90 mb-8 max-w-3xl mx-auto">
+                        Search intent we solve daily: <span className="font-semibold">how to file for divorce in Kenya</span>, <span className="font-semibold">how to recover unpaid debt</span>, <span className="font-semibold">how to resolve land disputes</span>, <span className="font-semibold">how to handle unfair dismissal</span>, and <span className="font-semibold">how to review a contract before signing</span>.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
+                        {['Legal Advice', 'Contract Review', 'Land Disputes', 'Family Law', 'Employment Law', 'Debt Recovery', 'Tenant Rights', 'Business Registration'].map((item) => (
+                            <span key={item} className="px-3 py-1.5 rounded-full bg-white/15 border border-white/20">
+                                {item}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -224,75 +176,94 @@ const About = () => {
                     </div>
                 </section>
 
-                <section className="mb-16 md:mb-24">
-                    <h2 className={`text-3xl md:text-4xl font-bold text-center mb-12 ${headingColor} tracking-tight`}>
-                        Meet Our Team
+                <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">
+                    <h2 className={`text-3xl md:text-4xl font-bold text-center mb-4 ${headingColor} tracking-tight`}>
+                        How Wakili Helps You Win Your Case
                     </h2>
+                    <p className="text-center text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10">
+                        We simplify complex Kenyan legal processes with expert guidance, verified lawyers, and fast turnaround. Whether you need a demand letter, legal opinion, or court representation, we help you move from confusion to resolution.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            {
+                                title: 'Clear Legal Guidance',
+                                text: 'Step-by-step explanations of your rights under Kenyan law, timelines, and what to expect.'
+                            },
+                            {
+                                title: 'Right Lawyer Match',
+                                text: 'We match you with specialized lawyers in family, land, employment, business, or criminal law.'
+                            },
+                            {
+                                title: 'Document Drafting',
+                                text: 'Demand letters, affidavits, tenancy notices, contracts, wills, and legal agreements.'
+                            },
+                            {
+                                title: 'Court Representation',
+                                text: 'Vetted advocates to represent you in Magistrate, High Court, Employment, or ELC.'
+                            }
+                        ].map((item, index) => (
+                            <div key={index} className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-lg border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-shadow">
+                                <h3 className={`text-lg font-semibold mb-2 ${headingColor}`}>{item.title}</h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item.text}</p>
+                                <ul className="mt-3 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                                    <li>• Fast response within 2 hours</li>
+                                    <li>• Transparent pricing upfront</li>
+                                    <li>• Verified LSK advocates</li>
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
 
-                    {token ? (
-                        <>
-                            {isLoading ? (
-                                <div className="flex flex-col justify-center items-center h-40 w-full text-center">
-                                    <Loader2 className={`w-10 h-10 animate-spin ${iconColor}`} />
-                                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Summoning the legal eagles...</p>
-                                </div>
-                            ) : isError ? (
-                                <p className="text-center text-red-500 dark:text-red-400 text-lg p-6 bg-red-50 dark:bg-red-900/30 rounded-lg">
-                                    Oops! Failed to load team members. Please check your internet connection and refresh.
-                                </p>
-                            ) : members.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                                    {members.map((member: Member) => (
-                                        <div
-                                            key={member.id}
-                                            className="bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden group"
-                                        >
-                                            <div className="relative h-40 bg-gradient-to-br from-purple-500 to-indigo-600 dark:from-purple-600 dark:to-indigo-700">
-                                                <img
-                                                    src={member.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random&color=fff&size=128`}
-                                                    alt={member.full_name}
-                                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover rounded-full border-4 border-white dark:border-slate-800 shadow-md group-hover:scale-110 transition-transform duration-300"
-                                                />
-                                            </div>
-                                            <div className="pt-16 pb-6 px-6 text-center">
-                                                <h3 className={`text-xl font-bold ${headingColor}`}>{member.full_name}</h3>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{member.role}</p>
-                                                <div className="space-y-2 text-sm mb-4">
-                                                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
-                                                        <Mail className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-                                                        <a href={`mailto:${member.email}`} className={` ${hoverTextColor} hover:underline break-all transition-colors duration-300`}>{member.email}</a>
-                                                    </div>
-                                                    <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-300">
-                                                        <Phone className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-                                                        <a href={`tel:${member.phone_number}`} className={`${hoverTextColor} hover:underline transition-colors duration-300`}>{member.phone_number}</a>
-                                                    </div>
-                                                </div>
-                                                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 italic leading-relaxed px-2">
-                                                    {`With expertise in ${member.role}, ${member.full_name.split(' ')[0]} is a key contributor to our clients' success.`}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-center text-lg text-gray-600 dark:text-gray-400 p-6 bg-gray-50 dark:bg-slate-800 rounded-lg">No team members found. Our roster is currently being updated!</p>
-                            )}
-                        </>
-                    ) : (
-                        <div className="text-center p-8 bg-gray-50 dark:bg-slate-800 rounded-xl shadow-md flex flex-col items-center gap-4">
-                            <Users className={`w-12 h-12 ${iconColor}`} />
-                            <p className="text-lg text-gray-700 dark:text-gray-300">
-                                Log in to interact with our legal eagles.
-                            </p>
-                            <Link
-                                to="/login"
-                                className="inline-flex items-center gap-2 bg-purple-600 text-white font-semibold px-6 py-2 rounded-lg shadow-md hover:bg-purple-700 transform hover:scale-105 transition-all duration-300"
-                            >
-                                <LogIn className="w-5 h-5" />
-                                Login Now
-                            </Link>
+                    <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-lg border border-slate-200 dark:border-slate-600">
+                            <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>
+                                What You Get in the First 24 Hours
+                            </h3>
+                            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                                <li>• A legal intake call to understand your problem and urgency</li>
+                                <li>• A lawyer match based on specialization and location</li>
+                                <li>• Clear next steps: documents needed, timelines, and expected costs</li>
+                                <li>• Optional draft documents (demand letter, notice, or legal opinion)</li>
+                            </ul>
                         </div>
-                    )}
+                        <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-lg border border-slate-200 dark:border-slate-600">
+                            <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>
+                                Common Outcomes We Deliver
+                            </h3>
+                            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                                <li>• Settlement agreements and dispute resolution without court</li>
+                                <li>• Court filings prepared correctly to avoid delays</li>
+                                <li>• Enforceable contracts and legal documents</li>
+                                <li>• Strong representation in ELC, Employment, and Magistrate Courts</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[
+                            {
+                                title: 'Documents We Draft Daily',
+                                items: ['Demand Letters', 'Employment Contracts', 'Lease Agreements', 'Affidavits', 'NDAs']
+                            },
+                            {
+                                title: 'Cases We Handle Often',
+                                items: ['Unfair Dismissal', 'Land Disputes', 'Debt Recovery', 'Divorce & Custody', 'Tenant Rights']
+                            },
+                            {
+                                title: 'How Fees Work',
+                                items: ['Clear fixed-price quotes', 'No hidden charges', 'Pay per service', 'Flexible packages for businesses']
+                            }
+                        ].map((block, index) => (
+                            <div key={index} className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-600">
+                                <h4 className={`text-lg font-semibold mb-3 ${headingColor}`}>{block.title}</h4>
+                                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                                    {block.items.map((item) => (
+                                        <li key={item}>• {item}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
                 </section>
                 
                 <section className="mb-16 md:mb-24 p-6 md:p-8 bg-white dark:bg-slate-800 rounded-xl shadow-xl">

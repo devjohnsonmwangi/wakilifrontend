@@ -1,0 +1,40 @@
+# Robots.txt for Wakili Legal Services
+# Generated: February 7, 2026
+
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Specific rules for GoogleBot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for BingBot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Disallow crawling of admin/private areas (if any)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /dashboard/
+Disallow: /*.pdf$
+Disallow: /downloads/
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://yoursite.com/sitemap.xml
+
+# Crawl delay (in seconds)
+Crawl-delay: 1
+Request-rate: 1/1s

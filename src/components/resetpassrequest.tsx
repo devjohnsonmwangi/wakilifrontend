@@ -187,7 +187,7 @@ export const RequestPasswordResetForm: React.FC = () => {
                         ) : (
                             <div className="animate-fade-in-up">
                                 <h3 className="text-3xl font-bold text-slate-900 mb-2">Forgot Password?</h3>
-                                <p className="text-slate-600 mb-8">No problem. Let's get you a new one.</p>
+                                <p className="text-slate-600 mb-8">No problem. Let's help you get you a new one.</p>
                                 
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div>

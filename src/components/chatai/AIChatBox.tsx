@@ -13,6 +13,7 @@ const AIChatBox: React.FC = () => {
     const userChat = { sender: 'user', text: userMessage };
     setMessages((prev) => [...prev, userChat]); // Add user message to chat
     setUserMessage(''); // Clear input
+    // every  module  in this part of  code  should  be  editted  with care  and  tested  properly  ,  everything  shalll  be  review  by  senior  engineer  of  the  jomultd
 
     try {
       const response = await sendMessage({ prompt: userMessage }).unwrap();
