@@ -5,5 +5,19 @@
     },
     "mimeTypes": {
         ".json": "text/json"
-    }
+    },
+    "redirects": [
+        {
+            "source": "**",
+            "destination": "/",
+            "statusCode": 301
+        }
+    ],
+    "routes": [
+        {
+            "route": "/*",
+            "serve": "index.html",
+            "statusCode": 200
+        }
+    ]
 }
