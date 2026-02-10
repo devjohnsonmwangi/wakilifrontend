@@ -339,12 +339,12 @@ const NGOCBOSocietyRegistrationKenya = () => {
   return (
     <>
       <Helmet>
-        <title>NGO, CBO & Society Registration Kenya – Guide 2025</title>
+        <title>NGO, CBO & Society Registration Kenya – Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to NGO, CBO and society registration in Kenya. Step-by-step process, costs, requirements, authorities and legal compliance for nonprofits." />
         <link rel="canonical" href="https://yoursite.com/ngo-cbo-society-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="NGO, CBO & Society Registration Kenya – Complete Guide 2025" />
+        <meta property="og:title" content="NGO, CBO & Society Registration Kenya – Complete Guide 2026 & 2027" />
         <meta property="og:description" content="Register an NGO, CBO or society in Kenya. Step-by-step guide covering registration process, costs, authorities, constitution, compliance and legal requirements." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/ngo-cbo-society-registration-kenya" />
@@ -352,7 +352,7 @@ const NGOCBOSocietyRegistrationKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="NGO, CBO & Society Registration Kenya – Guide 2025" />
+        <meta name="twitter:title" content="NGO, CBO & Society Registration Kenya – Guide 2026 & 2027" />
         <meta name="twitter:description" content="Step-by-step guide to registering NGOs, CBOs and societies in Kenya. Includes requirements, costs, timeline and all three registration pathways." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         

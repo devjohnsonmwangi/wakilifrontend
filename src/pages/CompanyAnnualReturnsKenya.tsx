@@ -250,12 +250,12 @@ const CompanyAnnualReturnsKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Company Annual Returns Kenya – Filing Guide 2025</title>
+        <title>Company Annual Returns Kenya – Filing Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to company annual returns filing in Kenya. Step-by-step eCitizen process, deadlines, penalties, compliance requirements & filing fees." />
         <link rel="canonical" href="https://yoursite.com/company-annual-returns-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Company Annual Returns Kenya – Complete Filing Guide 2025" />
+        <meta property="og:title" content="Company Annual Returns Kenya – Complete Filing Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to filing company annual returns on eCitizen. Deadlines, penalties, compliance requirements & legal obligations for Kenyan companies." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/company-annual-returns-kenya" />
@@ -263,7 +263,7 @@ const CompanyAnnualReturnsKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Company Annual Returns Kenya – Filing Guide 2025" />
+        <meta name="twitter:title" content="Company Annual Returns Kenya – Filing Guide 2026 & 2027" />
         <meta name="twitter:description" content="Complete guide to filing company annual returns in Kenya on eCitizen. Deadlines, penalties, requirements & compliance." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         

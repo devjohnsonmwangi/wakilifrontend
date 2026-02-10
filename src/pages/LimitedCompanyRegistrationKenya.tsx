@@ -236,12 +236,12 @@ const LimitedCompanyRegistrationKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Limited Company Registration Kenya – How to Register Ltd 2025</title>
+        <title>Limited Company Registration Kenya – How to Register Ltd 2026 & 2027</title>
         <meta name="description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs, directors, shares & compliance." />
         <link rel="canonical" href="https://yoursite.com/limited-company-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Limited Company Registration Kenya – How to Register Ltd 2025" />
+        <meta property="og:title" content="Limited Company Registration Kenya – How to Register Ltd 2026 & 2027" />
         <meta property="og:description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/limited-company-registration-kenya" />
@@ -249,7 +249,7 @@ const LimitedCompanyRegistrationKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Limited Company Registration Kenya – How to Register Ltd 2025" />
+        <meta name="twitter:title" content="Limited Company Registration Kenya – How to Register Ltd 2026 & 2027" />
         <meta name="twitter:description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         

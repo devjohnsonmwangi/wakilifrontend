@@ -165,12 +165,12 @@ const SoleProprietorshipRegistrationKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Sole Proprietorship Registration Kenya – eCitizen Guide 2025</title>
+        <title>Sole Proprietorship Registration Kenya – eCitizen Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to registering a sole proprietorship in Kenya. Step-by-step eCitizen registration, costs, requirements, permits & tax guide. Start your small business legally." />
         <link rel="canonical" href="https://yoursite.com/sole-proprietorship-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Sole Proprietorship Registration Kenya – eCitizen Guide 2025" />
+        <meta property="og:title" content="Sole Proprietorship Registration Kenya – eCitizen Guide 2026 & 2027" />
         <meta property="og:description" content="Complete guide to registering a sole proprietorship in Kenya. Step-by-step eCitizen registration, costs, requirements, permits & tax guide." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/sole-proprietorship-registration-kenya" />
@@ -178,7 +178,7 @@ const SoleProprietorshipRegistrationKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Sole Proprietorship Registration Kenya – eCitizen Guide 2025" />
+        <meta name="twitter:title" content="Sole Proprietorship Registration Kenya – eCitizen Guide 2026 & 2027" />
         <meta name="twitter:description" content="Complete guide to registering a sole proprietorship in Kenya. Step-by-step eCitizen registration, costs, requirements, permits & tax guide." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&h=630&fit=crop" />
         

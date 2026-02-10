@@ -382,12 +382,12 @@ const PartnershipLLPRegistrationKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Partnership & LLP Registration Kenya – Guide 2025</title>
+        <title>Partnership & LLP Registration Kenya – Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to partnership and LLP registration in Kenya. Step-by-step process, costs, partnership deed, tax requirements, and legal responsibilities." />
         <link rel="canonical" href="https://yoursite.com/partnership-llp-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Partnership & LLP Registration Kenya – Complete Guide 2025" />
+        <meta property="og:title" content="Partnership & LLP Registration Kenya – Complete Guide 2026 & 2027" />
         <meta property="og:description" content="Register a general partnership or LLP in Kenya. Step-by-step guide, costs, partnership deed, profit sharing, tax compliance & legal requirements." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/partnership-llp-registration-kenya" />
@@ -395,7 +395,7 @@ const PartnershipLLPRegistrationKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Partnership & LLP Registration Kenya – Guide 2025" />
+        <meta name="twitter:title" content="Partnership & LLP Registration Kenya – Guide 2026 & 2027" />
         <meta name="twitter:description" content="Step-by-step guide to registering a partnership or LLP in Kenya. Includes partnership deed, costs, tax, profit sharing & legal requirements." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         

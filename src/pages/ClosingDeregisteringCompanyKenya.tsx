@@ -308,12 +308,12 @@ const ClosingDeregisteringCompanyKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Close Business Kenya – Deregistration Guide 2025</title>
+        <title>Close Business Kenya – Deregistration Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to closing or deregistering a business or company in Kenya. Step-by-step legal process, forms, costs, tax requirements & how to avoid penalties." />
         <link rel="canonical" href="https://yoursite.com/closing-or-deregistering-company-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Close Business Kenya – Complete Deregistration Guide 2025" />
+        <meta property="og:title" content="Close Business Kenya – Complete Deregistration Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to legally closing a sole proprietorship or limited company in Kenya. Forms, costs, tax clearance, timeline & legal requirements." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/closing-or-deregistering-company-kenya" />
@@ -321,7 +321,7 @@ const ClosingDeregisteringCompanyKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Close Business Kenya – Deregistration Guide 2025" />
+        <meta name="twitter:title" content="Close Business Kenya – Deregistration Guide 2026 & 2027" />
         <meta name="twitter:description" content="Legal guide to closing a business in Kenya. Sole proprietor & company deregistration, tax clearance, forms, costs & step-by-step process." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         

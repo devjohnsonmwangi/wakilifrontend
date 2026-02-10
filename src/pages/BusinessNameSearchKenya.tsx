@@ -187,16 +187,16 @@ const BusinessNameSearchKenya = () => {
   return (
     <>
       <Helmet>
-        <title>Business Name Search & Reservation Kenya – eCitizen Guide 2025</title>
+        <title>Business Name Search & Reservation Kenya – eCitizen Guide 2026 & 2027</title>
         <meta name="description" content="Check business name availability in Kenya on eCitizen. Complete guide to name search, reservation (6 months), rules, fees. Step-by-step instructions & legal requirements." />
         <meta name="keywords" content="business name search kenya, check name availability kenya, name reservation kenya, ecitizen name search, business name check online, register business name, name approval kenya" />
         <link rel="canonical" href="https://wakili.co.ke/business-name-search-kenya" />
-        <meta property="og:title" content="Business Name Search & Reservation in Kenya – eCitizen Guide" />
+        <meta property="og:title" content="Business Name Search & Reservation in Kenya – eCitizen Guide 2026 & 2027" />
         <meta property="og:description" content="Learn how to search, check availability, and reserve your business name in Kenya. Complete legal guide with step-by-step instructions." />
         <meta property="og:type" content="article" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Business Name Search Kenya – eCitizen Name Reservation Guide" />
+        <meta name="twitter:title" content="Business Name Search Kenya – eCitizen Name Reservation Guide 2026 & 2027" />
         <meta name="twitter:description" content="Step-by-step guide to search availability and reserve your business name on eCitizen. Free/KES 500 reservation fee." />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         

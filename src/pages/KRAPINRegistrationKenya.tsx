@@ -281,12 +281,12 @@ const KRAPINRegistrationKenya = () => {
   return (
     <>
       <Helmet>
-        <title>KRA PIN Registration Kenya – iTax Guide 2025</title>
+        <title>KRA PIN Registration Kenya – iTax Guide 2026 & 2027</title>
         <meta name="description" content="Complete guide to KRA PIN registration for businesses & companies in Kenya. Step-by-step iTax registration, costs, documents, penalties & tax compliance guide." />
         <link rel="canonical" href="https://yoursite.com/kra-pin-for-business-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="KRA PIN Registration Kenya – Complete iTax Guide 2025" />
+        <meta property="og:title" content="KRA PIN Registration Kenya – Complete iTax Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to registering for a KRA PIN in Kenya via iTax. All business types, free registration, tax obligations & compliance requirements." />
         <meta property="og:type" content="article" />
         <meta property="og:url" content="https://yoursite.com/kra-pin-for-business-kenya" />
@@ -294,7 +294,7 @@ const KRAPINRegistrationKenya = () => {
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="KRA PIN Registration Kenya – Complete iTax Guide 2025" />
+        <meta name="twitter:title" content="KRA PIN Registration Kenya – Complete iTax Guide 2026 & 2027" />
         <meta name="twitter:description" content="Step-by-step KRA PIN registration guide for all business types. Free, online, 15-30 minutes. Tax compliance & penalties explained." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1460925895917-aeb19be489c7?w=1200&h=630&fit=crop" />
         
