@@ -285,7 +285,8 @@ const LandDisputesKenya: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="content-full-width">
+      <div className="max-w-7xl mx-auto px-0 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16 grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar TOC */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
@@ -939,6 +940,7 @@ const LandDisputesKenya: React.FC = () => {
             </div>
           </section>
         </div>
+      </div>
       </div>
 
       {/* Footer */}

@@ -289,9 +289,10 @@ const AdversePossessionKenya: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16">
-        {/* TOC - Horizontal Scroll on Mobile, Vertical Sidebar on Desktop */}
-        <div className="mb-8 lg:hidden">
+      <div className="content-full-width">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12 md:py-16">
+          {/* TOC - Horizontal Scroll on Mobile, Vertical Sidebar on Desktop */}
+          <div className="mb-8 lg:hidden">
           <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <ScrollText className="w-5 h-5 text-purple-600" />
@@ -867,6 +868,7 @@ const AdversePossessionKenya: React.FC = () => {
             </section>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Footer */}

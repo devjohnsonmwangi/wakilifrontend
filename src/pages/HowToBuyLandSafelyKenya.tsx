@@ -412,8 +412,9 @@ const HowToBuyLandSafelyKenya: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="content-full-width">
+          <div className="max-w-5xl mx-auto px-0 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sticky Table of Contents */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 bg-white rounded-lg shadow-md p-4 h-fit">
@@ -1074,6 +1075,7 @@ const HowToBuyLandSafelyKenya: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
     </div>
   );
 };

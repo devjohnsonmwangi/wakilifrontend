@@ -110,7 +110,8 @@ const DivorceLawKenya = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12">
+      <div className="content-full-width">
+        <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12">
         
         {/* Section 1: Constitution of Kenya 2010 */}
         <section className="mb-16 bg-gradient-to-br from-white via-blue-50 to-indigo-50 rounded-2xl shadow-xl p-8 md:p-10 hover:shadow-2xl transition-all duration-300 border-2 border-blue-200">
@@ -1242,6 +1243,7 @@ const DivorceLawKenya = () => {
         </section>
 
       </main>
+      </div>
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 text-white py-12 px-4 md:px-8">

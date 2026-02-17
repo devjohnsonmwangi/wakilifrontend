@@ -271,7 +271,8 @@ const LeaseholdFreeholdKenya: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-0 sm:px-4 md:px-8 py-12 sm:py-20 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="content-full-width">
+        <div className="max-w-7xl mx-auto px-0 sm:px-4 md:px-8 py-12 sm:py-20 grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* TOC - Horizontal Scroll on Mobile, Vertical Sidebar on Desktop */}
         <div className="mb-8 lg:hidden">
           <div className="overflow-x-auto -mx-2 px-2 pb-2">
@@ -849,6 +850,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
             </div>
           </section>
         </div>
+      </div>
       </div>
 
       {/* Professional Footer */}

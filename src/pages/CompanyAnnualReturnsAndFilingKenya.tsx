@@ -270,7 +270,7 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
   }, []);
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <Helmet>
         <title>Company Annual Returns Kenya – CR12 Filing & Compliance Guide</title>
         <meta name="description" content="Complete guide to filing company annual returns in Kenya. Step-by-step CR12 filing on eCitizen, deadlines, penalties, and compliance requirements for registered companies." />
@@ -357,10 +357,8 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
       </Helmet>
 
       {/* Main Content */}
-      <div className="min-h-screen bg-gray-50">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 text-white py-12 md:py-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="content-full-width">
+      <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-8 py-12">
             <div className="flex items-start gap-3 mb-4">
               <FileText className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Company Annual Returns in Kenya – CR12 Filing & Compliance Guide</h1>
@@ -1125,8 +1123,8 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
             </div>
           </section>
         </div>
-      </div>
-    </>
+    </div>
+
   );
 };
 

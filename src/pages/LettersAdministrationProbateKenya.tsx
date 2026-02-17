@@ -382,7 +382,8 @@ const LettersAdministrationProbateKenya = () => {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12">
+      <div className="content-full-width">
+        <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-8 py-8 sm:py-12">
         
         {/* Section 1: What Are Letters of Administration */}
         <section id="what-are-letters" className="mb-16">
@@ -1245,6 +1246,7 @@ const LettersAdministrationProbateKenya = () => {
         </section>
 
       </main>
+      </div>
 
       {/* Footer Note */}
       <footer className="bg-gray-100 border-t border-gray-300 py-8">

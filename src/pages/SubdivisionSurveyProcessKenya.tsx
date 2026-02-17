@@ -291,7 +291,8 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-8 py-8 md:py-12">
+      <div className="content-full-width">
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-8 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Mobile Horizontal TOC */}
           <div className="mb-8 lg:hidden">
@@ -808,6 +809,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
             </section>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Footer */}

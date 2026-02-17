@@ -431,7 +431,8 @@ const CR12CompanySearchKenya = () => {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="content-full-width">
+        <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-8 py-12">
           {/* Breadcrumb */}
           <nav className="mb-8 text-sm text-gray-600">
             <ol className="flex items-center gap-2">
@@ -1089,6 +1090,7 @@ const CR12CompanySearchKenya = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </>
   );

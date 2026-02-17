@@ -356,6 +356,25 @@ const CompanyAnnualReturnsKenya = () => {
           </div>
         </div>
 
+        <div className="content-full-width">
+        <div className="max-w-6xl mx-auto px-0 sm:px-4 md:px-8 py-12">
+            <div className="flex items-start gap-3 mb-4">
+              <FileText className="w-8 h-8 flex-shrink-0" />
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Company Annual Returns & Compliance in Kenya</h1>
+            </div>
+            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to filing company annual returns on eCitizen. Learn mandatory deadlines, penalties for late filing, compliance requirements, and step-by-step filing instructions for Kenya.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                File Annual Returns
+              </a>
+              <a href="/company-cr12-and-search-kenya" className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2">
+                Check Company Status <ArrowRight className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Breadcrumb */}
           <nav className="mb-8 text-sm text-gray-600">

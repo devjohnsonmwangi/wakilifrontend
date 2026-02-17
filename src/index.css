@@ -3,6 +3,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile width safety for public pages */
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+img,
+video,
+canvas,
+svg,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+
+pre,
+code,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li {
+  overflow-wrap: anywhere;
+}
+
+/* Full-width content sections below hero on mobile - public pages */
+@media (max-width: 768px) {
+  /* Extend main content containers to full screen width on mobile */
+  .content-full-width {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Override max-w for full-width sections on mobile */
+  .content-full-width .max-w-7xl {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Ensure cards and sections stretch on mobile */
+  .content-full-width > div {
+    width: 100%;
+  }
+
+  /* Adjust grid layouts for mobile full-width */
+  .content-full-width .grid {
+    grid-template-columns: 1fr !important;
+    padding: 0;
+  }
+
+  /* Ensure no horizontal scroll */
+  .content-full-width {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Tablet adjustments - reduce padding on medium screens */
+  .content-full-width {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
 /* --- Hero Animated Background Styles --- */
 .hero-animated-bg {
   position: relative;
