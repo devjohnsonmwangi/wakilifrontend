@@ -1092,7 +1092,7 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
             </div>
           </section>
 
-          {/* Internal Links */}
+          {/* Internal Links */}  
           <section className="mt-12 pt-8 border-t-2 border-gray-200">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Related Business & Compliance Guides</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

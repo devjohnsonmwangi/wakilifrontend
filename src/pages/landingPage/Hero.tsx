@@ -13,6 +13,7 @@ const Hero = () => {
 
     const [contentLoaded, setContentLoaded] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
     useEffect(() => {
         const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -320,6 +321,164 @@ const Hero = () => {
                             <div key={index} className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-600 transition-colors">
                                 <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">{item.title}</h4>
                                 <p className="text-xs text-slate-600 dark:text-gray-400">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Frequently Asked Questions Section */}
+                <div className="mt-12">
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">
+                        Answers to Your Most Common Legal Questions
+                    </h3>
+                    <div className="max-w-4xl mx-auto">
+                        <div className="space-y-4">
+                            {[
+                                {
+                                    q: "How do I get legal help in Kenya without going to court?",
+                                    a: "Many legal issues can be solved through negotiation, mediation, or legal documentation without court involvement. Our lawyers draft demand letters, settlement agreements, and legal documents to resolve disputes faster and cheaper than court cases. We only proceed to court if necessary."
+                                },
+                                {
+                                    q: "How much does it cost to hire a lawyer in Kenya?",
+                                    a: "Legal costs vary based on the complexity of your case. Simple consultations start from KES 2,000-5,000. Full representation can range from KES 20,000-100,000+ depending on case type. We offer transparent quotes upfront so you know exact costs before committing."
+                                },
+                                {
+                                    q: "What is the fastest way to resolve a landlord-tenant dispute in Kenya?",
+                                    a: "Start with a formal demand letter from a lawyer (KES 2,000-5,000). If the landlord/tenant ignores it, file at the Resident Magistrate Court. Most cases resolve within 3-6 months. Escalating to court costs more (KES 10,000-30,000+) but strengthens your legal position significantly."
+                                },
+                                {
+                                    q: "Can I file for divorce online in Kenya?",
+                                    a: "No - divorce cases must be filed at the Family Division of the High Court. However, our lawyers handle the entire process including document preparation, court filing, and hearings. Uncontested divorces (both parties agree) take 3-6 months and cost KES 30,000-50,000."
+                                },
+                                {
+                                    q: "What documents do I need if I'm evicted without notice in Kenya?",
+                                    a: "Collect: (1) Original tenancy agreement, (2) Proof of rent payment, (3) Communications from landlord, (4) Photos/videos of the property. These documents are crucial for your case. Our lawyers use them to challenge illegal evictions and recover compensation for wrongful eviction."
+                                },
+                                {
+                                    q: "How long does it take to recover unpaid debt in Kenya?",
+                                    a: "A simple debt recovery takes 2-4 weeks if handled out of court (demand letter + settlement). Court cases take 6-12 months. Success depends on the debtor's financial status and existence of written proof. Payment plans can speed this up significantly."
+                                },
+                                {
+                                    q: "Do I need a lawyer to draft a will in Kenya?",
+                                    a: "It's highly recommended. A lawyer ensures your will is legally valid, properly witnessed, and clearly written to avoid future disputes. Professional will drafting costs KES 5,000-15,000 and prevents costly family litigation later (which can cost hundreds of thousands)."
+                                },
+                                {
+                                    q: "What should I do if I'm unfairly dismissed from my job?",
+                                    a: "Document everything and contact a lawyer within 3 months. You must file at the Employment Court within this timeframe. Wrongful dismissal claims can recover 12+ months' salary. Companies often settle to avoid court costs, so a lawyer's demand letter is powerful."
+                                }
+                            ].map((faq, idx) => (
+                                <div
+                                    key={idx}
+                                    className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-emerald-300 dark:hover:border-emerald-600 transition-colors"
+                                >
+                                    <button
+                                        onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
+                                        className="w-full px-6 py-4 flex items-start justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                                    >
+                                        <span className="text-base font-semibold text-slate-900 dark:text-white text-left">{faq.q}</span>
+                                        <span className="ml-4 flex-shrink-0">
+                                            {expandedFaq === idx ? (
+                                                <AlertCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                                            ) : (
+                                                <AlertCircle className="h-5 w-5 text-slate-400" />
+                                            )}
+                                        </span>
+                                    </button>
+                                    {expandedFaq === idx && (
+                                        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-200 dark:border-slate-700">
+                                            <p className="text-sm text-slate-700 dark:text-gray-300 leading-relaxed">{faq.a}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Legal Resources Education Section */}
+                <div className="mt-12">
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white text-center mb-8">
+                        Understanding Your Legal Rights in Kenya
+                    </h3>
+                    <p className="text-center text-slate-600 dark:text-gray-400 max-w-3xl mx-auto mb-8">
+                        Kenya's legal system protects your rights under the Constitution and various laws. Understanding these rights helps you know when you need legal help and what to expect during legal processes.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {[
+                            {
+                                title: "Tenant Rights in Kenya (2024)",
+                                content: [
+                                    "✓ Right to a valid tenancy agreement (must be in writing)",
+                                    "✓ Right to peaceful occupation and use of the property",
+                                    "✓ Protection against arbitrary eviction (must follow legal procedure)",
+                                    "✓ Right to proper notice before eviction (usually 30-60 days)",
+                                    "✓ Right to recover security deposit within 30 days of moving out",
+                                    "✓ Protection against retaliatory action for reporting repairs"
+                                ]
+                            },
+                            {
+                                title: "Employee Rights Under Kenya's Employment Law",
+                                content: [
+                                    "✓ Right to written employment contract with clear terms",
+                                    "✓ Minimum wage protection (varies by industry and region)",
+                                    "✓ Right to paid leave (minimum 21 days annually)",
+                                    "✓ Right to severance pay if let go without cause",
+                                    "✓ Protection against workplace discrimination (gender, age, religion)",
+                                    "✓ Right to safe working conditions under OSHA regulations"
+                                ]
+                            },
+                            {
+                                title: "Property Owner Rights in Kenya",
+                                content: [
+                                    "✓ Right to exclusive ownership and control of your property",
+                                    "✓ Right to sell or transfer your property freely",
+                                    "✓ Protection against trespass and unauthorized occupation",
+                                    "✓ Right to proper title verification and registration",
+                                    "✓ Right to collect rent and enforce tenancy agreements",
+                                    "✓ Right to inherit property under succession laws"
+                                ]
+                            },
+                            {
+                                title: "Family Law Rights & Protections",
+                                content: [
+                                    "✓ Right to child custody determined in child's best interest",
+                                    "✓ Right to fair property division during divorce/separation",
+                                    "✓ Right to seek maintenance/child support payments",
+                                    "✓ Protection against domestic violence and harassment",
+                                    "✓ Right to inheritance of spouse's property",
+                                    "✓ Recognition of both traditional and civil marriages"
+                                ]
+                            },
+                            {
+                                title: "Consumer Protection Rights",
+                                content: [
+                                    "✓ Right to accurate product information and labeling",
+                                    "✓ Right to refund/replacement for faulty goods",
+                                    "✓ Protection against misleading advertising",
+                                    "✓ Right to fair pricing and protection from exploitation",
+                                    "✓ Right to complaint mechanism and dispute resolution",
+                                    "✓ Protection for online purchases and e-commerce"
+                                ]
+                            },
+                            {
+                                title: "Business & Contract Rights",
+                                content: [
+                                    "✓ Right to form legal business entities (sole proprietor, company, etc.)",
+                                    "✓ Right to enforce contracts that have consideration",
+                                    "✓ Protection against breach of contract",
+                                    "✓ Right to intellectual property protection (patents, trademarks)",
+                                    "✓ Right to sue for damages if contract violated",
+                                    "✓ Protection under consumer protection regulations"
+                                ]
+                            }
+                        ].map((section, idx) => (
+                            <div key={idx} className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 p-6 rounded-xl border border-slate-200 dark:border-slate-600">
+                                <h4 className="font-bold text-lg text-emerald-700 dark:text-emerald-400 mb-4">{section.title}</h4>
+                                <ul className="space-y-3">
+                                    {section.content.map((item, i) => (
+                                        <li key={i} className="text-sm text-slate-700 dark:text-gray-300">{item}</li>
+                                    ))}
+                                </ul>
                             </div>
                         ))}
                     </div>
