@@ -122,9 +122,10 @@ import NotificationsPage from './features/notifications/components/Notifications
 import GeneralPaymentPortal from './pages/dashboard/main/Payments/generalpayments.tsx';
 import ResetPasswordPage from './pages/resetpasswordpage.tsx';
 import WhatsAppButton from './components/WhatsAppButton.tsx';
+import PublicQualityLayout from './components/content/PublicQualityLayout.tsx';
 
 // --- Router Definition ---
-const router = createBrowserRouter([
+const routes = [
   // Non-Dashboard Routes
   { path: '/', element: <Home />, errorElement: <Error /> },
   { path: 'register', element: <Register />, errorElement: <Error /> },
@@ -231,7 +232,20 @@ const router = createBrowserRouter([
     ],
   },
   { path: '*', element: <Error /> }
-]);
+];
+
+const routesWithQualityLayout = routes.map((route) => {
+  if (!('path' in route) || route.path === 'dashboard' || route.path === '*') {
+    return route;
+  }
+
+  return {
+    ...route,
+    element: <PublicQualityLayout>{route.element}</PublicQualityLayout>,
+  };
+});
+
+const router = createBrowserRouter(routesWithQualityLayout);
 
 // --- Wrapper Component to Manage Socket.IO Connection ---
 export const AppWrapper = () => {
