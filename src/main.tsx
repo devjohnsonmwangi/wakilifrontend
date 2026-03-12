@@ -123,6 +123,7 @@ import GeneralPaymentPortal from './pages/dashboard/main/Payments/generalpayment
 import ResetPasswordPage from './pages/resetpasswordpage.tsx';
 import WhatsAppButton from './components/WhatsAppButton.tsx';
 import PublicQualityLayout from './components/content/PublicQualityLayout.tsx';
+import ContentAuditPage from './pages/dev/ContentAuditPage.tsx';
 
 // --- Router Definition ---
 const routes = [
@@ -245,7 +246,12 @@ const routesWithQualityLayout = routes.map((route) => {
   };
 });
 
-const router = createBrowserRouter(routesWithQualityLayout);
+// Dev-only routes — excluded from production (Vite statically replaces import.meta.env.DEV)
+const devRoutes = import.meta.env.DEV
+  ? [{ path: 'dev/content-audit', element: <ContentAuditPage /> }]
+  : [];
+
+const router = createBrowserRouter([...routesWithQualityLayout, ...devRoutes]);
 
 // --- Wrapper Component to Manage Socket.IO Connection ---
 export const AppWrapper = () => {
