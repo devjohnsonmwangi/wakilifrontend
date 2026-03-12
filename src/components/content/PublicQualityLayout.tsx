@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { getCategoryFaqs, getCategorySources, getPageQualityMeta } from '../../content/pageQualityRegistry';
+import { getCategoryFaqs, getCategorySources, getPageQualityMeta, getRouteDeepContent } from '../../content/pageQualityRegistry';
 
 interface PublicQualityLayoutProps {
   children: React.ReactNode;
@@ -44,6 +44,7 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
   const pageMeta = getPageQualityMeta(pathname);
   const faqs = getCategoryFaqs(pageMeta.category);
   const sourceLinks = getCategorySources(pageMeta.category);
+  const deepContent = getRouteDeepContent(pathname);
 
   const breadcrumbParts = pathname.split('/').filter(Boolean);
   const breadcrumbItems = [
@@ -98,6 +99,21 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
     })),
   };
 
+  const howToSchema = deepContent
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: `${pageMeta.title} Practical Checklist`,
+        description: pageMeta.description,
+        step: deepContent.practicalChecklist.map((item, index) => ({
+          '@type': 'HowToStep',
+          position: index + 1,
+          name: item,
+          text: item,
+        })),
+      }
+    : null;
+
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
@@ -141,6 +157,7 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
         {showContentModules && <script type="application/ld+json">{JSON.stringify(pageSchema)}</script>}
         {showContentModules && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
+        {showContentModules && howToSchema && <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>}
       </Helmet>
 
       {children}
@@ -170,6 +187,33 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
                 ))}
               </div>
             </div>
+
+            {deepContent && (
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5 space-y-5">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Who Should Read This</h3>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{deepContent.whoShouldRead}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Practical Checklist</h4>
+                  <ul className="mt-2 space-y-2 list-disc list-inside text-sm text-slate-600 dark:text-slate-300">
+                    {deepContent.practicalChecklist.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Common Mistakes to Avoid</h4>
+                  <ul className="mt-2 space-y-2 list-disc list-inside text-sm text-slate-600 dark:text-slate-300">
+                    {deepContent.commonMistakes.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Related Legal Guides</h3>

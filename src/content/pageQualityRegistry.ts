@@ -19,6 +19,12 @@ export interface PageQualityMeta {
   authorName: string;
 }
 
+export interface RouteDeepContent {
+  whoShouldRead: string;
+  practicalChecklist: string[];
+  commonMistakes: string[];
+}
+
 const DEFAULT_AUTHOR = 'Wakili Legal Editorial Team';
 const DEFAULT_PUBLISHED = '2026-03-01';
 const DEFAULT_MODIFIED = '2026-03-12';
@@ -230,6 +236,287 @@ const categorySources: Record<ContentCategory, SourceLink[]> = {
   ],
 };
 
+const routeDeepContent: Record<string, RouteDeepContent> = {
+  '/howitworks': {
+    whoShouldRead: 'People who want to understand Wakili service flow before booking legal help.',
+    practicalChecklist: [
+      'Define your legal issue in one clear paragraph.',
+      'Collect key documents before first consultation.',
+      'Confirm expected timelines and fees in writing.',
+      'Track action items after every lawyer interaction.',
+    ],
+    commonMistakes: [
+      'Starting consultations without supporting documents.',
+      'Assuming all legal matters follow the same timeline.',
+      'Delaying follow-up after receiving legal instructions.',
+    ],
+  },
+  '/services': {
+    whoShouldRead: 'Clients comparing legal service options before engaging an advocate.',
+    practicalChecklist: [
+      'Match your issue to the correct service category.',
+      'Ask which deliverables are included in the quoted fee.',
+      'Confirm whether court appearances are covered.',
+      'Request expected milestones and reporting format.',
+    ],
+    commonMistakes: [
+      'Choosing a service based only on initial cost.',
+      'Skipping scope confirmation before payment.',
+      'Not clarifying documents the lawyer needs from you.',
+    ],
+  },
+  '/about': {
+    whoShouldRead: 'Users evaluating content trust and legal editorial standards.',
+    practicalChecklist: [
+      'Review page update dates before relying on guidance.',
+      'Cross-check official source links provided on each page.',
+      'Use contact channels for case-specific legal advice.',
+    ],
+    commonMistakes: [
+      'Treating general guides as case-specific legal opinions.',
+      'Ignoring jurisdiction-specific requirements in Kenya.',
+      'Relying on outdated legal information from other sources.',
+    ],
+  },
+  '/updates': {
+    whoShouldRead: 'Readers who need legal developments that may affect ongoing matters.',
+    practicalChecklist: [
+      'Check publication and update dates on each update.',
+      'Compare changes against your current legal process.',
+      'Consult a lawyer where new rules affect your deadlines.',
+    ],
+    commonMistakes: [
+      'Applying old procedures after regulatory changes.',
+      'Assuming policy updates apply retrospectively in all cases.',
+      'Ignoring transition periods in legal changes.',
+    ],
+  },
+  '/family-law-divorce-kenya': {
+    whoShouldRead: 'Spouses and families preparing for divorce, custody, or maintenance proceedings.',
+    practicalChecklist: [
+      'Gather marriage, identity, and children-related records.',
+      'Document financial contributions and household responsibilities.',
+      'List urgent interim orders you may need from court.',
+      'Plan child welfare arrangements before filing.',
+    ],
+    commonMistakes: [
+      'Filing without complete supporting documentation.',
+      'Escalating conflict instead of preserving evidence.',
+      'Ignoring temporary relief options during case pendency.',
+    ],
+  },
+  '/divorce-in-kenya': {
+    whoShouldRead: 'Individuals planning to start or respond to divorce proceedings in Kenya.',
+    practicalChecklist: [
+      'Confirm the legal ground relied upon in your petition.',
+      'Prepare chronology of events and supporting proof.',
+      'Assess property and maintenance issues early.',
+      'Set expectations on timelines and possible settlement routes.',
+    ],
+    commonMistakes: [
+      'Relying on oral claims without documentary proof.',
+      'Mixing emotional issues with legal pleadings.',
+      'Failing to prepare for service and response timelines.',
+    ],
+  },
+  '/child-law-kenya': {
+    whoShouldRead: 'Parents and guardians handling custody, maintenance, or child protection matters.',
+    practicalChecklist: [
+      'Prioritize the best interests of the child in every step.',
+      'Keep school, medical, and caregiving records organized.',
+      'Document maintenance payments and unmet obligations.',
+      'Prepare a practical parenting schedule proposal.',
+    ],
+    commonMistakes: [
+      'Using children as leverage in disputes.',
+      'Failing to document childcare expenses and support.',
+      'Ignoring enforceability of informal custody arrangements.',
+    ],
+  },
+  '/succession-inheritance-law-kenya': {
+    whoShouldRead: 'Families managing inheritance, estate administration, and beneficiary rights.',
+    practicalChecklist: [
+      'Identify all beneficiaries and estate assets comprehensively.',
+      'Confirm whether a valid will exists and where it is held.',
+      'Collect death certificate and property ownership records.',
+      'Track deadlines for petitions, gazettement, and confirmations.',
+    ],
+    commonMistakes: [
+      'Distributing assets before lawful grant confirmation.',
+      'Excluding potential beneficiaries without legal basis.',
+      'Overlooking debts and liabilities of the estate.',
+    ],
+  },
+  '/land-disputes-kenya': {
+    whoShouldRead: 'Land owners, buyers, or occupants facing ownership or boundary conflicts.',
+    practicalChecklist: [
+      'Secure title records, agreements, and search results.',
+      'Preserve site evidence including boundaries and occupation history.',
+      'Map dispute facts in a clear timeline.',
+      'Explore mediation options before full litigation where suitable.',
+    ],
+    commonMistakes: [
+      'Attempting self-help actions that worsen legal exposure.',
+      'Failing to preserve documentary and survey evidence early.',
+      'Ignoring jurisdiction requirements for the chosen forum.',
+    ],
+  },
+  '/land-ownership-title-deed-verification-kenya': {
+    whoShouldRead: 'Buyers and owners who need to verify title authenticity before transactions.',
+    practicalChecklist: [
+      'Run official land search before paying deposit funds.',
+      'Verify seller identity and authority to transfer.',
+      'Confirm survey, zoning, and planning status.',
+      'Keep all transaction documents signed and traceable.',
+    ],
+    commonMistakes: [
+      'Relying on photocopies without official verification.',
+      'Paying full purchase price before due diligence completion.',
+      'Skipping professional review of sale agreements.',
+    ],
+  },
+  '/how-to-buy-land-safely-kenya': {
+    whoShouldRead: 'First-time and repeat buyers seeking safer land acquisition process in Kenya.',
+    practicalChecklist: [
+      'Conduct legal and survey due diligence before commitment.',
+      'Use written agreements reviewed by a legal professional.',
+      'Pay through traceable channels tied to contractual milestones.',
+      'Complete transfer registration promptly after completion.',
+    ],
+    commonMistakes: [
+      'Trusting verbal assurances instead of verified records.',
+      'Skipping site visit and occupancy checks.',
+      'Ignoring potential encumbrances and restrictions on title.',
+    ],
+  },
+  '/how-to-register-business-kenya': {
+    whoShouldRead: 'Entrepreneurs starting formal businesses and choosing legal structures in Kenya.',
+    practicalChecklist: [
+      'Select structure aligned with liability and growth goals.',
+      'Reserve and verify your business or company name.',
+      'Prepare director/owner information accurately before filing.',
+      'Set post-registration compliance calendar immediately.',
+    ],
+    commonMistakes: [
+      'Registering without understanding tax and compliance duties.',
+      'Using inconsistent names across supporting documents.',
+      'Delaying statutory updates after registration.',
+    ],
+  },
+  '/business-name-search-kenya': {
+    whoShouldRead: 'Founders conducting pre-registration checks to avoid name rejection delays.',
+    practicalChecklist: [
+      'Prepare multiple name alternatives before submission.',
+      'Avoid restricted, misleading, or duplicate naming patterns.',
+      'Ensure spelling consistency with intended branding.',
+      'Keep reservation timelines in your registration schedule.',
+    ],
+    commonMistakes: [
+      'Submitting only one preferred name option.',
+      'Ignoring naming restrictions set by regulators.',
+      'Allowing name reservation to lapse before registration.',
+    ],
+  },
+  '/limited-company-registration-kenya': {
+    whoShouldRead: 'Businesses formalizing operations through limited company structures.',
+    practicalChecklist: [
+      'Define shareholding and director roles before filing.',
+      'Prepare constitutional and compliance documents accurately.',
+      'Set up statutory registers and corporate records early.',
+      'Plan annual returns and tax filing schedule from day one.',
+    ],
+    commonMistakes: [
+      'Unclear shareholding arrangements among founders.',
+      'Failing to maintain corporate records after incorporation.',
+      'Missing annual filing obligations in early years.',
+    ],
+  },
+  '/business-tax-obligations-kenya': {
+    whoShouldRead: 'Business owners managing recurring tax and statutory obligations in Kenya.',
+    practicalChecklist: [
+      'Identify all applicable taxes for your entity and sector.',
+      'Create monthly and annual compliance calendar reminders.',
+      'Maintain transaction records in an audit-ready format.',
+      'Review filings periodically with a qualified professional.',
+    ],
+    commonMistakes: [
+      'Assuming one tax registration covers all obligations.',
+      'Poor bookkeeping leading to filing and penalty risk.',
+      'Late returns due to absent compliance workflows.',
+    ],
+  },
+  '/elections-in-kenya': {
+    whoShouldRead: 'Citizens, candidates, and observers seeking election process clarity in Kenya.',
+    practicalChecklist: [
+      'Confirm applicable election timelines and procedural stages.',
+      'Use official IEBC communication channels for updates.',
+      'Document incidents with dates, places, and supporting proof.',
+      'Escalate disputes to the correct forum within legal timelines.',
+    ],
+    commonMistakes: [
+      'Filing complaints in the wrong forum or too late.',
+      'Relying on unverified social media claims as evidence.',
+      'Ignoring statutory dispute resolution deadlines.',
+    ],
+  },
+  '/how-to-register-as-a-voter-kenya': {
+    whoShouldRead: 'Eligible citizens preparing for voter registration and verification.',
+    practicalChecklist: [
+      'Confirm eligibility and required registration documents.',
+      'Verify details after registration to catch errors early.',
+      'Track voter transfer and update windows where relevant.',
+      'Retain acknowledgment details for future verification.',
+    ],
+    commonMistakes: [
+      'Waiting until late windows to attempt registration.',
+      'Not checking registered station details after enrollment.',
+      'Using incomplete identification information.',
+    ],
+  },
+  '/election-results-declaration-kenya': {
+    whoShouldRead: 'Stakeholders monitoring result declaration and legal challenge timelines.',
+    practicalChecklist: [
+      'Track official declaration forms and publication points.',
+      'Record discrepancies immediately with specific references.',
+      'Map challenge timelines from declaration date and time.',
+      'Preserve evidence chain for any petition process.',
+    ],
+    commonMistakes: [
+      'Missing strict deadlines for contesting results.',
+      'Submitting generalized complaints without precise records.',
+      'Failing to authenticate documentary evidence.',
+    ],
+  },
+  '/kenya-employment-labour-laws': {
+    whoShouldRead: 'Employees and employers handling workplace rights and obligations in Kenya.',
+    practicalChecklist: [
+      'Review contract terms against current workplace practice.',
+      'Keep records of notices, warnings, and disciplinary meetings.',
+      'Document payroll, leave, and benefit compliance status.',
+      'Address disputes early through structured internal process.',
+    ],
+    commonMistakes: [
+      'Treating verbal arrangements as legally sufficient records.',
+      'Skipping procedural fairness in disciplinary actions.',
+      'Ignoring statutory timelines during dispute escalation.',
+    ],
+  },
+  '/termination-redundancy-severance-kenya': {
+    whoShouldRead: 'Employers and employees facing separation, redundancy, or severance decisions.',
+    practicalChecklist: [
+      'Confirm legal basis for termination or redundancy process.',
+      'Issue required notices and conduct procedural hearings.',
+      'Calculate dues and severance transparently with records.',
+      'Provide final documentation and payment confirmations.',
+    ],
+    commonMistakes: [
+      'Terminating without complete procedural documentation.',
+      'Miscalculating final dues and statutory payments.',
+      'Failing to communicate reasons and process clearly.',
+    ],
+  },
+};
+
 const getCategoryFromPath = (pathname: string): ContentCategory => {
   if (/divorce|family|child|succession|probate|will/i.test(pathname)) return 'family';
   if (/land|title|leasehold|freehold|survey|zoning|rates|property/i.test(pathname)) return 'land';
@@ -266,3 +553,5 @@ export const getPageQualityMeta = (pathname: string): PageQualityMeta => {
 export const getCategoryFaqs = (category: ContentCategory): FaqItem[] => categoryFaqs[category];
 
 export const getCategorySources = (category: ContentCategory): SourceLink[] => categorySources[category];
+
+export const getRouteDeepContent = (pathname: string): RouteDeepContent | null => routeDeepContent[pathname] ?? null;
