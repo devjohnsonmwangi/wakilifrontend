@@ -4,7 +4,7 @@ import { RootState } from '../../app/store';
 // import heroMainBackground from '../../assets/images/landingPage/loginandregisterimage.webp'; 
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { Shield, ArrowRight, Scale, Users, Clock, CheckCircle, Phone, Star } from 'lucide-react';
+import { Shield, ArrowRight, Scale, Users, Clock, CheckCircle, Phone, Star, AlertCircle } from 'lucide-react';
 
 
 const Hero = () => {
