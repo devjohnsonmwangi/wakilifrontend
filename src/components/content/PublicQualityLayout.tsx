@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { getCategoryFaqs, getCategorySources, getPageQualityMeta } from '../../content/pageQualityRegistry';
 
 interface PublicQualityLayoutProps {
   children: React.ReactNode;
@@ -30,16 +31,6 @@ const relatedGuides = [
   { to: '/howitworks', label: 'How Wakili Works' },
 ];
 
-const toReadableTitle = (pathname: string): string => {
-  if (pathname === '/') return 'Find a Lawyer in Kenya';
-  const slug = pathname.replace(/^\//, '').replace(/-/g, ' ').trim();
-  if (!slug) return 'Legal Services Kenya';
-  return slug
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
-
 const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
 
@@ -50,8 +41,9 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
 
   const canonicalPath = pathname === '/' ? '' : pathname;
   const canonicalUrl = `${SITE_URL}${canonicalPath}`;
-  const headline = toReadableTitle(pathname);
-  const dateModified = new Date().toISOString();
+  const pageMeta = getPageQualityMeta(pathname);
+  const faqs = getCategoryFaqs(pageMeta.category);
+  const sourceLinks = getCategorySources(pageMeta.category);
 
   const breadcrumbParts = pathname.split('/').filter(Boolean);
   const breadcrumbItems = [
@@ -75,19 +67,35 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
   const pageSchema = {
     '@context': 'https://schema.org',
     '@type': isPolicy ? 'WebPage' : 'Article',
-    headline,
+    headline: pageMeta.title,
+    description: pageMeta.description,
     inLanguage: 'en-KE',
     mainEntityOfPage: canonicalUrl,
-    dateModified,
+    datePublished: pageMeta.datePublished,
+    dateModified: pageMeta.dateModified,
+    about: pageMeta.category,
     author: {
       '@type': 'Organization',
-      name: 'Wakili Legal Editorial Team',
+      name: pageMeta.authorName,
     },
     publisher: {
       '@type': 'Organization',
       name: 'Wakili',
       url: SITE_URL,
     },
+  };
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
   };
 
   const websiteSchema = {
@@ -115,14 +123,24 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
   return (
     <>
       <Helmet>
+        <title>{pageMeta.title}</title>
         <link rel="canonical" href={canonicalUrl} />
-        <meta name="author" content="Wakili Legal Editorial Team" />
+        <meta name="description" content={pageMeta.description} />
+        <meta property="og:title" content={pageMeta.title} />
+        <meta property="og:description" content={pageMeta.description} />
+        <meta property="og:type" content={isPolicy ? 'website' : 'article'} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageMeta.title} />
+        <meta name="twitter:description" content={pageMeta.description} />
+        <meta name="author" content={pageMeta.authorName} />
         <meta name="publisher" content="Wakili" />
         <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
         {showContentModules && <script type="application/ld+json">{JSON.stringify(pageSchema)}</script>}
+        {showContentModules && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
       </Helmet>
 
       {children}
@@ -133,12 +151,24 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Editorial Standards</h2>
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
-                This page is reviewed by the Wakili Legal Editorial Team and updated for legal relevance in Kenya.
+                This page is reviewed by the {pageMeta.authorName} and updated for legal relevance in Kenya.
                 Content is educational and does not replace legal advice for your specific case.
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Last updated: {new Date().toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                Published: {new Date(pageMeta.datePublished).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })} • Last updated: {new Date(pageMeta.dateModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Quick Questions</h3>
+              <div className="mt-3 space-y-3">
+                {faqs.map((faq) => (
+                  <details key={faq.question} className="group rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-slate-900 dark:text-white">{faq.question}</summary>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
@@ -154,6 +184,24 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
                   </Link>
                 ))}
               </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Primary Legal Sources</h3>
+              <ul className="mt-3 space-y-2">
+                {sourceLinks.map((source) => (
+                  <li key={source.url}>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+                    >
+                      {source.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
