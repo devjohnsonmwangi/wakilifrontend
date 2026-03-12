@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { getCategoryFaqs, getCategorySources, getPageQualityMeta, getRouteDeepContent } from '../../content/pageQualityRegistry';
+import { getCategoryFaqs, getCategorySources, getContextualLinks, getEditorialTeamInfo, getEvidenceNotes, getPageQualityMeta, getRouteDeepContent } from '../../content/pageQualityRegistry';
 
 interface PublicQualityLayoutProps {
   children: React.ReactNode;
@@ -22,15 +22,6 @@ const policyPaths = new Set([
   '/cookies',
 ]);
 
-const relatedGuides = [
-  { to: '/family-law-divorce-kenya', label: 'Family Law in Kenya' },
-  { to: '/land-disputes-kenya', label: 'Land Disputes in Kenya' },
-  { to: '/how-to-register-business-kenya', label: 'Business Registration in Kenya' },
-  { to: '/kenya-employment-labour-laws', label: 'Employment Law in Kenya' },
-  { to: '/updates', label: 'Legal News & Updates' },
-  { to: '/howitworks', label: 'How Wakili Works' },
-];
-
 const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) => {
   const { pathname } = useLocation();
 
@@ -44,7 +35,10 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
   const pageMeta = getPageQualityMeta(pathname);
   const faqs = getCategoryFaqs(pageMeta.category);
   const sourceLinks = getCategorySources(pageMeta.category);
-  const deepContent = getRouteDeepContent(pathname);
+  const deepContent = getRouteDeepContent(pathname, pageMeta.category);
+  const contextualLinks = getContextualLinks(pathname, pageMeta.category);
+  const editorialTeam = getEditorialTeamInfo(pathname, pageMeta.category);
+  const evidenceNotes = getEvidenceNotes(pathname, pageMeta.category);
 
   const breadcrumbParts = pathname.split('/').filter(Boolean);
   const breadcrumbItems = [
@@ -76,8 +70,14 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
     dateModified: pageMeta.dateModified,
     about: pageMeta.category,
     author: {
-      '@type': 'Organization',
-      name: pageMeta.authorName,
+      '@type': 'Person',
+      name: editorialTeam.author.name,
+      jobTitle: editorialTeam.author.role,
+    },
+    reviewedBy: {
+      '@type': 'Person',
+      name: editorialTeam.reviewer.name,
+      jobTitle: editorialTeam.reviewer.role,
     },
     publisher: {
       '@type': 'Organization',
@@ -136,6 +136,22 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
     itemListElement: breadcrumbItems,
   };
 
+  const authorSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: editorialTeam.author.name,
+    jobTitle: editorialTeam.author.role,
+    description: editorialTeam.author.experience,
+  };
+
+  const reviewerSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: editorialTeam.reviewer.name,
+    jobTitle: editorialTeam.reviewer.role,
+    description: editorialTeam.reviewer.experience,
+  };
+
   return (
     <>
       <Helmet>
@@ -149,12 +165,14 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageMeta.title} />
         <meta name="twitter:description" content={pageMeta.description} />
-        <meta name="author" content={pageMeta.authorName} />
+        <meta name="author" content={editorialTeam.author.name} />
         <meta name="publisher" content="Wakili" />
         <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
         <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        {showContentModules && <script type="application/ld+json">{JSON.stringify(authorSchema)}</script>}
+        {showContentModules && <script type="application/ld+json">{JSON.stringify(reviewerSchema)}</script>}
         {showContentModules && <script type="application/ld+json">{JSON.stringify(pageSchema)}</script>}
         {showContentModules && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
         {showContentModules && howToSchema && <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>}
@@ -168,12 +186,30 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Editorial Standards</h2>
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
-                This page is reviewed by the {pageMeta.authorName} and updated for legal relevance in Kenya.
+                This page is reviewed by the {editorialTeam.reviewer.name} and updated for legal relevance in Kenya.
                 Content is educational and does not replace legal advice for your specific case.
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                 Published: {new Date(pageMeta.datePublished).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })} • Last updated: {new Date(pageMeta.dateModified).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Editorial Team</h3>
+              <div className="mt-3 grid md:grid-cols-2 gap-4 text-sm">
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                  <p className="font-semibold text-slate-900 dark:text-white">Author: {editorialTeam.author.name}</p>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">{editorialTeam.author.role}</p>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">{editorialTeam.author.experience}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Focus: {editorialTeam.author.focusAreas.join(' • ')}</p>
+                </div>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                  <p className="font-semibold text-slate-900 dark:text-white">Reviewer: {editorialTeam.reviewer.name}</p>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">{editorialTeam.reviewer.role}</p>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">{editorialTeam.reviewer.experience}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Focus: {editorialTeam.reviewer.focusAreas.join(' • ')}</p>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
@@ -216,9 +252,9 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
             )}
 
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Related Legal Guides</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Related in This Topic</h3>
               <div className="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {relatedGuides.map((guide) => (
+                {contextualLinks.map((guide) => (
                   <Link
                     key={guide.to}
                     to={guide.to}
@@ -243,6 +279,19 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
                     >
                       {source.label}
                     </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Evidence and Source Notes</h3>
+              <ul className="mt-3 space-y-3">
+                {evidenceNotes.map((note) => (
+                  <li key={note.claim} className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{note.claim}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Verification tip: {note.verificationTip}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Primary reference: {note.sourceLabel}</p>
                   </li>
                 ))}
               </ul>

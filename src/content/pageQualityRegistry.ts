@@ -25,6 +25,29 @@ export interface RouteDeepContent {
   commonMistakes: string[];
 }
 
+export interface ContextualLink {
+  to: string;
+  label: string;
+}
+
+export interface EditorialProfile {
+  name: string;
+  role: string;
+  experience: string;
+  focusAreas: string[];
+}
+
+export interface EditorialTeamInfo {
+  author: EditorialProfile;
+  reviewer: EditorialProfile;
+}
+
+export interface EvidenceNote {
+  claim: string;
+  verificationTip: string;
+  sourceLabel: string;
+}
+
 const DEFAULT_AUTHOR = 'Wakili Legal Editorial Team';
 const DEFAULT_PUBLISHED = '2026-03-01';
 const DEFAULT_MODIFIED = '2026-03-12';
@@ -515,7 +538,669 @@ const routeDeepContent: Record<string, RouteDeepContent> = {
       'Failing to communicate reasons and process clearly.',
     ],
   },
+  '/divorce-law-in-kenya': {
+    whoShouldRead: 'Readers who need legal grounds and procedural expectations for divorce matters in Kenya.',
+    practicalChecklist: [
+      'Confirm applicable legal ground and supporting facts.',
+      'Organize communication and evidence records chronologically.',
+      'Identify child, maintenance, and property issues in advance.',
+      'Review procedural timelines with a legal professional.',
+    ],
+    commonMistakes: [
+      'Basing pleadings on allegations without proof.',
+      'Ignoring interim applications where urgent relief is needed.',
+      'Missing procedural deadlines for responses and filings.',
+    ],
+  },
+  '/letters-of-administration-probate-kenya': {
+    whoShouldRead: 'Families applying for grants and handling estate administration lawfully.',
+    practicalChecklist: [
+      'List beneficiaries and estate assets with supporting documents.',
+      'Prepare petition documents and mandatory notices accurately.',
+      'Track gazette and objection timelines.',
+      'Document all administrator actions for transparency.',
+    ],
+    commonMistakes: [
+      'Proceeding with distribution before grant confirmation.',
+      'Leaving out beneficiaries or material assets.',
+      'Failing to keep records of estate transactions.',
+    ],
+  },
+  '/land-transfer-after-death': {
+    whoShouldRead: 'Families and buyers involved in post-death land transfer procedures.',
+    practicalChecklist: [
+      'Confirm lawful administrator authority before transfer.',
+      'Verify title and succession documents are consistent.',
+      'Prepare transfer instruments with proper execution.',
+      'Complete registration and retain stamped records.',
+    ],
+    commonMistakes: [
+      'Attempting transfer without succession compliance.',
+      'Using incomplete transfer forms.',
+      'Ignoring encumbrances on the property title.',
+    ],
+  },
+  '/land-transfer-process-kenya': {
+    whoShouldRead: 'Buyers and sellers managing legal transfer completion steps in Kenya.',
+    practicalChecklist: [
+      'Verify title, encumbrances, and ownership before signing.',
+      'Use a complete sale agreement with clear conditions.',
+      'Ensure taxes, fees, and consents are properly handled.',
+      'Register transfer promptly after completion.',
+    ],
+    commonMistakes: [
+      'Skipping due diligence to move quickly.',
+      'Making final payment before completion conditions are met.',
+      'Failing to record all transfer-related payments and receipts.',
+    ],
+  },
+  '/adverse-possession-kenya': {
+    whoShouldRead: 'Occupants and owners assessing long-term occupation claims in Kenya.',
+    practicalChecklist: [
+      'Document possession history and continuity clearly.',
+      'Gather supporting witness and boundary evidence.',
+      'Assess interruption events that may affect claim strength.',
+      'Obtain legal review before commencing court process.',
+    ],
+    commonMistakes: [
+      'Assuming time period alone guarantees success.',
+      'Ignoring evidence of consent or permission.',
+      'Filing without clear possession chronology.',
+    ],
+  },
+  '/leasehold-freehold-kenya': {
+    whoShouldRead: 'Property buyers comparing tenure rights and obligations in Kenya.',
+    practicalChecklist: [
+      'Confirm tenure type and remaining lease term.',
+      'Check renewal, user, and consent conditions on title.',
+      'Assess long-term implications for financing and resale.',
+      'Verify compliance requirements for land use changes.',
+    ],
+    commonMistakes: [
+      'Ignoring short lease balance during purchase.',
+      'Assuming freehold and leasehold rights are identical.',
+      'Overlooking title conditions affecting development plans.',
+    ],
+  },
+  '/lost-title-deed-replacement-kenya': {
+    whoShouldRead: 'Owners replacing missing or lost title documents in Kenya.',
+    practicalChecklist: [
+      'Report loss through required legal and administrative channels.',
+      'Prepare affidavits and supporting ownership documents.',
+      'Follow publication and objection procedures where required.',
+      'Track issuance process until replacement is complete.',
+    ],
+    commonMistakes: [
+      'Skipping formal loss reporting steps.',
+      'Submitting replacement request with incomplete records.',
+      'Ignoring waiting periods in replacement workflow.',
+    ],
+  },
+  '/types-of-elections-kenya': {
+    whoShouldRead: 'Citizens and stakeholders comparing legal features of Kenyan election types.',
+    practicalChecklist: [
+      'Identify office-specific rules and qualification thresholds.',
+      'Review nomination, campaign, and dispute timelines.',
+      'Track legal documents required by election type.',
+      'Use official IEBC sources for procedural updates.',
+    ],
+    commonMistakes: [
+      'Applying one election process to all offices.',
+      'Missing office-specific compliance requirements.',
+      'Relying on unofficial procedural interpretations.',
+    ],
+  },
+  '/political-parties-registration-kenya': {
+    whoShouldRead: 'Political organizers handling party registration and regulatory compliance.',
+    practicalChecklist: [
+      'Review statutory thresholds and documentation requirements.',
+      'Prepare governance documents and membership data accurately.',
+      'Track submission milestones and regulator feedback.',
+      'Set compliance process for post-registration obligations.',
+    ],
+    commonMistakes: [
+      'Submitting incomplete constitutional or governance documents.',
+      'Ignoring ongoing compliance after initial registration.',
+      'Missing legal timelines for mandatory updates.',
+    ],
+  },
+  '/election-petitions-disputes-kenya': {
+    whoShouldRead: 'Candidates and voters preparing election petitions or legal responses.',
+    practicalChecklist: [
+      'Identify correct forum and strict filing timeline.',
+      'Compile documentary and witness evidence early.',
+      'Structure pleadings around verifiable legal issues.',
+      'Prepare for costs and procedural requirements.',
+    ],
+    commonMistakes: [
+      'Filing outside statutory timelines.',
+      'Presenting broad complaints without specific evidence.',
+      'Underestimating procedural and cost implications.',
+    ],
+  },
+  '/citizens-rights-duties-elections-kenya': {
+    whoShouldRead: 'Voters seeking practical understanding of electoral rights and responsibilities.',
+    practicalChecklist: [
+      'Verify voter details and station information ahead of time.',
+      'Understand conduct standards at polling venues.',
+      'Report violations through proper legal channels.',
+      'Keep evidence where formal complaints may be required.',
+    ],
+    commonMistakes: [
+      'Assuming all complaints can be made informally.',
+      'Ignoring official dispute reporting pathways.',
+      'Failing to record incident details immediately.',
+    ],
+  },
+  '/become-candidate-kenya': {
+    whoShouldRead: 'Prospective candidates preparing nomination and compliance requirements.',
+    practicalChecklist: [
+      'Confirm eligibility criteria for your target office.',
+      'Prepare nomination documents and supporter records.',
+      'Track key deadlines for clearance and submissions.',
+      'Review campaign compliance obligations early.',
+    ],
+    commonMistakes: [
+      'Starting nomination prep too close to deadlines.',
+      'Using incomplete or inconsistent candidate documentation.',
+      'Ignoring campaign finance and conduct rules.',
+    ],
+  },
+  '/iebc-contacts-offices-kenya': {
+    whoShouldRead: 'Users who need official electoral contacts for support, updates, or complaints.',
+    practicalChecklist: [
+      'Confirm the correct regional office for your issue.',
+      'Prepare clear reference details before outreach.',
+      'Record communication dates and responses received.',
+      'Escalate unresolved issues within formal channels.',
+    ],
+    commonMistakes: [
+      'Contacting the wrong office for jurisdiction-specific issues.',
+      'Submitting vague requests without reference details.',
+      'Failing to keep communication records for follow-up.',
+    ],
+  },
+  '/sole-proprietorship-registration-kenya': {
+    whoShouldRead: 'Founders setting up solo-owned businesses with minimal structure complexity.',
+    practicalChecklist: [
+      'Assess liability exposure before choosing structure.',
+      'Reserve name and complete registration details accurately.',
+      'Set bookkeeping and tax compliance process immediately.',
+      'Confirm permit and sector licensing obligations.',
+    ],
+    commonMistakes: [
+      'Assuming registration alone satisfies all legal requirements.',
+      'Running business without clear financial records.',
+      'Ignoring permit renewals and sector approvals.',
+    ],
+  },
+  '/company-cr12-and-search-kenya': {
+    whoShouldRead: 'Businesses and stakeholders needing verified company record extracts.',
+    practicalChecklist: [
+      'Use correct company identifiers for search requests.',
+      'Verify extracted details against transaction requirements.',
+      'Retain certified records where due diligence is needed.',
+      'Address discrepancies before proceeding with transactions.',
+    ],
+    commonMistakes: [
+      'Relying on outdated record extracts.',
+      'Proceeding despite unresolved director/shareholding inconsistencies.',
+      'Using unofficial records in high-risk transactions.',
+    ],
+  },
+  '/company-annual-returns-kenya': {
+    whoShouldRead: 'Directors and company officers responsible for recurring statutory filings.',
+    practicalChecklist: [
+      'Track filing cycle dates in a compliance calendar.',
+      'Prepare accurate director and shareholding updates.',
+      'Submit returns before deadlines and keep confirmations.',
+      'Review penalties risk for delayed filings.',
+    ],
+    commonMistakes: [
+      'Missing annual filing deadlines repeatedly.',
+      'Submitting returns with outdated company particulars.',
+      'Not retaining proof of filing and payment.',
+    ],
+  },
+  '/employment-contracts-kenya': {
+    whoShouldRead: 'Employers and employees drafting or reviewing enforceable contract terms.',
+    practicalChecklist: [
+      'Ensure role, compensation, and duties are clearly defined.',
+      'Include leave, termination, and dispute clauses accurately.',
+      'Review compliance with minimum statutory standards.',
+      'Keep signed copies and amendment history organized.',
+    ],
+    commonMistakes: [
+      'Using vague terms that are difficult to enforce.',
+      'Copying templates without legal localization.',
+      'Failing to update contracts when terms change.',
+    ],
+  },
+  '/labour-dispute-resolution-kenya': {
+    whoShouldRead: 'Workers and employers resolving workplace disputes through proper channels.',
+    practicalChecklist: [
+      'Document facts and communication chronologically.',
+      'Use internal grievance pathways where available.',
+      'Escalate unresolved matters through lawful forums.',
+      'Prepare supporting records before formal filing.',
+    ],
+    commonMistakes: [
+      'Escalating disputes without documented attempts at resolution.',
+      'Missing limitation or procedural deadlines.',
+      'Submitting claims without core employment records.',
+    ],
+  },
+  '/occupational-health-safety-kenya': {
+    whoShouldRead: 'Employers and workers managing workplace safety compliance obligations.',
+    practicalChecklist: [
+      'Conduct periodic risk assessments and document findings.',
+      'Implement safety training and reporting workflows.',
+      'Maintain incident logs and corrective action records.',
+      'Review compliance status against sector requirements.',
+    ],
+    commonMistakes: [
+      'Treating safety procedures as one-time setup tasks.',
+      'Failing to document incidents and follow-up actions.',
+      'Ignoring training records and compliance evidence.',
+    ],
+  },
 };
+
+const categoryContextualLinks: Record<ContentCategory, ContextualLink[]> = {
+  family: [
+    { to: '/divorce-in-kenya', label: 'Divorce Process in Kenya' },
+    { to: '/child-law-kenya', label: 'Child Law and Custody' },
+    { to: '/succession-inheritance-law-kenya', label: 'Succession and Inheritance Law' },
+    { to: '/how-to-write-a-will-kenya', label: 'How to Write a Will' },
+    { to: '/letters-of-administration-probate-kenya', label: 'Probate and Letters of Administration' },
+    { to: '/contactus', label: 'Talk to a Family Lawyer' },
+  ],
+  land: [
+    { to: '/land-ownership-title-deed-verification-kenya', label: 'Title Deed Verification' },
+    { to: '/land-transfer-process-kenya', label: 'Land Transfer Process' },
+    { to: '/how-to-buy-land-safely-kenya', label: 'How to Buy Land Safely' },
+    { to: '/land-disputes-kenya', label: 'Land Disputes Guide' },
+    { to: '/lost-title-deed-replacement-kenya', label: 'Lost Title Replacement' },
+    { to: '/contactus', label: 'Get Land Law Support' },
+  ],
+  business: [
+    { to: '/how-to-register-business-kenya', label: 'Business Registration Guide' },
+    { to: '/business-name-search-kenya', label: 'Business Name Search' },
+    { to: '/limited-company-registration-kenya', label: 'Limited Company Registration' },
+    { to: '/company-annual-returns-kenya', label: 'Annual Returns Requirements' },
+    { to: '/business-tax-obligations-kenya', label: 'Business Tax Obligations' },
+    { to: '/contactus', label: 'Get Business Law Support' },
+  ],
+  elections: [
+    { to: '/understanding-iebc-kenya', label: 'Understanding IEBC' },
+    { to: '/how-to-register-as-a-voter-kenya', label: 'Voter Registration Guide' },
+    { to: '/elections-in-kenya', label: 'Elections Process Overview' },
+    { to: '/election-petitions-disputes-kenya', label: 'Election Petitions and Disputes' },
+    { to: '/election-offences-penalties-kenya', label: 'Election Offences and Penalties' },
+    { to: '/contactus', label: 'Get Election Law Support' },
+  ],
+  employment: [
+    { to: '/kenya-employment-labour-laws', label: 'Employment Law Overview' },
+    { to: '/employment-contracts-kenya', label: 'Employment Contracts Guide' },
+    { to: '/labour-dispute-resolution-kenya', label: 'Labour Dispute Resolution' },
+    { to: '/termination-redundancy-severance-kenya', label: 'Termination and Redundancy' },
+    { to: '/occupational-health-safety-kenya', label: 'Occupational Health and Safety' },
+    { to: '/contactus', label: 'Get Employment Law Support' },
+  ],
+  general: [
+    { to: '/howitworks', label: 'How Wakili Works' },
+    { to: '/services', label: 'Legal Services' },
+    { to: '/updates', label: 'Legal News and Updates' },
+    { to: '/about', label: 'About Wakili' },
+    { to: '/privacy-policy', label: 'Privacy Policy' },
+    { to: '/contactus', label: 'Contact Legal Team' },
+  ],
+};
+
+const routeContextualLinks: Record<string, ContextualLink[]> = {
+  '/': [
+    { to: '/family-law-divorce-kenya', label: 'Family Law in Kenya' },
+    { to: '/land-disputes-kenya', label: 'Land Law in Kenya' },
+    { to: '/how-to-register-business-kenya', label: 'Business Law in Kenya' },
+    { to: '/elections-in-kenya', label: 'Election Law in Kenya' },
+    { to: '/kenya-employment-labour-laws', label: 'Employment Law in Kenya' },
+    { to: '/contactus', label: 'Speak to a Lawyer' },
+  ],
+  '/updates': [
+    { to: '/elections-in-kenya', label: 'Election Law Updates' },
+    { to: '/business-tax-obligations-kenya', label: 'Business Compliance Updates' },
+    { to: '/land-disputes-kenya', label: 'Land Law Updates' },
+    { to: '/kenya-employment-labour-laws', label: 'Employment Law Updates' },
+    { to: '/family-law-divorce-kenya', label: 'Family Law Updates' },
+    { to: '/contactus', label: 'Request Legal Clarification' },
+  ],
+};
+
+const categoryEditorialProfiles: Record<ContentCategory, EditorialTeamInfo> = {
+  family: {
+    author: {
+      name: 'Wakili Family Law Desk',
+      role: 'Legal Content Author',
+      experience: 'Focuses on practical family and succession procedure guidance in Kenya.',
+      focusAreas: ['Divorce', 'Child Law', 'Succession'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Reviews legal procedure accuracy and public guidance clarity.',
+      focusAreas: ['Court Procedure', 'Legal Drafting', 'Regulatory Compliance'],
+    },
+  },
+  land: {
+    author: {
+      name: 'Wakili Land Law Desk',
+      role: 'Legal Content Author',
+      experience: 'Produces practical guides on land transfer, title checks, and disputes.',
+      focusAreas: ['Title Verification', 'Transfer Process', 'Land Disputes'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Checks procedural correctness and source alignment for land law topics.',
+      focusAreas: ['Property Law', 'Evidence', 'Dispute Resolution'],
+    },
+  },
+  business: {
+    author: {
+      name: 'Wakili Business Law Desk',
+      role: 'Legal Content Author',
+      experience: 'Builds guidance on company setup and ongoing statutory compliance in Kenya.',
+      focusAreas: ['Business Registration', 'Company Filings', 'Tax Compliance'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Reviews legal and compliance accuracy for commercial content.',
+      focusAreas: ['Corporate Law', 'Regulatory Filings', 'Commercial Risk'],
+    },
+  },
+  elections: {
+    author: {
+      name: 'Wakili Elections Law Desk',
+      role: 'Legal Content Author',
+      experience: 'Develops guides on electoral process, timelines, and dispute pathways.',
+      focusAreas: ['Election Procedure', 'Petitions', 'Voter Rights'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Validates election process guidance against current institutions and law.',
+      focusAreas: ['Constitutional Law', 'Election Disputes', 'Public Law'],
+    },
+  },
+  employment: {
+    author: {
+      name: 'Wakili Employment Law Desk',
+      role: 'Legal Content Author',
+      experience: 'Creates practical guidance on contracts, workplace disputes, and termination.',
+      focusAreas: ['Employment Contracts', 'Dispute Resolution', 'Termination Process'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Reviews labour law procedure and compliance accuracy.',
+      focusAreas: ['Labour Law', 'Workplace Compliance', 'Procedural Fairness'],
+    },
+  },
+  general: {
+    author: {
+      name: 'Wakili Legal Editorial Team',
+      role: 'Legal Content Author',
+      experience: 'Maintains practical legal guidance for Kenyan users across topics.',
+      focusAreas: ['Public Legal Education', 'Procedure Guides', 'Compliance Basics'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Ensures public guidance remains clear, relevant, and legally grounded.',
+      focusAreas: ['Legal Review', 'Source Verification', 'Content Quality'],
+    },
+  },
+};
+
+const routeEditorialProfiles: Record<string, Partial<EditorialTeamInfo>> = {
+  '/family-law-divorce-kenya': {
+    author: {
+      name: 'Wakili Family Law Desk',
+      role: 'Family Law Content Author',
+      experience: 'Focuses on divorce, custody, and maintenance process guidance in Kenya.',
+      focusAreas: ['Divorce', 'Custody', 'Maintenance'],
+    },
+  },
+  '/land-disputes-kenya': {
+    author: {
+      name: 'Wakili Land Law Desk',
+      role: 'Land Law Content Author',
+      experience: 'Focuses on title disputes, land evidence strategy, and legal remedies.',
+      focusAreas: ['Land Disputes', 'Title Claims', 'Remedies'],
+    },
+  },
+  '/how-to-register-business-kenya': {
+    author: {
+      name: 'Wakili Business Law Desk',
+      role: 'Business Compliance Content Author',
+      experience: 'Focuses on entity setup and practical compliance workflow guidance.',
+      focusAreas: ['Entity Setup', 'Filings', 'Compliance'],
+    },
+  },
+  '/elections-in-kenya': {
+    author: {
+      name: 'Wakili Elections Law Desk',
+      role: 'Election Process Content Author',
+      experience: 'Focuses on election timelines, process integrity, and legal pathways.',
+      focusAreas: ['Election Timelines', 'Complaints', 'Petitions'],
+    },
+  },
+  '/kenya-employment-labour-laws': {
+    author: {
+      name: 'Wakili Employment Law Desk',
+      role: 'Employment Law Content Author',
+      experience: 'Focuses on workplace rights, obligations, and dispute procedure guidance.',
+      focusAreas: ['Employment Rights', 'Procedure', 'Disputes'],
+    },
+  },
+};
+
+const categoryEvidenceNotes: Record<ContentCategory, EvidenceNote[]> = {
+  family: [
+    {
+      claim: 'Family law outcomes depend heavily on evidence quality and procedural compliance.',
+      verificationTip: 'Review procedural requirements and recent case guidance before filing.',
+      sourceLabel: 'Kenya Law Reports',
+    },
+    {
+      claim: 'Interim orders can materially affect family case trajectory.',
+      verificationTip: 'Check available interim remedies relevant to your facts early.',
+      sourceLabel: 'Judiciary of Kenya',
+    },
+  ],
+  land: [
+    {
+      claim: 'Land disputes are usually document and registry evidence driven.',
+      verificationTip: 'Confirm title and registry records before taking legal action.',
+      sourceLabel: 'ArdhiSasa Platform',
+    },
+    {
+      claim: 'Transfer and title issues require strict procedural compliance.',
+      verificationTip: 'Check statutory forms and consents before execution.',
+      sourceLabel: 'Ministry of Lands and Physical Planning',
+    },
+  ],
+  business: [
+    {
+      claim: 'Business setup success depends on accurate filing and ongoing compliance.',
+      verificationTip: 'Validate registration entries and maintain a compliance calendar.',
+      sourceLabel: 'eCitizen Business Registration Service',
+    },
+    {
+      claim: 'Tax and statutory obligations continue after registration.',
+      verificationTip: 'Cross-check recurring filing obligations against official notices.',
+      sourceLabel: 'Kenya Revenue Authority',
+    },
+  ],
+  elections: [
+    {
+      claim: 'Election disputes are highly time-sensitive and forum-specific.',
+      verificationTip: 'Confirm jurisdiction and filing timelines immediately when issues arise.',
+      sourceLabel: 'IEBC Official Website',
+    },
+    {
+      claim: 'Evidence quality often determines petition viability.',
+      verificationTip: 'Preserve official forms, logs, and witness records systematically.',
+      sourceLabel: 'Kenya Law Reports',
+    },
+  ],
+  employment: [
+    {
+      claim: 'Employment disputes often hinge on documented procedure and fairness.',
+      verificationTip: 'Keep complete records of notices, hearings, and outcomes.',
+      sourceLabel: 'Employment and Labour Relations Court',
+    },
+    {
+      claim: 'Contract clarity and policy compliance reduce labour risk significantly.',
+      verificationTip: 'Review contracts and HR processes against statutory standards.',
+      sourceLabel: 'Ministry of Labour and Social Protection',
+    },
+  ],
+  general: [
+    {
+      claim: 'Official legal sources should guide key legal decisions.',
+      verificationTip: 'Cross-check guidance against primary institutions before acting.',
+      sourceLabel: 'Kenya Law Reports',
+    },
+    {
+      claim: 'Case-specific advice remains critical even with detailed legal guides.',
+      verificationTip: 'Engage a qualified advocate for strategy and representation decisions.',
+      sourceLabel: 'Judiciary of Kenya',
+    },
+  ],
+};
+
+const routeEvidenceNotes: Record<string, EvidenceNote[]> = {
+  '/family-law-divorce-kenya': [
+    {
+      claim: 'Child welfare and financial evidence are central to many divorce outcomes.',
+      verificationTip: 'Compile dated records of childcare, schooling, and support costs.',
+      sourceLabel: 'Kenya Law Reports',
+    },
+  ],
+  '/land-disputes-kenya': [
+    {
+      claim: 'Boundary and ownership disputes require consistent documentary proof.',
+      verificationTip: 'Preserve survey records, searches, and transaction chain documents.',
+      sourceLabel: 'ArdhiSasa Platform',
+    },
+  ],
+  '/how-to-register-business-kenya': [
+    {
+      claim: 'Most registration delays come from incomplete or inconsistent filings.',
+      verificationTip: 'Verify name, ownership, and filing details before submission.',
+      sourceLabel: 'eCitizen Business Registration Service',
+    },
+  ],
+  '/elections-in-kenya': [
+    {
+      claim: 'Missing election timelines can invalidate otherwise valid complaints.',
+      verificationTip: 'Document dates and submit through the correct legal forum promptly.',
+      sourceLabel: 'IEBC Official Website',
+    },
+  ],
+  '/kenya-employment-labour-laws': [
+    {
+      claim: 'Procedural fairness records are critical in labour disputes.',
+      verificationTip: 'Maintain complete notice, hearing, and outcome documentation.',
+      sourceLabel: 'Employment and Labour Relations Court',
+    },
+  ],
+};
+
+const categoryAudienceTemplates: Record<ContentCategory, string> = {
+  family: 'People dealing with {topic} and related family law decisions in Kenya.',
+  land: 'People navigating {topic} and property rights procedures in Kenya.',
+  business: 'Entrepreneurs and businesses handling {topic} and compliance obligations in Kenya.',
+  elections: 'Voters, candidates, and stakeholders seeking clarity on {topic} in Kenya.',
+  employment: 'Employees and employers managing {topic} obligations under Kenyan labour law.',
+  general: 'Readers seeking practical guidance on {topic} and how to take compliant next steps in Kenya.',
+};
+
+const categoryChecklistTemplates: Record<ContentCategory, string[]> = {
+  family: [
+    'Define your objective for {topic} clearly before legal action.',
+    'Collect identity and supporting family records early.',
+    'Organize evidence in a dated timeline for easier review.',
+    'Confirm urgent interim relief options with legal counsel.',
+  ],
+  land: [
+    'Verify title, ownership, and encumbrance details for {topic}.',
+    'Keep all agreements and property records in one file.',
+    'Document site facts with date-stamped evidence where relevant.',
+    'Confirm transfer, registry, and consent requirements early.',
+  ],
+  business: [
+    'Map legal and compliance requirements related to {topic}.',
+    'Prepare all registration and statutory records accurately.',
+    'Set filing reminders for recurring obligations.',
+    'Retain submission confirmations and payment receipts.',
+  ],
+  elections: [
+    'Track official timelines relevant to {topic}.',
+    'Use official IEBC and legal channels for updates.',
+    'Preserve documentary evidence for any complaint process.',
+    'Escalate disputes through the correct legal forum quickly.',
+  ],
+  employment: [
+    'Review contracts and policies relevant to {topic}.',
+    'Document communications, notices, and meeting outcomes.',
+    'Apply procedural fairness consistently in workplace actions.',
+    'Escalate unresolved issues through lawful dispute pathways.',
+  ],
+  general: [
+    'Clarify the legal issue and desired outcome for {topic}.',
+    'Gather supporting documents before consultations.',
+    'Cross-check guidance with official public sources.',
+    'Seek case-specific legal advice before critical decisions.',
+  ],
+};
+
+const categoryMistakeTemplates: Record<ContentCategory, string[]> = {
+  family: [
+    'Proceeding on assumptions without records related to {topic}.',
+    'Letting emotion replace evidence in legal filings.',
+    'Ignoring procedural timelines and service requirements.',
+  ],
+  land: [
+    'Making property decisions without full due diligence on {topic}.',
+    'Relying on informal assurances instead of official records.',
+    'Delaying legal action after evidence becomes harder to secure.',
+  ],
+  business: [
+    'Treating {topic} as a one-time task instead of ongoing compliance.',
+    'Submitting incomplete or inconsistent filing details.',
+    'Missing deadlines due to absent compliance tracking.',
+  ],
+  elections: [
+    'Filing election-related complaints late in {topic} matters.',
+    'Using unverified claims instead of admissible evidence.',
+    'Choosing the wrong forum for dispute resolution.',
+  ],
+  employment: [
+    'Taking action on {topic} without required procedure.',
+    'Failing to document notices, hearings, and decisions.',
+    'Ignoring statutory standards during workplace disputes.',
+  ],
+  general: [
+    'Assuming general guidance alone resolves {topic} issues.',
+    'Ignoring official source verification before action.',
+    'Delaying legal advice until the matter becomes urgent.',
+  ],
+};
+
+const applyTopic = (value: string, topic: string): string => value.replace('{topic}', topic);
 
 const getCategoryFromPath = (pathname: string): ContentCategory => {
   if (/divorce|family|child|succession|probate|will/i.test(pathname)) return 'family';
@@ -554,4 +1239,47 @@ export const getCategoryFaqs = (category: ContentCategory): FaqItem[] => categor
 
 export const getCategorySources = (category: ContentCategory): SourceLink[] => categorySources[category];
 
-export const getRouteDeepContent = (pathname: string): RouteDeepContent | null => routeDeepContent[pathname] ?? null;
+export const getRouteDeepContent = (pathname: string, category: ContentCategory): RouteDeepContent => {
+  const specific = routeDeepContent[pathname];
+  if (specific) return specific;
+
+  const topic = toReadableTitle(pathname).replace(' | Wakili', '');
+
+  return {
+    whoShouldRead: applyTopic(categoryAudienceTemplates[category], topic),
+    practicalChecklist: categoryChecklistTemplates[category].map((item) => applyTopic(item, topic)),
+    commonMistakes: categoryMistakeTemplates[category].map((item) => applyTopic(item, topic)),
+  };
+};
+
+export const getContextualLinks = (pathname: string, category: ContentCategory): ContextualLink[] => {
+  const specific = routeContextualLinks[pathname];
+  if (specific) return specific;
+
+  return categoryContextualLinks[category]
+    .filter((item) => item.to !== pathname)
+    .slice(0, 6);
+};
+
+export const getEditorialTeamInfo = (pathname: string, category: ContentCategory): EditorialTeamInfo => {
+  const base = categoryEditorialProfiles[category];
+  const override = routeEditorialProfiles[pathname];
+
+  return {
+    author: {
+      ...base.author,
+      ...(override?.author ?? {}),
+    },
+    reviewer: {
+      ...base.reviewer,
+      ...(override?.reviewer ?? {}),
+    },
+  };
+};
+
+export const getEvidenceNotes = (pathname: string, category: ContentCategory): EvidenceNote[] => {
+  const specific = routeEvidenceNotes[pathname];
+  if (specific) return specific;
+
+  return categoryEvidenceNotes[category];
+};
