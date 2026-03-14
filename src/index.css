@@ -27,8 +27,6 @@ iframe {
 
 table {
   width: 100%;
-  display: block;
-  overflow-x: auto;
 }
 
 pre,
@@ -87,6 +85,51 @@ li {
   .content-full-width {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+}
+
+/* Public routes mobile responsiveness safeguards */
+.public-page-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.public-page-shell > * {
+  max-width: 100%;
+}
+
+.public-page-shell .overflow-x-auto {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .public-page-shell .max-w-7xl,
+  .public-page-shell .max-w-6xl,
+  .public-page-shell .max-w-5xl,
+  .public-page-shell .max-w-4xl {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .public-page-shell [class*="-mx-"] {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .public-page-shell nav[class*="min-w-max"],
+  .public-page-shell div[class*="min-w-max"] {
+    width: max-content;
+    min-width: max-content;
+  }
+
+  .public-page-shell table {
+    min-width: 640px;
+  }
+
+  .public-page-shell .overflow-x-auto > table {
+    display: table;
   }
 }
 

@@ -178,7 +178,9 @@ const PublicQualityLayout: React.FC<PublicQualityLayoutProps> = ({ children }) =
         {showContentModules && howToSchema && <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>}
       </Helmet>
 
-      {children}
+      <div className="public-page-shell">
+        {children}
+      </div>
 
       {showContentModules && (
         <section className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 py-8 px-4 sm:px-6 lg:px-8">
