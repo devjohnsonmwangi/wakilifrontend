@@ -98,7 +98,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
     // Update meta description
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Complete guide to planning permission and zoning laws in Kenya. Learn how to get approval, fees, penalties, and legal requirements for developers.');
+      metaDescription.setAttribute('content', 'Practical guide to planning permission and zoning laws in Kenya. Learn how to get approval, fees, penalties, and legal requirements for developers.');
     }
 
     // Update keywords
@@ -114,7 +114,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       ogTitle.setAttribute('property', 'og:title');
       document.head.appendChild(ogTitle);
     }
-    ogTitle.setAttribute('content', 'Planning Permission & Zoning Laws in Kenya – Complete Guide');
+    ogTitle.setAttribute('content', 'Planning Permission & Zoning Laws in Kenya – Practical guide');
 
     let ogDescription = document.querySelector('meta[property="og:description"]');
     if (!ogDescription) {
@@ -130,7 +130,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       ogUrl.setAttribute('property', 'og:url');
       document.head.appendChild(ogUrl);
     }
-    ogUrl.setAttribute('content', 'https://wakili.app/planning-permission-zoning-laws-kenya');
+    ogUrl.setAttribute('content', 'https://wakili.co.ke/planning-permission-zoning-laws-kenya');
 
     let ogImage = document.querySelector('meta[property="og:image"]');
     if (!ogImage) {
@@ -138,7 +138,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       ogImage.setAttribute('property', 'og:image');
       document.head.appendChild(ogImage);
     }
-    ogImage.setAttribute('content', 'https://wakili.app/og-planning-permission.jpg');
+    ogImage.setAttribute('content', 'https://wakili.co.ke/og-planning-permission.jpg');
 
     // Twitter tags
     let twitterCard = document.querySelector('meta[name="twitter:card"]');
@@ -155,7 +155,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       twitterTitle.setAttribute('name', 'twitter:title');
       document.head.appendChild(twitterTitle);
     }
-    twitterTitle.setAttribute('content', 'Planning Permission & Zoning Laws in Kenya – Complete Guide');
+    twitterTitle.setAttribute('content', 'Planning Permission & Zoning Laws in Kenya – Practical guide');
 
     let twitterDescription = document.querySelector('meta[name="twitter:description"]');
     if (!twitterDescription) {
@@ -181,7 +181,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://wakili.app/planning-permission-zoning-laws-kenya');
+    canonical.setAttribute('href', 'https://wakili.co.ke/planning-permission-zoning-laws-kenya');
 
     // JSON-LD Structured Data
     const structuredData = {
@@ -189,18 +189,18 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
       '@graph': [
         {
           '@type': 'WebPage',
-          '@id': 'https://wakili.app/planning-permission-zoning-laws-kenya',
-          'url': 'https://wakili.app/planning-permission-zoning-laws-kenya',
+          '@id': 'https://wakili.co.ke/planning-permission-zoning-laws-kenya',
+          'url': 'https://wakili.co.ke/planning-permission-zoning-laws-kenya',
           'name': 'Planning Permission & Zoning Laws in Kenya – Complete Legal Guide',
-          'description': 'Complete guide to planning permission, zoning laws, building permits, and regulations in Kenya.',
-          'isPartOf': { '@id': 'https://wakili.app' },
+          'description': 'Practical guide to planning permission, zoning laws, building permits, and regulations in Kenya.',
+          'isPartOf': { '@id': 'https://wakili.co.ke' },
           'inLanguage': 'en-KE'
         },
         {
           '@type': 'BreadcrumbList',
           'itemListElement': [
-            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://wakili.app' },
-            { '@type': 'ListItem', 'position': 2, 'name': 'Planning Permission & Zoning', 'item': 'https://wakili.app/planning-permission-zoning-laws-kenya' }
+            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://wakili.co.ke' },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Planning Permission & Zoning', 'item': 'https://wakili.co.ke/planning-permission-zoning-laws-kenya' }
           ]
         },
         {
@@ -227,7 +227,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
         {
           '@type': 'GovernmentService',
           'name': 'Planning Permission & Zoning Services in Kenya',
-          'description': 'Official guide to planning permission and zoning laws in Kenya',
+          'description': 'Practical guide to planning permission and zoning laws in Kenya',
           'areaServed': { '@type': 'Country', 'name': 'Kenya' },
           'serviceType': 'Planning and Zoning Services'
         }
@@ -279,7 +279,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
                   Get Help via WhatsApp
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition text-sm sm:text-base"
                 >
                   <FileText className="w-4 h-4" />
@@ -909,11 +909,11 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
                   WhatsApp: +254 112 810 203
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-purple-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition"
                 >
                   <FileText className="w-5 h-5" />
-                  Email: johnsonthuraniramwangi@gmail.com
+                  Email: info@wakili.com
                 </a>
               </div>
             </section>
@@ -941,7 +941,7 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
             <div>
               <h4 className="text-white font-bold mb-3">Contact</h4>
               <p className="text-sm">WhatsApp: +254 112 810 203</p>
-              <p className="text-sm">Email: johnsonthuraniramwangi@gmail.com</p>
+              <p className="text-sm">Email: info@wakili.com</p>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-6">
@@ -956,3 +956,4 @@ const PlanningPermissionZoningLawsKenya: React.FC = () => {
 };
 
 export default PlanningPermissionZoningLawsKenya;
+

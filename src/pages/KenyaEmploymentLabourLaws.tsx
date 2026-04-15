@@ -272,14 +272,14 @@ const KenyaEmploymentLabourLaws = () => {
     <>
       <Helmet>
         <title>Kenya Employment & Labour Laws – Employee Employer Rights 2026</title>
-        <meta name="description" content="Complete guide to Kenya employment and labour laws. Employee rights, employer obligations, contracts, termination, leave, minimum wage, and dispute resolution." />
-        <link rel="canonical" href="https://yoursite.com/kenya-employment-labour-laws" />
+        <meta name="description" content="Practical guide to Kenya employment and labour laws. Employee rights, employer obligations, contracts, termination, leave, minimum wage, and dispute resolution." />
+        <link rel="canonical" href="https://wakili.co.ke/kenya-employment-labour-laws" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Kenya Employment & Labour Laws – Complete Rights Guide 2026" />
         <meta property="og:description" content="Definitive guide to employee rights and employer obligations in Kenya. Contracts, leave, termination, minimum wage, and labour dispute resolution." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/kenya-employment-labour-laws" />
+        <meta property="og:url" content="https://wakili.co.ke/kenya-employment-labour-laws" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -297,8 +297,8 @@ const KenyaEmploymentLabourLaws = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Kenya employment and labour law guidance"
           })}
         </script>
@@ -312,13 +312,13 @@ const KenyaEmploymentLabourLaws = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Employment & Labour Laws",
-                "item": "https://yoursite.com/kenya-employment-labour-laws"
+                "item": "https://wakili.co.ke/kenya-employment-labour-laws"
               }
             ]
           })}
@@ -1097,3 +1097,5 @@ const KenyaEmploymentLabourLaws = () => {
 };
 
 export default KenyaEmploymentLabourLaws;
+
+

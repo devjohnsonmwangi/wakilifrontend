@@ -379,19 +379,19 @@ const BusinessPermitsLicensesKenya = () => {
     <>
       <Helmet>
         <title>Business Permits & Licenses Kenya – Complete 2026 Guide</title>
-        <meta name="description" content="Complete guide to business permits, licenses and legal approvals in Kenya. Step-by-step process, costs by county, requirements for all business types and compliance." />
-        <link rel="canonical" href="https://yoursite.com/business-permits-licenses-kenya" />
+        <meta name="description" content="Practical guide to business permits, licenses and legal approvals in Kenya. Step-by-step process, costs by county, requirements for all business types and compliance." />
+        <link rel="canonical" href="https://wakili.co.ke/business-permits-licenses-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Business Permits & Licenses Kenya – 2026 Complete Guide" />
+        <meta property="og:title" content="Business Permits & Licenses Kenya – 2026 Practical guide" />
         <meta property="og:description" content="Get your business permit in Kenya. Step-by-step guide, county costs, requirements, application process, renewal and everything you need to start legally." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/business-permits-licenses-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/business-permits-licenses-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Business Permits & Licenses Kenya – Complete Guide 2026" />
+        <meta name="twitter:title" content="Business Permits & Licenses Kenya – Practical guide 2026" />
         <meta name="twitter:description" content="Everything about business permits in Kenya. Step-by-step process, all county costs, requirements, online application via eCitizen, penalties and compliance." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
@@ -404,8 +404,8 @@ const BusinessPermitsLicensesKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Business permits and licenses guidance in Kenya"
           })}
         </script>
@@ -419,13 +419,13 @@ const BusinessPermitsLicensesKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Business Permits & Licenses",
-                "item": "https://yoursite.com/business-permits-licenses-kenya"
+                "item": "https://wakili.co.ke/business-permits-licenses-kenya"
               }
             ]
           })}
@@ -471,7 +471,7 @@ const BusinessPermitsLicensesKenya = () => {
               <Shield className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Business Permits & Licenses in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to getting business permits, licenses and legal approvals required to operate in Kenya. Learn how to apply, costs by county, requirements for all business types, renewal process and legal compliance.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to getting business permits, licenses and legal approvals required to operate in Kenya. Learn how to apply, costs by county, requirements for all business types, renewal process and legal compliance.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
@@ -1390,7 +1390,7 @@ const BusinessPermitsLicensesKenya = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <a href="/how-to-register-business-kenya" className="p-4 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-shadow hover:border-blue-600">
                 <h4 className="font-bold text-gray-900 mb-1">How to Register a Business</h4>
-                <p className="text-gray-600 text-sm">Complete guide to business registration in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to business registration in Kenya</p>
               </a>
               <a href="/limited-company-registration-kenya" className="p-4 border-2 border-green-200 rounded-lg hover:shadow-lg transition-shadow hover:border-green-600">
                 <h4 className="font-bold text-gray-900 mb-1">Limited Company Registration</h4>
@@ -1406,7 +1406,7 @@ const BusinessPermitsLicensesKenya = () => {
               </a>
               <a href="/kra-pin-for-business-kenya" className="p-4 border-2 border-red-200 rounded-lg hover:shadow-lg transition-shadow hover:border-red-600">
                 <h4 className="font-bold text-gray-900 mb-1">KRA PIN Registration</h4>
-                <p className="text-gray-600 text-sm">Complete guide to getting a KRA PIN</p>
+                <p className="text-gray-600 text-sm">Practical guide to getting a KRA PIN</p>
               </a>
               <a href="/company-annual-returns-kenya" className="p-4 border-2 border-indigo-200 rounded-lg hover:shadow-lg transition-shadow hover:border-indigo-600">
                 <h4 className="font-bold text-gray-900 mb-1">Annual Returns & Compliance</h4>
@@ -1421,3 +1421,5 @@ const BusinessPermitsLicensesKenya = () => {
 };
 
 export default BusinessPermitsLicensesKenya;
+
+

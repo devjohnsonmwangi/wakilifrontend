@@ -1,4 +1,4 @@
-// src/components/dashboard/DashboardOverview.tsx
+﻿// src/components/dashboard/DashboardOverview.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -322,7 +322,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           <div>
             <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-1">Wakili Dashboard Guide</h2>
             <p className="text-slate-600 dark:text-slate-300 mb-5 text-sm">
-              Welcome to your command center! Here’s how to make the most of the Wakili platform:
+              Welcome to your command center! Hereâ€™s how to make the most of the Wakili platform:
             </p>
             <div className="space-y-5">
               <div>
@@ -387,3 +387,4 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 };
 
 export default DashboardOverview;
+

@@ -84,7 +84,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
       meta.setAttribute('content', content);
     };
 
-    updateMeta('description', 'Complete guide to land rates, land rent, and property taxes in Kenya. Learn how to pay, calculate, and appeal valuations. Expert legal advice.');
+    updateMeta('description', 'Practical guide to land rates, land rent, and property taxes in Kenya. Learn how to pay, calculate, and appeal valuations. Expert legal advice.');
     updateMeta('keywords', 'land rates kenya, land rent kenya, property taxes kenya, land valuation, county land rates, how to pay land rates, property tax payment');
     
     // OG Tags
@@ -94,7 +94,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
       ogTitle.setAttribute('property', 'og:title');
       document.head.appendChild(ogTitle);
     }
-    ogTitle.setAttribute('content', 'Land Rates & Property Taxes in Kenya – Complete Guide');
+    ogTitle.setAttribute('content', 'Land Rates & Property Taxes in Kenya – Practical guide');
 
     let ogDesc = document.querySelector('meta[property="og:description"]');
     if (!ogDesc) {
@@ -102,7 +102,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
       ogDesc.setAttribute('property', 'og:description');
       document.head.appendChild(ogDesc);
     }
-    ogDesc.setAttribute('content', 'Complete guide to land rates, property taxes, and valuation obligations in Kenya. Learn payment methods, calculations, and how to appeal.');
+    ogDesc.setAttribute('content', 'Practical guide to land rates, property taxes, and valuation obligations in Kenya. Learn payment methods, calculations, and how to appeal.');
 
     let ogUrl = document.querySelector('meta[property="og:url"]');
     if (!ogUrl) {
@@ -143,7 +143,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
       twitterDesc.setAttribute('name', 'twitter:description');
       document.head.appendChild(twitterDesc);
     }
-    twitterDesc.setAttribute('content', 'Learn about land rates, property taxes, and valuation in Kenya. Complete guide to payments, calculations, and appeals.');
+    twitterDesc.setAttribute('content', 'Learn about land rates, property taxes, and valuation in Kenya. Practical guide to payments, calculations, and appeals.');
 
     // Robots Meta
     let robotsMeta = document.querySelector('meta[name="robots"]');
@@ -171,12 +171,12 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
           '@type': 'WebPage',
           '@id': 'https://wakili.co.ke/land-rates-property-taxes-kenya',
           url: 'https://wakili.co.ke/land-rates-property-taxes-kenya',
-          name: 'Land Rates & Property Taxes in Kenya – Complete Guide',
+          name: 'Land Rates & Property Taxes in Kenya – Practical guide',
           isPartOf: { '@id': 'https://wakili.co.ke' },
           datePublished: '2025-02-06',
           dateModified: '2025-02-06',
           author: { '@type': 'Organization', name: 'Wakili Legal Hub' },
-          description: 'Complete guide to land rates, property taxes, and valuation in Kenya with payment methods and appeal procedures.'
+          description: 'Practical guide to land rates, property taxes, and valuation in Kenya with payment methods and appeal procedures.'
         },
         {
           '@type': 'BreadcrumbList',
@@ -261,7 +261,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4">Land Rates, Land Rent & Property Taxes in Kenya</h1>
           <p className="text-lg sm:text-xl text-emerald-100 max-w-3xl mx-auto mb-6">
-            Complete guide to understanding land rates, property taxes, valuations, and payment obligations for property owners in Kenya.
+            Understand land rates, property taxes, valuations, and payment obligations for property owners in Kenya.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition">
@@ -521,27 +521,27 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
 
             <div className="space-y-3">
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                <p className="font-semibold text-red-900 mb-1">⚠ Penalties & Interest Charges</p>
+                <p className="font-semibold text-red-900 mb-1">Warning: Penalties & Interest Charges</p>
                 <p className="text-red-800">Late payment penalties typically range from 1-2% monthly interest. Some counties add administrative fees. Total charges can reach 20%+ of the original amount owed.</p>
               </div>
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-                <p className="font-semibold text-orange-900 mb-1">⚠ Property Lien</p>
+                <p className="font-semibold text-orange-900 mb-1">Warning: Property Lien</p>
                 <p className="text-orange-800">The county government can place a lien on your property for unpaid rates. This affects your ability to sell, mortgage, or transfer the property.</p>
               </div>
 
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                <p className="font-semibold text-red-900 mb-1">⚠ Legal Action</p>
+                <p className="font-semibold text-red-900 mb-1">Warning: Legal Action</p>
                 <p className="text-red-800">The county can initiate legal proceedings against you to recover unpaid taxes. This includes court cases and potential forced property seizure.</p>
               </div>
 
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                <p className="font-semibold text-red-900 mb-1">⚠ Property Auction</p>
+                <p className="font-semibold text-red-900 mb-1">Warning: Property Auction</p>
                 <p className="text-red-800">After extended non-payment, the county government can auction your property to recover unpaid rates. You would lose ownership and any equity in the property.</p>
               </div>
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-                <p className="font-semibold text-orange-900 mb-1">⚠ Difficulty with County Services</p>
+                <p className="font-semibold text-orange-900 mb-1">Warning: Difficulty with County Services</p>
                 <p className="text-orange-800">Outstanding rates can prevent you from accessing county services: permits, licenses, title transfers, or land subdivision approvals.</p>
               </div>
 
@@ -680,7 +680,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
               <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-emerald-50 transition flex items-center gap-2">
                 <MessageSquare size={18} /> WhatsApp Us
               </a>
-              <a href="mailto:johnsonthuraniramwangi@gmail.com" className="bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800 transition">
+              <a href="mailto:info@wakili.com" className="bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-800 transition">
                 Email Our Team
               </a>
             </div>
@@ -733,7 +733,7 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
             <div>
               <h4 className="font-bold text-lg mb-3">Contact Us</h4>
               <ul className="text-emerald-200 text-sm space-y-2">
-                <li>Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="hover:text-white transition">johnsonthuraniramwangi@gmail.com</a></li>
+                <li>Email: <a href="mailto:info@wakili.com" className="hover:text-white transition">info@wakili.com</a></li>
                 <li>WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">+254 112 810 203</a></li>
               </ul>
             </div>
@@ -752,3 +752,5 @@ const LandRatesPropertyTaxesKenya: React.FC = () => {
 };
 
 export default LandRatesPropertyTaxesKenya;
+
+

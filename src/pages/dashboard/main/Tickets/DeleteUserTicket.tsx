@@ -1,4 +1,4 @@
-import { TicketAPI } from "../../../../features/Tickets/AllTickets";
+﻿import { TicketAPI } from "../../../../features/Tickets/AllTickets";
 import { Toaster, toast } from 'sonner';
 import { TypeTickets } from "../../../../features/Tickets/AllTickets";
 
@@ -99,3 +99,5 @@ const DeleteUserTicket = ({ ticket, modalId }: DeleteUserTicketProps) => {
 };
 
 export default DeleteUserTicket;
+
+

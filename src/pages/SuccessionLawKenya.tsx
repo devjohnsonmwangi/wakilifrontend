@@ -87,7 +87,7 @@ const SuccessionLawKenya = () => {
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Complete guide to succession and inheritance law in Kenya. Learn about estate distribution, probate, letters of administration, testate vs intestate succession, and inheritance rights. Updated 2026.'
+        'Practical guide to succession and inheritance law in Kenya. Learn about estate distribution, probate, letters of administration, testate vs intestate succession, and inheritance rights. Updated 2026.'
       );
     }
 
@@ -114,7 +114,7 @@ const SuccessionLawKenya = () => {
     // OpenGraph tags
     const ogTags = [
       { property: 'og:title', content: 'Succession & Inheritance Law in Kenya - Complete Legal Guide' },
-      { property: 'og:description', content: 'Complete guide to succession and inheritance law in Kenya. Estate distribution, probate, and inheritance rights explained.' },
+      { property: 'og:description', content: 'Practical guide to succession and inheritance law in Kenya. Estate distribution, probate, and inheritance rights explained.' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: window.location.href }
     ];
@@ -133,7 +133,7 @@ const SuccessionLawKenya = () => {
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'Succession & Inheritance Law in Kenya' },
-      { name: 'twitter:description', content: 'Complete guide to succession and inheritance law in Kenya.' }
+      { name: 'twitter:description', content: 'Practical guide to succession and inheritance law in Kenya.' }
     ];
 
     twitterTags.forEach(tag => {
@@ -163,7 +163,7 @@ const SuccessionLawKenya = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Succession & Inheritance Law in Kenya',
-          description: 'Complete guide to succession and inheritance law in Kenya',
+          description: 'Practical guide to succession and inheritance law in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -266,7 +266,7 @@ const SuccessionLawKenya = () => {
       <header className="relative bg-gradient-to-r from-indigo-700 via-blue-600 to-cyan-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse [animation-delay:1s]"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -297,7 +297,7 @@ const SuccessionLawKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Succession & Inheritance Law Inquiry')}&body=${encodeURIComponent('Hello,\n\nI need assistance with succession and inheritance law in Kenya.\n\nPlease contact me to discuss:\n- Estate administration\n- Probate proceedings\n- Inheritance rights\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Succession & Inheritance Law Inquiry')}&body=${encodeURIComponent('Hello,\n\nI need assistance with succession and inheritance law in Kenya.\n\nPlease contact me to discuss:\n- Estate administration\n- Probate proceedings\n- Inheritance rights\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Request guidance via email"
             >
@@ -812,7 +812,7 @@ const SuccessionLawKenya = () => {
               </div>
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Step-by-Step Succession Court Process</h2>
-                <p className="text-gray-600">Complete guide from death to distribution</p>
+                <p className="text-gray-600">Practical guide from estate opening to final distribution</p>
               </div>
             </div>
 
@@ -1424,7 +1424,7 @@ const SuccessionLawKenya = () => {
               >
                 <FileText className="w-10 h-10 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-bold text-lg text-gray-900 mb-2">How to Write a Will in Kenya</h3>
-                <p className="text-gray-600 text-sm">Complete guide to drafting a valid will</p>
+                <p className="text-gray-600 text-sm">Practical guide to drafting a valid will</p>
               </Link>
 
               <Link
@@ -1479,7 +1479,6 @@ const SuccessionLawKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1517,7 +1516,7 @@ const SuccessionLawKenya = () => {
                 WhatsApp Us Now
               </a>
               <a
-                href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Succession Law Inquiry')}&body=${encodeURIComponent('Hello,\n\nI need professional legal assistance with succession matters.\n\nThank you.')}`}
+                href={`mailto:info@wakili.com?subject=${encodeURIComponent('Succession Law Inquiry')}&body=${encodeURIComponent('Hello,\n\nI need professional legal assistance with succession matters.\n\nThank you.')}`}
                 className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-8 py-4 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105"
               >
                 <Mail className="w-5 h-5" />
@@ -1547,3 +1546,5 @@ const SuccessionLawKenya = () => {
 };
 
 export default SuccessionLawKenya;
+
+

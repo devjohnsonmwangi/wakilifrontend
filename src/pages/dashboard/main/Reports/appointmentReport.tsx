@@ -1,4 +1,4 @@
-// src/components/AppointmentStatusReport.tsx
+﻿// src/components/AppointmentStatusReport.tsx
 
 import { useEffect, useState } from 'react';
 import { appointmentAPI} from '../../../../features/appointment/appointmentapi';
@@ -282,3 +282,4 @@ const AppointmentReportPage = () => {
 };
 
 export default AppointmentReportPage;
+

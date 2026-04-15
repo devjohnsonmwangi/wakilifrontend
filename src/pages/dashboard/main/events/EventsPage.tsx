@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   useFetchEventsQuery,
@@ -343,3 +343,4 @@ const EventsPage: React.FC = () => {
 };
 
 export default EventsPage;
+

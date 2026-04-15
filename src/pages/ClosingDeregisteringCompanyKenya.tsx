@@ -309,14 +309,14 @@ const ClosingDeregisteringCompanyKenya = () => {
     <>
       <Helmet>
         <title>Close Business Kenya – Deregistration Guide 2026 & 2027</title>
-        <meta name="description" content="Complete guide to closing or deregistering a business or company in Kenya. Step-by-step legal process, forms, costs, tax requirements & how to avoid penalties." />
-        <link rel="canonical" href="https://yoursite.com/closing-or-deregistering-company-kenya" />
+        <meta name="description" content="Practical guide to closing or deregistering a business or company in Kenya. Step-by-step legal process, forms, costs, tax requirements & how to avoid penalties." />
+        <link rel="canonical" href="https://wakili.co.ke/closing-or-deregistering-company-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Close Business Kenya – Complete Deregistration Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to legally closing a sole proprietorship or limited company in Kenya. Forms, costs, tax clearance, timeline & legal requirements." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/closing-or-deregistering-company-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/closing-or-deregistering-company-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -334,8 +334,8 @@ const ClosingDeregisteringCompanyKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Business closure and deregistration services in Kenya"
           })}
         </script>
@@ -349,13 +349,13 @@ const ClosingDeregisteringCompanyKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Close Business Kenya",
-                "item": "https://yoursite.com/closing-or-deregistering-company-kenya"
+                "item": "https://wakili.co.ke/closing-or-deregistering-company-kenya"
               }
             ]
           })}
@@ -1176,3 +1176,5 @@ const ClosingDeregisteringCompanyKenya = () => {
 };
 
 export default ClosingDeregisteringCompanyKenya;
+
+

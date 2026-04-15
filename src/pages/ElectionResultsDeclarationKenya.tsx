@@ -76,7 +76,7 @@ const ElectionResultsDeclarationKenya: React.FC = () => {
 
   useEffect(() => {
     const metaTitle = 'Election Results in Kenya – How They Are Declared & Verified';
-    const metaDescription = 'Complete guide to election results declaration in Kenya. Learn how IEBC tallies, verifies, transmits and declares presidential, parliamentary and county election results.';
+    const metaDescription = 'Practical guide to election results declaration in Kenya. Learn how IEBC tallies, verifies, transmits and declares presidential, parliamentary and county election results.';
 
     document.title = metaTitle;
     
@@ -228,7 +228,7 @@ const ElectionResultsDeclarationKenya: React.FC = () => {
         <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">Election Results in Kenya – How They Are Declared & Verified</h1>
-            <p className="text-lg sm:text-xl text-emerald-100 max-w-3xl">Complete guide to understanding how IEBC tallies, verifies, transmits and officially declares election results for presidential, parliamentary, and county elections.</p>
+            <p className="text-lg sm:text-xl text-emerald-100 max-w-3xl">Understand how IEBC tallies, verifies, transmits, and officially declares election results for presidential, parliamentary, and county elections.</p>
           </div>
         </div>
 
@@ -447,7 +447,7 @@ const ElectionResultsDeclarationKenya: React.FC = () => {
                   </div>
 
                   <div className="bg-amber-50 border-l-4 border-amber-600 p-5 rounded mb-6">
-                    <p className="text-gray-900 font-semibold mb-2">⚠️ Transparency During Counting</p>
+                    <p className="text-gray-900 font-semibold mb-2">Warning: Transparency During Counting</p>
                     <p className="text-gray-700 text-sm">The counting process is open to the public. Party agents, election observers, and citizens can witness vote counting at polling stations. This transparency ensures accountability and confidence in results.</p>
                   </div>
                 </div>
@@ -1132,3 +1132,5 @@ const ElectionResultsDeclarationKenya: React.FC = () => {
 };
 
 export default ElectionResultsDeclarationKenya;
+
+

@@ -206,7 +206,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
   };
 
   useEffect(() => {
-    const metaTitle = 'Register a Business in Kenya – eCitizen 2025 Guide';
+    const metaTitle = 'Register a Business in Kenya - eCitizen 2025 Guide';
     const metaDescription = 'Complete step-by-step guide to registering a business or company in Kenya using eCitizen. Includes costs, documents, and all business types.';
     const canonicalUrl = 'https://wakili.co.ke/how-to-register-business-kenya';
 
@@ -264,7 +264,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
           "@type": "Organization",
           "name": "Business Registration Kenya Guide",
           "url": "https://wakili.co.ke/how-to-register-business-kenya",
-          "description": "Official guide to registering businesses and companies in Kenya using eCitizen",
+          "description": "Practical guide to registering businesses and companies in Kenya using eCitizen",
           "areaServed": "Kenya"
         },
         {
@@ -502,11 +502,11 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                       <h4 className="font-bold text-gray-900 mb-2">Companies Act (2015)</h4>
                       <p className="text-gray-700 text-sm mb-2">Governs the registration and operation of Limited Companies. Key provisions include:</p>
                       <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
-                        <li><strong>Section 12-20:</strong> Registration process for companies – requirements for company formation, memorandum and articles of association</li>
-                        <li><strong>Section 30:</strong> Certificate of Incorporation (CR12) – proof of a company's legal existence</li>
+                        <li><strong>Section 12-20:</strong> Registration process for companies - requirements for company formation, memorandum and articles of association</li>
+                        <li><strong>Section 30:</strong> Certificate of Incorporation (CR12) - proof of a company's legal existence</li>
                         <li><strong>Section 80-100:</strong> Board of Directors requirements and responsibilities</li>
                         <li><strong>Section 140-160:</strong> Shareholder rights and protections</li>
-                        <li><strong>Section 350-380:</strong> Annual Returns requirement – companies must file financial statements and company information every year by March 15th</li>
+                        <li><strong>Section 350-380:</strong> Annual Returns requirement - companies must file financial statements and company information every year by March 15th</li>
                         <li><strong>Section 470-500:</strong> Striking off and deregistration of companies that are inactive</li>
                       </ul>
                     </div>
@@ -517,7 +517,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                       <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
                         <li><strong>Section 2-10:</strong> Definition of partnership and types (general and limited partnerships)</li>
                         <li><strong>Section 11:</strong> Rights and duties of partners</li>
-                        <li><strong>Section 24:</strong> Liability of partners – general partners have joint and several liability</li>
+                        <li><strong>Section 24:</strong> Liability of partners - general partners have joint and several liability</li>
                         <li><strong>Section 32:</strong> Dissolution and winding up procedures</li>
                         <li>Partnerships must also register under the Business Registration Act</li>
                       </ul>
@@ -540,7 +540,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                       <ul className="space-y-1 text-gray-700 text-sm list-disc list-inside">
                         <li><strong>Section 3-5:</strong> All businesses must register with Kenya Revenue Authority (KRA) and obtain a Personal Identification Number (PIN)</li>
                         <li><strong>Section 12:</strong> Requirement to file annual tax returns showing business income</li>
-                        <li><strong>Section 91-95:</strong> Penalties for non-compliance – fines up to KES 1 million and/or 6 months imprisonment</li>
+                        <li><strong>Section 91-95:</strong> Penalties for non-compliance - fines up to KES 1 million and/or 6 months imprisonment</li>
                         <li><strong>KRA PIN:</strong> Mandatory for all business transactions, bank accounts, and government contracts</li>
                       </ul>
                     </div>
@@ -552,7 +552,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                         <li><strong>Employment Act (2007):</strong> Defines employer-employee relationships and working conditions</li>
                         <li><strong>NHIF Act & Regulations:</strong> Mandatory health insurance for all employees</li>
                         <li><strong>NSSF Act:</strong> Mandatory pension contribution (6% employer, 5% employee)</li>
-                        <li><strong>PAYE:</strong> Pay As You Earn – mandatory withholding of income tax from employee salaries</li>
+                        <li><strong>PAYE:</strong> Pay As You Earn - mandatory withholding of income tax from employee salaries</li>
                         <li>Non-compliance results in fines and potential business closure</li>
                       </ul>
                     </div>
@@ -701,17 +701,17 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                       <li>Select "Business Registration"</li>
                       <li>Click "Search Business Name"</li>
                       <li>Enter your desired business name</li>
-                      <li>Click Search – the system will show if the name is available or already taken</li>
+                      <li>Click Search - the system will show if the name is available or already taken</li>
                     </ol>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-green-50 border-2 border-green-200 p-4 rounded-lg">
-                      <h4 className="font-bold text-green-700 mb-2">✓ Name is Available?</h4>
+                      <h4 className="font-bold text-green-700 mb-2">Name is Available?</h4>
                       <p className="text-gray-700 text-sm">Great! Proceed to reserve it. Pay KES 500 (or it may be free). The name is reserved for 6 months, giving you time to complete registration.</p>
                     </div>
                     <div className="bg-red-50 border-2 border-red-200 p-4 rounded-lg">
-                      <h4 className="font-bold text-red-700 mb-2">✗ Name is Taken?</h4>
+                      <h4 className="font-bold text-red-700 mb-2">Name is Taken?</h4>
                       <p className="text-gray-700 text-sm">The name is already registered. Choose a different name and search again. You can try variations like adding your location or adding "Ltd" or "Kenya".</p>
                     </div>
                   </div>
@@ -962,7 +962,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="bg-green-50 border-2 border-green-200 p-6 rounded-xl">
-                      <h4 className="font-bold text-green-700 mb-3">✓ You Can DIY</h4>
+                      <h4 className="font-bold text-green-700 mb-3">You Can DIY</h4>
                       <ul className="space-y-2 text-gray-700 text-sm">
                         <li className="flex gap-2">
                           <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
@@ -984,7 +984,7 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                     </div>
 
                     <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl">
-                      <h4 className="font-bold text-yellow-700 mb-3">⚠️ Consider Getting Help</h4>
+                      <h4 className="font-bold text-yellow-700 mb-3">Consider Getting Help</h4>
                       <ul className="space-y-2 text-gray-700 text-sm">
                         <li className="flex gap-2">
                           <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -1028,7 +1028,6 @@ const HowToRegisterBusinessKenya: React.FC = () => {
                       <button
                         onClick={() => toggleFaq(index)}
                         className="w-full flex justify-between items-center p-5 text-left hover:bg-gray-50 transition"
-                        aria-expanded={openFaqIndex === index}
                         aria-controls={`faq-${index}`}
                       >
                         <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
@@ -1087,3 +1086,5 @@ const HowToRegisterBusinessKenya: React.FC = () => {
 };
 
 export default HowToRegisterBusinessKenya;
+
+

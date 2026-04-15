@@ -1,4 +1,4 @@
-// src/features/events/EventListView.tsx
+﻿// src/features/events/EventListView.tsx
 import React, { useState } from 'react';
 import { EventDataTypes } from '../../../../features/events/events'; 
 import EventTypeChip from './components/EventTypeChip'; 
@@ -236,3 +236,4 @@ const EventListView: React.FC<EventListViewProps> = ({
 };
 
 export default EventListView;
+

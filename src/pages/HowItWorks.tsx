@@ -118,7 +118,7 @@ function HowItWorks() {
                             How Wakili Works
                         </span>
                     </h1>
-                    <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                        <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto animate-fade-in">
                         Navigating legal matters can be complex. At Wakili, we've simplified the entire process into clear, manageable steps, connecting you with expert legal help efficiently and transparently.
                     </p>
                 </div>
@@ -231,18 +231,15 @@ function HowItWorks() {
 
 interface StepCardProps extends StepContent {
     reverse?: boolean;
-    animationDelay?: string;
+    // animationDelay?: string; // Removed animationDelay prop
 }
 
-const StepCard: React.FC<StepCardProps> = ({ step, imageUrl, title, icon, description, reverse = false, animationDelay = '0s' }) => {
+const StepCard: React.FC<StepCardProps> = ({ step, imageUrl, title, icon, description, reverse = false }) => {
     const imageContainerClasses = `w-full lg:w-2/5 flex justify-center items-center p-6 ${reverse ? 'lg:order-2' : 'lg:order-1'}`;
     const textContainerClasses = `w-full lg:w-3/5 space-y-4 p-6 sm:p-8 ${reverse ? 'lg:order-1 lg:pr-12' : 'lg:order-2 lg:pl-12'}`;
 
     return (
-        <div
-            className="flex flex-col lg:flex-row items-center bg-white dark:bg-slate-800/70 rounded-xl sm:rounded-2xl shadow-2xl dark:shadow-slate-900/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] dark:hover:shadow-purple-500/20 animate-slide-up group"
-            style={{ animationDelay }}
-        >
+        <div className="flex flex-col lg:flex-row items-center bg-white dark:bg-slate-800/70 rounded-xl sm:rounded-2xl shadow-2xl dark:shadow-slate-900/50 overflow-hidden transform transition-all duration-500 hover:scale-[1.02] dark:hover:shadow-purple-500/20 animate-slide-up group">
             <div className={imageContainerClasses}>
                 <div className="bg-gradient-to-br from-purple-100 via-pink-50 to-orange-50 dark:from-purple-900/50 dark:via-pink-900/30 dark:to-orange-900/30 p-4 sm:p-6 rounded-xl shadow-inner aspect-square max-w-sm w-full transition-all duration-300 group-hover:shadow-lg">
                     <img
@@ -276,3 +273,4 @@ const StepCard: React.FC<StepCardProps> = ({ step, imageUrl, title, icon, descri
 };
 
 export default HowItWorks;
+

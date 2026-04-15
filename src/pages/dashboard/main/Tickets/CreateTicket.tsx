@@ -1,4 +1,4 @@
-// src/features/Tickets/components/MyTickets/CreateTicket.tsx
+﻿// src/features/Tickets/components/MyTickets/CreateTicket.tsx
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../app/store';
 import { TicketAPI } from "../../../../features/Tickets/AllTickets";
@@ -64,7 +64,7 @@ const CreateTicket: React.FC<CreateTicketProps> = ({
                 user_id: user_id, // This comes from Redux store
                 ...data // subject, description from form
             }).unwrap();
-            toast.success('🎉 Ticket created successfully!');
+            toast.success('ðŸŽ‰ Ticket created successfully!');
             reset(); // Clear the form
             // Close the modal
             const dialogElement = document.getElementById(modalId) as HTMLDialogElement;
@@ -88,7 +88,7 @@ const CreateTicket: React.FC<CreateTicketProps> = ({
                     errorMessage = err.message;
                 }
             }
-            toast.error(`❌ ${errorMessage}`);
+            toast.error(`âŒ ${errorMessage}`);
         }
     };
 
@@ -219,3 +219,4 @@ const CreateTicket: React.FC<CreateTicketProps> = ({
 };
 
 export default CreateTicket;
+

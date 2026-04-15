@@ -1,4 +1,4 @@
-// src/components/MyDiary.tsx
+﻿// src/components/MyDiary.tsx
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import {
@@ -419,3 +419,4 @@ const MyDiary: React.FC = () => {
 };
 
 export default MyDiary;
+

@@ -1,4 +1,4 @@
-// src/features/events/components/EventTypeChip.tsx
+﻿// src/features/events/components/EventTypeChip.tsx
 import React from 'react';
 
 
@@ -64,3 +64,4 @@ const EventTypeChip: React.FC<EventTypeChipProps> = ({ eventType }) => {
 };
 
 export default EventTypeChip;
+

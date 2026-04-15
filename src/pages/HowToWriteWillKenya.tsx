@@ -81,13 +81,13 @@ const HowToWriteWillKenya = () => {
   const [activeSection, setActiveSection] = useState('');
 
   useEffect(() => {
-    document.title = 'How to Write a Will in Kenya 2026 - Complete Guide + Free Template';
+    document.title = 'How to Write a Will in Kenya 2026 - Practical Will Writing Guide + Free Template';
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Complete guide on how to write a legal will in Kenya. Step-by-step instructions, requirements, free template, executor selection, and estate planning tips. Updated 2026.'
+        'Practical guide on how to write a legal will in Kenya. Step-by-step instructions, requirements, free template, executor selection, and estate planning tips. Updated 2026.'
       );
     }
 
@@ -113,7 +113,7 @@ const HowToWriteWillKenya = () => {
 
     // OpenGraph tags
     const ogTags = [
-      { property: 'og:title', content: 'How to Write a Will in Kenya - Complete Guide + Free Template' },
+      { property: 'og:title', content: 'How to Write a Will in Kenya - Practical Will Writing Guide + Free Template' },
       { property: 'og:description', content: 'Step-by-step guide to writing a legal will in Kenya. Free template included.' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: window.location.href }
@@ -132,7 +132,7 @@ const HowToWriteWillKenya = () => {
     // Twitter tags
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: 'How to Write a Will in Kenya - Complete Guide' },
+      { name: 'twitter:title', content: 'How to Write a Will in Kenya - Practical Will Writing Guide' },
       { name: 'twitter:description', content: 'Step-by-step guide to writing a legal will in Kenya. Free template included.' }
     ];
 
@@ -162,8 +162,8 @@ const HowToWriteWillKenya = () => {
         {
           '@type': 'WebPage',
           '@id': window.location.href,
-          name: 'How to Write a Will in Kenya - Complete Guide',
-          description: 'Complete guide on how to write a legal will in Kenya',
+          name: 'How to Write a Will in Kenya - Practical Will Writing Guide',
+          description: 'Practical guide on how to write a legal will in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -304,7 +304,7 @@ const HowToWriteWillKenya = () => {
       <header className="relative bg-gradient-to-r from-green-700 via-emerald-600 to-teal-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse [animation-delay:1s]"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -335,7 +335,7 @@ const HowToWriteWillKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Will Writing Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with writing my will in Kenya.\n\nPlease contact me to discuss:\n- Will drafting\n- Estate planning\n- Executor selection\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Will Writing Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with writing my will in Kenya.\n\nPlease contact me to discuss:\n- Will drafting\n- Estate planning\n- Executor selection\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Email for will writing assistance"
             >
@@ -1560,7 +1560,7 @@ const HowToWriteWillKenya = () => {
               >
                 <Scale className="w-10 h-10 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-bold text-lg text-gray-900 mb-2">Succession & Inheritance Law</h3>
-                <p className="text-gray-600 text-sm">Complete guide to estate distribution in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to estate distribution in Kenya</p>
               </Link>
 
               <Link
@@ -1594,7 +1594,6 @@ const HowToWriteWillKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1662,3 +1661,5 @@ const HowToWriteWillKenya = () => {
 };
 
 export default HowToWriteWillKenya;
+
+

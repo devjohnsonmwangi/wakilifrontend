@@ -33,7 +33,7 @@ const ChildLawKenya = () => {
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Complete guide to child law in Kenya: Children Act 2022, Constitution Article 53, parental responsibility, custody, maintenance, adoption, child protection, education, health, and juvenile justice. Updated 2026.'
+        'Practical guide to child law in Kenya: Children Act 2022, Constitution Article 53, parental responsibility, custody, maintenance, adoption, child protection, education, health, and juvenile justice. Updated 2026.'
       );
     }
 
@@ -299,7 +299,7 @@ const ChildLawKenya = () => {
       <header className="relative bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -330,7 +330,7 @@ const ChildLawKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Child Law Legal Services Request')}&body=${encodeURIComponent('Hello, I need guidance on child law in Kenya. My concerns are:\\n\\n')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Child Law Legal Services Request')}&body=${encodeURIComponent('Hello, I need guidance on child law in Kenya. My concerns are:\\n\\n')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg border border-white/30 transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Request guidance by email"
             >
@@ -638,3 +638,5 @@ const ChildLawKenya = () => {
 };
 
 export default ChildLawKenya;
+
+

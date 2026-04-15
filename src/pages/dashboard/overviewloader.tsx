@@ -1,4 +1,4 @@
-// src/components/dashboard/DashboardOverviewLoader.tsx
+﻿// src/components/dashboard/DashboardOverviewLoader.tsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../app/store'; 
@@ -34,3 +34,4 @@ const DashboardOverviewLoader: React.FC = () => {
 };
 
 export default DashboardOverviewLoader;
+

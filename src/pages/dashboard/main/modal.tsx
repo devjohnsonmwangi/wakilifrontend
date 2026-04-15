@@ -1,4 +1,4 @@
-// src/components/common/Modal.tsx
+﻿// src/components/common/Modal.tsx
 import React, { ReactNode, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
@@ -66,3 +66,4 @@ const Modal: React.FC<ModalProps> = ({ title, children, onClose, isOpen, size = 
 };
 
 export default Modal;
+

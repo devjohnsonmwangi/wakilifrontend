@@ -1,4 +1,4 @@
-// FILE: src/pages/updates.tsx
+﻿// FILE: src/pages/updates.tsx
 
 import { useState, FC, SyntheticEvent } from 'react';
 import { useFetchNewsQuery } from '../features/news/newsAPI'; 
@@ -43,6 +43,15 @@ const NEWS_CATEGORIES: Category[] = [
   { id: 'africa_legal', name: 'Africa Law', Icon: Globe, query: 'Africa AND (law OR legal OR "African Union")' },
   { id: 'africa_politics', name: 'Africa Politics', Icon: Users, query: 'Africa AND (politics OR government)' },
 ];
+
+const CATEGORY_EDITORIAL_NOTES: Record<string, string> = {
+  world_legal: 'Wakili editorial focus: legal developments with possible procedure, rights, or compliance implications for Kenyan users.',
+  world_politics: 'Wakili editorial focus: international political developments that can influence legal policy and governance trends.',
+  east_africa_legal: 'Wakili editorial focus: East Africa legal changes with practical cross-border relevance for citizens and businesses in Kenya.',
+  east_africa_politics: 'Wakili editorial focus: regional policy shifts that may affect governance, mobility, and legal obligations across East Africa.',
+  africa_legal: 'Wakili editorial focus: continental legal and institutional updates that shape legal practice and rights frameworks.',
+  africa_politics: 'Wakili editorial focus: policy and governance trends across Africa with potential legal and regulatory impact.',
+};
 
 // --- Reusable Child Components ---
 
@@ -157,6 +166,7 @@ const LegalNewsSection: FC = () => {
   const articles = data?.articles || [];
   const totalResults = data?.totalResults || 0;
   const hasMore = articles.length < totalResults;
+  const editorialNote = CATEGORY_EDITORIAL_NOTES[activeTab.id] || CATEGORY_EDITORIAL_NOTES.world_legal;
 
   return (
     <>
@@ -188,6 +198,22 @@ const LegalNewsSection: FC = () => {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div className="mb-8 grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-4">
+              <h3 className="text-sm font-bold text-emerald-900 dark:text-emerald-300">Wakili Editorial Context</h3>
+              <p className="mt-2 text-sm text-emerald-800 dark:text-emerald-200">{editorialNote}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 p-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">How We Select Sources</h3>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                This page aggregates public reporting from external publishers. We prioritize reputable outlets and official reporting, then classify stories by legal and policy relevance.
+              </p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Note: external articles are independently published by their respective sources.
+              </p>
             </div>
           </div>
           
@@ -253,3 +279,4 @@ const LegalNewsSection: FC = () => {
 };
 
 export default LegalNewsSection;
+

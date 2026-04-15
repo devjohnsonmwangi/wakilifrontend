@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+﻿import React, { useState, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
 
@@ -329,3 +329,4 @@ export const CaseDocumentsModal: React.FC<CaseDocumentsModalProps> = ({
         </>
     );
 };
+

@@ -1,4 +1,4 @@
-// ReminderFormModal.tsx
+﻿// ReminderFormModal.tsx
 import React, { useEffect, useState, useMemo, forwardRef } from 'react';
 import {
   isValid, parseISO, format, parse, setHours, setMinutes, setSeconds, startOfDay,
@@ -442,3 +442,4 @@ const ReminderFormModal: React.FC<ReminderFormModalProps> = ({
 };
 
 export default ReminderFormModal;
+

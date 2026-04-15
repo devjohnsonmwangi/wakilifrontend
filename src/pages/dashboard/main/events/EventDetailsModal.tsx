@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { Dialog } from '@headlessui/react';
 import { toast } from 'sonner';
 import { format, parseISO, isValid } from 'date-fns'; // Added isValid
@@ -267,3 +267,4 @@ const EventDetailsModal: React.FC<Props> = ({
 };
 
 export default EventDetailsModal;
+

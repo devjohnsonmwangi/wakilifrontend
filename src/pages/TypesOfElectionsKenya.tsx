@@ -106,7 +106,7 @@ const TypesOfElectionsKenya: React.FC = () => {
   };
 
   const metaTitle = 'Presidential, Parliamentary & County Elections Explained – Kenya Guide';
-  const metaDescription = 'Complete guide to Kenya\'s elections: Presidential, Parliamentary, and County elections explained. Learn how elections work, voting process, IEBC procedures, and your rights.';
+  const metaDescription = 'Practical guide to Kenya\'s elections: Presidential, Parliamentary, and County elections explained. Learn how elections work, voting process, IEBC procedures, and your rights.';
 
   useEffect(() => {
     // Set page title and meta description
@@ -980,3 +980,5 @@ const TypesOfElectionsKenya: React.FC = () => {
 };
 
 export default TypesOfElectionsKenya;
+
+

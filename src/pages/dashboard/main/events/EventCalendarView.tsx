@@ -1,4 +1,4 @@
-// src/pages/dashboard/main/events/EventCalendarView.tsx
+﻿// src/pages/dashboard/main/events/EventCalendarView.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import { DateSelectArg, EventClickArg, EventInput} from '@fullcalendar/core';
@@ -275,3 +275,5 @@ const EventCalendarView: React.FC<EventCalendarViewProps> = ({
 };
 
 export default EventCalendarView;
+
+

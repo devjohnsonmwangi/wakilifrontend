@@ -254,14 +254,14 @@ const TerminationRedundancySeveranceKenya = () => {
     <>
       <Helmet>
         <title>Termination Redundancy Severance Kenya – Rights Guide 2026</title>
-        <meta name="description" content="Complete guide to termination, redundancy, and severance pay in Kenya. Employee rights, employer obligations, notice periods, and calculations under Employment Act 2007." />
-        <link rel="canonical" href="https://yoursite.com/termination-redundancy-severance-kenya" />
+        <meta name="description" content="Practical guide to termination, redundancy, and severance pay in Kenya. Employee rights, employer obligations, notice periods, and calculations under Employment Act 2007." />
+        <link rel="canonical" href="https://wakili.co.ke/termination-redundancy-severance-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Termination, Redundancy & Severance Kenya – Rights Guide 2026" />
         <meta property="og:description" content="Understand termination procedures, redundancy rights, severance calculations, and unfair dismissal protections in Kenya." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/termination-redundancy-severance-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/termination-redundancy-severance-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -279,8 +279,8 @@ const TerminationRedundancySeveranceKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Termination and redundancy guidance for Kenya"
           })}
         </script>
@@ -294,13 +294,13 @@ const TerminationRedundancySeveranceKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Termination & Redundancy",
-                "item": "https://yoursite.com/termination-redundancy-severance-kenya"
+                "item": "https://wakili.co.ke/termination-redundancy-severance-kenya"
               }
             ]
           })}
@@ -372,7 +372,7 @@ const TerminationRedundancySeveranceKenya = () => {
               <FileText className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Termination, Redundancy & Severance in Kenya – Employee & Employer Rights Guide 2026</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to employment termination, redundancy procedures, severance pay calculations, and unfair dismissal rights under Employment Act 2007 and Labour Relations Act.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to employment termination, redundancy procedures, severance pay calculations, and unfair dismissal rights under Employment Act 2007 and Labour Relations Act.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="#severance" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Calculator className="w-5 h-5" />
@@ -854,7 +854,7 @@ const TerminationRedundancySeveranceKenya = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <a href="/kenya-employment-labour-laws" className="p-4 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-shadow hover:border-blue-600">
                 <h4 className="font-bold text-gray-900 mb-1">Employment & Labour Laws</h4>
-                <p className="text-gray-600 text-sm">Complete guide to employee and employer rights</p>
+                <p className="text-gray-600 text-sm">Practical guide to employee and employer rights</p>
               </a>
               <a href="/employment-contracts-kenya" className="p-4 border-2 border-green-200 rounded-lg hover:shadow-lg transition-shadow hover:border-green-600">
                 <h4 className="font-bold text-gray-900 mb-1">Employment Contracts</h4>
@@ -881,3 +881,5 @@ const TerminationRedundancySeveranceKenya = () => {
 };
 
 export default TerminationRedundancySeveranceKenya;
+
+

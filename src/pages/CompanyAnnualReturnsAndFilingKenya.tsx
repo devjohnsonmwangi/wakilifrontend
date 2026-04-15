@@ -273,14 +273,14 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>Company Annual Returns Kenya – CR12 Filing & Compliance Guide</title>
-        <meta name="description" content="Complete guide to filing company annual returns in Kenya. Step-by-step CR12 filing on eCitizen, deadlines, penalties, and compliance requirements for registered companies." />
-        <link rel="canonical" href="https://yoursite.com/company-annual-returns-and-filing-kenya" />
+        <meta name="description" content="Practical guide to filing company annual returns in Kenya. Step-by-step CR12 filing on eCitizen, deadlines, penalties, and compliance requirements for registered companies." />
+        <link rel="canonical" href="https://wakili.co.ke/company-annual-returns-and-filing-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Company Annual Returns Kenya – CR12 Filing Guide 2026" />
-        <meta property="og:description" content="File CR12 annual returns for your company in Kenya. Complete guide with step-by-step instructions, deadlines, penalties, and compliance checklist." />
+        <meta property="og:description" content="File CR12 annual returns for your company in Kenya. Practical guide with step-by-step instructions, deadlines, penalties, and compliance checklist." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/company-annual-returns-and-filing-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/company-annual-returns-and-filing-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -298,8 +298,8 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Company annual returns and CR12 filing guidance in Kenya"
           })}
         </script>
@@ -313,13 +313,13 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Company Annual Returns",
-                "item": "https://yoursite.com/company-annual-returns-and-filing-kenya"
+                "item": "https://wakili.co.ke/company-annual-returns-and-filing-kenya"
               }
             ]
           })}
@@ -1098,7 +1098,7 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <a href="/how-to-register-business-kenya" className="p-4 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-shadow hover:border-blue-606">
                 <h4 className="font-bold text-gray-900 mb-1">How to Register a Business</h4>
-                <p className="text-gray-600 text-sm">Complete guide to business registration in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to business registration in Kenya</p>
               </a>
               <a href="/limited-company-registration-kenya" className="p-4 border-2 border-green-200 rounded-lg hover:shadow-lg transition-shadow hover:border-green-606">
                 <h4 className="font-bold text-gray-900 mb-1">Limited Company Registration</h4>
@@ -1129,3 +1129,5 @@ const CompanyAnnualReturnsAndFilingKenya = () => {
 };
 
 export default CompanyAnnualReturnsAndFilingKenya;
+
+

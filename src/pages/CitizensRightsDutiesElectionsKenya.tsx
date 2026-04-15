@@ -692,7 +692,6 @@ const CitizensRightsDutiesElectionsKenya: React.FC = () => {
                       <button
                         onClick={() => toggleFaq(index)}
                         className="w-full flex justify-between items-center p-5 text-left hover:bg-gray-50 transition"
-                        aria-expanded={openFaqIndex === index}
                         aria-controls={`faq-${index}`}
                       >
                         <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
@@ -738,3 +737,5 @@ const CitizensRightsDutiesElectionsKenya: React.FC = () => {
 };
 
 export default CitizensRightsDutiesElectionsKenya;
+
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 
  import { Link } from "react-router-dom"; 
 import { useFetchCasesQuery } from "../../../../features/case/caseAPI";
@@ -499,3 +499,4 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ onClose }) => {
 };
 
 export default DocumentUpload;
+

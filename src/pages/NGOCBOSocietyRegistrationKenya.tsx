@@ -340,14 +340,14 @@ const NGOCBOSocietyRegistrationKenya = () => {
     <>
       <Helmet>
         <title>NGO, CBO & Society Registration Kenya – Guide 2026 & 2027</title>
-        <meta name="description" content="Complete guide to NGO, CBO and society registration in Kenya. Step-by-step process, costs, requirements, authorities and legal compliance for nonprofits." />
-        <link rel="canonical" href="https://yoursite.com/ngo-cbo-society-registration-kenya" />
+        <meta name="description" content="Practical guide to NGO, CBO and society registration in Kenya. Step-by-step process, costs, requirements, authorities and legal compliance for nonprofits." />
+        <link rel="canonical" href="https://wakili.co.ke/ngo-cbo-society-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="NGO, CBO & Society Registration Kenya – Complete Guide 2026 & 2027" />
+        <meta property="og:title" content="NGO, CBO & Society Registration Kenya – Practical guide 2026 & 2027" />
         <meta property="og:description" content="Register an NGO, CBO or society in Kenya. Step-by-step guide covering registration process, costs, authorities, constitution, compliance and legal requirements." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/ngo-cbo-society-registration-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/ngo-cbo-society-registration-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -365,8 +365,8 @@ const NGOCBOSocietyRegistrationKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "NGO, CBO and society registration services in Kenya"
           })}
         </script>
@@ -380,13 +380,13 @@ const NGOCBOSocietyRegistrationKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "NGO, CBO & Society Registration",
-                "item": "https://yoursite.com/ngo-cbo-society-registration-kenya"
+                "item": "https://wakili.co.ke/ngo-cbo-society-registration-kenya"
               }
             ]
           })}
@@ -440,7 +440,7 @@ const NGOCBOSocietyRegistrationKenya = () => {
               <Heart className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">NGO, CBO & Society Registration in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to legally registering nonprofits in Kenya. Learn how to register NGOs with NGO Coordination Board, CBOs with county offices, and societies with Registrar. Includes step-by-step processes, costs, requirements and compliance.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to legally registering nonprofits in Kenya. Learn how to register NGOs with NGO Coordination Board, CBOs with county offices, and societies with Registrar. Includes step-by-step processes, costs, requirements and compliance.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ngobureau.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
@@ -1239,3 +1239,5 @@ const NGOCBOSocietyRegistrationKenya = () => {
 };
 
 export default NGOCBOSocietyRegistrationKenya;
+
+

@@ -1,4 +1,4 @@
-// src/components/DocumentReport.tsx
+﻿// src/components/DocumentReport.tsx
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Chart, registerables, TooltipItem } from 'chart.js';
@@ -275,3 +275,4 @@ const DocumentReportPage = () => {
 }
 
 export default DocumentReportPage;
+

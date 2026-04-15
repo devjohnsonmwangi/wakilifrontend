@@ -1,4 +1,4 @@
-// src/features/Tickets/components/MyTickets/EditUserTicket.tsx 
+﻿// src/features/Tickets/components/MyTickets/EditUserTicket.tsx 
 import { useForm, SubmitHandler } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -92,7 +92,7 @@ const EditUserTicket: React.FC<EditTicketFormProps> = ({
                 if (apiErr.data?.message) errorMessage = apiErr.data.message;
                 else if (apiErr.message) errorMessage = apiErr.message;
             }
-            toast.error(`❌ ${errorMessage}`);
+            toast.error(`âŒ ${errorMessage}`);
         }
     };
 
@@ -148,16 +148,16 @@ const EditUserTicket: React.FC<EditTicketFormProps> = ({
                     </button>
                     <AnimatePresence>
                         {isStatusDropdownOpen && (
-                            <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            <motion.div variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                 {(['Open', 'Closed'] as const).map(status => (
-                                    <li key={status}>
+                                    <div key={status}>
                                         <button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-slate-700/50 flex items-center justify-between" onClick={() => { setValue('status', status, { shouldValidate: true }); setIsStatusDropdownOpen(false); }}>
                                             <span>{status}</span>
                                             {currentStatus === status && <Check className="h-4 w-4 text-sky-500" />}
                                         </button>
-                                    </li>
+                                    </div>
                                 ))}
-                            </motion.ul>
+                            </motion.div>
                         )}
                     </AnimatePresence>
                     {errors.status && <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.status.message}</p>}
@@ -177,3 +177,4 @@ const EditUserTicket: React.FC<EditTicketFormProps> = ({
 };
 
 export default EditUserTicket;
+

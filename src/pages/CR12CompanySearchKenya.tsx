@@ -319,19 +319,19 @@ const CR12CompanySearchKenya = () => {
       <Helmet>
         <title>CR12 & Company Search Kenya – Verify Company Online</title>
         <meta name="description" content="How to search companies, get CR12 certificate, verify directors in Kenya. Step-by-step guide to BRELA company search, fees, timelines & verification." />
-        <link rel="canonical" href="https://yoursite.com/company-cr12-and-search-kenya" />
+        <link rel="canonical" href="https://wakili.co.ke/company-cr12-and-search-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="CR12 & Company Search Kenya – Verify Company Details Online" />
-        <meta property="og:description" content="Complete guide to searching companies, obtaining CR12 certificate, and verifying company details in Kenya on BRELA/eCitizen." />
+        <meta property="og:description" content="Practical guide to searching companies, obtaining CR12 certificate, and verifying company details in Kenya on BRELA/eCitizen." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/company-cr12-and-search-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/company-cr12-and-search-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="CR12 & Company Search Kenya – Verify Company Details Online" />
-        <meta name="twitter:description" content="Complete guide to searching companies, obtaining CR12 certificate, and verifying company details in Kenya." />
+        <meta name="twitter:description" content="Practical guide to searching companies, obtaining CR12 certificate, and verifying company details in Kenya." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Robots */}
@@ -343,8 +343,8 @@ const CR12CompanySearchKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Company registration and legal services in Kenya"
           })}
         </script>
@@ -358,13 +358,13 @@ const CR12CompanySearchKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "CR12 & Company Search Kenya",
-                "item": "https://yoursite.com/company-cr12-and-search-kenya"
+                "item": "https://wakili.co.ke/company-cr12-and-search-kenya"
               }
             ]
           })}
@@ -418,7 +418,7 @@ const CR12CompanySearchKenya = () => {
               <Search className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">CR12, Company Search & Directors Verification in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to searching companies, obtaining CR12 certificates, and verifying company details and directors in Kenya. Learn how to conduct company searches on BRELA/eCitizen, get official company documents, and avoid business scams.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to searching companies, obtaining CR12 certificates, and verifying company details and directors in Kenya. Learn how to conduct company searches on BRELA/eCitizen, get official company documents, and avoid business scams.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Search className="w-5 h-5" />
@@ -1097,3 +1097,5 @@ const CR12CompanySearchKenya = () => {
 };
 
 export default CR12CompanySearchKenya;
+
+

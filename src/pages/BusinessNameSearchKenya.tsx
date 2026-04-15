@@ -188,7 +188,7 @@ const BusinessNameSearchKenya = () => {
     <>
       <Helmet>
         <title>Business Name Search & Reservation Kenya – eCitizen Guide 2026 & 2027</title>
-        <meta name="description" content="Check business name availability in Kenya on eCitizen. Complete guide to name search, reservation (6 months), rules, fees. Step-by-step instructions & legal requirements." />
+        <meta name="description" content="Check business name availability in Kenya on eCitizen. Practical guide to name search, reservation (6 months), rules, fees. Step-by-step instructions & legal requirements." />
         <meta name="keywords" content="business name search kenya, check name availability kenya, name reservation kenya, ecitizen name search, business name check online, register business name, name approval kenya" />
         <link rel="canonical" href="https://wakili.co.ke/business-name-search-kenya" />
         <meta property="og:title" content="Business Name Search & Reservation in Kenya – eCitizen Guide 2026 & 2027" />
@@ -1166,3 +1166,5 @@ const BusinessNameSearchKenya = () => {
 };
 
 export default BusinessNameSearchKenya;
+
+

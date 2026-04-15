@@ -1,4 +1,4 @@
-// src/components/CaseReport.tsx
+﻿// src/components/CaseReport.tsx
 
 import { useState, useEffect } from 'react';
 import {
@@ -247,3 +247,4 @@ const CaseReportPage = () => {
 }
 
 export default CaseReportPage;
+

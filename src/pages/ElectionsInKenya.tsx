@@ -118,7 +118,7 @@ export default function ElectionsInKenya() {
   useEffect(() => {
     // Set SEO Meta Tags
     const metaTitle = 'Elections in Kenya 2027 – Electoral Process, Legal Framework & Guide';
-    const metaDescription = 'Comprehensive guide to Kenya\'s 2027 elections including electoral process, legal framework, all laws and acts governing elections, IEBC role, voting procedures, and complete election timeline.';
+    const metaDescription = 'Independent guide to Kenya\'s 2027 elections including electoral process, legal framework, IEBC role, voting procedures, and election timelines.';
     const metaKeywords = 'Kenya elections 2027, electoral process, election laws, IEBC, voting procedure Kenya, election legal framework, how elections work Kenya, election timeline 2027';
 
     // Set Meta Title
@@ -305,7 +305,7 @@ export default function ElectionsInKenya() {
             <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0" />
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Kenya Elections 2027 – Complete Electoral Process, Legal Framework & Guide</h1>
-          <p className="text-lg sm:text-xl text-violet-50 mb-6">Comprehensive guide to Kenya's 2027 elections, electoral laws, IEBC procedures, and how to participate in the democratic process. Understand all laws and acts governing elections in Kenya.</p>
+          <p className="text-lg sm:text-xl text-violet-50 mb-6">Independent guide to Kenya's 2027 elections, electoral laws, IEBC procedures, and how to participate in the democratic process.</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a href="https://www.iebc.or.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-violet-600 px-6 py-3 rounded-lg font-semibold hover:bg-violet-50 transition flex items-center justify-center gap-2">
               Visit IEBC <ArrowRight className="w-5 h-5" />
@@ -314,6 +314,9 @@ export default function ElectionsInKenya() {
               Check Voter Status
             </a>
           </div>
+          <p className="mt-4 text-xs sm:text-sm text-violet-100">
+            Editorial note: This page is an independent educational resource and not an official IEBC notice. Confirm current election procedures using IEBC and Kenya Law primary sources.
+          </p>
         </div>
       </section>
 
@@ -1306,7 +1309,7 @@ export default function ElectionsInKenya() {
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Contact Us</h4>
-              <p className="text-sm mb-2">Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="text-violet-400 hover:text-violet-300">johnsonthuraniramwangi@gmail.com</a></p>
+              <p className="text-sm mb-2">Email: <a href="mailto:info@wakili.com" className="text-violet-400 hover:text-violet-300">info@wakili.com</a></p>
               <p className="text-sm">WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300">+254 112 810 203</a></p>
             </div>
             <div>
@@ -1326,3 +1329,4 @@ export default function ElectionsInKenya() {
     </div>
   );
 }
+

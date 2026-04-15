@@ -206,23 +206,23 @@ const MyCases = () => {
         <>
             <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Case Number</label><div className="relative"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="text" placeholder="Case Number..." value={filter.subject} onChange={(e) => handleFilterChange('subject', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filter.subject && (<button type="button" onClick={() => handleClearFilter('subject')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}</div></div>
-                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Description/Party</label><div className="relative"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"/><input type="text" placeholder="Description / Client / Staff..." value={filter.description} onChange={(e) => handleFilterChange('description', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filter.description && (<button type="button" onClick={() => handleClearFilter('description')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}</div></div>
+                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Case Number</label><div className="relative"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" aria-hidden="true"/><input type="text" placeholder="Case Number..." value={filter.subject} onChange={(e) => handleFilterChange('subject', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filter.subject && (<button type="button" title="Clear case number" aria-label="Clear case number" onClick={() => handleClearFilter('subject')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16} /></div></button>)}</div></div>
+                    <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Description/Party</label><div className="relative"><Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" aria-hidden="true"/><input type="text" placeholder="Description / Client / Staff..." value={filter.description} onChange={(e) => handleFilterChange('description', e.target.value)} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />{filter.description && (<button type="button" title="Clear description" aria-label="Clear description" onClick={() => handleClearFilter('description')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16} /></div></button>)}</div></div>
                     <div ref={statusDropdownRef} className="relative">
                         <label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Status</label>
                         <button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}>
                             <span className={`truncate font-semibold ${!filter.status ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filter.status ? filter.status.charAt(0).toUpperCase() + filter.status.slice(1).replace('_', ' ') : 'All Statuses'}</span>
                             <div className="flex items-center">
-                                {filter.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}
+                                {filter.status && (<button type="button" title="Clear status" aria-label="Clear status" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16}/></div></button>)}
                                 <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
                         <AnimatePresence>
                             {isStatusDropdownOpen && (
-                                <motion.ul initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>
-                                    {['open', 'in_progress', 'closed', 'on_hold', 'resolved'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}</button></li>))}
-                                </motion.ul>
+                                <motion.div initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></div>
+                                    {['open', 'in_progress', 'closed', 'on_hold', 'resolved'].map(status => (<div key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}</button></div>))}
+                                </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
@@ -298,7 +298,7 @@ const MyCases = () => {
             </div>
              <div>
                 <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4">Case Status Distribution</h3>
-                <div style={{ height: '350px' }}>
+                <div className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff' }} />
@@ -374,3 +374,4 @@ const MyCases = () => {
 };
 
 export default MyCases;
+

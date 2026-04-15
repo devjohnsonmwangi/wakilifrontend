@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -236,3 +236,4 @@ const AddClientModal = ({ isOpen, onClose, onSuccess }: AddClientModalProps) => 
 };
 
 export default AddClientModal;
+

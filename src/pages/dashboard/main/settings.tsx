@@ -1,4 +1,4 @@
-// src/pages/dashboard/main/SettingsPage.tsx (Renamed from Profile.tsx)
+﻿// src/pages/dashboard/main/SettingsPage.tsx (Renamed from Profile.tsx)
 
 import React, { ReactNode, useEffect, useState, ChangeEvent } from 'react';
 import { useForm, SubmitHandler, FieldError } from 'react-hook-form';
@@ -139,12 +139,26 @@ interface NotificationPreferences {
 
 import type { Path } from 'react-hook-form';
 
+// Valid HTML autocomplete attribute values per WHATWG spec
+type ValidAutocomplete = 
+  | 'off' | 'on'
+  | 'name' | 'given-name' | 'additional-name' | 'family-name' | 'honorific-prefix' | 'honorific-suffix' | 'nickname'
+  | 'username' | 'new-password' | 'current-password' | 'one-time-code'
+  | 'organization-title' | 'organization'
+  | 'street-address' | 'address-line1' | 'address-line2' | 'address-line3' | 'address-level4' | 'address-level3' | 'address-level2' | 'address-level1'
+  | 'country' | 'country-name' | 'postal-code'
+  | 'cc-name' | 'cc-given-name' | 'cc-additional-name' | 'cc-family-name' | 'cc-number' | 'cc-exp' | 'cc-exp-month' | 'cc-exp-year' | 'cc-csc' | 'cc-type'
+  | 'transaction-currency' | 'transaction-amount' | 'language'
+  | 'bday' | 'bday-day' | 'bday-month' | 'bday-year' | 'sex'
+  | 'tel' | 'tel-country-code' | 'tel-national' | 'tel-area-code' | 'tel-local' | 'tel-local-prefix' | 'tel-local-suffix' | 'tel-extension'
+  | 'email' | 'impp' | 'url' | 'photo';
+
 // Generic Form Field Renderer
 function renderFormField<T extends Record<string, unknown>>(
     id: Path<T>,
     label: string,
     type: string,
-    autoComplete: string,
+    autoComplete: ValidAutocomplete,
     error: FieldError | undefined,
     register: ReturnType<typeof useForm<T>>['register'],
     icon?: React.ReactNode,
@@ -152,6 +166,8 @@ function renderFormField<T extends Record<string, unknown>>(
     rightIcon?: React.ReactNode,
     onRightIconClick?: () => void
 ) {
+    const resolvedInputProps = { ...inputProps, autoComplete };
+
     return (
         <div>
             <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -166,11 +182,10 @@ function renderFormField<T extends Record<string, unknown>>(
                 <input
                     id={id}
                     type={type}
-                    autoComplete={autoComplete}
                     className={`appearance-none block w-full px-3 py-2 border ${icon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500'} rounded-md placeholder-gray-400 dark:placeholder-gray-500 dark:bg-gray-700 dark:text-white focus:outline-none sm:text-sm ${inputProps?.disabled ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                     placeholder={`Enter your ${label.toLowerCase()}`}
                     {...register(id)}
-                    {...inputProps}
+                    {...resolvedInputProps}
                 />
                 {rightIcon && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -748,7 +763,7 @@ const SettingsPage = () => {
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">Receive an email when you get a new message.</p>
                                             </div>
                                             <label htmlFor="emailOnNewMessageToggle" className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="emailOnNewMessageToggle" className="sr-only peer"
+                                                <input type="checkbox" id="emailOnNewMessageToggle" aria-label="Enable email notifications for new messages" className="sr-only peer"
                                                     checked={notificationPrefs.emailOnNewMessage}
                                                     onChange={() => handleNotificationToggle('emailOnNewMessage')}
                                                 />
@@ -761,7 +776,7 @@ const SettingsPage = () => {
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">Get notified about new features and updates.</p>
                                             </div>
                                             <label htmlFor="emailOnProductUpdatesToggle" className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="emailOnProductUpdatesToggle" className="sr-only peer"
+                                                <input type="checkbox" id="emailOnProductUpdatesToggle" aria-label="Enable email notifications for product updates" className="sr-only peer"
                                                     checked={notificationPrefs.emailOnProductUpdates}
                                                     onChange={() => handleNotificationToggle('emailOnProductUpdates')}
                                                 />
@@ -805,9 +820,9 @@ const SettingsPage = () => {
                             </label>
                             <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 10MB</p>
                         </div>
-                        {renderFormField("full_name", "Full Name", "text", "name", profileErrors.full_name, registerProfile, <FaUserCircle />)}
+                        {renderFormField("full_name", "Full Name", "text", "given-name", profileErrors.full_name, registerProfile, <FaUserCircle />)}
                         {renderFormField("email", "Email Address", "email", "email", profileErrors.email, registerProfile, <FaEnvelope />, { disabled: true })}
-                        {renderFormField("phone_number", "Phone Number", "tel", "tel", profileErrors.phone_number, registerProfile, <FaPhoneAlt />)}
+                        {renderFormField("phone_number", "Phone Number", "tel", "tel-national", profileErrors.phone_number, registerProfile, <FaPhoneAlt />)}
                         {renderFormField("address", "Address", "text", "street-address", profileErrors.address, registerProfile, <FaMapMarkerAlt />)}
                         <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 pt-2">
                             <button type="button" onClick={closeEditProfileModal} className="mt-3 w-full sm:mt-0 sm:w-auto inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-6 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">Cancel</button>
@@ -840,12 +855,12 @@ const SettingsPage = () => {
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-60 backdrop-blur-sm" onClick={() => setIsViewPictureModalOpen(false)}>
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-2 sm:p-4 max-w-md sm:max-w-lg w-full relative" onClick={(e) => e.stopPropagation()}>
                         <img src={displayProfilePicSrc} alt="Full User Avatar" className="rounded-md object-contain w-full max-h-[80vh]" />
-                        <button onClick={() => setIsViewPictureModalOpen(false)} className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-gray-700 bg-opacity-60 text-white rounded-full p-1.5 hover:bg-opacity-80 z-10"><FaTimes className="h-5 w-5" /></button>
+                        <button onClick={() => setIsViewPictureModalOpen(false)} title="Close" className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-gray-700 bg-opacity-60 text-white rounded-full p-1.5 hover:bg-opacity-80 z-10"><FaTimes className="h-5 w-5" /></button>
                     </div>
                 </div>
             )}
              <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
-                      <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                      <p>Â© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
                       <p className="mt-1">
                         <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
                       </p>
@@ -855,3 +870,4 @@ const SettingsPage = () => {
 };
 
 export default SettingsPage;
+

@@ -130,7 +130,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       ogUrl.setAttribute('property', 'og:url');
       document.head.appendChild(ogUrl);
     }
-    ogUrl.setAttribute('content', 'https://wakili.app/subdivision-survey-process-kenya');
+    ogUrl.setAttribute('content', 'https://wakili.co.ke/subdivision-survey-process-kenya');
 
     let ogImage = document.querySelector('meta[property="og:image"]');
     if (!ogImage) {
@@ -138,7 +138,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       ogImage.setAttribute('property', 'og:image');
       document.head.appendChild(ogImage);
     }
-    ogImage.setAttribute('content', 'https://wakili.app/og-subdivision-survey.jpg');
+    ogImage.setAttribute('content', 'https://wakili.co.ke/og-subdivision-survey.jpg');
 
     // Twitter tags
     let twitterCard = document.querySelector('meta[name="twitter:card"]');
@@ -155,7 +155,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       twitterTitle.setAttribute('name', 'twitter:title');
       document.head.appendChild(twitterTitle);
     }
-    twitterTitle.setAttribute('content', 'Land Subdivision & Survey in Kenya – Complete Guide');
+    twitterTitle.setAttribute('content', 'Land Subdivision & Survey in Kenya – Practical guide');
 
     let twitterDescription = document.querySelector('meta[name="twitter:description"]');
     if (!twitterDescription) {
@@ -181,7 +181,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://wakili.app/subdivision-survey-process-kenya');
+    canonical.setAttribute('href', 'https://wakili.co.ke/subdivision-survey-process-kenya');
 
     // JSON-LD Structured Data
     const structuredData = {
@@ -189,18 +189,18 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
       '@graph': [
         {
           '@type': 'WebPage',
-          '@id': 'https://wakili.app/subdivision-survey-process-kenya',
-          'url': 'https://wakili.app/subdivision-survey-process-kenya',
+          '@id': 'https://wakili.co.ke/subdivision-survey-process-kenya',
+          'url': 'https://wakili.co.ke/subdivision-survey-process-kenya',
           'name': 'Land Subdivision & Survey Process in Kenya – Step-by-Step Legal Guide',
-          'description': 'Complete guide to subdividing land in Kenya, including survey processes, costs, county approval, and legal requirements.',
-          'isPartOf': { '@id': 'https://wakili.app' },
+          'description': 'Practical guide to subdividing land in Kenya, including survey processes, costs, county approval, and legal requirements.',
+          'isPartOf': { '@id': 'https://wakili.co.ke' },
           'inLanguage': 'en-KE'
         },
         {
           '@type': 'BreadcrumbList',
           'itemListElement': [
-            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://wakili.app' },
-            { '@type': 'ListItem', 'position': 2, 'name': 'Land Subdivision & Survey', 'item': 'https://wakili.app/subdivision-survey-process-kenya' }
+            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://wakili.co.ke' },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Land Subdivision & Survey', 'item': 'https://wakili.co.ke/subdivision-survey-process-kenya' }
           ]
         },
         {
@@ -226,7 +226,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
         {
           '@type': 'GovernmentService',
           'name': 'Land Subdivision & Survey Services in Kenya',
-          'description': 'Official guide to subdividing land and conducting surveys in Kenya',
+          'description': 'Practical guide to subdividing land and conducting surveys in Kenya',
           'areaServed': { '@type': 'Country', 'name': 'Kenya' },
           'serviceType': 'Land Survey and Subdivision Services'
         }
@@ -278,7 +278,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
                   Get Help via WhatsApp
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm sm:text-base"
                 >
                   <FileText className="w-4 h-4" />
@@ -799,11 +799,11 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
                   WhatsApp: +254 112 810 203
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
                 >
                   <FileText className="w-5 h-5" />
-                  Email: johnsonthuraniramwangi@gmail.com
+                  Email: info@wakili.com
                 </a>
               </div>
             </section>
@@ -831,7 +831,7 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
             <div>
               <h4 className="text-white font-bold mb-3">Contact</h4>
               <p className="text-sm">WhatsApp: +254 112 810 203</p>
-              <p className="text-sm">Email: johnsonthuraniramwangi@gmail.com</p>
+              <p className="text-sm">Email: info@wakili.com</p>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-6">
@@ -846,3 +846,4 @@ const SubdivisionSurveyProcessKenya: React.FC = () => {
 };
 
 export default SubdivisionSurveyProcessKenya;
+

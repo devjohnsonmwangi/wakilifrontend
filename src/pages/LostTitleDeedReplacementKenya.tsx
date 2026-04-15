@@ -84,7 +84,7 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
       meta.setAttribute('content', content);
     };
 
-    updateMeta('description', 'Complete guide to replacing a lost, stolen, or damaged title deed in Kenya. Step-by-step process, costs, required documents, and legal requirements.');
+    updateMeta('description', 'Practical guide to replacing a lost, stolen, or damaged title deed in Kenya. Step-by-step process, costs, required documents, and legal requirements.');
     updateMeta('keywords', 'lost title deed kenya, replace title deed, duplicate title deed kenya, title deed replacement process, lost property deed, lands registry replacement');
     
     // OG Tags
@@ -94,7 +94,7 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
       ogTitle.setAttribute('property', 'og:title');
       document.head.appendChild(ogTitle);
     }
-    ogTitle.setAttribute('content', 'Lost Title Deed Replacement in Kenya – Complete Guide');
+    ogTitle.setAttribute('content', 'Lost Title Deed Replacement in Kenya – Practical guide');
 
     let ogDesc = document.querySelector('meta[property="og:description"]');
     if (!ogDesc) {
@@ -171,7 +171,7 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
           '@type': 'WebPage',
           '@id': 'https://wakili.co.ke/lost-title-deed-replacement-kenya',
           url: 'https://wakili.co.ke/lost-title-deed-replacement-kenya',
-          name: 'Lost Title Deed Replacement in Kenya – Complete Guide',
+          name: 'Lost Title Deed Replacement in Kenya – Practical guide',
           isPartOf: { '@id': 'https://wakili.co.ke' },
           datePublished: '2025-02-06',
           dateModified: '2025-02-06',
@@ -818,7 +818,7 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
               <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-red-50 transition flex items-center gap-2">
                 <MessageSquare size={18} /> WhatsApp Us
               </a>
-              <a href="mailto:johnsonthuraniramwangi@gmail.com" className="bg-red-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-800 transition">
+              <a href="mailto:info@wakili.com" className="bg-red-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-800 transition">
                 Email Our Team
               </a>
             </div>
@@ -868,7 +868,7 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
             <div>
               <h4 className="font-bold text-lg mb-3">Contact Us</h4>
               <ul className="text-red-200 text-sm space-y-2">
-                <li>Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="hover:text-white transition">johnsonthuraniramwangi@gmail.com</a></li>
+                <li>Email: <a href="mailto:info@wakili.com" className="hover:text-white transition">info@wakili.com</a></li>
                 <li>WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">+254 112 810 203</a></li>
               </ul>
             </div>
@@ -887,3 +887,5 @@ const LostTitleDeedReplacementKenya: React.FC = () => {
 };
 
 export default LostTitleDeedReplacementKenya;
+
+

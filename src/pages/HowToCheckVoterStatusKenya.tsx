@@ -270,7 +270,7 @@ export default function HowToCheckVoterStatusKenya() {
             <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0" />
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">How to Check Your Voter Status in Kenya</h1>
-          <p className="text-lg sm:text-xl text-green-50 mb-6">Complete guide to verify your voter registration online or offline. Check eligibility, interpret your status, and fix common issues.</p>
+          <p className="text-lg sm:text-xl text-green-50 mb-6">Practical guide to verify your voter registration online or offline. Check eligibility, interpret your status, and fix common issues.</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a href="https://www.iebc.or.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition flex items-center justify-center gap-2">
               Check Status Online <ArrowRight className="w-5 h-5" />
@@ -869,7 +869,7 @@ export default function HowToCheckVoterStatusKenya() {
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Contact Us</h4>
-              <p className="text-sm mb-2">Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="text-green-400 hover:text-green-300">johnsonthuraniramwangi@gmail.com</a></p>
+              <p className="text-sm mb-2">Email: <a href="mailto:info@wakili.com" className="text-green-400 hover:text-green-300">info@wakili.com</a></p>
               <p className="text-sm">WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:text-green-300">+254 112 810 203</a></p>
             </div>
             <div>
@@ -889,3 +889,4 @@ export default function HowToCheckVoterStatusKenya() {
     </div>
   );
 }
+

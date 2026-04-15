@@ -86,6 +86,9 @@ interface FAQItem {
   answer: string;
 }
 
+const SITE_URL = 'https://wakili.co.ke';
+const PAGE_PATH = '/understanding-iebc-kenya';
+
 const UnderstandingIEBCKenya: React.FC = () => {
   const [activeSection, setActiveSection] = useState('what-is');
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
@@ -98,7 +101,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
     // Update meta description
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Learn about IEBC Kenya - role, functions, authority, structure, and how elections are conducted. Official guide for voters and citizens.');
+      metaDescription.setAttribute('content', 'Learn about IEBC Kenya - role, functions, authority, structure, and how elections are conducted. Independent educational guide for voters and citizens.');
     }
 
     // Update keywords
@@ -122,7 +125,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
       ogDescription.setAttribute('property', 'og:description');
       document.head.appendChild(ogDescription);
     }
-    ogDescription.setAttribute('content', 'Official guide to IEBC Kenya - mandate, functions, electoral authority, voter registration, and how elections are conducted.');
+    ogDescription.setAttribute('content', 'Independent guide to IEBC Kenya - mandate, functions, electoral authority, voter registration, and election procedures.');
 
     let ogUrl = document.querySelector('meta[property="og:url"]');
     if (!ogUrl) {
@@ -130,7 +133,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
       ogUrl.setAttribute('property', 'og:url');
       document.head.appendChild(ogUrl);
     }
-    ogUrl.setAttribute('content', 'https://wakili.app/understanding-iebc-kenya');
+    ogUrl.setAttribute('content', `${SITE_URL}${PAGE_PATH}`);
 
     let ogImage = document.querySelector('meta[property="og:image"]');
     if (!ogImage) {
@@ -138,7 +141,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
       ogImage.setAttribute('property', 'og:image');
       document.head.appendChild(ogImage);
     }
-    ogImage.setAttribute('content', 'https://wakili.app/og-iebc.jpg');
+    ogImage.setAttribute('content', `${SITE_URL}/favicon.ico`);
 
     // Twitter tags
     let twitterCard = document.querySelector('meta[name="twitter:card"]');
@@ -181,7 +184,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://wakili.app/understanding-iebc-kenya');
+    canonical.setAttribute('href', `${SITE_URL}${PAGE_PATH}`);
 
     // JSON-LD Structured Data
     const structuredData = {
@@ -189,18 +192,18 @@ const UnderstandingIEBCKenya: React.FC = () => {
       '@graph': [
         {
           '@type': 'WebPage',
-          '@id': 'https://wakili.app/understanding-iebc-kenya',
-          'url': 'https://wakili.app/understanding-iebc-kenya',
+          '@id': `${SITE_URL}${PAGE_PATH}`,
+          'url': `${SITE_URL}${PAGE_PATH}`,
           'name': 'Understanding IEBC in Kenya – Role, Functions & Authority',
-          'description': 'Complete guide to IEBC Kenya, its roles, functions, authority, and how elections are conducted.',
-          'isPartOf': { '@id': 'https://wakili.app' },
+          'description': 'Independent guide to IEBC Kenya, its roles, functions, authority, and how elections are conducted.',
+          'isPartOf': { '@id': SITE_URL },
           'inLanguage': 'en-KE'
         },
         {
           '@type': 'BreadcrumbList',
           'itemListElement': [
-            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://wakili.app' },
-            { '@type': 'ListItem', 'position': 2, 'name': 'Understanding IEBC', 'item': 'https://wakili.app/understanding-iebc-kenya' }
+            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': SITE_URL },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Understanding IEBC', 'item': `${SITE_URL}${PAGE_PATH}` }
           ]
         },
         {
@@ -257,7 +260,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
                 Understanding IEBC in Kenya
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-orange-50 mb-6 leading-relaxed">
-                Complete guide to the Independent Electoral and Boundaries Commission: its roles, functions, legal authority, and how it conducts elections and manages voter registration in Kenya.
+                Independent guide to the Independent Electoral and Boundaries Commission: its roles, functions, legal authority, and how it conducts elections and manages voter registration in Kenya.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
@@ -268,13 +271,16 @@ const UnderstandingIEBCKenya: React.FC = () => {
                   Get Help via WhatsApp
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-700 transition text-sm sm:text-base"
                 >
                   <FileText className="w-4 h-4" />
                   Email for Details
                 </a>
               </div>
+              <p className="mt-4 text-xs sm:text-sm text-orange-100">
+                Editorial note: This page is an independent educational summary and is not an official IEBC publication. Verify procedures and timelines using official IEBC and Kenya Law sources.
+              </p>
             </div>
           </div>
         </div>
@@ -675,11 +681,11 @@ const UnderstandingIEBCKenya: React.FC = () => {
                   WhatsApp: +254 112 810 203
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="inline-flex items-center justify-center gap-2 bg-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition"
                 >
                   <FileText className="w-5 h-5" />
-                  Email: johnsonthuraniramwangi@gmail.com
+                  Email: info@wakili.com
                 </a>
               </div>
             </section>
@@ -707,7 +713,7 @@ const UnderstandingIEBCKenya: React.FC = () => {
             <div>
               <h4 className="text-white font-bold mb-3">Contact</h4>
               <p className="text-sm">WhatsApp: +254 112 810 203</p>
-              <p className="text-sm">Email: johnsonthuraniramwangi@gmail.com</p>
+              <p className="text-sm">Email: info@wakili.com</p>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-6">
@@ -722,3 +728,4 @@ const UnderstandingIEBCKenya: React.FC = () => {
 };
 
 export default UnderstandingIEBCKenya;
+

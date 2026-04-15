@@ -109,7 +109,7 @@ const LandDisputesKenya: React.FC = () => {
     document.title = 'Land Disputes in Kenya – Legal Remedies & Environment and Land Court Guide 2026';
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
-      meta.setAttribute('content', 'Complete guide to resolving land disputes in Kenya. Learn about boundary conflicts, land grabbing, Environment and Land Court process, and legal remedies.');
+      meta.setAttribute('content', 'Practical guide to resolving land disputes in Kenya. Learn about boundary conflicts, land grabbing, Environment and Land Court process, and legal remedies.');
     }
 
     // Set meta keywords
@@ -182,7 +182,7 @@ const LandDisputesKenya: React.FC = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Land Disputes in Kenya – Legal Remedies & Court Process Guide',
-          description: 'Complete guide to resolving land disputes in Kenya through the Environment and Land Court.',
+          description: 'Practical guide to resolving land disputes in Kenya through the Environment and Land Court.',
           inLanguage: 'en-KE'
         },
         {
@@ -885,7 +885,7 @@ const LandDisputesKenya: React.FC = () => {
                 <Phone className="w-5 h-5" /> WhatsApp +254112810203
               </a>
               <a
-                href="mailto:johnsonthuraniramwangi@gmail.com"
+                href="mailto:info@wakili.com"
                 className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:bg-opacity-10 transition inline-flex items-center gap-2 justify-center"
               >
                 📧 Email Us
@@ -915,7 +915,7 @@ const LandDisputesKenya: React.FC = () => {
                   <ArrowRight className="w-5 h-5 text-orange-600 group-hover:scale-110 transition" />
                   <h4 className="font-semibold text-gray-900 group-hover:text-orange-600">Land Transfer Process in Kenya</h4>
                 </div>
-                <p className="text-sm text-gray-600">Complete guide to buying and transferring land in Kenya.</p>
+                <p className="text-sm text-gray-600">Practical guide to buying and transferring land in Kenya.</p>
               </Link>
               <Link
                 to="/how-to-buy-land-safely-kenya"
@@ -959,7 +959,7 @@ const LandDisputesKenya: React.FC = () => {
             <h4 className="font-bold text-white mb-3">Get Help</h4>
             <p className="text-sm">
               Contact us for FREE consultation:<br/>
-              📧 <a href="mailto:johnsonthuraniramwangi@gmail.com" className="text-orange-400 hover:underline">johnsonthuraniramwangi@gmail.com</a><br/>
+              📧 <a href="mailto:info@wakili.com" className="text-orange-400 hover:underline">info@wakili.com</a><br/>
               📱 WhatsApp: <a href="https://wa.me/254112810203" className="text-orange-400 hover:underline">+254112810203</a>
             </p>
           </div>
@@ -973,3 +973,5 @@ const LandDisputesKenya: React.FC = () => {
 };
 
 export default LandDisputesKenya;
+
+

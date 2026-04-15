@@ -1,4 +1,4 @@
-// src/components/CardsReport.tsx
+﻿// src/components/CardsReport.tsx
 
 import { usersAPI, UserDataTypes } from '../../../../features/users/usersAPI';
 import { useEffect, useState } from 'react';
@@ -282,3 +282,4 @@ const UserReportPage = () => {
 }
 
 export default UserReportPage;
+

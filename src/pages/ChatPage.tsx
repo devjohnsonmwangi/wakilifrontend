@@ -1,4 +1,4 @@
-// src/pages/ChatPage.tsx
+﻿// src/pages/ChatPage.tsx
 import React from 'react';
 import ChatPageLayout from '../features/chats/components/ChatPageLayout'; 
 
@@ -10,3 +10,4 @@ const ChatPage: React.FC = () => {
 };
 
 export default ChatPage;
+

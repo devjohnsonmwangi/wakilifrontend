@@ -1,4 +1,4 @@
-// src/pages/dashboard/main/events/EventFormModal.tsx
+﻿// src/pages/dashboard/main/events/EventFormModal.tsx
 import React, { useState, useEffect, forwardRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { format, parse, isValid, setHours, setMinutes, setSeconds, startOfDay, parseISO } from 'date-fns';
@@ -288,3 +288,4 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ open, onClose, eventToE
 };
 
 export default EventFormModal;
+

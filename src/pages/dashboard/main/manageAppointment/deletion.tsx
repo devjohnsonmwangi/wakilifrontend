@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, AlertTriangle as DefaultDestructiveIcon, CheckCircle as DefaultPrimaryIcon, Loader2 } from 'lucide-react';
 
@@ -149,3 +149,4 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 };
 
 export default ConfirmationModal;
+

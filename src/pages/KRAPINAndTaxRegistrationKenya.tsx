@@ -221,14 +221,14 @@ const KRAPINAndTaxRegistrationKenya = () => {
     <>
       <Helmet>
         <title>KRA PIN Registration for Businesses – iTax Guide Kenya 2026</title>
-        <meta name="description" content="Complete guide to KRA PIN registration for businesses in Kenya. Step-by-step iTax registration, VAT, PAYE, tax compliance and requirements for companies and sole proprietors." />
-        <link rel="canonical" href="https://yoursite.com/kra-pin-and-tax-registration-kenya" />
+        <meta name="description" content="Practical guide to KRA PIN registration for businesses in Kenya. Step-by-step iTax registration, VAT, PAYE, tax compliance and requirements for companies and sole proprietors." />
+        <link rel="canonical" href="https://wakili.co.ke/kra-pin-and-tax-registration-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="KRA PIN Registration for Businesses – Complete iTax Guide Kenya 2026" />
-        <meta property="og:description" content="Register for KRA PIN online on iTax. Complete guide for businesses, companies, sole proprietors. Includes VAT, PAYE, income tax registration and tax compliance." />
+        <meta property="og:description" content="Register for KRA PIN online on iTax. Practical guide for businesses, companies, sole proprietors. Includes VAT, PAYE, income tax registration and tax compliance." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/kra-pin-and-tax-registration-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/kra-pin-and-tax-registration-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -246,8 +246,8 @@ const KRAPINAndTaxRegistrationKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "KRA PIN registration and tax compliance guidance in Kenya"
           })}
         </script>
@@ -261,13 +261,13 @@ const KRAPINAndTaxRegistrationKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "KRA PIN & Tax Registration",
-                "item": "https://yoursite.com/kra-pin-and-tax-registration-kenya"
+                "item": "https://wakili.co.ke/kra-pin-and-tax-registration-kenya"
               }
             ]
           })}
@@ -313,7 +313,7 @@ const KRAPINAndTaxRegistrationKenya = () => {
               <DollarSign className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">KRA PIN Registration for Businesses & Companies in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to registering for KRA PIN on iTax. Learn how to get your tax identification number, register for VAT, PAYE, income tax and stay tax-compliant in Kenya.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to registering for KRA PIN on iTax. Learn how to get your tax identification number, register for VAT, PAYE, income tax and stay tax-compliant in Kenya.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://itax.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Globe className="w-5 h-5" />
@@ -1001,7 +1001,7 @@ const KRAPINAndTaxRegistrationKenya = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <a href="/how-to-register-business-kenya" className="p-4 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-shadow hover:border-blue-600">
                 <h4 className="font-bold text-gray-900 mb-1">How to Register a Business</h4>
-                <p className="text-gray-600 text-sm">Complete guide to business registration in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to business registration in Kenya</p>
               </a>
               <a href="/sole-proprietorship-registration-kenya" className="p-4 border-2 border-green-200 rounded-lg hover:shadow-lg transition-shadow hover:border-green-600">
                 <h4 className="font-bold text-gray-900 mb-1">Sole Proprietor Registration</h4>
@@ -1017,7 +1017,7 @@ const KRAPINAndTaxRegistrationKenya = () => {
               </a>
               <a href="/business-permits-licenses-kenya" className="p-4 border-2 border-red-200 rounded-lg hover:shadow-lg transition-shadow hover:border-red-600">
                 <h4 className="font-bold text-gray-900 mb-1">Business Permits & Licenses</h4>
-                <p className="text-gray-600 text-sm">Complete guide to permits and licenses in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to permits and licenses in Kenya</p>
               </a>
             </div>
           </section>
@@ -1028,3 +1028,5 @@ const KRAPINAndTaxRegistrationKenya = () => {
 };
 
 export default KRAPINAndTaxRegistrationKenya;
+
+

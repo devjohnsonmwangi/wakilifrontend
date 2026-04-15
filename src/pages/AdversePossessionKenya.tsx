@@ -156,7 +156,7 @@ const AdversePossessionKenya: React.FC = () => {
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'Adverse Possession in Kenya – Squatters\' Rights Legal Guide 2026' },
-      { name: 'twitter:description', content: 'Complete guide to adverse possession, squatters\' rights, and 12-year land claims in Kenya with court process explained.' }
+      { name: 'twitter:description', content: 'Practical guide to adverse possession, squatters\' rights, and 12-year land claims in Kenya with court process explained.' }
     ];
 
     twitterTags.forEach(tag => {
@@ -186,7 +186,7 @@ const AdversePossessionKenya: React.FC = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Adverse Possession (Squatters\' Rights) in Kenya – Complete Legal Guide',
-          description: 'Complete guide to adverse possession, squatters\' rights, and 12-year land claims in Kenya.',
+          description: 'Practical guide to adverse possession, squatters\' rights, and 12-year land claims in Kenya.',
           inLanguage: 'en-KE'
         },
         {
@@ -812,7 +812,7 @@ const AdversePossessionKenya: React.FC = () => {
                   <Phone className="w-5 h-5" /> WhatsApp +254112810203
                 </a>
                 <a
-                  href="mailto:johnsonthuraniramwangi@gmail.com"
+                  href="mailto:info@wakili.com"
                   className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:bg-opacity-10 transition inline-flex items-center gap-2 justify-center"
                 >
                   📧 Email Us
@@ -832,7 +832,7 @@ const AdversePossessionKenya: React.FC = () => {
                     <Gavel className="w-5 h-5 text-purple-600 group-hover:scale-110 transition" />
                     <h4 className="font-semibold text-gray-900 group-hover:text-purple-600">Land Disputes in Kenya</h4>
                   </div>
-                  <p className="text-sm text-gray-600">Complete guide to resolving boundary conflicts and land disputes.</p>
+                  <p className="text-sm text-gray-600">Practical guide to resolving boundary conflicts and land disputes.</p>
                 </Link>
                 <Link
                   to="/land-ownership-title-deed-verification-kenya"
@@ -887,7 +887,7 @@ const AdversePossessionKenya: React.FC = () => {
             <h4 className="font-bold text-white mb-3">Get Help</h4>
             <p className="text-sm">
               Contact us for FREE consultation:<br/>
-              📧 <a href="mailto:johnsonthuraniramwangi@gmail.com" className="text-purple-400 hover:underline">johnsonthuraniramwangi@gmail.com</a><br/>
+              📧 <a href="mailto:info@wakili.com" className="text-purple-400 hover:underline">info@wakili.com</a><br/>
               📱 WhatsApp: <a href="https://wa.me/254112810203" className="text-purple-400 hover:underline">+254112810203</a>
             </p>
           </div>
@@ -901,3 +901,5 @@ const AdversePossessionKenya: React.FC = () => {
 };
 
 export default AdversePossessionKenya;
+
+

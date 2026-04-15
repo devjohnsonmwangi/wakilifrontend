@@ -36,19 +36,17 @@ const SIGNAL_LABELS: Array<{ key: keyof RouteAuditResult['signals']; label: stri
 
 function ScoreBar({ score, max }: { score: number; max: number }) {
   const pct = Math.round((score / max) * 100);
-  const color =
+  const colorClass =
     pct >= 80
-      ? 'bg-green-500'
+      ? 'accent-green-500'
       : pct >= 55
-      ? 'bg-yellow-400'
+      ? 'accent-yellow-400'
       : pct >= 30
-      ? 'bg-orange-400'
-      : 'bg-red-500';
+      ? 'accent-orange-400'
+      : 'accent-red-500';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-32 bg-gray-200 rounded-full h-2.5">
-        <div className={`${color} h-2.5 rounded-full`} style={{ width: `${pct}%` }} />
-      </div>
+      <progress className={`w-32 h-2.5 ${colorClass}`} value={pct} max={100} aria-label={`Score ${score} of ${max}`} />
       <span className="text-xs font-mono font-semibold">
         {score}/{max}
       </span>
@@ -314,3 +312,5 @@ export default function ContentAuditPage() {
     </div>
   );
 }
+
+

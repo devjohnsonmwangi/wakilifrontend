@@ -1,4 +1,4 @@
-// src/features/events/components/NotificationSnackbar.tsx
+﻿// src/features/events/components/NotificationSnackbar.tsx
 import React, { useEffect, useState } from 'react';
 
 export interface SnackbarMessage {
@@ -146,3 +146,4 @@ const NotificationSnackbar: React.FC<NotificationSnackbarProps> = ({
 };
 
 export default NotificationSnackbar;
+

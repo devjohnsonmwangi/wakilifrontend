@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     ShieldCheck, Car, Truck, DollarSign, Wrench, Clipboard,
@@ -549,7 +549,7 @@ const ServiceDetails: React.FC = () => {
             </main>
 
             <footer className="text-center py-8 text-sm text-slate-500 dark:text-slate-400">
-                © {new Date().getFullYear()} Wakili. All Rights Reserved.
+                Â© {new Date().getFullYear()} Wakili. All Rights Reserved.
                 <p className="mt-1 text-xs">Disclaimer: The information on this application is for general informational purposes only and does not constitute legal advice.</p>
             </footer>
         </div>
@@ -557,3 +557,4 @@ const ServiceDetails: React.FC = () => {
 };
 
 export default ServiceDetails;
+

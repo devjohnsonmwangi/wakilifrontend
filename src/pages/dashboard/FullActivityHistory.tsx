@@ -1,4 +1,4 @@
-// src/pages/dashboard/main/ActivityLog/FullActivityHistory.tsx
+﻿// src/pages/dashboard/main/ActivityLog/FullActivityHistory.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -322,3 +322,4 @@ const FullActivityHistory: React.FC = () => {
 };
 
 export default FullActivityHistory;
+

@@ -1,4 +1,4 @@
-import { FC } from 'react';
+﻿import { FC } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Phone, Building, LifeBuoy, Ticket, ArrowRight, ChevronRight } from 'lucide-react';
@@ -193,3 +193,5 @@ const BookAppointmentPage: FC = () => {
 };
 
 export default BookAppointmentPage;
+
+

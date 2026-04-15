@@ -1,4 +1,4 @@
-import Navbar from "../../components/navbar/Navbar";
+﻿import Navbar from "../../components/navbar/Navbar";
 import About from "./About";
 import Footer from "./Footer";
 import Hero from './Hero';
@@ -12,16 +12,11 @@ const Home = () => {
     "@context": "https://schema.org",
     "@type": "LegalService",
     "name": "Wakili - Kenya's Legal Services Platform",
-    "description": "Find verified Kenyan lawyers for family law, land disputes, business registration, employment law, debt recovery, and more. Get legal advice, document drafting, and court representation within 2 hours.",
+    "description": "Find Kenyan legal support for family law, land disputes, business registration, employment law, debt recovery, and more.",
     "url": "https://wakili.co.ke",
     "telephone": "+254112810203",
     "areaServed": "KE",
     "priceRange": "KES 2000-500000",
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "ratingCount": "500"
-    },
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "KE",
@@ -44,15 +39,15 @@ const Home = () => {
     <>
       <Helmet>
         <title>Wakili - Find a Lawyer in Kenya | Legal Services for Family, Land, Business Law</title>
-        <meta name="description" content="Get verified Kenyan lawyers for family law, land disputes, business registration, employment issues, debt recovery & more. Legal consultation in 2 hours. 500+ cases won." />
+        <meta name="description" content="Connect with verified Kenyan legal professionals for family, land, business, and employment matters. Practical guidance and legal support across Kenya." />
         <meta name="keywords" content="lawyer in Kenya, legal services Kenya, divorce lawyer, land law, business registration, employment law, debt recovery, Nairobi lawyer" />
         <meta property="og:title" content="Wakili - Find a Lawyer in Kenya | Legal Services Platform" />
-        <meta property="og:description" content="Verified lawyers for family, land, business & employment law. Fast legal advice, document drafting & court representation in Kenya." />
+        <meta property="og:description" content="Verified legal support for family, land, business, and employment matters in Kenya." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://wakili.co.ke" />
         <meta name="author" content="Wakili Legal Services Kenya" />
         <meta name="robots" content="index, follow" />
-        <meta name="canonical" content="https://wakili.co.ke" />
+        <link rel="canonical" href="https://wakili.co.ke" />
         <script type="application/ld+json">
           {JSON.stringify(schemaData)}
         </script>
@@ -97,3 +92,4 @@ const Home = () => {
 }
 
 export default Home;
+

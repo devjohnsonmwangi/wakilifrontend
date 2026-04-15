@@ -237,20 +237,20 @@ const LimitedCompanyRegistrationKenya = () => {
     <>
       <Helmet>
         <title>Limited Company Registration Kenya – How to Register Ltd 2026 & 2027</title>
-        <meta name="description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs, directors, shares & compliance." />
-        <link rel="canonical" href="https://yoursite.com/limited-company-registration-kenya" />
+        <meta name="description" content="Practical guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs, directors, shares & compliance." />
+        <link rel="canonical" href="https://wakili.co.ke/limited-company-registration-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Limited Company Registration Kenya – How to Register Ltd 2026 & 2027" />
-        <meta property="og:description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
+        <meta property="og:description" content="Practical guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/limited-company-registration-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/limited-company-registration-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Limited Company Registration Kenya – How to Register Ltd 2026 & 2027" />
-        <meta name="twitter:description" content="Complete guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
+        <meta name="twitter:description" content="Practical guide to registering a private limited company in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs & compliance." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Robots */}
@@ -262,8 +262,8 @@ const LimitedCompanyRegistrationKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Legal services and company registration guidance in Kenya"
           })}
         </script>
@@ -277,13 +277,13 @@ const LimitedCompanyRegistrationKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Limited Company Registration Kenya",
-                "item": "https://yoursite.com/limited-company-registration-kenya"
+                "item": "https://wakili.co.ke/limited-company-registration-kenya"
               }
             ]
           })}
@@ -329,7 +329,7 @@ const LimitedCompanyRegistrationKenya = () => {
               <Building2 className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Limited Company Registration in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to registering a private limited company (Ltd) in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs, compliance, and legal requirements for 2025.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to registering a private limited company (Ltd) in Kenya. Step-by-step eCitizen registration, CR12 certificate, costs, compliance, and legal requirements for 2025.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
@@ -1308,3 +1308,5 @@ const LimitedCompanyRegistrationKenya = () => {
 };
 
 export default LimitedCompanyRegistrationKenya;
+
+

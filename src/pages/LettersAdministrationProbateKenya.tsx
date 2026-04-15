@@ -80,13 +80,13 @@ const LettersAdministrationProbateKenya = () => {
   const [activeSection, setActiveSection] = useState('');
 
   useEffect(() => {
-    document.title = 'Letters of Administration & Probate in Kenya 2026 - Complete Guide';
+    document.title = 'Letters of Administration & Probate in Kenya 2026 - Practical guide';
 
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Complete guide to letters of administration and probate process in Kenya. Step-by-step application, required documents, costs, timelines, and property transfer procedures. Updated 2026.'
+        'Practical guide to letters of administration and probate process in Kenya. Step-by-step application, required documents, costs, timelines, and property transfer procedures. Updated 2026.'
       );
     }
 
@@ -132,7 +132,7 @@ const LettersAdministrationProbateKenya = () => {
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'Letters of Administration & Probate in Kenya' },
-      { name: 'twitter:description', content: 'Complete guide to probate and estate administration in Kenya.' }
+      { name: 'twitter:description', content: 'Practical guide to probate and estate administration in Kenya.' }
     ];
 
     twitterTags.forEach(tag => {
@@ -162,7 +162,7 @@ const LettersAdministrationProbateKenya = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Letters of Administration & Probate Process in Kenya',
-          description: 'Complete guide to probate and letters of administration in Kenya',
+          description: 'Practical guide to probate and letters of administration in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -314,7 +314,7 @@ const LettersAdministrationProbateKenya = () => {
       <header className="relative bg-gradient-to-r from-orange-700 via-amber-600 to-yellow-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -345,7 +345,7 @@ const LettersAdministrationProbateKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Probate & Estate Administration Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with probate and letters of administration in Kenya.\n\nPlease contact me to discuss:\n- Succession court application\n- Estate administration\n- Property transfer after death\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Probate & Estate Administration Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with probate and letters of administration in Kenya.\n\nPlease contact me to discuss:\n- Succession court application\n- Estate administration\n- Property transfer after death\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Email for probate assistance"
             >
@@ -1163,7 +1163,7 @@ const LettersAdministrationProbateKenya = () => {
               >
                 <Scale className="w-10 h-10 text-indigo-600 mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-bold text-lg text-gray-900 mb-2">Succession & Inheritance Law</h3>
-                <p className="text-gray-600 text-sm">Complete guide to estate distribution in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to estate distribution in Kenya</p>
               </Link>
 
               <Link
@@ -1197,7 +1197,6 @@ const LettersAdministrationProbateKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1235,7 +1234,7 @@ const LettersAdministrationProbateKenya = () => {
                 WhatsApp Us Now
               </a>
               <a
-                href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Probate Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with probate and estate administration.\n\nThank you.')}`}
+                href={`mailto:info@wakili.com?subject=${encodeURIComponent('Probate Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with probate and estate administration.\n\nThank you.')}`}
                 className="inline-flex items-center justify-center gap-2 bg-orange-800 hover:bg-orange-900 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
               >
                 <Mail className="w-5 h-5" />
@@ -1265,3 +1264,5 @@ const LettersAdministrationProbateKenya = () => {
 };
 
 export default LettersAdministrationProbateKenya;
+
+

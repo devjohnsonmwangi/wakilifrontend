@@ -151,27 +151,27 @@ const MyTickets = () => {
                                     <div className="relative">
                                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/>
                                         <input type="text" placeholder="Search by Subject..." value={filter.subject} onChange={(e) => setFilter({ ...filter, subject: e.target.value })} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
-                                        {filter.subject && (<button type="button" onClick={() => handleClearFilter('subject')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}
+                                        {filter.subject && (<button type="button" onClick={() => handleClearFilter('subject')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16} /></div></button>)}
                                     </div>
                                     <div className="relative">
                                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"/>
                                         <input type="text" placeholder="Search by Description..." value={filter.description} onChange={(e) => setFilter({ ...filter, description: e.target.value })} className={`${inputBaseClasses} py-2.5 pl-10 pr-10`} />
-                                        {filter.description && (<button type="button" onClick={() => handleClearFilter('description')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>)}
+                                        {filter.description && (<button type="button" onClick={() => handleClearFilter('description')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16} /></div></button>)}
                                     </div>
                                     <div ref={statusDropdownRef} className="relative">
                                         <button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`${inputBaseClasses} text-left flex justify-between items-center py-2.5 px-4`}>
                                             <span className={`truncate font-semibold ${!filter.status ? 'text-slate-400 dark:text-slate-500 font-normal' : ''}`}>{filter.status || 'All Statuses'}</span>
                                             <div className="flex items-center">
-                                                {filter.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}
+                                                {filter.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} title="Clear Status" className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}
                                                 <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                                             </div>
                                         </button>
                                         <AnimatePresence>
                                             {isStatusDropdownOpen && (
-                                                <motion.ul variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                                    <li><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status: ''})); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>
-                                                    {['Open', 'Closed'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status})); setIsStatusDropdownOpen(false); }}>{status}</button></li>))}
-                                                </motion.ul>
+                                                <motion.div variants={dropdownListVariants} initial="hidden" animate="visible" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                                    <div><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status: ''})); setIsStatusDropdownOpen(false); }}>All Statuses</button></div>
+                                                    {['Open', 'Closed'].map(status => (<div key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { setFilter(f => ({...f, status})); setIsStatusDropdownOpen(false); }}>{status}</button></div>))}
+                                                </motion.div>
                                             )}
                                         </AnimatePresence>
                                     </div>
@@ -224,11 +224,12 @@ const MyTickets = () => {
                 </div>
             </div>
 
-            <dialog id='create_ticket' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-3xl rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form><CreateTicket userFullName={userFullName} userProfilePicture={userProfilePicture} modalId="create_ticket" /></div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
-            <dialog id='edit_ticket_modal' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-3xl rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>{editTicket && <EditUserTicket ticket={editTicket} modalId="edit_ticket_modal" userFullName={userFullName} userProfilePicture={userProfilePicture} />}</div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
-            <dialog id='delete_ticket_modal' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-lg rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button></form>{deleteTicket && <DeleteUserTicket ticket={deleteTicket} modalId="delete_ticket_modal" userFullName={userFullName} userProfilePicture={userProfilePicture} />}</div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
+            <dialog id='create_ticket' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-3xl rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">âœ•</button></form><CreateTicket userFullName={userFullName} userProfilePicture={userProfilePicture} modalId="create_ticket" /></div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
+            <dialog id='edit_ticket_modal' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-3xl rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">âœ•</button></form>{editTicket && <EditUserTicket ticket={editTicket} modalId="edit_ticket_modal" userFullName={userFullName} userProfilePicture={userProfilePicture} />}</div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
+            <dialog id='delete_ticket_modal' className="modal modal-bottom sm:modal-middle"><div className="modal-box w-11/12 max-w-lg rounded-lg"><form method="dialog"><button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">âœ•</button></form>{deleteTicket && <DeleteUserTicket ticket={deleteTicket} modalId="delete_ticket_modal" userFullName={userFullName} userProfilePicture={userProfilePicture} />}</div><form method="dialog" className="modal-backdrop"><button>close</button></form></dialog>
         </div>
     );
 };
 
 export default MyTickets;
+

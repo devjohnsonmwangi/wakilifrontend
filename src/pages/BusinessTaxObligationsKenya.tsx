@@ -276,14 +276,14 @@ const BusinessTaxObligationsKenya = () => {
     <>
       <Helmet>
         <title>Business Tax Obligations Kenya – VAT PAYE Income Tax Guide</title>
-        <meta name="description" content="Complete guide to business taxes in Kenya. Learn VAT, PAYE, income tax, turnover tax registration and filing on iTax. Deadlines, penalties, and compliance." />
-        <link rel="canonical" href="https://yoursite.com/business-tax-obligations-kenya" />
+        <meta name="description" content="Practical guide to business taxes in Kenya. Learn VAT, PAYE, income tax, turnover tax registration and filing on iTax. Deadlines, penalties, and compliance." />
+        <link rel="canonical" href="https://wakili.co.ke/business-tax-obligations-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Business Tax Obligations Kenya – Complete Tax Compliance Guide 2026" />
         <meta property="og:description" content="Register and file VAT, PAYE, income tax for your business. Step-by-step iTax guide with deadlines, penalties, and compliance requirements." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/business-tax-obligations-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/business-tax-obligations-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -301,8 +301,8 @@ const BusinessTaxObligationsKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Business tax obligations and compliance guidance in Kenya"
           })}
         </script>
@@ -316,13 +316,13 @@ const BusinessTaxObligationsKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Business Tax Obligations",
-                "item": "https://yoursite.com/business-tax-obligations-kenya"
+                "item": "https://wakili.co.ke/business-tax-obligations-kenya"
               }
             ]
           })}
@@ -1125,3 +1125,5 @@ const BusinessTaxObligationsKenya = () => {
 };
 
 export default BusinessTaxObligationsKenya;
+
+

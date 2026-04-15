@@ -84,7 +84,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
       meta.setAttribute('content', content);
     };
 
-    updateMeta('description', 'Complete guide to leasehold vs freehold land in Kenya. Learn differences, rights, costs, and how to convert leasehold to freehold. Expert legal advice.');
+    updateMeta('description', 'Practical guide to leasehold vs freehold land in Kenya. Learn differences, rights, costs, and how to convert leasehold to freehold. Expert legal advice.');
     updateMeta('keywords', 'leasehold vs freehold kenya, 99 year lease kenya, convert leasehold to freehold, freehold land kenya, leasehold land meaning, land tenure kenya');
     
     // OG Tags
@@ -102,7 +102,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
       ogDesc.setAttribute('property', 'og:description');
       document.head.appendChild(ogDesc);
     }
-    ogDesc.setAttribute('content', 'Understand the differences between leasehold and freehold land ownership in Kenya. Complete guide with legal explanations and practical advice.');
+    ogDesc.setAttribute('content', 'Understand the differences between leasehold and freehold land ownership in Kenya. Practical guide with legal explanations and practical advice.');
 
     let ogUrl = document.querySelector('meta[property="og:url"]');
     if (!ogUrl) {
@@ -143,7 +143,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
       twitterDesc.setAttribute('name', 'twitter:description');
       document.head.appendChild(twitterDesc);
     }
-    twitterDesc.setAttribute('content', 'Complete guide to understanding leasehold and freehold land ownership in Kenya with legal explanations and practical advice.');
+    twitterDesc.setAttribute('content', 'Understand leasehold and freehold land ownership in Kenya with legal explanations and practical steps.');
 
     // Robots Meta
     let robotsMeta = document.querySelector('meta[name="robots"]');
@@ -176,7 +176,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
           datePublished: '2025-02-06',
           dateModified: '2025-02-06',
           author: { '@type': 'Organization', name: 'Wakili Legal Hub' },
-          description: 'Complete guide to leasehold vs freehold land ownership in Kenya with legal explanations, costs, and conversion guidance.'
+          description: 'Practical guide to leasehold vs freehold land ownership in Kenya with legal explanations, costs, and conversion guidance.'
         },
         {
           '@type': 'BreadcrumbList',
@@ -763,22 +763,22 @@ const LeaseholdFreeholdKenya: React.FC = () => {
 
             <div className="space-y-4">
               <div className="bg-green-50 border-l-4 border-green-600 p-4 rounded">
-                <h3 className="font-semibold text-green-900 mb-2">✓ Scenario 1: Smart Purchase Decision</h3>
+                <h3 className="font-semibold text-green-900 mb-2">Scenario 1: Smart Purchase Decision</h3>
                 <p className="text-green-800"><strong>Ahmed buys a property in Kasarani:</strong> 99-year leasehold, 85 years remaining. He obtains financing easily, builds a house, and has peace of mind. In 50 years, he plans to convert to freehold for his grandchildren. <strong>Outcome: SMART INVESTMENT</strong></p>
               </div>
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-                <h3 className="font-semibold text-orange-900 mb-2">⚠ Scenario 2: Risky but Manageable</h3>
+                <h3 className="font-semibold text-orange-900 mb-2">Scenario 2: Risky but Manageable</h3>
                 <p className="text-orange-800"><strong>Maria buys commercial property:</strong> 50-year leasehold, 15 years remaining. She gets it at a steep discount (KES 2M vs. KES 5M for similar freehold). She uses it for her business for 10 years and plans to sell before lease becomes critical. <strong>Outcome: ACCEPTABLE if sold before 5-year mark</strong></p>
               </div>
 
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                <h3 className="font-semibold text-red-900 mb-2">✗ Scenario 3: Disastrous Purchase</h3>
+                <h3 className="font-semibold text-red-900 mb-2">Scenario 3: Disastrous Purchase</h3>
                 <p className="text-red-800"><strong>James buys cheap land:</strong> 33-year leasehold, only 3 years remaining. Seller never mentioned expiry. He builds a KES 5M house. After 3 years, lease expires. Government takes the property and all improvements. James loses everything. <strong>Outcome: FINANCIAL DISASTER</strong></p>
               </div>
 
               <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                <h3 className="font-semibold text-yellow-900 mb-2">⚡ Scenario 4: Successful Conversion</h3>
+                <h3 className="font-semibold text-yellow-900 mb-2">Scenario 4: Successful Conversion</h3>
                 <p className="text-yellow-800"><strong>Fatima converts her leasehold:</strong> She owns a 50-year leasehold with 25 years remaining. Realizing renewal risk, she spends KES 200,000 to convert to freehold. Bank approves a larger mortgage. She sells 5 years later at a 30% higher price than similar leasehold properties. <strong>Outcome: STRATEGIC MOVE</strong></p>
               </div>
             </div>
@@ -822,7 +822,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
               <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="bg-white text-teal-600 px-6 py-3 rounded-lg font-semibold hover:bg-cyan-50 transition flex items-center gap-2">
                 <MessageSquare size={18} /> WhatsApp Us
               </a>
-              <a href="mailto:johnsonthuraniramwangi@gmail.com" className="bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-800 transition">
+              <a href="mailto:info@wakili.com" className="bg-cyan-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-800 transition">
                 Email Our Team
               </a>
             </div>
@@ -872,7 +872,7 @@ const LeaseholdFreeholdKenya: React.FC = () => {
             <div>
               <h4 className="font-bold text-lg mb-3">Contact Us</h4>
               <ul className="text-cyan-200 text-sm space-y-2">
-                <li>Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="hover:text-white transition">johnsonthuraniramwangi@gmail.com</a></li>
+                <li>Email: <a href="mailto:info@wakili.com" className="hover:text-white transition">info@wakili.com</a></li>
                 <li>WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">+254 112 810 203</a></li>
               </ul>
             </div>
@@ -891,3 +891,5 @@ const LeaseholdFreeholdKenya: React.FC = () => {
 };
 
 export default LeaseholdFreeholdKenya;
+
+

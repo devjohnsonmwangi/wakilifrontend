@@ -1,4 +1,4 @@
-// ReasonDisplayModal.tsx
+﻿// ReasonDisplayModal.tsx
 import React from 'react';
 import { X, FileText, AlertCircle } from 'lucide-react';
 
@@ -107,3 +107,4 @@ const ReasonDisplayModal: React.FC<ReasonDisplayModalProps> = ({
 };
 
 export default ReasonDisplayModal;
+

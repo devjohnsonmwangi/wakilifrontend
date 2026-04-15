@@ -251,20 +251,20 @@ const CompanyAnnualReturnsKenya = () => {
     <>
       <Helmet>
         <title>Company Annual Returns Kenya – Filing Guide 2026 & 2027</title>
-        <meta name="description" content="Complete guide to company annual returns filing in Kenya. Step-by-step eCitizen process, deadlines, penalties, compliance requirements & filing fees." />
-        <link rel="canonical" href="https://yoursite.com/company-annual-returns-kenya" />
+        <meta name="description" content="Practical guide to company annual returns filing in Kenya. Step-by-step eCitizen process, deadlines, penalties, compliance requirements & filing fees." />
+        <link rel="canonical" href="https://wakili.co.ke/company-annual-returns-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Company Annual Returns Kenya – Complete Filing Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to filing company annual returns on eCitizen. Deadlines, penalties, compliance requirements & legal obligations for Kenyan companies." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/company-annual-returns-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/company-annual-returns-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Company Annual Returns Kenya – Filing Guide 2026 & 2027" />
-        <meta name="twitter:description" content="Complete guide to filing company annual returns in Kenya on eCitizen. Deadlines, penalties, requirements & compliance." />
+        <meta name="twitter:description" content="Practical guide to filing company annual returns in Kenya on eCitizen. Deadlines, penalties, requirements & compliance." />
         <meta name="twitter:image" content="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&h=630&fit=crop" />
         
         {/* Robots */}
@@ -276,8 +276,8 @@ const CompanyAnnualReturnsKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Company compliance and legal services in Kenya"
           })}
         </script>
@@ -291,13 +291,13 @@ const CompanyAnnualReturnsKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Company Annual Returns Kenya",
-                "item": "https://yoursite.com/company-annual-returns-kenya"
+                "item": "https://wakili.co.ke/company-annual-returns-kenya"
               }
             ]
           })}
@@ -343,7 +343,7 @@ const CompanyAnnualReturnsKenya = () => {
               <FileText className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Company Annual Returns & Compliance in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to filing company annual returns on eCitizen. Learn mandatory deadlines, penalties for late filing, compliance requirements, and step-by-step filing instructions for Kenya.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to filing company annual returns on eCitizen. Learn mandatory deadlines, penalties for late filing, compliance requirements, and step-by-step filing instructions for Kenya.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
@@ -362,7 +362,7 @@ const CompanyAnnualReturnsKenya = () => {
               <FileText className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Company Annual Returns & Compliance in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to filing company annual returns on eCitizen. Learn mandatory deadlines, penalties for late filing, compliance requirements, and step-by-step filing instructions for Kenya.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to filing company annual returns on eCitizen. Learn mandatory deadlines, penalties for late filing, compliance requirements, and step-by-step filing instructions for Kenya.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://ecitizen.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
@@ -744,7 +744,7 @@ const CompanyAnnualReturnsKenya = () => {
                 </div>
 
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 mb-6">Complete guide to filing annual returns online. Takes 30-60 minutes if you have all documents ready:</p>
+                  <p className="text-gray-700 mb-6">Practical guide to filing annual returns online. Takes 30-60 minutes if you have all documents ready:</p>
 
                   <div className="space-y-4 mb-6">
                     {filingSteps.map((step) => (
@@ -1113,3 +1113,5 @@ const CompanyAnnualReturnsKenya = () => {
 };
 
 export default CompanyAnnualReturnsKenya;
+
+

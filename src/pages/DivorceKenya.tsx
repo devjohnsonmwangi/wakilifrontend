@@ -8,12 +8,12 @@ const DivorceKenya = () => {
 
   useEffect(() => {
     // Set comprehensive SEO meta tags
-    document.title = 'Divorce in Kenya 2026 Complete Guide to Divorce Process, Grounds, Laws & Cost - Wakili';
+    document.title = 'Divorce in Kenya 2026 Practical guide to Divorce Process, Grounds, Laws & Cost - Wakili';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
-        'Complete guide to divorce in Kenya 2026. Learn divorce grounds, process, timeline (6-24 months), cost (KES 50K-300K), types of marriages dissolution, Marriage Act 2014, Matrimonial Property Act 2013, required documents & court procedures.'
+        'Practical guide to divorce in Kenya 2026. Learn divorce grounds, process, timeline (6-24 months), cost (KES 50K-300K), types of marriages dissolution, Marriage Act 2014, Matrimonial Property Act 2013, required documents & court procedures.'
       );
     }
 
@@ -102,8 +102,8 @@ const DivorceKenya = () => {
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-rose-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-rose-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
         
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -134,7 +134,7 @@ const DivorceKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Divorce Legal Services Request')}&body=${encodeURIComponent('Hello, I need guidance on divorce in Kenya. My situation:\\n\\n')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Divorce Legal Services Request')}&body=${encodeURIComponent('Hello, I need guidance on divorce in Kenya. My situation:\\n\\n')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-lg border border-white/30 transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Request guidance by email"
             >
@@ -1907,7 +1907,7 @@ const DivorceKenya = () => {
         <section className="mb-16 relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white rounded-2xl shadow-2xl p-8 md:p-16 text-center overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
           </div>
           
           <div className="relative z-10">
@@ -2010,3 +2010,5 @@ const DivorceKenya = () => {
 };
 
 export default DivorceKenya;
+
+

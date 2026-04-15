@@ -42,7 +42,7 @@ const Hero = () => {
         <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 via-white to-emerald-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/30 animate-pulse" />
             <div className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl dark:bg-emerald-900/30 animate-pulse" />
-            <div className="absolute top-1/2 left-1/2 h-96 w-96 rounded-full bg-purple-200/20 blur-3xl dark:bg-purple-900/20 animate-pulse" style={{animationDelay: '1s'}} />
+            <div className="absolute top-1/2 left-1/2 h-96 w-96 rounded-full bg-purple-200/20 blur-3xl dark:bg-purple-900/20 animate-pulse" />
 
             {/* Content - Full Width Card with Background */}
             <div
@@ -86,7 +86,6 @@ const Hero = () => {
                                 <span
                                     key={item}
                                     className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-gray-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all duration-300 hover:scale-110 cursor-pointer"
-                                    style={{animationDelay: `${idx * 0.1}s`}}
                                 >
                                     {item}
                                 </span>
@@ -94,16 +93,16 @@ const Hero = () => {
                         </div>
                         <div className="flex flex-wrap justify-center lg:justify-start gap-3 text-xs sm:text-sm font-semibold">
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
-                                <CheckCircle className="h-4 w-4 animate-bounce" style={{animationDuration: '2s'}} />
+                                <CheckCircle className="h-4 w-4 animate-bounce" />
                                 24/7 Support
                             </span>
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
-                                <CheckCircle className="h-4 w-4 animate-bounce" style={{animationDuration: '2s', animationDelay: '0.2s'}} />
-                                500+ Cases Won
+                                <CheckCircle className="h-4 w-4 animate-bounce" />
+                                Trusted Across Kenya
                             </span>
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
-                                <CheckCircle className="h-4 w-4 animate-bounce" style={{animationDuration: '2s', animationDelay: '0.4s'}} />
-                                98% Success Rate
+                                <CheckCircle className="h-4 w-4 animate-bounce" />
+                                Practical Legal Guidance
                             </span>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
@@ -125,7 +124,7 @@ const Hero = () => {
                         <div className="flex flex-wrap justify-center lg:justify-start items-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-gray-400">
                             <span className="inline-flex items-center gap-1.5">
                                 <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                2-Hour Response
+                                Prompt Response Times
                             </span>
                             <span className="inline-flex items-center gap-1.5">
                                 <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -159,7 +158,7 @@ const Hero = () => {
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-bold">3</span>
-                                    Start your case within hours
+                                    Start your legal process with clear next steps
                                 </li>
                             </ul>
                             <div className="mt-5">
@@ -174,12 +173,12 @@ const Hero = () => {
                             </div>
                             <div className="mt-5 grid grid-cols-2 gap-3 text-xs sm:text-sm">
                                 <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 p-3">
-                                    <p className="text-emerald-700 dark:text-emerald-300 font-semibold">500+</p>
-                                    <p className="text-slate-600 dark:text-gray-400">Successful Cases</p>
+                                    <p className="text-emerald-700 dark:text-emerald-300 font-semibold">Client-Focused</p>
+                                    <p className="text-slate-600 dark:text-gray-400">Tailored Legal Support</p>
                                 </div>
                                 <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 p-3">
-                                    <p className="text-blue-700 dark:text-blue-300 font-semibold">2 Hours</p>
-                                    <p className="text-slate-600 dark:text-gray-400">Avg. Response</p>
+                                    <p className="text-blue-700 dark:text-blue-300 font-semibold">Quick Intake</p>
+                                    <p className="text-slate-600 dark:text-gray-400">Prompt First Response</p>
                                 </div>
                             </div>
                         </div>
@@ -202,7 +201,7 @@ const Hero = () => {
                             {
                                 icon: <Clock className="h-8 w-8 text-blue-600 dark:text-blue-400" />,
                                 title: "Fast Turnaround",
-                                desc: "Get matched with a lawyer within 2 hours. Most consultations happen the same day."
+                                desc: "Get matched with a lawyer quickly based on your legal issue, urgency, and location."
                             },
                             {
                                 icon: <Scale className="h-8 w-8 text-purple-600 dark:text-purple-400" />,
@@ -215,7 +214,7 @@ const Hero = () => {
                                 desc: "From family law to corporate law, find lawyers with specific expertise in your case type."
                             }
                         ].map((item, index) => (
-                            <div key={index} className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-700/50 p-6 rounded-xl border border-slate-200 dark:border-slate-600 hover:shadow-2xl hover:scale-105 transition-all duration-500 hover:border-emerald-500 dark:hover:border-emerald-500 cursor-pointer animate-fade-in-up" style={{animationDelay: `${index * 0.1}s`}}>
+                            <div key={index} className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-700/50 p-6 rounded-xl border border-slate-200 dark:border-slate-600 hover:shadow-2xl hover:scale-105 transition-all duration-500 hover:border-emerald-500 dark:hover:border-emerald-500 cursor-pointer animate-fade-in-up">
                                 <div className="mb-4">{item.icon}</div>
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
                                 <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed">{item.desc}</p>
@@ -286,7 +285,7 @@ const Hero = () => {
                                 ]
                             }
                         ].map((item, index) => (
-                            <div key={index} className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 p-5 rounded-xl border border-slate-200 dark:border-slate-600 hover:shadow-2xl hover:scale-105 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-500 cursor-pointer animate-fade-in-up" style={{animationDelay: `${index * 0.15}s`}}>
+                            <div key={index} className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 p-5 rounded-xl border border-slate-200 dark:border-slate-600 hover:shadow-2xl hover:scale-105 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-500 cursor-pointer animate-fade-in-up">
                                 <h4 className="font-bold text-base text-emerald-700 dark:text-emerald-400 mb-3">{item.question}</h4>
                                 <ul className="space-y-2">
                                     {item.steps.map((step, idx) => (
@@ -492,3 +491,4 @@ const Hero = () => {
 };
 
 export default Hero;
+

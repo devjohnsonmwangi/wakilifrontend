@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { CaseDataTypes } from "../../../../features/case/caseAPI"; // Ensure this path is correct for types
 import { CaseProgressModal } from './progress'; // Adjust this path to your component's location
 import { toast } from 'sonner';
@@ -57,14 +57,14 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
 
     useEffect(() => {
         if (selectedCase) {
-            toast.info(`🔍 Viewing details for Case ID: ${selectedCase.case_id}`);
+            toast.info(`ðŸ” Viewing details for Case ID: ${selectedCase.case_id}`);
         }
     }, [selectedCase]);
 
     if (!selectedCase) return null;
 
     const handleClose = () => {
-        toast.info(`✅ Closed details for Case ID: ${selectedCase.case_id}`);
+        toast.info(`âœ… Closed details for Case ID: ${selectedCase.case_id}`);
         closeModal();
     };
 
@@ -280,3 +280,4 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ selectedCas
 };
 
 export default ViewCaseDetailsModal;
+

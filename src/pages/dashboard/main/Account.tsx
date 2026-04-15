@@ -147,9 +147,9 @@ function Account() {
     setUpdatingSelectRoleId(userId);
     try {
       await updateUserMutation({ user_id: userId, role: newRole }).unwrap();
-      toast.success(`🎉 Role for user ${userId} updated to ${newRole}!`);
+      toast.success(`ðŸŽ‰ Role for user ${userId} updated to ${newRole}!`);
       refetchUsers();
-    } catch (error) { toast.error(`❌ Error updating role: ${getApiErrorMessage(error)}`);
+    } catch (error) { toast.error(`âŒ Error updating role: ${getApiErrorMessage(error)}`);
     } finally { setUpdatingSelectRoleId(null); }
   };
   
@@ -158,9 +158,9 @@ function Account() {
     const newRole: UserRole = currentRole === 'admin' ? 'user' : 'admin';
     try {
       await updateUserMutation({ user_id: userId, role: newRole }).unwrap();
-      toast.success(`🎉 Role for user ${userId} changed to ${newRole}!`);
+      toast.success(`ðŸŽ‰ Role for user ${userId} changed to ${newRole}!`);
       refetchUsers();
-    } catch (error) { toast.error(`❌ Error changing role: ${getApiErrorMessage(error)}`);
+    } catch (error) { toast.error(`âŒ Error changing role: ${getApiErrorMessage(error)}`);
     } finally { setTogglingUserAdminRoleId(null); }
   };
 
@@ -172,7 +172,7 @@ function Account() {
       await deleteUserMutation(userToDelete.user_id).unwrap();
       toast.success(`User '${userToDelete.full_name}' deleted successfully!`);
       refetchUsers();
-    } catch (error) { toast.error(`❌ Error deleting user: ${getApiErrorMessage(error)}`);
+    } catch (error) { toast.error(`âŒ Error deleting user: ${getApiErrorMessage(error)}`);
     } finally { setUserToDelete(null); }
   };
 
@@ -213,8 +213,8 @@ function Account() {
     <>
       <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-          <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Name</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="Filter by name..." className={`${inputBaseClasses} pl-10`} /></div></div>
-          <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Email</label><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="Filter by email..." className={`${inputBaseClasses} pl-10`} /></div></div>
+          <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Name</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true"/><input type="text" name="name" value={filters.name} onChange={handleInputChange} placeholder="Filter by name..." className={`${inputBaseClasses} pl-10`} /></div></div>
+          <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Email</label><div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true"/><input type="text" name="email" value={filters.email} onChange={handleInputChange} placeholder="Filter by email..." className={`${inputBaseClasses} pl-10`} /></div></div>
           <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Phone</label><div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="phone_number" value={filters.phone_number} onChange={handleInputChange} placeholder="Filter by phone..." className={`${inputBaseClasses} pl-10`} /></div></div>
           <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search Address</label><div className="relative"><MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="address" value={filters.address} onChange={handleInputChange} placeholder="Filter by address..." className={`${inputBaseClasses} pl-10`} /></div></div>
           <button onClick={handleResetFilters} className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors shadow"><FilterIcon size={16}/> Reset All</button>
@@ -309,7 +309,7 @@ function Account() {
             <div>
                 <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">User Role Distribution</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">A visual representation of the proportion of users in each role.</p>
-                <div style={{ height: '400px' }} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg h-[400px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderRadius: '0.5rem', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }} />
@@ -373,3 +373,4 @@ function Account() {
 }
 
 export default Account;
+

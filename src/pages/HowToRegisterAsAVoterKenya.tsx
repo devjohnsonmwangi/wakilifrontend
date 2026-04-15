@@ -78,7 +78,7 @@ export default function HowToRegisterAsAVoterKenya() {
   useEffect(() => {
     // Set SEO Meta Tags
     const metaTitle = 'How to Register as a Voter in Kenya – Step-by-Step Guide';
-    const metaDescription = 'Complete guide to voter registration in Kenya. Learn eligibility, online & offline registration steps, IEBC requirements, deadlines, and your voting rights.';
+    const metaDescription = 'Practical guide to voter registration in Kenya. Learn eligibility, online & offline registration steps, IEBC requirements, deadlines, and your voting rights.';
     const metaKeywords = 'voter registration Kenya, register to vote Kenya, IEBC voter registration, how to register as voter Kenya, voter registration steps';
 
     // Set Meta Title
@@ -1046,7 +1046,7 @@ export default function HowToRegisterAsAVoterKenya() {
             </div>
             <div>
               <h4 className="font-bold text-white mb-4">Contact Us</h4>
-              <p className="text-sm mb-2">Email: <a href="mailto:johnsonthuraniramwangi@gmail.com" className="text-teal-400 hover:text-teal-300">johnsonthuraniramwangi@gmail.com</a></p>
+              <p className="text-sm mb-2">Email: <a href="mailto:info@wakili.com" className="text-teal-400 hover:text-teal-300">info@wakili.com</a></p>
               <p className="text-sm">WhatsApp: <a href="https://wa.me/254112810203" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300">+254 112 810 203</a></p>
             </div>
             <div>
@@ -1066,3 +1066,4 @@ export default function HowToRegisterAsAVoterKenya() {
     </div>
   );
 }
+

@@ -6,10 +6,10 @@ import { ShieldCheck, FileText, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const TermsAndServicesPage: FC = () => {
-  const lastUpdatedDate = "10th June  2025"; 
-  const companyName = "WakiliApp Solutions"; 
-  const appName = "Wakili Application";
-  const supportEmail = "support@wakiliapp.com"; 
+  const lastUpdatedDate = "15 April 2026";
+  const companyName = "Wakili Solutions";
+  const appName = "Wakili";
+  const supportEmail = "support@wakili.com";
   const companyAddress = "143-10300, Kerugoya"; 
 
   // Helper component for sections to maintain consistent styling
@@ -55,7 +55,7 @@ const TermsAndServicesPage: FC = () => {
 
             <Section title="2. Description of Service">
               <p>
-                The {appName} provides a platform for users to connect with legal professionals, manage legal documents, schedule consultations, and access legal information resources. The service  include features such as user account management, document storage, communication tools, a ticketing system for support and appointment requests, and information about our physical branch locations.. We reserve the right to withdraw or amend this Application, and any service or material we provide on the Application, in our sole discretion without notice.
+                The {appName} provides a platform for users to connect with legal professionals, manage legal documents, schedule consultations, and access legal information resources. The service includes features such as user account management, document storage, communication tools, a ticketing system for support and appointment requests, and information about our branch locations. We reserve the right to withdraw or amend this Application, and any service or material we provide on the Application, in our sole discretion without notice.
               </p>
             </Section>
 
@@ -82,7 +82,7 @@ const TermsAndServicesPage: FC = () => {
                 By posting User Content, you grant us a non-exclusive, worldwide, royalty-free, irrevocable, sub-licensable license to use, reproduce, adapt, publish, translate, and distribute it in any and all media. You retain any and all of your rights to any User Content you submit, post, or display on or through the Service and you are responsible for protecting those rights.
               </p>
               <p>
-                
+                You represent and warrant that your User Content does not violate any applicable law or third-party rights, including privacy, confidentiality, and intellectual property rights.
               </p>
             </Section>
 
@@ -103,8 +103,10 @@ const TermsAndServicesPage: FC = () => {
 
             <Section title="7. Fees and Payments ">
               <p>
-               "Certain features of the Application may be subject to payments now or in the future . If you elect to use Paid Services, you agree to the pricing and payment terms, as we may update them from time to time. {companyName} may add new services for additional fees and charges, or amend fees and charges for existing services, at any time in its sole discretion.
-              . We reserve the right to introduce fees for certain features or services in the future, and we will notify you in advance of any such changes."
+                Certain features of the Application may be subject to payments now or in the future. If you elect to use paid services, you agree to the pricing and payment terms, as updated from time to time. {companyName} may add new services for additional fees and charges, or amend fees and charges for existing services, at any time in its sole discretion.
+              </p>
+              <p>
+                We reserve the right to introduce fees for certain features or services in the future, and we will provide reasonable notice before such changes take effect.
               </p>
             </Section>
 
@@ -122,7 +124,7 @@ const TermsAndServicesPage: FC = () => {
                 NEITHER {companyName} NOR ANY PERSON ASSOCIATED WITH {companyName} MAKES ANY WARRANTY OR REPRESENTATION WITH RESPECT TO THE COMPLETENESS, SECURITY, RELIABILITY, QUALITY, ACCURACY, OR AVAILABILITY OF THE APPLICATION. WITHOUT LIMITING THE FOREGOING, NEITHER {companyName} NOR ANYONE ASSOCIATED WITH {companyName} REPRESENTS OR WARRANTS THAT THE APPLICATION, ITS CONTENT, OR ANY SERVICES OR ITEMS OBTAINED THROUGH THE APPLICATION WILL BE ACCURATE, RELIABLE, ERROR-FREE, OR UNINTERRUPTED, THAT DEFECTS WILL BE CORRECTED, THAT OUR SITE OR THE SERVER THAT MAKES IT AVAILABLE ARE FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS, OR THAT THE APPLICATION OR ANY SERVICES OR ITEMS OBTAINED THROUGH THE APPLICATION WILL OTHERWISE MEET YOUR NEEDS OR EXPECTATIONS.
               </p>
               <p>
-                "The information provided by the {appName} is for general informational purposes only and does not constitute legal advice. No attorney-client relationship is formed by your use of this Application. You should consult with a qualified legal professional for advice regarding your specific situation, The  application  acts a  bridge .
+                The information provided by {appName} is for general informational purposes only and does not constitute legal advice. No advocate-client relationship is formed solely by your use of this Application. You should consult a qualified legal professional for advice regarding your specific situation.
               </p>
             </Section>
 
@@ -131,7 +133,7 @@ const TermsAndServicesPage: FC = () => {
                 TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL {companyName}, ITS AFFILIATES, OR THEIR LICENSORS, SERVICE PROVIDERS, EMPLOYEES, AGENTS, OFFICERS, OR DIRECTORS BE LIABLE FOR DAMAGES OF ANY KIND, UNDER ANY LEGAL THEORY, ARISING OUT OF OR IN CONNECTION WITH YOUR USE, OR INABILITY TO USE, THE APPLICATION, ANY WEBSITES LINKED TO IT, ANY CONTENT ON THE APPLICATION OR SUCH OTHER WEBSITES, INCLUDING ANY DIRECT, INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO, PERSONAL INJURY, PAIN AND SUFFERING, EMOTIONAL DISTRESS, LOSS OF REVENUE, LOSS OF PROFITS, LOSS OF BUSINESS OR ANTICIPATED SAVINGS, LOSS OF USE, LOSS OF GOODWILL, LOSS OF DATA, AND WHETHER CAUSED BY TORT (INCLUDING NEGLIGENCE), BREACH OF CONTRACT, OR OTHERWISE, EVEN IF FORESEEABLE.
               </p>
               <p>
-              
+                This limitation applies to the maximum extent permitted by applicable law.
               </p>
             </Section>
 
@@ -152,10 +154,10 @@ const TermsAndServicesPage: FC = () => {
 
             <Section title="13. Governing Law and Dispute Resolution">
               <p>
-                These Terms shall be governed and construed in accordance with the laws of Kenya Land , without regard to its conflict of law provisions.
+                These Terms shall be governed and construed in accordance with the laws of Kenya, without regard to conflict of law principles.
               </p>
               <p>
-                 "Any dispute arising from these Terms or the Application shall be resolved through binding arbitration in Kenya in accordance with the rules of the  Kenyan Arbitration Association. Judgment upon the award rendered by the arbitrator(s) may be entered in any court having jurisdiction thereof." Or specify courts for litigation. 
+                Any dispute arising from these Terms or the Application shall first be addressed through good-faith negotiations. Where resolution is not reached, disputes may be referred to competent courts in Kenya unless otherwise required by mandatory law.
               </p>
             </Section>
 
@@ -201,3 +203,4 @@ const TermsAndServicesPage: FC = () => {
 };
 
 export default TermsAndServicesPage;
+

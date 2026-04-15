@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     useCreateCaseMutation,
     useAssignStaffToCaseMutation,
@@ -119,7 +119,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {isMulti && selectedOptions.map(opt => (
                     <span key={opt.value} className="flex items-center bg-blue-100 dark:bg-sky-900 text-blue-800 dark:text-sky-200 text-xs font-medium px-2 py-1 rounded-full">
                         {opt.label}
-                        <button type="button" onClick={(e) => { e.stopPropagation(); handleRemove(opt.value); }} className="ml-1.5 -mr-1 hover:bg-black/10 rounded-full">
+                        <button type="button" title="Remove item" aria-label="Remove item" onClick={(e) => { e.stopPropagation(); handleRemove(opt.value); }} className="ml-1.5 -mr-1 hover:bg-black/10 rounded-full">
                             <X size={14} />
                         </button>
                     </span>
@@ -135,7 +135,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     autoComplete="off"
                 />
                  {!isMulti && value && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); handleRemove(value as number); }} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <button type="button" title="Clear selection" aria-label="Clear selection" onClick={(e) => { e.stopPropagation(); handleRemove(value as number); }} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                         <X size={16} />
                     </button>
                 )}
@@ -247,7 +247,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
 
             const result = await createCase(casePayload).unwrap();
             createdCaseId = result.case_id;
-            toast.success(`🎉 Case (ID: ${createdCaseId}) created successfully!`);
+            toast.success(`ðŸŽ‰ Case (ID: ${createdCaseId}) created successfully!`);
 
             let allAssignmentsSuccessful = true;
             if (createdCaseId) {
@@ -276,7 +276,7 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
             const apiError = error as ApiError;
             console.error('Error during case creation:', apiError);
             const errorMessage = apiError.data?.message || apiError.message || 'Failed to create case.';
-            toast.error(`❌ ${errorMessage}`, { duration: 5000 });
+            toast.error(`âŒ ${errorMessage}`, { duration: 5000 });
         }
     };
 
@@ -405,3 +405,4 @@ const CreateCaseForm: React.FC<CreateCaseFormProps> = ({ isOpen, onClose, curren
 };
 
 export default CreateCaseForm;
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 // import { Link } from "react-router-dom";
 import { useCreateCaseDocumentMutation } from "../../../../features/casedocument/casedocmentapi";
 import { useCreateLogMutation } from "../../../../features/log/logsapi";
@@ -299,3 +299,4 @@ const GeneralDocumentUpload: React.FC<GeneralDocumentUploadProps> = ({ onClose }
 };
 
 export default GeneralDocumentUpload;
+

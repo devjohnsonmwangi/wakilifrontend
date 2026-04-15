@@ -6,10 +6,10 @@ import Navbar from '../components/navbar/Navbar';
 //import { Link } from 'react-router-dom';
 
 const CookiePolicyPage: FC = () => {
-  const lastUpdatedDate = "Always  updated for  your   safety: cookies policy  are  optional !"; 
+  const lastUpdatedDate = "15 April 2026";
   const appName = "Wakili Application";
   //const companyWebsite = "https://www.wakiliapp.com"; 
-  const supportEmail = "privacy@wakiliapp.com"; 
+  const supportEmail = "privacy@wakili.com"; 
 
   // Helper component for sections
   const Section: FC<{ title: string; children: React.ReactNode; Icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> }> = ({ title, children, Icon }) => (
@@ -62,17 +62,17 @@ const CookiePolicyPage: FC = () => {
                 <li>
                   <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><CheckCircle className="w-5 h-5 mr-2 text-green-500"/>Strictly Necessary Cookies</h4>
                   <p>These cookies are essential for you to browse the Application and use its features, such as accessing secure areas of the site. Without these cookies, services like user authentication and account management cannot be provided.</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Session cookies for login, security cookies.]</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Examples: session authentication cookies, security and fraud prevention cookies.</p>
                 </li>
                 <li>
                   <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><BarChart2 className="w-5 h-5 mr-2 text-blue-500"/>Performance and Analytics Cookies</h4>
                   <p>These cookies collect information about how you use our Application, for instance, which pages you go to most often, and if you get error messages from web pages. These cookies don’t collect information that identifies you. All information these cookies collect is aggregated and therefore anonymous. It is only used to improve how our Application works.</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Google Analytics (if used, also list under Third-Party Cookies), internal analytics.]</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Examples: page performance metrics and anonymized product usage trends.</p>
                 </li>
                 <li>
                   <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><Zap className="w-5 h-5 mr-2 text-purple-500"/>Functionality Cookies</h4>
                   <p>These cookies allow our Application to remember choices you make (such as your user name, language, or the region you are in) and provide enhanced, more personal features. For instance, these cookies can be used to remember changes you have made to text size, fonts, and other parts of web pages that you can customize. They may also be used to provide services you have asked for, such as watching a video or commenting on a blog.</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Remembering user preferences, language settings, dark mode preference if stored in a cookie.]</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Examples: saved preferences, language settings, and accessibility choices.</p>
                 </li>
                 <li>
                   <h4 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center"><Cookie className="w-5 h-5 mr-2 text-red-500"/>Targeting or Advertising Cookies </h4>
@@ -80,28 +80,19 @@ const CookiePolicyPage: FC = () => {
                     
                     These cookies are used to deliver advertisements more relevant to you and your interests. They are also used to limit the number of times you see an advertisement as well as help measure the effectiveness of the advertising campaign. They are usually placed by advertising networks with the website operator’s permission. They remember that you have visited a website and this information is shared with other organizations such as advertisers.
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">[Example: Facebook Pixel, Google Ads cookies. ]</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Examples: campaign measurement cookies and ad relevance cookies.</p>
                   
                 </li>
               </ul>
-              <p className="mt-4">
-              
-              </p>
             </Section>
 
             <Section title="4. Third-Party Cookies " Icon={Globe}>
-              <p>
-              
-              </p>
               <p>
                 In addition to our own cookies, we may also use various third-parties cookies to report usage statistics of the Service, deliver advertisements on and through the Service, and so on. For example:
               </p>
               <ul>
                 <li>
                   <strong>Google Analytics:</strong> We use Google Analytics to collect and analyze information about the use of the Service and report on activities and trends. This service may also collect information regarding the use of other websites, apps, and online resources. You can learn about Google’s practices by going to <a href="https://www.google.com/policies/privacy/partners/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">www.google.com/policies/privacy/partners/</a>, and opt out of them by downloading the Google Analytics opt-out browser add-on, available at <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">https://tools.google.com/dlpage/gaoptout</a>.
-                </li>
-                <li>
-                  
                 </li>
               </ul>
               <p className="font-bold text-sm mt-2">
@@ -124,9 +115,6 @@ const CookiePolicyPage: FC = () => {
                 <li>
                   <strong>Third-Party Opt-Outs:</strong> For third-party advertising cookies, you can often opt-out via industry opt-out programs like the Network Advertising Initiative (<a href="http://optout.networkadvertising.org/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">NAI</a>) or the Digital Advertising Alliance (<a href="http://optout.aboutads.info/" target="_blank" rel="noopener noreferrer" className="text-amber-600 dark:text-amber-400 hover:underline">DAA</a>).
                 </li>
-                <li>
-          
-                </li>
               </ul>
             </Section>
 
@@ -145,7 +133,7 @@ const CookiePolicyPage: FC = () => {
               </p>
               <address className="not-italic">
                 By email: <a href={`mailto:${supportEmail}`} className="text-amber-600 dark:text-amber-400 hover:underline">{supportEmail}</a><br />
-                
+                Support line: <a href="tel:+254112810203" className="text-amber-600 dark:text-amber-400 hover:underline">+254 112 810 203</a>
               </address>
             </Section>
           </div>
@@ -156,3 +144,4 @@ const CookiePolicyPage: FC = () => {
 };
 
 export default CookiePolicyPage;
+

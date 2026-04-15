@@ -117,7 +117,7 @@ const LandTransferAfterDeathKenya = () => {
 
     // OpenGraph tags
     const ogTags = [
-      { property: 'og:title', content: 'How to Transfer Land After Death in Kenya - Complete Guide' },
+      { property: 'og:title', content: 'How to Transfer Land After Death in Kenya - Practical guide' },
       { property: 'og:description', content: 'Complete step-by-step guide to land and property transfer after death in Kenya. Requirements, costs, and procedures.' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: window.location.href }
@@ -137,7 +137,7 @@ const LandTransferAfterDeathKenya = () => {
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'How to Transfer Land After Death in Kenya' },
-      { name: 'twitter:description', content: 'Complete guide to land transfer after death in Kenya - requirements, costs, and step-by-step procedures.' }
+      { name: 'twitter:description', content: 'Practical guide to land transfer after death in Kenya - requirements, costs, and step-by-step procedures.' }
     ];
 
     twitterTags.forEach(tag => {
@@ -167,7 +167,7 @@ const LandTransferAfterDeathKenya = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'How to Transfer Land and Property After Death in Kenya',
-          description: 'Complete guide to land and property transfer procedures after death in Kenya',
+          description: 'Practical guide to land and property transfer procedures after death in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -319,7 +319,7 @@ const LandTransferAfterDeathKenya = () => {
       <header className="relative bg-gradient-to-r from-green-700 via-emerald-600 to-teal-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -350,7 +350,7 @@ const LandTransferAfterDeathKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Land Transfer After Death Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with transferring land/property after death in Kenya.\n\nPlease contact me to discuss:\n- Land transfer procedures\n- Probate and title deed transfer\n- Stamp duty and legal requirements\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Land Transfer After Death Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with transferring land/property after death in Kenya.\n\nPlease contact me to discuss:\n- Land transfer procedures\n- Probate and title deed transfer\n- Stamp duty and legal requirements\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Email for land transfer assistance"
             >
@@ -1225,7 +1225,6 @@ const LandTransferAfterDeathKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1263,7 +1262,7 @@ const LandTransferAfterDeathKenya = () => {
                 WhatsApp Us Now
               </a>
               <a
-                href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Land Transfer Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land/property transfer after death.\n\nThank you.')}`}
+                href={`mailto:info@wakili.com?subject=${encodeURIComponent('Land Transfer Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land/property transfer after death.\n\nThank you.')}`}
                 className="inline-flex items-center justify-center gap-2 bg-green-800 hover:bg-green-900 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
               >
                 <Mail className="w-5 h-5" />
@@ -1293,3 +1292,4 @@ const LandTransferAfterDeathKenya = () => {
 };
 
 export default LandTransferAfterDeathKenya;
+

@@ -288,7 +288,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
                         placeholder="07XX XXX XXX"
                         aria-label="Safaricom Phone Number"
                         aria-describedby={phoneNumberError ? "phoneNumber-error" : undefined}
-                        aria-invalid={!!phoneNumberError}
+                        
                       />
                     </div>
                     {phoneNumberError && (
@@ -317,7 +317,7 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
                       placeholder="Enter amount"
                       aria-label="Amount to Pay"
                       aria-describedby={amountError ? "amount-error" : undefined}
-                      aria-invalid={!!amountError}
+                      
                     />
                      {amountError && (
                       <p id="amount-error" className="mt-1.5 text-xs text-red-600 dark:text-red-400">{amountError}</p>
@@ -372,3 +372,4 @@ const SingleCaseMpesaPayment: React.FC<SingleCaseMpesaPaymentProps> = ({
 };
 
 export default SingleCaseMpesaPayment;
+

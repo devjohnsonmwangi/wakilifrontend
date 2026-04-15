@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, CalendarCheck2, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, Edit3, User as ClientIcon } from 'lucide-react';
@@ -148,7 +148,7 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
             <AnimatePresence mode="wait">
                 {(!isClientView && (isBranchesLoading || isUsersLoading)) ? (<motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-10 min-h-[200px]"><Loader2 className="h-10 w-10 animate-spin text-sky-500 mb-3" /><p className="text-slate-600 dark:text-slate-400">Loading data...</p></motion.div>) : (
                     <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={handleSubmit} className="space-y-4">
-                        <div><label className={labelBaseClasses}><ClientIcon size={16} className="mr-2" /> Client</label><input type="text" value={appointment.client?.full_name || `User ID: ${appointment.client_user_id}`} className={inputBaseClasses} readOnly disabled /></div>
+                        <div><label htmlFor="edit-client" className={labelBaseClasses}><ClientIcon size={16} className="mr-2" /> Client</label><input id="edit-client" type="text" value={appointment.client?.full_name || `User ID: ${appointment.client_user_id}`} className={inputBaseClasses} readOnly disabled /></div>
                         <div><label htmlFor="edit-branch" className={labelBaseClasses}><MapPin size={16} className="mr-2" /> Branch Location</label><select id="edit-branch" value={branchId} onChange={(e) => setBranchId(e.target.value)} className={inputBaseClasses} required={!isClientView} disabled={isClientView || isBranchesLoading || !branches?.length}><option value="" disabled>{isBranchesLoading ? "Loading..." : "Select Branch"}</option>{branches?.map((branch: BranchLocation) => (<option key={branch.branch_id} value={branch.branch_id}>{branch.name}</option>))}</select></div>
                         {!isClientView && (<div><label htmlFor="edit-staffId" className={labelBaseClasses}><UserCheck size={16} className="mr-2" /> Assign To</label><select id="edit-staffId" value={assigneeIds[0] || ''} onChange={(e) => setAssigneeIds(e.target.value ? [Number(e.target.value)] : [])} className={inputBaseClasses} disabled={isUsersLoading || !staffUsers.length}><option value="">{isUsersLoading ? "Loading..." : "Unassigned"}</option>{staffUsers.map((user: UserDataTypes) => (<option key={user.user_id} value={user.user_id}>{user.full_name}</option>))}</select></div>)}
                         <div><label htmlFor="edit-appointmentDateTime" className={labelBaseClasses}><CalendarCheck2 size={16} className="mr-2" /> Date & Time</label><input type="datetime-local" id="edit-appointmentDateTime" className={inputBaseClasses} value={appointmentDateTime} onChange={(e) => setAppointmentDateTime(e.target.value)} required disabled={isClientView}/></div>
@@ -179,3 +179,4 @@ const EditAppointment: React.FC<EditAppointmentProps> = ({
 };
 
 export default EditAppointment;
+

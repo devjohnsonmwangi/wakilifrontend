@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { ChevronsLeft, Search as SearchIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -20,27 +20,27 @@ interface DrawerItem {
 
 // Array of encouraging quotes
 const quotes = [
-  "Great choice! ⭐",
-  "You're on the right track! 🌟",
-  "Fantastic selection! 🎉",
-  "Keep up the great work! 💪",
-  "You're doing amazing! 🌈",
-  "Believe in yourself! You can do it! 🌻",
-  "Every step counts, keep moving forward! 🚀",
-  "You're stronger than you think! 💖",
-  "Don't forget to take a break and breathe! 🌬️",
-  "Your effort today is your success tomorrow! 🌅",
-  "Stay positive, work hard, make it happen! 🌟",
-  "You are capable of achieving great things! 🏆",
-  "Mistakes are proof that you are trying! ✨",
-  "Your only limit is your mind! 🧠",
-  "Keep pushing, you're almost there! ⏳",
-  "Success is the sum of small efforts! 🌱",
-  "Every day is a new beginning! 🌄",
-  "You are doing better than you think! 👍",
-  "Believe you can, and you're halfway there! 🌈",
-  "Take it one day at a time! ☀️",
-  "Your hard work will pay off! 💪",
+  "Great choice! â­",
+  "You're on the right track! ðŸŒŸ",
+  "Fantastic selection! ðŸŽ‰",
+  "Keep up the great work! ðŸ’ª",
+  "You're doing amazing! ðŸŒˆ",
+  "Believe in yourself! You can do it! ðŸŒ»",
+  "Every step counts, keep moving forward! ðŸš€",
+  "You're stronger than you think! ðŸ’–",
+  "Don't forget to take a break and breathe! ðŸŒ¬ï¸",
+  "Your effort today is your success tomorrow! ðŸŒ…",
+  "Stay positive, work hard, make it happen! ðŸŒŸ",
+  "You are capable of achieving great things! ðŸ†",
+  "Mistakes are proof that you are trying! âœ¨",
+  "Your only limit is your mind! ðŸ§ ",
+  "Keep pushing, you're almost there! â³",
+  "Success is the sum of small efforts! ðŸŒ±",
+  "Every day is a new beginning! ðŸŒ„",
+  "You are doing better than you think! ðŸ‘",
+  "Believe you can, and you're halfway there! ðŸŒˆ",
+  "Take it one day at a time! â˜€ï¸",
+  "Your hard work will pay off! ðŸ’ª",
 ];
 
 const Drawer = ({
@@ -184,9 +184,8 @@ const Drawer = ({
                         <div
                           className={`
                             w-8 h-8 mr-3 rounded-lg flex items-center justify-center shrink-0
-                            transition-all duration-200
+                            transition-all duration-200 ${isActive ? 'bg-transparent' : 'bg-white/10'}
                           `}
-                          style={{ backgroundColor: isActive ? 'transparent' : 'rgba(255, 255, 255, 0.1)' }} // Light background for icons
                         >
                           <item.icon
                             className={`
@@ -240,3 +239,5 @@ const Drawer = ({
 };
 
 export default Drawer;
+
+

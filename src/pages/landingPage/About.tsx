@@ -206,9 +206,9 @@ const About = () => {
                                 <h3 className={`text-lg font-semibold mb-2 ${headingColor}`}>{item.title}</h3>
                                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{item.text}</p>
                                 <ul className="mt-3 text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                                    <li>• Fast response within 2 hours</li>
-                                    <li>• Transparent pricing upfront</li>
-                                    <li>• Verified LSK advocates</li>
+                                    <li>- Prompt response and case triage</li>
+                                    <li>- Transparent pricing upfront</li>
+                                    <li>- Verified LSK advocates</li>
                                 </ul>
                             </div>
                         ))}
@@ -220,10 +220,10 @@ const About = () => {
                                 What You Get in the First 24 Hours
                             </h3>
                             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
-                                <li>• A legal intake call to understand your problem and urgency</li>
-                                <li>• A lawyer match based on specialization and location</li>
-                                <li>• Clear next steps: documents needed, timelines, and expected costs</li>
-                                <li>• Optional draft documents (demand letter, notice, or legal opinion)</li>
+                                <li>- A legal intake call to understand your problem and urgency</li>
+                                <li>- A lawyer match based on specialization and location</li>
+                                <li>- Clear next steps: documents needed, timelines, and expected costs</li>
+                                <li>- Optional draft documents (demand letter, notice, or legal opinion)</li>
                             </ul>
                         </div>
                         <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-lg border border-slate-200 dark:border-slate-600">
@@ -231,10 +231,10 @@ const About = () => {
                                 Common Outcomes We Deliver
                             </h3>
                             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
-                                <li>• Settlement agreements and dispute resolution without court</li>
-                                <li>• Court filings prepared correctly to avoid delays</li>
-                                <li>• Enforceable contracts and legal documents</li>
-                                <li>• Strong representation in ELC, Employment, and Magistrate Courts</li>
+                                <li>- Settlement agreements and dispute resolution without court</li>
+                                <li>- Court filings prepared correctly to avoid delays</li>
+                                <li>- Enforceable contracts and legal documents</li>
+                                <li>- Strong representation in ELC, Employment, and Magistrate Courts</li>
                             </ul>
                         </div>
                     </div>
@@ -258,7 +258,7 @@ const About = () => {
                                 <h4 className={`text-lg font-semibold mb-3 ${headingColor}`}>{block.title}</h4>
                                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                                     {block.items.map((item) => (
-                                        <li key={item}>• {item}</li>
+                                        <li key={item}>- {item}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -323,3 +323,4 @@ const About = () => {
 };
 
 export default About;
+

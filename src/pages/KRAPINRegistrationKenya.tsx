@@ -282,14 +282,14 @@ const KRAPINRegistrationKenya = () => {
     <>
       <Helmet>
         <title>KRA PIN Registration Kenya – iTax Guide 2026 & 2027</title>
-        <meta name="description" content="Complete guide to KRA PIN registration for businesses & companies in Kenya. Step-by-step iTax registration, costs, documents, penalties & tax compliance guide." />
-        <link rel="canonical" href="https://yoursite.com/kra-pin-for-business-kenya" />
+        <meta name="description" content="Practical guide to KRA PIN registration for businesses & companies in Kenya. Step-by-step iTax registration, costs, documents, penalties & tax compliance guide." />
+        <link rel="canonical" href="https://wakili.co.ke/kra-pin-for-business-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="KRA PIN Registration Kenya – Complete iTax Guide 2026 & 2027" />
         <meta property="og:description" content="Step-by-step guide to registering for a KRA PIN in Kenya via iTax. All business types, free registration, tax obligations & compliance requirements." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/kra-pin-for-business-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/kra-pin-for-business-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1460925895917-aeb19be489c7?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -307,8 +307,8 @@ const KRAPINRegistrationKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Tax and business compliance services in Kenya"
           })}
         </script>
@@ -322,13 +322,13 @@ const KRAPINRegistrationKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "KRA PIN Registration Kenya",
-                "item": "https://yoursite.com/kra-pin-for-business-kenya"
+                "item": "https://wakili.co.ke/kra-pin-for-business-kenya"
               }
             ]
           })}
@@ -374,7 +374,7 @@ const KRAPINRegistrationKenya = () => {
               <DollarSign className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">KRA PIN Registration for Businesses & Companies in Kenya</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to registering for a KRA PIN via iTax. Learn tax obligations, registration steps, penalties, and compliance requirements for all business types in Kenya.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to registering for a KRA PIN via iTax. Learn tax obligations, registration steps, penalties, and compliance requirements for all business types in Kenya.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="https://itax.kra.go.ke" target="_blank" rel="noopener noreferrer" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Lock className="w-5 h-5" />
@@ -719,7 +719,7 @@ const KRAPINRegistrationKenya = () => {
                 </div>
 
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 mb-6">Complete guide to registering for KRA PIN online. Takes 15-30 minutes:</p>
+                  <p className="text-gray-700 mb-6">Practical guide to registering for KRA PIN online. Takes 15-30 minutes:</p>
 
                   <div className="space-y-4 mb-6">
                     {registrationSteps.map((step) => (
@@ -1176,3 +1176,5 @@ const KRAPINRegistrationKenya = () => {
 };
 
 export default KRAPINRegistrationKenya;
+
+

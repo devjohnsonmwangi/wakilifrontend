@@ -1,4 +1,4 @@
-// src/components/help/HelpCenter.tsx
+﻿// src/components/help/HelpCenter.tsx
 import React, { useState, useMemo, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -479,7 +479,6 @@ const FAQItem: React.FC<{ question: string; answer: string; isOpen: boolean; onC
       <button
         onClick={onClick}
         className="w-full flex justify-between items-center py-4 px-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700/70 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 rounded-md"
-        aria-expanded={isOpen}
       >
         <h3 className="font-semibold text-md text-slate-700 dark:text-slate-200">{question}</h3>
         {isOpen ? <ChevronUp size={20} className="text-teal-500 dark:text-teal-400" /> : <ChevronDown size={20} className="text-slate-500 dark:text-slate-400" />}
@@ -651,7 +650,7 @@ const HelpCenter: React.FC = () => {
         </section>
 
         <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
-          <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+          <p>Â© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
           <p className="mt-1">
             <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
           </p>
@@ -662,3 +661,4 @@ const HelpCenter: React.FC = () => {
 };
 
 export default HelpCenter;
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { CaseDataTypes } from "../../../../features/case/caseAPI";
 
@@ -42,7 +42,7 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ isDarkMode,
 
     useEffect(() => {
         if (selectedCase) {
-            toast.info(`🔍 Viewing details for Case ID: ${selectedCase.case_id}`);
+            toast.info(`ðŸ” Viewing details for Case ID: ${selectedCase.case_id}`);
         }
     }, [selectedCase]);
 
@@ -217,3 +217,4 @@ const ViewCaseDetailsModal: React.FC<ViewCaseDetailsModalProps> = ({ isDarkMode,
 };
 
 export default ViewCaseDetailsModal;
+

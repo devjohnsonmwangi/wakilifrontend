@@ -8,12 +8,12 @@ const FamilyLaw = () => {
 
   useEffect(() => {
     // Set page title and meta description
-    document.title = 'Family & Divorce Law in Kenya Complete Guide - Wakili';
+    document.title = 'Family & Divorce Law in Kenya Practical guide - Wakili';
     
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
-        'Complete guide to family and divorce law in Kenya. Learn about divorce process, child custody, maintenance, adoption, marriage types, prenuptial agreements, and domestic violence laws. Updated 2026.'
+        'Practical guide to family and divorce law in Kenya. Learn about divorce process, child custody, maintenance, adoption, marriage types, prenuptial agreements, and domestic violence laws. Updated 2026.'
       );
     }
 
@@ -71,8 +71,8 @@ const FamilyLaw = () => {
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse [animation-delay:1s]"></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse [animation-delay:2s]"></div>
         </div>
         
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -85,7 +85,7 @@ const FamilyLaw = () => {
             </h1>
           </div>
           <p className="text-xl md:text-2xl opacity-95 max-w-4xl leading-relaxed">
-            Your complete guide to understanding family law, divorce proceedings, child custody, maintenance, adoption, and domestic violence protections in Kenya. <span className="font-semibold text-yellow-300">Updated for 2026.</span>
+            A practical guide to understanding family law, divorce proceedings, child custody, maintenance, adoption, and domestic violence protections in Kenya. <span className="font-semibold text-yellow-300">Updated for 2026.</span>
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -100,7 +100,7 @@ const FamilyLaw = () => {
               Get Guidance on WhatsApp
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Family Law Guidance Request')}&body=${encodeURIComponent('Hello, I need guidance on family/divorce law in Kenya. My questions/services needed are:')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Family Law Guidance Request')}&body=${encodeURIComponent('Hello, I need guidance on family/divorce law in Kenya. My questions/services needed are:')}`}
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl shadow-lg border border-white/30 transition-all duration-300 hover:scale-105"
               aria-label="Request guidance by email"
             >
@@ -1109,7 +1109,7 @@ const FamilyLaw = () => {
           {/* Animated background elements */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse [animation-delay:1s]"></div>
           </div>
           
           <div className="relative z-10">
@@ -1287,3 +1287,5 @@ const FamilyLaw = () => {
 };
 
 export default FamilyLaw;
+
+

@@ -289,14 +289,14 @@ const EmploymentContractsKenya = () => {
     <>
       <Helmet>
         <title>Employment Contracts Kenya – Templates Clauses Legal Guide 2026</title>
-        <meta name="description" content="Complete guide to employment contracts in Kenya. Templates, mandatory clauses, probation, termination, and legal requirements under Employment Act 2007." />
-        <link rel="canonical" href="https://yoursite.com/employment-contracts-kenya" />
+        <meta name="description" content="Practical guide to employment contracts in Kenya. Templates, mandatory clauses, probation, termination, and legal requirements under Employment Act 2007." />
+        <link rel="canonical" href="https://wakili.co.ke/employment-contracts-kenya" />
         
         {/* OpenGraph */}
         <meta property="og:title" content="Employment Contracts Kenya – Templates & Legal Guide 2026" />
         <meta property="og:description" content="Draft compliant employment agreements. Essential clauses, probation, termination, templates, and legal obligations under Kenyan law." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/employment-contracts-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/employment-contracts-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1450101499163-c8917566f860?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -314,8 +314,8 @@ const EmploymentContractsKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Employment contract guidance and templates for Kenya"
           })}
         </script>
@@ -329,13 +329,13 @@ const EmploymentContractsKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Employment Contracts",
-                "item": "https://yoursite.com/employment-contracts-kenya"
+                "item": "https://wakili.co.ke/employment-contracts-kenya"
               }
             ]
           })}
@@ -381,7 +381,7 @@ const EmploymentContractsKenya = () => {
               <FileText className="w-8 h-8 flex-shrink-0" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">Employment Contracts in Kenya – Templates, Clauses & Legal Guide 2026</h1>
             </div>
-            <p className="text-blue-100 text-lg max-w-3xl">Complete guide to drafting compliant employment contracts. Learn mandatory clauses, probation periods, termination terms, and download free templates under Employment Act 2007.</p>
+            <p className="text-blue-100 text-lg max-w-3xl">Practical guide to drafting compliant employment contracts. Learn mandatory clauses, probation periods, termination terms, and download free templates under Employment Act 2007.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a href="#templates" className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center gap-2">
                 <Download className="w-5 h-5" />
@@ -901,7 +901,7 @@ const EmploymentContractsKenya = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <a href="/kenya-employment-labour-laws" className="p-4 border-2 border-blue-200 rounded-lg hover:shadow-lg transition-shadow hover:border-blue-600">
                 <h4 className="font-bold text-gray-900 mb-1">Employment & Labour Laws</h4>
-                <p className="text-gray-600 text-sm">Complete guide to employee and employer rights</p>
+                <p className="text-gray-600 text-sm">Practical guide to employee and employer rights</p>
               </a>
               <a href="/business-permits-licenses-kenya" className="p-4 border-2 border-green-200 rounded-lg hover:shadow-lg transition-shadow hover:border-green-600">
                 <h4 className="font-bold text-gray-900 mb-1">Business Permits & Licenses</h4>
@@ -932,3 +932,5 @@ const EmploymentContractsKenya = () => {
 };
 
 export default EmploymentContractsKenya;
+
+

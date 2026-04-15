@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { 
   Mail, 
   MapPin, 
@@ -10,29 +10,40 @@ import {
 } from 'lucide-react';
 import Navbar from "../components/navbar/Navbar";
 
+interface ContactMethod {
+  icon: typeof Ticket;
+  title: string;
+  description: string;
+  link: string;
+  buttonText: string;
+  external?: boolean;
+}
+
 // --- Data for the contact method cards for easy maintenance ---
-const contactMethods = [
+const contactMethods: ContactMethod[] = [
   {
-    icon: Ticket,
-    title: "Submit a Support Ticket",
-    description: "Best for specific case inquiries, technical issues, or billing questions. Our team will get back to you with a detailed response.",
-    link: "/dashboard/mytickets",
-    buttonText: "Go to My Tickets"
+    icon: Mail,
+    title: "Email Legal Support",
+    description: "Best for detailed legal or account questions. Share your issue and supporting details for a documented response.",
+    link: "mailto:info@wakili.com",
+    buttonText: "Send Email",
+    external: true,
   },
   {
-    icon: MessageSquareText,
-    title: "Chat with Our Staff",
-    description: "Have a quick question or need immediate assistance? Start a live chat with one of our available team members.",
-    link: "/dashboard/chats",
-    buttonText: "Start a Chat"
+    icon: Phone,
+    title: "Call Our Team",
+    description: "Need quick guidance before booking a service? Speak with our support team during working hours.",
+    link: "tel:+254112810203",
+    buttonText: "Call Now",
+    external: true,
   },
   {
     icon: Building,
-    title: "Find a Branch",
-    description: "Need to speak with someone in person or find a direct phone number? Locate your nearest branch for address and contact details.",
-    link: "/dashboard/branch",
-    buttonText: "View Branch Locations"
-  }
+    title: "Client Portal Support",
+    description: "Existing clients can track conversations, tickets, and branch workflows in the Wakili portal.",
+    link: "/login",
+    buttonText: "Open Client Portal",
+  },
 ];
 
 const ContactPage = () => {
@@ -75,13 +86,23 @@ const ContactPage = () => {
                   </p>
                 </div>
                 <div className="mt-8">
-                  <Link
-                    to={method.link}
-                    className="inline-flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 group"
-                  >
-                    {method.buttonText}
-                    <ChevronRight className="w-5 h-5 ml-2 transform transition-transform duration-200 group-hover:translate-x-1" />
-                  </Link>
+                  {method.external ? (
+                    <a
+                      href={method.link}
+                      className="inline-flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 group"
+                    >
+                      {method.buttonText}
+                      <ChevronRight className="w-5 h-5 ml-2 transform transition-transform duration-200 group-hover:translate-x-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      to={method.link}
+                      className="inline-flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 group"
+                    >
+                      {method.buttonText}
+                      <ChevronRight className="w-5 h-5 ml-2 transform transition-transform duration-200 group-hover:translate-x-1" />
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
@@ -117,3 +138,4 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
+

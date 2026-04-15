@@ -1,4 +1,4 @@
-import { Toaster, toast } from 'sonner';
+﻿import { Toaster, toast } from 'sonner';
 
 import { caseDocumentAPI, CaseDocument } from '../../../../features/casedocument/casedocmentapi';
 import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa';
@@ -171,3 +171,4 @@ export const DeleteCaseForm = ({
 };
 
 export default DeleteCaseForm;
+

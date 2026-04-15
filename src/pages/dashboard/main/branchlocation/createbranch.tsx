@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   useCreateBranchLocationMutation,
 } from '../../../../features/branchlocation/branchlocationapi'; 
@@ -237,3 +237,4 @@ const CreateBranchLocation: React.FC<CreateBranchLocationProps> = ({ onClose }) 
 };
 
 export default CreateBranchLocation;
+

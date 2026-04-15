@@ -91,7 +91,7 @@ const LandOwnershipTitleDeedKenya = () => {
     if (metaDescription) {
       metaDescription.setAttribute(
         'content',
-        'Complete guide to title deed verification, land ownership laws, and safe land buying in Kenya. Learn how to verify authentic title deeds, conduct land registry searches, and avoid fraud. Updated 2026.'
+        'Practical guide to title deed verification, land ownership laws, and safe land buying in Kenya. Learn how to verify authentic title deeds, conduct land registry searches, and avoid fraud. Updated 2026.'
       );
     }
 
@@ -118,7 +118,7 @@ const LandOwnershipTitleDeedKenya = () => {
     // OpenGraph tags
     const ogTags = [
       { property: 'og:title', content: 'Land Ownership & Title Deed Verification in Kenya' },
-      { property: 'og:description', content: 'Complete guide to verifying title deeds, land ownership, and safe property buying in Kenya.' },
+      { property: 'og:description', content: 'Practical guide to verifying title deeds, land ownership, and safe property buying in Kenya.' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: window.location.href }
     ];
@@ -167,7 +167,7 @@ const LandOwnershipTitleDeedKenya = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Land Ownership & Title Deed Verification in Kenya',
-          description: 'Complete guide to land ownership laws, title deed verification, and safe property buying in Kenya',
+          description: 'Practical guide to land ownership laws, title deed verification, and safe property buying in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -313,7 +313,7 @@ const LandOwnershipTitleDeedKenya = () => {
       <header className="relative bg-gradient-to-r from-blue-700 via-indigo-600 to-teal-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -329,7 +329,7 @@ const LandOwnershipTitleDeedKenya = () => {
             </div>
           </div>
           <p className="text-xl md:text-2xl opacity-95 max-w-4xl leading-relaxed mb-6">
-            Complete guide to verifying title deeds, understanding land ownership laws, conducting land registry searches, and safely buying property in Kenya. Learn how to spot fake deeds and protect yourself from land fraud. <span className="font-semibold text-blue-200">Updated 2026.</span>
+            Practical guide to verifying title deeds, understanding land ownership laws, conducting land registry searches, and safely buying property in Kenya. Learn how to spot fake deeds and protect yourself from land fraud. <span className="font-semibold text-blue-200">Updated 2026.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -344,7 +344,7 @@ const LandOwnershipTitleDeedKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Title Deed Verification Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with title deed verification and land ownership in Kenya.\n\nPlease contact me to discuss:\n- Title deed verification\n- Land registry searches\n- Land fraud prevention\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Title Deed Verification Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with title deed verification and land ownership in Kenya.\n\nPlease contact me to discuss:\n- Title deed verification\n- Land registry searches\n- Land fraud prevention\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Email for title deed assistance"
             >
@@ -1627,7 +1627,7 @@ const LandOwnershipTitleDeedKenya = () => {
               >
                 <TrendingUp className="w-10 h-10 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-bold text-lg text-gray-900 mb-2">Land Transfer Process</h3>
-                <p className="text-gray-600 text-sm">Complete guide to selling and buying land in Kenya</p>
+                <p className="text-gray-600 text-sm">Practical guide to selling and buying land in Kenya</p>
               </Link>
 
               <Link
@@ -1679,7 +1679,6 @@ const LandOwnershipTitleDeedKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1717,7 +1716,7 @@ const LandOwnershipTitleDeedKenya = () => {
                 WhatsApp Us Now
               </a>
               <a
-                href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Title Deed Verification Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with title deed verification and land ownership.\n\nThank you.')}`}
+                href={`mailto:info@wakili.com?subject=${encodeURIComponent('Title Deed Verification Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with title deed verification and land ownership.\n\nThank you.')}`}
                 className="inline-flex items-center justify-center gap-2 bg-blue-800 hover:bg-blue-900 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
               >
                 <Mail className="w-5 h-5" />
@@ -1747,3 +1746,4 @@ const LandOwnershipTitleDeedKenya = () => {
 };
 
 export default LandOwnershipTitleDeedKenya;
+

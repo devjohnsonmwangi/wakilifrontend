@@ -1,4 +1,4 @@
-// src/pages/dashboard/main/Profile.tsx (or ProfileWithModal.tsx)
+﻿// src/pages/dashboard/main/Profile.tsx (or ProfileWithModal.tsx)
 import React, { ReactNode, useEffect, useState, ChangeEvent } from 'react';
 import { useForm, SubmitHandler, FieldError } from 'react-hook-form';
 import { Link } from 'react-router-dom';
@@ -107,16 +107,32 @@ const schema = yup.object().shape({
     profile_picture: yup.string().optional(),
 });
 
+type ValidAutocomplete = 
+  | 'off' | 'on'
+  | 'name' | 'given-name' | 'additional-name' | 'family-name' | 'honorific-prefix' | 'honorific-suffix' | 'nickname'
+  | 'username' | 'new-password' | 'current-password' | 'one-time-code'
+  | 'organization-title' | 'organization'
+  | 'street-address' | 'address-line1' | 'address-line2' | 'address-line3' | 'address-level4' | 'address-level3' | 'address-level2' | 'address-level1'
+  | 'country' | 'country-name' | 'postal-code'
+  | 'cc-name' | 'cc-given-name' | 'cc-additional-name' | 'cc-family-name' | 'cc-number' | 'cc-exp' | 'cc-exp-month' | 'cc-exp-year' | 'cc-csc' | 'cc-type'
+  | 'transaction-currency' | 'transaction-amount' | 'language'
+  | 'bday' | 'bday-day' | 'bday-month' | 'bday-year' | 'sex'
+  | 'tel' | 'tel-country-code' | 'tel-national' | 'tel-area-code' | 'tel-local' | 'tel-local-prefix' | 'tel-local-suffix' | 'tel-extension'
+  | 'email' | 'impp' | 'url' | 'photo';
+
 const renderFormField = (
     id: keyof UserFormData,
     label: string,
     type: string,
-    autoComplete: string,
+    autoComplete: ValidAutocomplete,
     error: FieldError | undefined,
     register: ReturnType<typeof useForm<UserFormData>>['register'],
     icon?: React.ReactNode,
     inputProps?: React.InputHTMLAttributes<HTMLInputElement>
-) => (
+) => {
+    const resolvedInputProps = { ...inputProps, autoComplete };
+
+    return (
     <div>
         <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {label}
@@ -130,7 +146,6 @@ const renderFormField = (
             <input
                 id={id}
                 type={type}
-                autoComplete={autoComplete}
                 className={`appearance-none block w-full px-3 py-2 border ${icon ? 'pl-10' : ''} 
                     ${error 
                         ? 'border-red-500 focus:ring-red-500 focus:border-red-500 dark:border-red-600 dark:focus:ring-red-500 dark:focus:border-red-500' 
@@ -142,12 +157,13 @@ const renderFormField = (
                     ${inputProps?.disabled ? (inputProps.className || 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed') : ''}`}
                 placeholder={`Enter your ${label.toLowerCase()}`}
                 {...register(id)}
-                {...inputProps}
+                {...resolvedInputProps}
             />
         </div>
         {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error.message}</p>}
     </div>
-);
+    );
+};
 
 
 const Profile = () => {
@@ -496,12 +512,12 @@ const Profile = () => {
                                 <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF up to 10MB</p>
                             </div>
 
-                            {renderFormField("full_name", "Full Name", "text", "name", errors.full_name, register, <FaUserCircle />)}
+                            {renderFormField("full_name", "Full Name", "text", "given-name", errors.full_name, register, <FaUserCircle />)}
                             {renderFormField("email", "Email Address", "email", "email", errors.email, register, <FaEnvelope />, 
                                 
                             )}
-                            {renderFormField("phone_number", "Phone Number", "tel", "tel", errors.phone_number, register, <FaPhoneAlt />)}
-                            {renderFormField("address", "Address", "text", "street-address", errors.address, register, <FaMapMarkerAlt />)}
+                             {renderFormField("phone_number", "Phone Number", "tel", "tel-national", errors.phone_number, register, <FaPhoneAlt />)}
+{renderFormField("address", "Address", "text", "address-line1", errors.address, register, <FaMapMarkerAlt />)}
 
                             <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 pt-2">
                                 <button
@@ -550,7 +566,7 @@ const Profile = () => {
                 )}
             </div>
              <footer className="mt-16 pt-8 border-t border-slate-300 dark:border-slate-700 text-center text-slate-500 dark:text-slate-400 text-sm">
-                      <p>© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
+                      <p>Â© {new Date().getFullYear()} Wakili Inc. All rights reserved.</p>
                       <p className="mt-1">
                         <Link to="/terms" className="hover:text-teal-600 dark:hover:text-teal-400">Terms of Service</Link> | <Link to="/privacy-policy" className="hover:text-teal-600 dark:hover:text-teal-400">Privacy Policy</Link> | <Link to="/contactus" className="hover:text-teal-600 dark:hover:text-teal-400">Contact Us</Link>
                       </p>
@@ -561,3 +577,4 @@ const Profile = () => {
 // ======= End of Profile Component =======
 
 export default Profile;
+

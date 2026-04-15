@@ -1,4 +1,4 @@
-// src/pages/ResetPasswordPage.tsx
+﻿// src/pages/ResetPasswordPage.tsx
 
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -22,3 +22,4 @@ const ResetPasswordPage: React.FC = () => {
 };
 
 export default ResetPasswordPage;
+

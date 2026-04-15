@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import Navbar from "../../components/navbar/Navbar";
 // import Footer from './Footer'; 
@@ -141,10 +141,13 @@ const Services = () => {
             <Navbar /> 
 
             {/* Hero Section */}
-            <div
-                className="relative w-full h-[60vh] md:h-[70vh] bg-cover bg-center flex items-center justify-center text-center p-6"
-                style={{ backgroundImage: `url(${pageBackground})` }}
-            >
+            <div className="relative w-full h-[60vh] md:h-[70vh] bg-cover bg-center flex items-center justify-center text-center p-6">
+                <img
+                    src={pageBackground}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
                 {/* Overlay for contrast - adapts to dark mode */}
                 <div className="absolute inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm transition-colors duration-300"></div>
                 <div className="relative z-10 flex flex-col items-center">
@@ -208,3 +211,4 @@ const Services = () => {
 };
 
 export default Services;
+

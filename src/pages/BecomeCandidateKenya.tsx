@@ -88,8 +88,8 @@ const BecomeCandidateKenya: React.FC = () => {
   };
 
   useEffect(() => {
-    const metaTitle = 'How to Become a Candidate in Kenya – Legal Guide';
-    const metaDescription = 'Official guide to becoming a candidate in Kenya: eligibility, nomination steps, forms, fees, timelines, and legal requirements.';
+    const metaTitle = 'How to Become a Candidate in Kenya - Legal Guide';
+    const metaDescription = 'Practical guide to becoming a candidate in Kenya: eligibility, nomination steps, forms, fees, timelines, and legal requirements.';
     const canonicalUrl = 'https://wakili.co.ke/become-candidate-kenya';
 
     document.title = metaTitle;
@@ -271,8 +271,8 @@ const BecomeCandidateKenya: React.FC = () => {
 
         <div className="bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">How to Become a Candidate in Kenya – Nomination Requirements & Process</h1>
-            <p className="text-lg sm:text-xl text-blue-100 max-w-3xl">Official, evergreen guide to candidate eligibility, nomination requirements, forms, fees, and lawful campaign compliance.</p>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">How to Become a Candidate in Kenya - Nomination Requirements & Process</h1>
+            <p className="text-lg sm:text-xl text-blue-100 max-w-3xl">Evergreen guidance on candidate eligibility, nomination requirements, forms, fees, and lawful campaign compliance.</p>
           </div>
         </div>
 
@@ -1013,7 +1013,7 @@ const BecomeCandidateKenya: React.FC = () => {
               <section id="after-nomination" className="mb-12 scroll-mt-20">
                 <div className="flex items-start gap-3 mb-4">
                   <Megaphone className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">After Nomination – Campaign Rules</h2>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">After Nomination - Campaign Rules</h2>
                 </div>
 
                 <div className="prose max-w-none">
@@ -1114,7 +1114,6 @@ const BecomeCandidateKenya: React.FC = () => {
                       <button
                         onClick={() => toggleFaq(index)}
                         className="w-full flex justify-between items-center p-5 text-left hover:bg-gray-50 transition"
-                        aria-expanded={openFaqIndex === index}
                         aria-controls={`faq-${index}`}
                       >
                         <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
@@ -1159,3 +1158,5 @@ const BecomeCandidateKenya: React.FC = () => {
 };
 
 export default BecomeCandidateKenya;
+
+

@@ -1,4 +1,4 @@
-import { toast } from 'sonner';
+﻿import { toast } from 'sonner';
 import { caseAndPaymentAPI, CaseDataTypes } from '../../../../features/case/caseAPI';
 import { FaExclamationTriangle, FaTrashAlt } from 'react-icons/fa'; 
 
@@ -118,3 +118,4 @@ const DeleteCaseForm = ({ caseItem, isOpen, onClose, refetch }: DeleteCaseFormPr
 };
 
 export default DeleteCaseForm;
+

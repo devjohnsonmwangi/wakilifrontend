@@ -56,7 +56,7 @@ const AssignedStaffModal: React.FC<{ isOpen: boolean; onClose: () => void; assig
         {isOpen && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
                 <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md relative" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"><X size={24} /></button>
+                    <button onClick={onClose} title="Close" aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"><X size={24} /></button>
                     <div className="p-6">
                         <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-4">Assigned Staff</h3>
                         <ul className="divide-y divide-slate-200 dark:divide-slate-700 max-h-80 overflow-y-auto styled-scrollbar">
@@ -200,7 +200,7 @@ const AllCases = () => {
     };
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
     const handleFilterChange = (field: keyof typeof filters, value: string) => { setFilters(prev => ({...prev, [field]: value})); setCurrentPage(1); };
-    const resetFilters = () => { setFilters({ term: '', assignedStaffId: '', status: '' }); setCurrentPage(1); toast.info("🌀 Filters have been reset."); };
+    const resetFilters = () => { setFilters({ term: '', assignedStaffId: '', status: '' }); setCurrentPage(1); toast.info("ðŸŒ€ Filters have been reset."); };
     const handleClearFilter = (filterName: keyof typeof filters) => { setFilters(prev => ({...prev, [filterName]: ''})); setCurrentPage(1); };
 
     const handleCaseSelection = (caseId: number) => {
@@ -259,22 +259,22 @@ const AllCases = () => {
             <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4 mt-8">All Cases</h3>
             <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                     <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400"/><input type="text" name="term" placeholder="Client, Case No, Desc..." value={filters.term} onChange={(e) => handleFilterChange('term', e.target.value)} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 pl-10 pr-4" /></div></div>
+                     <div><label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Search</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true"/><input type="text" name="term" placeholder="Client, Case No, Desc..." value={filters.term} onChange={(e) => handleFilterChange('term', e.target.value)} className="block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 pl-10 pr-4" /></div></div>
                     <div ref={staffDropdownRef} className="relative">
                         <label className="block text-xs font-semibold mb-1 text-slate-500 dark:text-slate-400">Assigned Staff</label>
                         <button type="button" onClick={() => setIsStaffDropdownOpen(p => !p)} className={`block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-4 text-left flex justify-between items-center`}>
                             <span className={`truncate ${!filters.assignedStaffId ? 'text-slate-400 dark:text-slate-500' : 'font-semibold'}`}>{staffMembers.find(s => String(s.user_id) === filters.assignedStaffId)?.full_name || 'All Staff'}</span>
                             <div className="flex items-center">
-                                {filters.assignedStaffId && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('assignedStaffId'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}
+                                {filters.assignedStaffId && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('assignedStaffId'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16}/></div></button>)}
                                 <ChevronDown size={20} className={`text-slate-400 transition-transform ${isStaffDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
                         <AnimatePresence>
                             {isStaffDropdownOpen && (
-                                <motion.ul initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                    <li key="all-staff"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('assignedStaffId', ''); setIsStaffDropdownOpen(false); }}>All Staff</button></li>
-                                    {staffMembers.map(staff => (<li key={staff.user_id}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('assignedStaffId', String(staff.user_id)); setIsStaffDropdownOpen(false); }}>{staff.full_name}</button></li>))}
-                                </motion.ul>
+                                <motion.div initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div key="all-staff"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('assignedStaffId', ''); setIsStaffDropdownOpen(false); }}>All Staff</button></div>
+                                    {staffMembers.map(staff => (<div key={staff.user_id}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('assignedStaffId', String(staff.user_id)); setIsStaffDropdownOpen(false); }}>{staff.full_name}</button></div>))}
+                                </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
@@ -283,16 +283,16 @@ const AllCases = () => {
                         <button type="button" onClick={() => setIsStatusDropdownOpen(p => !p)} className={`block w-full text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-lg shadow-inner py-2.5 px-4 text-left flex justify-between items-center`}>
                             <span className={`truncate ${!filters.status ? 'text-slate-400 dark:text-slate-500' : 'font-semibold'}`}>{filters.status ? filters.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'All Statuses'}</span>
                             <div className="flex items-center">
-                                {filters.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16}/></button>)}
+                                {filters.status && (<button type="button" onClick={(e) => { e.stopPropagation(); handleClearFilter('status'); }} className="p-1 mr-1 text-slate-400 hover:text-slate-600 rounded-full"><div title="Clear filter" aria-label="Clear filter"><X size={16}/></div></button>)}
                                 <ChevronDown size={20} className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
                         <AnimatePresence>
                             {isStatusDropdownOpen && (
-                                <motion.ul initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                                     <li key="all-statuses"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></li>
-                                    {['open', 'in_progress', 'on_hold', 'resolved', 'closed'].map(status => (<li key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></li>))}
-                                </motion.ul>
+                                <motion.div initial={{opacity:0, y:-5}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-5}} className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                     <div key="all-statuses"><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('status', ''); setIsStatusDropdownOpen(false); }}>All Statuses</button></div>
+                                    {['open', 'in_progress', 'on_hold', 'resolved', 'closed'].map(status => (<div key={status}><button type="button" className="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => { handleFilterChange('status', status); setIsStatusDropdownOpen(false); }}>{status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</button></div>))}
+                                </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
@@ -304,7 +304,7 @@ const AllCases = () => {
                  <table className="w-full text-sm">
                     <thead className="bg-blue-600 text-white">
                         <tr>
-                            <th className="p-4"><input type="checkbox" className="form-checkbox" onChange={(e) => setSelectedCaseIds(e.target.checked ? new Set(filteredCases.map(c => c.case_id)) : new Set())} checked={selectedCaseIds.size > 0 && selectedCaseIds.size === filteredCases.length}/></th>
+                            <th className="p-4"><input type="checkbox" title="Select all cases" aria-label="Select all cases" className="form-checkbox" onChange={(e) => setSelectedCaseIds(e.target.checked ? new Set(filteredCases.map(c => c.case_id)) : new Set())} checked={selectedCaseIds.size > 0 && selectedCaseIds.size === filteredCases.length}/></th>
                             <HeaderCell text="Case Info" icon={BadgeInfo} className="whitespace-nowrap" />
                             <HeaderCell text="Client Info" icon={User} className="whitespace-nowrap"/>
                             <HeaderCell text="Assigned To" icon={Users} className="whitespace-nowrap"/>
@@ -318,7 +318,7 @@ const AllCases = () => {
                         {(isLoading || isFetching) && [1,2,3,4,5].map(i => <SkeletonRow key={i} columns={8}/>)}
                         {!(isLoading || isFetching) && paginatedCases.map(caseItem => (
                             <tr key={caseItem.case_id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
-                                <td className="p-4"><input type="checkbox" className="form-checkbox" checked={selectedCaseIds.has(caseItem.case_id)} onChange={() => handleCaseSelection(caseItem.case_id)} /></td>
+                                <td className="p-4"><input type="checkbox" title="Select case" aria-label="Select case" className="form-checkbox" checked={selectedCaseIds.has(caseItem.case_id)} onChange={() => handleCaseSelection(caseItem.case_id)} /></td>
                                 <td className="p-4 whitespace-nowrap"><div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100"><Briefcase size={14}/>{caseItem.case_number}</div><div className="text-xs text-slate-500 truncate max-w-xs ml-6" title={caseItem.case_description || undefined}>{caseItem.case_description}</div></td>
                                 <td className="p-4 whitespace-nowrap"><div className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100"><User size={14}/>{caseItem.owner?.full_name ?? 'N/A'}</div><div className="text-xs text-slate-500 ml-6">{caseItem.owner?.email ?? 'N/A'}</div></td>
                                 <td className="p-4 whitespace-nowrap">
@@ -379,7 +379,7 @@ const AllCases = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  <div>
                     <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4">Case Type Distribution</h3>
-                    <div style={{ height: '350px' }}>
+                    <div className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                              <BarChart data={analyticsData.caseTypeChartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#334155" : "#e2e8f0"} />
@@ -393,7 +393,7 @@ const AllCases = () => {
                 </div>
                 <div>
                     <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-4">Cases by Status</h3>
-                    <div style={{ height: '350px' }}>
+                    <div className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Tooltip contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff' }} />
@@ -413,7 +413,7 @@ const AllCases = () => {
                                 <div className="flex items-center gap-3"><span className="font-bold text-slate-400 w-6 text-center">{index + 1}</span><p className="font-semibold text-slate-800 dark:text-white">{staff.name}</p></div>
                                 <p className="font-bold text-blue-500">{staff.count} cases</p>
                             </li>
-                        )) : <p className="text-center text-slate-500 p-4">No staff assignment data available.</p>}
+                        )) : <li className="text-center text-slate-500 p-4">No staff assignment data available.</li>}
                     </ul>
                 </div>
             </div>
@@ -482,3 +482,4 @@ const AllCases = () => {
 };
 
 export default AllCases;
+

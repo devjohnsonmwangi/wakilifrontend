@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   useUpdateBranchLocationMutation,
 } from '../../../../features/branchlocation/branchlocationapi'; 
@@ -247,3 +247,4 @@ const EditBranchLocation: React.FC<EditBranchLocationProps> = ({ branch, onClose
 };
 
 export default EditBranchLocation;
+

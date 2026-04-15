@@ -118,7 +118,7 @@ const LandTransferProcessKenya = () => {
 
     // OpenGraph tags
     const ogTags = [
-      { property: 'og:title', content: 'Land Transfer Process in Kenya - Complete Guide' },
+      { property: 'og:title', content: 'Land Transfer Process in Kenya - Practical guide' },
       { property: 'og:description', content: 'Step-by-step guide to land and property transfer in Kenya. Learn requirements, costs, stamp duty, and timelines.' },
       { property: 'og:type', content: 'website' },
       { property: 'og:url', content: window.location.href }
@@ -138,7 +138,7 @@ const LandTransferProcessKenya = () => {
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'Land Transfer Process in Kenya' },
-      { name: 'twitter:description', content: 'Complete guide to land transfer, title deed transfer, and property registration in Kenya.' }
+      { name: 'twitter:description', content: 'Practical guide to land transfer, title deed transfer, and property registration in Kenya.' }
     ];
 
     twitterTags.forEach(tag => {
@@ -168,7 +168,7 @@ const LandTransferProcessKenya = () => {
           '@type': 'WebPage',
           '@id': window.location.href,
           name: 'Land Transfer Process in Kenya – Step-by-Step Guide',
-          description: 'Complete guide to land transfer procedures, stamp duty, and registration in Kenya',
+          description: 'Practical guide to land transfer procedures, stamp duty, and registration in Kenya',
           inLanguage: 'en-KE'
         },
         {
@@ -336,7 +336,7 @@ const LandTransferProcessKenya = () => {
       <header className="relative bg-gradient-to-r from-amber-700 via-orange-600 to-red-600 text-white py-12 sm:py-20 px-3 sm:px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
         </div>
 
         <div className={`max-w-7xl mx-auto relative z-10 transition-all duration-1000 px-0 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -352,7 +352,7 @@ const LandTransferProcessKenya = () => {
             </div>
           </div>
           <p className="text-xl md:text-2xl opacity-95 max-w-4xl leading-relaxed mb-6">
-            Complete guide to transferring land ownership in Kenya. Learn stamp duty, title transfer procedures, required documents, Land Control Board consent, costs, timelines, and all government requirements. <span className="font-semibold text-amber-200">Updated 2026.</span>
+            Practical guide to transferring land ownership in Kenya. Learn stamp duty, title transfer procedures, required documents, Land Control Board consent, costs, timelines, and all government requirements. <span className="font-semibold text-amber-200">Updated 2026.</span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -367,7 +367,7 @@ const LandTransferProcessKenya = () => {
               WhatsApp Guidance
             </a>
             <a
-              href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Land Transfer Process Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land transfer in Kenya.\n\nPlease contact me to discuss:\n- Land transfer procedures\n- Stamp duty and costs\n- Title deed transfer requirements\n\nThank you.')}`}
+              href={`mailto:info@wakili.com?subject=${encodeURIComponent('Land Transfer Process Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land transfer in Kenya.\n\nPlease contact me to discuss:\n- Land transfer procedures\n- Stamp duty and costs\n- Title deed transfer requirements\n\nThank you.')}`}
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 text-sm sm:text-base"
               aria-label="Email for land transfer assistance"
             >
@@ -1620,7 +1620,6 @@ const LandTransferProcessKenya = () => {
                   <button
                     onClick={() => toggleFaq(index)}
                     className="w-full flex items-center justify-between p-5 bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                    aria-expanded={openFaq === index}
                   >
                     <span className="font-semibold text-left text-gray-900 pr-4">{faq.question}</span>
                     {openFaq === index ? (
@@ -1658,7 +1657,7 @@ const LandTransferProcessKenya = () => {
                 WhatsApp Us Now
               </a>
               <a
-                href={`mailto:johnsonthuraniramwangi@gmail.com?subject=${encodeURIComponent('Land Transfer Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land transfer in Kenya.\n\nThank you.')}`}
+                href={`mailto:info@wakili.com?subject=${encodeURIComponent('Land Transfer Assistance')}&body=${encodeURIComponent('Hello,\n\nI need professional assistance with land transfer in Kenya.\n\nThank you.')}`}
                 className="inline-flex items-center justify-center gap-2 bg-amber-800 hover:bg-amber-900 text-white font-semibold px-8 py-4 rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
               >
                 <Mail className="w-5 h-5" />
@@ -1688,3 +1687,5 @@ const LandTransferProcessKenya = () => {
 };
 
 export default LandTransferProcessKenya;
+
+

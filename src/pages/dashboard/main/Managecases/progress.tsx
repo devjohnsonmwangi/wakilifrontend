@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FC, useRef } from 'react';
+﻿import React, { useState, useEffect, FC, useRef } from 'react';
 // IMPORTANT: Adjust this import path to where your RTK Query API slice is actually located in your project.
 import { useGetCaseProgressForCaseQuery, useCreateCaseProgressRecordMutation, useUpdateCaseProgressRecordMutation, useDeleteCaseProgressRecordMutation, CaseProgressData } from '../../../../features/case/caseAPI'; 
 import { X, PlusCircle, Trash2, LoaderCircle, Calendar, MessageSquareText, Pencil, Save, History } from 'lucide-react';
@@ -283,3 +283,4 @@ export const CaseProgressModal: FC<CaseProgressModalProps> = ({ isOpen, onClose,
         </motion.div>
     );
 };
+

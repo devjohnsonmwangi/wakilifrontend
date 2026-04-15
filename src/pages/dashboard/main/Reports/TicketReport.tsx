@@ -1,4 +1,4 @@
-// src/components/TicketReport.tsx
+﻿// src/components/TicketReport.tsx
 
 import { useState, useEffect } from 'react';
 import {
@@ -30,6 +30,7 @@ const useTheme = () => {
 
 const LIGHT_COLORS = ['#22c55e', '#ef4444', '#3b82f6']; // Open, Closed, Total
 const DARK_COLORS = ['#4ade80', '#f87171', '#60a5fa'];
+const CHART_SWATCHES = ['bg-green-500', 'bg-red-500', 'bg-blue-500'];
 
 // --- INTERFACES ---
 
@@ -57,14 +58,30 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
             }>
                 <p className="font-bold">{label}</p>
                 {payload.map((p, i) => (
-                     <p key={i} style={{ color: p.color }}>
-                        {`${p.name}: ${p.value}`}
+                     <p key={i} className="font-medium flex items-center gap-2" title={`${p.name}: ${p.value}`}>
+                        <span className={`inline-block h-2.5 w-2.5 rounded-full ${CHART_SWATCHES[i % CHART_SWATCHES.length]}`} aria-hidden="true" />
+                        <span>{p.name}:</span> {p.value}
                     </p>
                 ))}
             </div>
         );
     }
     return null;
+};
+
+const ChartLegend = ({ payload }: { payload?: Array<{ value?: string }> }) => {
+    if (!payload?.length) return null;
+
+    return (
+        <ul className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-gray-600 dark:text-gray-300">
+            {payload.map((entry, index) => (
+                <li key={`${entry.value ?? 'item'}-${index}`} className="flex items-center gap-2">
+                    <span className={`inline-block h-2.5 w-2.5 rounded-full ${CHART_SWATCHES[index % CHART_SWATCHES.length]}`} aria-hidden="true" />
+                    <span>{entry.value}</span>
+                </li>
+            ))}
+        </ul>
+    );
 };
 
 const SkeletonLoader = () => (
@@ -186,7 +203,7 @@ const TicketReport = () => {
                                 {summary.overallStatusData.map((_, index) => <Cell key={`cell-${index}`} fill={FANCY_COLORS[index % FANCY_COLORS.length]} stroke="none" />)}
                             </Pie>
                             <RechartsTooltip content={<CustomTooltip />} />
-                            <Legend iconType="circle" wrapperStyle={{ fontSize: '14px', color: tickColor, paddingTop: '20px' }} />
+                            <Legend iconType="circle" content={<ChartLegend />} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
@@ -199,7 +216,7 @@ const TicketReport = () => {
                             <XAxis type="number" tick={{ fill: tickColor, fontSize: 12 }} tickLine={false} />
                             <YAxis type="category" dataKey="name" width={80} tick={{ fill: tickColor, fontSize: 12 }} tickLine={false} />
                             <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(128, 128, 128, 0.1)' }}/>
-                            <Legend wrapperStyle={{ fontSize: '14px', color: tickColor }} />
+                            <Legend content={<ChartLegend />} />
                             <Bar dataKey="Open" stackId="a" fill={FANCY_COLORS[0]} radius={[0, 8, 8, 0]} />
                             <Bar dataKey="Closed" stackId="a" fill={FANCY_COLORS[1]} radius={[0, 8, 8, 0]} />
                         </BarChart>
@@ -236,3 +253,4 @@ const TicketReportPage = () => {
 }
 
 export default TicketReportPage;
+

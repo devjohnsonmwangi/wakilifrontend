@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+﻿import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux'; // For accessing Redux state
 import {
   useFetchBranchLocationsQuery,
@@ -363,3 +363,4 @@ const BranchLocationManagement: React.FC = () => {
 };
 
 export default BranchLocationManagement;
+

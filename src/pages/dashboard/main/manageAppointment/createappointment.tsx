@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X, CalendarPlus, Users, MapPin, UserCheck, Clock, MessageSquare, AlertCircle, Loader2, User as UserIcon, Search } from 'lucide-react';
@@ -165,8 +165,8 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
     const SearchableDropdown = <T,>({ label, Icon, value, setValue, setSelectedId, setOpen, isOpen, dropdownRef, filteredItems, renderItem, placeholder, disabled, required }: SearchableDropdownProps<T>) => (
         <div ref={dropdownRef} className="relative">
             <label className={labelBaseClasses}><Icon size={16} className="mr-2" /> {label} {required && '*'}</label>
-            <div className="relative"><Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" /><input type="text" value={value} onChange={(e) => { setValue(e.target.value); setSelectedId(''); setOpen(true); }} onFocus={() => setOpen(true)} placeholder={placeholder} disabled={disabled} className={`${inputBaseClasses} pl-10 pr-8`} autoComplete="off" />{value && <button type="button" onClick={() => { setValue(''); setSelectedId(''); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>}</div>
-            <AnimatePresence>{isOpen && filteredItems.length > 0 && <motion.ul variants={modalVariants} initial="initial" animate="animate" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-52 overflow-y-auto">{filteredItems.map(renderItem)}</motion.ul>}</AnimatePresence>
+            <div className="relative"><Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" /><input type="text" value={value} onChange={(e) => { setValue(e.target.value); setSelectedId(''); setOpen(true); }} onFocus={() => setOpen(true)} placeholder={placeholder} disabled={disabled} className={`${inputBaseClasses} pl-10 pr-8`} autoComplete="off" />{value && <button type="button" onClick={() => { setValue(''); setSelectedId(''); }} title="Clear Selection" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full"><X size={16} /></button>}</div>
+            <AnimatePresence>{isOpen && filteredItems.length > 0 && <motion.div variants={modalVariants} initial="initial" animate="animate" exit="exit" className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg shadow-lg max-h-52 overflow-y-auto">{filteredItems.map(renderItem)}</motion.div>}</AnimatePresence>
         </div>
     );
     
@@ -180,8 +180,8 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
                         {(isBranchesLoading || isUsersLoading) ? (<motion.div key="loading" className="flex flex-col items-center justify-center py-10 min-h-[200px]"><Loader2 className="h-10 w-10 animate-spin text-sky-500 mb-3" /><p className="text-slate-600 dark:text-slate-400">Loading data...</p></motion.div>) :
                         (isBranchesError || isUsersError) ? (<motion.div key="error" className="p-4 text-center"><AlertCircle className="mx-auto h-10 w-10 text-red-500 mb-2" /><p className="font-semibold text-red-600">Failed to load required data.</p></motion.div>) :
                         (<motion.form key="form" onSubmit={handleSubmit} className="space-y-4">
-                            <SearchableDropdown<BranchLocation> label="Branch" Icon={MapPin} value={branchSearch} setValue={setBranchSearch} setSelectedId={setLocationBranchId} setOpen={setIsBranchDropdownOpen} isOpen={isBranchDropdownOpen} dropdownRef={branchDropdownRef} filteredItems={filteredBranches} renderItem={(b) => <li key={b.branch_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectBranch(b)}>{b.name}</button></li>} placeholder="Search for a branch..." disabled={!!forBranchId} required={true} />
-                            <SearchableDropdown<UserDataTypes> label="Client" Icon={UserIcon} value={clientSearch} setValue={setClientSearch} setSelectedId={setClientUserId} setOpen={setIsClientDropdownOpen} isOpen={isClientDropdownOpen} dropdownRef={clientDropdownRef} filteredItems={filteredClients} renderItem={(u) => <li key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectClient(u)}>{u.full_name}</button></li>} placeholder="Search for a client..." disabled={!!preselectedClientId} required={true} />
+                            <SearchableDropdown<BranchLocation> label="Branch" Icon={MapPin} value={branchSearch} setValue={setBranchSearch} setSelectedId={setLocationBranchId} setOpen={setIsBranchDropdownOpen} isOpen={isBranchDropdownOpen} dropdownRef={branchDropdownRef} filteredItems={filteredBranches} renderItem={(b) => <div key={b.branch_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectBranch(b)}>{b.name}</button></div>} placeholder="Search for a branch..." disabled={!!forBranchId} required={true} />
+                            <SearchableDropdown<UserDataTypes> label="Client" Icon={UserIcon} value={clientSearch} setValue={setClientSearch} setSelectedId={setClientUserId} setOpen={setIsClientDropdownOpen} isOpen={isClientDropdownOpen} dropdownRef={clientDropdownRef} filteredItems={filteredClients} renderItem={(u) => <div key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectClient(u)}>{u.full_name}</button></div>} placeholder="Search for a client..." disabled={!!preselectedClientId} required={true} />
                             
                             <div>
                                 <label htmlFor="party" className={labelBaseClasses}>
@@ -198,7 +198,7 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
                                 />
                             </div>
 
-                            <SearchableDropdown<UserDataTypes> label="Assign To (Staff)" Icon={UserCheck} value={staffSearch} setValue={setStaffSearch} setSelectedId={(id) => setAssigneeIds(id ? [id] : [])} setOpen={setIsStaffDropdownOpen} isOpen={isStaffDropdownOpen} dropdownRef={staffDropdownRef} filteredItems={filteredStaff} renderItem={(u) => <li key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectStaff(u)}>{u.full_name}</button></li>} placeholder="Search for staff..." required={false} disabled={false} />
+                            <SearchableDropdown<UserDataTypes> label="Assign To (Staff)" Icon={UserCheck} value={staffSearch} setValue={setStaffSearch} setSelectedId={(id) => setAssigneeIds(id ? [id] : [])} setOpen={setIsStaffDropdownOpen} isOpen={isStaffDropdownOpen} dropdownRef={staffDropdownRef} filteredItems={filteredStaff} renderItem={(u) => <div key={u.user_id}><button type="button" className="w-full text-left px-4 py-2 text-sm hover:bg-sky-50 dark:hover:bg-slate-700" onClick={() => handleSelectStaff(u)}>{u.full_name}</button></div>} placeholder="Search for staff..." required={false} disabled={false} />
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label htmlFor="appointmentDate" className={labelBaseClasses}><CalendarPlus size={16} className="mr-2" /> Date *</label><input type="date" id="appointmentDate" className={inputBaseClasses} value={appointmentDate} min={new Date().toISOString().split('T')[0]} onChange={(e) => setAppointmentDate(e.target.value)} required /></div>
@@ -220,3 +220,4 @@ const CreateAppointment: React.FC<CreateAppointmentProps> = ({
 };
 
 export default CreateAppointment;
+

@@ -383,14 +383,14 @@ const PartnershipLLPRegistrationKenya = () => {
     <>
       <Helmet>
         <title>Partnership & LLP Registration Kenya – Guide 2026 & 2027</title>
-        <meta name="description" content="Complete guide to partnership and LLP registration in Kenya. Step-by-step process, costs, partnership deed, tax requirements, and legal responsibilities." />
-        <link rel="canonical" href="https://yoursite.com/partnership-llp-registration-kenya" />
+        <meta name="description" content="Practical guide to partnership and LLP registration in Kenya. Step-by-step process, costs, partnership deed, tax requirements, and legal responsibilities." />
+        <link rel="canonical" href="https://wakili.co.ke/partnership-llp-registration-kenya" />
         
         {/* OpenGraph */}
-        <meta property="og:title" content="Partnership & LLP Registration Kenya – Complete Guide 2026 & 2027" />
+        <meta property="og:title" content="Partnership & LLP Registration Kenya – Practical guide 2026 & 2027" />
         <meta property="og:description" content="Register a general partnership or LLP in Kenya. Step-by-step guide, costs, partnership deed, profit sharing, tax compliance & legal requirements." />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://yoursite.com/partnership-llp-registration-kenya" />
+        <meta property="og:url" content="https://wakili.co.ke/partnership-llp-registration-kenya" />
         <meta property="og:image" content="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=630&fit=crop" />
         
         {/* Twitter */}
@@ -408,8 +408,8 @@ const PartnershipLLPRegistrationKenya = () => {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Wakili Legal Services",
-            "url": "https://yoursite.com",
-            "logo": "https://yoursite.com/logo.png",
+            "url": "https://wakili.co.ke",
+            "logo": "https://wakili.co.ke/logo.png",
             "description": "Partnership and LLP registration services in Kenya"
           })}
         </script>
@@ -423,13 +423,13 @@ const PartnershipLLPRegistrationKenya = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://yoursite.com"
+                "item": "https://wakili.co.ke"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Partnership & LLP Registration",
-                "item": "https://yoursite.com/partnership-llp-registration-kenya"
+                "item": "https://wakili.co.ke/partnership-llp-registration-kenya"
               }
             ]
           })}
@@ -1230,3 +1230,5 @@ const PartnershipLLPRegistrationKenya = () => {
 };
 
 export default PartnershipLLPRegistrationKenya;
+
+

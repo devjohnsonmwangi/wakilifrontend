@@ -1,4 +1,4 @@
-// src/utils/activityStorage.ts
+﻿// src/utils/activityStorage.ts
 
 export interface StoredVisitedPage {
     id: string;
@@ -83,3 +83,4 @@ export interface StoredVisitedPage {
           console.error("Error clearing recent pages history from localStorage:", error);
       }
   }
+

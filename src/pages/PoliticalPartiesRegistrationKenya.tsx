@@ -1181,3 +1181,5 @@ const PoliticalPartiesRegistrationKenya: React.FC = () => {
 };
 
 export default PoliticalPartiesRegistrationKenya;
+
+

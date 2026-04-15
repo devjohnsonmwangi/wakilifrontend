@@ -757,7 +757,7 @@ const HowToBuyLandSafelyKenya: React.FC = () => {
                     </ol>
                   </div>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-900 font-semibold mb-2">⚠️ Red Flags in Registry Search:</p>
+                    <p className="text-red-900 font-semibold mb-2">Warning: Red Flags in Registry Search</p>
                     <ul className="text-red-800 text-sm space-y-1 ml-4">
                       <li>• Active mortgage or charge</li>
                       <li>• Caveat or court order against property</li>
@@ -1061,15 +1061,19 @@ const HowToBuyLandSafelyKenya: React.FC = () => {
                       <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
                     </div>
                   </Link>
-                  <div className="p-4 bg-white border border-amber-300 rounded-lg">
+                  <Link
+                    to="/land-disputes-kenya"
+                    className="block p-4 bg-white border border-amber-300 rounded-lg hover:shadow-lg transition"
+                  >
                     <div className="flex items-start gap-3">
                       <Home className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
                       <div>
                         <h4 className="font-bold text-gray-900 mb-1">Land Disputes & Resolution</h4>
-                        <p className="text-gray-600 text-sm">Coming soon – Guide to resolving land disputes and legal remedies in Kenya</p>
+                        <p className="text-gray-600 text-sm">Practical guidance on land disputes, evidence preparation, and legal remedies in Kenya</p>
                       </div>
+                      <ArrowRight className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </section>
             </div>
@@ -1081,3 +1085,5 @@ const HowToBuyLandSafelyKenya: React.FC = () => {
 };
 
 export default HowToBuyLandSafelyKenya;
+
+
