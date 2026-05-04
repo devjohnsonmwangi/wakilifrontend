@@ -6,6 +6,7 @@ import Services from "./Services";
 import TestimonialsSection from "../../components/TestimonialsSection";
 import WhatsAppFloatingButton from "../../components/WhatsAppFloatingButton";
 import { Helmet } from 'react-helmet-async';
+import { AdBanner, AdSquare, AdResponsive } from "../../components/ads";
 
 const Home = () => {
   const schemaData = {
@@ -62,9 +63,19 @@ const Home = () => {
           <Hero />
         </section>
 
+        {/* Ad Banner Below Hero */}
+        <section className="py-4 px-4">
+          <AdBanner adSlot="1234567890" adFormat="horizontal" />
+        </section>
+
         {/* About Section */}
         <section id="about">
           <About />
+        </section>
+
+        {/* Ad Square Between Sections */}
+        <section className="py-4 px-4">
+          <AdSquare adSlot="1234567891" />
         </section>
 
         {/* Services Section */}
@@ -72,9 +83,19 @@ const Home = () => {
           <Services />
         </section>
 
+        {/* Ad Responsive */}
+        <section className="py-4 px-4">
+          <AdResponsive adSlot="1234567892" />
+        </section>
+
         {/* Testimonials Section */}
         <section id="testimonials">
           <TestimonialsSection />
+        </section>
+
+        {/* Ad Banner Before Footer */}
+        <section className="py-4 px-4">
+          <AdBanner adSlot="1234567893" adFormat="auto" />
         </section>
 
         {/* Footer Section */}
