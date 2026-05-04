@@ -29,6 +29,6 @@ Notes:
 - `not_found_handling = "single-page-application"` ensures all routes fall back to `index.html` for React Router.
 - For Git-based automated Pages deployments, connect your repository in the Cloudflare Pages dashboard and set:
   - Build command: `pnpm run build`
-  - Publish directory: `dist`
+  - Build output directory: `dist`
+- Cloudflare Pages does not read a build command from `wrangler.toml`; if the dashboard build command is blank, Pages will clone the repo and then fail with `Output directory "dist" not found`.
 - `compatibility_date` is set to ensure consistent behavior across Cloudflare's infrastructure.
-- Cloudflare Pages must either run `pnpm run build` itself or receive a prebuilt `dist/` folder; if the build command is blank, deployment will fail with `Output directory "dist" not found`.
