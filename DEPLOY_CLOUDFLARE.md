@@ -31,3 +31,4 @@ Notes:
   - Build command: `pnpm run build`
   - Publish directory: `dist`
 - `compatibility_date` is set to ensure consistent behavior across Cloudflare's infrastructure.
+- Cloudflare Pages must either run `pnpm run build` itself or receive a prebuilt `dist/` folder; if the build command is blank, deployment will fail with `Output directory "dist" not found`.
