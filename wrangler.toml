@@ -1,9 +1,3 @@
 name = "wakili-client"
 compatibility_date = "2026-05-04"
-
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
-
-[analytics]
-enabled = true
+pages_build_output_dir = "./dist"
