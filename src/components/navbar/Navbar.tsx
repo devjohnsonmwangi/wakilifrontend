@@ -204,7 +204,7 @@ const Navbar: FC = () => {
                                     </>
                                 ) : (
                                     <div className="relative" ref={desktopProfileMenuRef}>
-                                        <button type="button" id="user-menu-button-desktop" onClick={toggleProfileDropdown} aria-expanded={isProfileDropdownOpen} className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
+                                        <button type="button" id="user-menu-button-desktop" onClick={toggleProfileDropdown} className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
                                             <img src={profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(username || "User")}&background=059669&color=fff&rounded=true&size=36&font-size=0.45&length=2&bold=true`} alt={`${username || "User"}'s Avatar`} className="w-9 h-9 rounded-full border-2 border-green-200 hover:border-green-500 transition-colors"/>
                                             <ChevronDown className="w-4 h-4 ml-1 text-gray-500 dark:text-gray-400 shrink-0" />
                                         </button>
@@ -220,7 +220,7 @@ const Navbar: FC = () => {
                                 <Link to="/login" className={`${themeToggleButtonClasses}`} title="Login"><LogIn className="w-5 h-5 shrink-0" /></Link>
                             ) : (
                                 <div className="relative" ref={mobileProfileMenuRef}>
-                                    <button type="button" id="user-menu-button-mobile" onClick={toggleProfileDropdown} aria-expanded={isProfileDropdownOpen} className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
+                                    <button type="button" id="user-menu-button-mobile" onClick={toggleProfileDropdown} className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 focus:ring-offset-white dark:focus:ring-offset-gray-800">
                                         <img src={profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(username || "User")}&background=059669&color=fff&rounded=true&size=36&font-size=0.45&length=2&bold=true`} alt={`${username || "User"}'s Avatar`} className="w-9 h-9 rounded-full border-2 border-green-200 hover:border-green-500 transition-colors"/>
                                     </button>
                                     {isProfileDropdownOpen && <ProfileDropdownPanel triggerButtonId="user-menu-button-mobile" />}
@@ -245,8 +245,7 @@ const Navbar: FC = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden" onClick={() => setIsMobileMoreSheetOpen(false)} aria-hidden="true"></div>
                     <div
                         ref={mobileSheetRef}
-                        className="fixed bottom-16 left-0 right-0 w-full bg-white dark:bg-gray-800 rounded-t-2xl shadow-top-xl z-40 p-4 pt-3 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto"
-                        style={{ transform: isMobileMoreSheetOpen ? 'translateY(0)' : 'translateY(100%)', maxHeight: 'calc(100vh - 8rem)' }}
+                        className="fixed bottom-16 left-0 right-0 w-full bg-white dark:bg-gray-800 rounded-t-2xl shadow-top-xl z-40 p-4 pt-3 transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto translate-y-0 max-h-[calc(100vh-8rem)]"
                         role="dialog"
                     >
                         <div className="flex justify-between items-center mb-3"><h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">More Options</h3><button type="button" onClick={() => setIsMobileMoreSheetOpen(false)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Close more options"><X className="w-5 h-5 shrink-0" /></button></div>

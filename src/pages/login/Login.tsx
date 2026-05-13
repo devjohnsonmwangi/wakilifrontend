@@ -1,8 +1,6 @@
 // src/pages/auth/Login.tsx
 
-import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { useState, ChangeEvent, FormEvent } from "react";
 import * as yup from "yup";
 import Navbar from "../../components/navbar/Navbar"; 
 import authImage from "../../assets/images/auth/wakililogo.jpg"; 
@@ -17,6 +15,8 @@ const schema = yup.object().shape({
   email: yup.string().email("Invalid email format").required("Email is required"),
   password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required")
 });
+
+type LoginFormErrors = Partial<Record<keyof LoginFormData, string>>;
 
 // Define the expected shape of the user object from the API
 interface ApiUser extends UserType {
@@ -49,16 +49,33 @@ const Login = () => {
   const navigate = useNavigate();
   const [loginUser, { isLoading: isMutationLoading }] = loginAPI.useLoginUserMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formValues, setFormValues] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+  const [formErrors, setFormErrors] = useState<LoginFormErrors>({});
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
-      resolver: yupResolver(schema)
-    });
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormValues(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (formErrors[name as keyof LoginFormData]) {
+      setFormErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
 
-  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsSubmitting(true);
     let toastId: string | number | undefined;
 
     try {
+      setFormErrors({});
+      await schema.validate(formValues, { abortEarly: false });
+      const data = formValues;
+
       toastId = toast.loading(" loging  in  stand by  please...");
       const response = await loginUser(data).unwrap() as LoginApiResponse;
 
@@ -111,6 +128,18 @@ const Login = () => {
       }, 1500);
 
     } catch (err: unknown) {
+      if (err instanceof yup.ValidationError) {
+        const validationErrors: LoginFormErrors = {};
+        for (const fieldError of err.inner) {
+          if (!fieldError.path) continue;
+          const key = fieldError.path as keyof LoginFormData;
+          if (!validationErrors[key]) validationErrors[key] = fieldError.message;
+        }
+        setFormErrors(validationErrors);
+        setIsSubmitting(false);
+        return;
+      }
+
       if (import.meta.env.DEV) {
         console.error("Login Error Details:", err); // Log the raw error in dev for inspection
       }
@@ -193,7 +222,7 @@ const Login = () => {
 
         <div className="w-full lg:w-1/2 flex justify-center items-center p-4 sm:p-6 lg:p-8 order-2">
           <div className="card bg-base-100 w-full max-w-md shadow-2xl rounded-lg">
-            <form onSubmit={handleSubmit(onSubmit)} className="card-body p-6 sm:p-8">
+            <form onSubmit={onSubmit} className="card-body p-6 sm:p-8">
               <h2 className="text-center text-[#006400] text-2xl sm:text-3xl font-bold mb-6">
                 Login To Access Services ✅
               </h2>
@@ -202,22 +231,26 @@ const Login = () => {
                 <label className="label pb-1"><span className="label-text text-gray-700">Email</span></label>
                 <input
                   type="email"
+                  name="email"
                   placeholder="e.g. john.doe@example.com"
                   className="input input-bordered w-full focus:ring-green-500 focus:border-green-500"
-                  {...register("email")}
+                  value={formValues.email}
+                  onChange={handleInputChange}
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email?.message}</p>}
+                {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
               </div>
 
               <div className="form-control mb-2">
                 <label className="label pb-1"><span className="label-text text-gray-700">Password</span></label>
                 <input
                   type="password"
+                  name="password"
                   placeholder="******"
                   className="input input-bordered w-full focus:ring-green-500 focus:border-green-500"
-                  {...register("password")}
+                  value={formValues.password}
+                  onChange={handleInputChange}
                 />
-                {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password?.message}</p>}
+                {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
               </div>
 
               <div className="text-right mb-4">

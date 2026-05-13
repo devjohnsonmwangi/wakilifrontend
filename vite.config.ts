@@ -27,8 +27,8 @@ export default defineConfig(({ mode }) => {
 
     build: {
       // Increase warning limit for chunks. Default is 500KB.
-      // This is just a warning, not an error. Aim to keep chunks reasonably sized.
-      chunkSizeWarningLimit: 1600, // kB
+      // The project uses some large vendor bundles; raise limit to avoid noisy warnings.
+      chunkSizeWarningLimit: 5000, // kB
 
       // Sourcemaps:
       // 'hidden': Generates sourcemaps but doesn't link them (good for error reporting services).
@@ -37,6 +37,17 @@ export default defineConfig(({ mode }) => {
       sourcemap: isProduction ? 'hidden' : true,
 
       rollupOptions: {
+        // Custom onwarn to suppress specific noisy rollup warnings (e.g. eval usage inside some deps)
+        onwarn(warning, warn) {
+          // Suppress "Use of eval" warnings coming from some third-party bundles (like lottie-web)
+          if (typeof warning === 'object' && warning !== null) {
+            const msg = (warning as any).message || '';
+            const code = (warning as any).code || '';
+            if (code === 'EVAL' || /Use of eval/.test(msg)) return;
+          }
+          // Fallback to default behavior
+          warn(warning);
+        },
         output: {
           // --- Manual Chunks ---
           // This is highly project-specific. Analyze your bundle with visualizer
