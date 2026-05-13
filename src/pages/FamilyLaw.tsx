@@ -43,7 +43,11 @@ const FamilyLaw = () => {
     },
     {
       question: "What happens to property during divorce in Kenya?",
-      answer: "Under the Matrimonial Property Act 2013, property acquired during marriage is presumed to be jointly owned regardless of who paid for it. The court considers both monetary and non-monetary contributions (including homemaking and childcare) when dividing property. Property owned before marriage generally remains with the original owner unless commingled. The court aims for equitable (fair), not necessarily equal, division."
+      answer: (
+        <>
+          Under the Matrimonial Property Act 2013, property acquired during marriage is presumed to be jointly owned regardless of who paid for it. The court considers both monetary and non-monetary contributions (including homemaking and childcare) when dividing property. Property owned before marriage generally remains with the original owner unless commingled. The court aims for equitable (fair), not necessarily equal, division. Where children are still studying, <a href="https://atmwalimu.co.ke/cbc-lesson-plans" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">CBC lesson planning resources</a> can help keep home learning structured.
+        </>
+      )
     },
     {
       question: "Is adultery still grounds for divorce in Kenya?",

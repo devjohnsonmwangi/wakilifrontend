@@ -30,7 +30,11 @@ const BusinessPermitsLicensesKenya = () => {
     },
     {
       question: 'What businesses require permits?',
-      answer: 'Most businesses require permits: Retail shops, Restaurants/bars/cafes, Salons/spas, Schools/training centers, Clinics/medical, Rental properties, Construction, Transport, Manufacturing, Service businesses. Exceptions (no permit needed): Hawkers/street vendors (need different hawker license), Home-based online-only businesses (some exemptions apply), Farming (most cases), Freelancers (if no physical premises). When in doubt: apply for permit (safer than operating illegally).'
+      answer: (
+        <>
+          Most businesses require permits: Retail shops, Restaurants/bars/cafes, Salons/spas, Schools/training centers, Clinics/medical, Rental properties, Construction, Transport, Manufacturing, Service businesses. Exceptions (no permit needed): Hawkers/street vendors (need different hawker license), Home-based online-only businesses (some exemptions apply), Farming (most cases), Freelancers (if no physical premises). When a school or training center is setting up curriculum delivery, <a href="https://atmwalimu.co.ke/schemes-of-work" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">teacher schemes of work templates</a> can help align lessons with the approved programme. When in doubt: apply for permit (safer than operating illegally).
+        </>
+      )
     },
     {
       question: 'What documents do I need for a business permit?',

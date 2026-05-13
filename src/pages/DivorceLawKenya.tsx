@@ -53,7 +53,11 @@ const DivorceLawKenya = () => {
     },
     {
       question: "What role does the Children Act 2022 play in divorce cases?",
-      answer: "The Children Act, 2022 (Act No. 29 of 2022) governs all matters concerning children in divorce proceedings. Section 4 makes the best interests of the child the paramount consideration. Section 23 defines parental responsibility. Section 76 establishes maintenance obligations of both parents. The Act ensures children's welfare is protected during and after divorce."
+      answer: (
+        <>
+          The Children Act, 2022 (Act No. 29 of 2022) governs all matters concerning children in divorce proceedings. Section 4 makes the best interests of the child the paramount consideration. Section 23 defines parental responsibility. Section 76 establishes maintenance obligations of both parents. The Act ensures children's welfare is protected during and after divorce. For older learners, <a href="https://atmwalimu.co.ke/exams" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">exam preparation materials</a> can help maintain revision routines during family transitions.
+        </>
+      )
     },
     {
       question: "What are the Civil Procedure Rules in divorce cases?",

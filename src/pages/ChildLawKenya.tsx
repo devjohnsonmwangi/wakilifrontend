@@ -64,8 +64,11 @@ const ChildLawKenya = () => {
     },
     {
       question: 'What does the Constitution say about children’s rights?',
-      answer:
-        'Article 53 of the Constitution of Kenya 2010 guarantees every child the right to a name and nationality, free and compulsory basic education, basic nutrition, shelter and health care, protection from abuse and violence, parental care by both parents, and that their best interests are of paramount importance in every matter concerning them.'
+      answer: (
+        <>
+          Article 53 of the Constitution of Kenya 2010 guarantees every child the right to a name and nationality, free and compulsory basic education, basic nutrition, shelter and health care, protection from abuse and violence, parental care by both parents, and that their best interests are of paramount importance in every matter concerning them. For parents supporting learning at home, <a href="https://atmwalimu.co.ke/cbc-notes" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-medium">CBC notes</a> can be a practical reference.
+        </>
+      )
     },
     {
       question: 'What is the best interests of the child principle?',
