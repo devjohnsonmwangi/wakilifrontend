@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 // --- Router Imports ---
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 
 // --- Helmet Imports ---
 import { HelmetProvider } from 'react-helmet-async';
@@ -83,6 +83,7 @@ import EmploymentContractsKenya from './pages/EmploymentContractsKenya.tsx';
 import LabourDisputeResolutionKenya from './pages/LabourDisputeResolutionKenya.tsx';
 import TerminationRedundancySeveranceKenya from './pages/TerminationRedundancySeveranceKenya.tsx';
 import OccupationalHealthSafetyKenya from './pages/OccupationalHealthSafetyKenya.tsx';
+import FinanceBillKenya from './pages/FinanceBillKenya.tsx';
 
 // Authentication & Account
 //import ResetPasswordForm from './components/resetpass.tsx';
@@ -194,6 +195,8 @@ const routes = [
   { path: 'labour-dispute-resolution-kenya', element: <LabourDisputeResolutionKenya />, errorElement: <Error /> },
   { path: 'termination-redundancy-severance-kenya', element: <TerminationRedundancySeveranceKenya />, errorElement: <Error /> },
   { path: 'occupational-health-safety-kenya', element: <OccupationalHealthSafetyKenya />, errorElement: <Error /> },
+  { path: 'FinanceBillKenya', element: <Navigate to="/finance-bill-kenya" replace />, errorElement: <Error /> },
+  { path: 'finance-bill-kenya', element: <FinanceBillKenya />, errorElement: <Error /> },
 
   // Dashboard nested routes
   {

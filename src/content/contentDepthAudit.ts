@@ -74,6 +74,7 @@ const PUBLIC_CONTENT_ROUTES: string[] = [
   '/election-offences-penalties-kenya',
   '/iebc-contacts-offices-kenya',
   '/how-to-register-business-kenya',
+  '/finance-bill-kenya',
   '/business-name-search-kenya',
   '/sole-proprietorship-registration-kenya',
   '/limited-company-registration-kenya',
@@ -107,6 +108,7 @@ const ROUTE_OVERRIDES_KEYS = new Set([
   '/family-law-divorce-kenya',
   '/land-disputes-kenya',
   '/how-to-register-business-kenya',
+  '/finance-bill-kenya',
   '/elections-in-kenya',
   '/kenya-employment-labour-laws',
 ]);
@@ -124,6 +126,7 @@ const ROUTE_DEEP_CONTENT_KEYS = new Set([
   '/land-ownership-title-deed-verification-kenya',
   '/how-to-buy-land-safely-kenya',
   '/how-to-register-business-kenya',
+  '/finance-bill-kenya',
   '/business-name-search-kenya',
   '/limited-company-registration-kenya',
   '/business-tax-obligations-kenya',
@@ -157,6 +160,7 @@ const ROUTE_EDITORIAL_PROFILE_KEYS = new Set([
   '/family-law-divorce-kenya',
   '/land-disputes-kenya',
   '/how-to-register-business-kenya',
+  '/finance-bill-kenya',
   '/elections-in-kenya',
   '/kenya-employment-labour-laws',
 ]);
@@ -165,11 +169,12 @@ const ROUTE_EVIDENCE_NOTES_KEYS = new Set([
   '/family-law-divorce-kenya',
   '/land-disputes-kenya',
   '/how-to-register-business-kenya',
+  '/finance-bill-kenya',
   '/elections-in-kenya',
   '/kenya-employment-labour-laws',
 ]);
 
-const ROUTE_CONTEXTUAL_LINK_OVERRIDE_KEYS = new Set(['/', '/updates']);
+const ROUTE_CONTEXTUAL_LINK_OVERRIDE_KEYS = new Set(['/', '/updates', '/finance-bill-kenya']);
 
 // Routes that appear as destinations in category contextual link lists
 const LINKED_BY_OTHERS = new Set([
@@ -185,6 +190,7 @@ const LINKED_BY_OTHERS = new Set([
   '/business-name-search-kenya',
   '/limited-company-registration-kenya',
   '/company-annual-returns-kenya',
+  '/finance-bill-kenya',
   '/elections-in-kenya',
   '/how-to-register-as-a-voter-kenya',
   '/election-petitions-disputes-kenya',

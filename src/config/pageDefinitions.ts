@@ -19,6 +19,7 @@ export const APP_PAGE_DEFINITIONS: PageDefinition[] = [
   { path: '/contactus', id: 'contactus', title: 'Contact Us', iconName: 'Mail' },
   { path: '/services', id: 'services', title: 'Our Services', iconName: 'Briefcase' }, 
   { path: '/about', id: 'about', title: 'About Us', iconName: 'Info' },
+  { path: '/finance-bill-kenya', id: 'finance-bill-kenya', title: 'Finance Bill Kenya', iconName: 'FileText' },
   { path: '/forgot-password', id: 'forgot-password', title: 'Forgot Password', iconName: 'KeyRound' },
   { path: '/reset-password', id: 'reset-password', title: 'Reset Password', iconName: 'KeyRound' }, // Path might include token
 

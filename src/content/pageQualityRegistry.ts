@@ -1,4 +1,4 @@
-export type ContentCategory = 'family' | 'land' | 'business' | 'elections' | 'employment' | 'general';
+export type ContentCategory = 'family' | 'land' | 'business' | 'elections' | 'employment' | 'tax' | 'general';
 
 export interface FaqItem {
   question: string;
@@ -95,6 +95,12 @@ const routeOverrides: Record<string, Partial<PageQualityMeta>> = {
       'Step-by-step business registration guidance in Kenya including name search, entity choices, filings, and compliance.',
     category: 'business',
   },
+  '/finance-bill-kenya': {
+    title: 'Finance Bill Kenya | Wakili Guide',
+    description:
+      'Detailed guidance on the Finance Bill Kenya process, official sources, tax proposals, public participation, and comment submissions.',
+    category: 'tax',
+  },
   '/elections-in-kenya': {
     title: 'Elections in Kenya | Legal Framework and Process',
     description:
@@ -114,6 +120,8 @@ const categoryDescription: Record<ContentCategory, string> = {
   land: 'Practical legal guidance on land law in Kenya, including title verification, transfer procedures, and dispute resolution.',
   business:
     'Practical legal guidance on business law and company compliance in Kenya, including registration, filings, and statutory obligations.',
+  tax:
+    'Practical legal guidance on the Finance Bill, taxation, public participation, and compliance obligations in Kenya.',
   elections:
     'Practical legal guidance on election law in Kenya, including rights, timelines, institutions, and dispute resolution process.',
   employment:
@@ -171,6 +179,23 @@ const categoryFaqs: Record<ContentCategory, FaqItem[]> = {
       question: 'Do businesses need ongoing legal compliance after registration?',
       answer:
         'Yes. Most entities have recurring obligations such as annual returns, tax compliance, permits, and record-keeping requirements.',
+    },
+  ],
+  tax: [
+    {
+      question: 'What is the Finance Bill in Kenya?',
+      answer:
+        'It is the annual bill used to amend tax and revenue laws, including VAT, excise duty, income tax, and tax administration rules.',
+    },
+    {
+      question: 'Where should I read the official Finance Bill?',
+      answer:
+        'Use Parliament, Kenya Law, the Kenya Gazette, and the National Treasury for the authoritative text and supporting notices.',
+    },
+    {
+      question: 'Can I submit comments on the Finance Bill?',
+      answer:
+        'Yes. Public participation allows citizens and businesses to share clause-specific views before the bill is finalized.',
     },
   ],
   elections: [
@@ -241,6 +266,13 @@ const categorySources: Record<ContentCategory, SourceLink[]> = {
     { label: 'eCitizen Business Registration Service', url: 'https://www.ecitizen.go.ke/' },
     { label: 'Kenya Revenue Authority', url: 'https://www.kra.go.ke/' },
     { label: 'Kenya Law Reports', url: 'https://new.kenyalaw.org/' },
+  ],
+  tax: [
+    { label: 'National Assembly Bills', url: 'https://www.parliament.go.ke/the-national-assembly/bills' },
+    { label: 'Kenya Law Reports', url: 'https://new.kenyalaw.org/' },
+    { label: 'Kenya Gazette', url: 'https://www.kenya-gazette.go.ke/' },
+    { label: 'National Treasury', url: 'https://www.treasury.go.ke/' },
+    { label: 'Kenya Revenue Authority', url: 'https://www.kra.go.ke/' },
   ],
   elections: [
     { label: 'IEBC Official Website', url: 'https://www.iebc.or.ke/' },
@@ -424,6 +456,20 @@ const routeDeepContent: Record<string, RouteDeepContent> = {
       'Registering without understanding tax and compliance duties.',
       'Using inconsistent names across supporting documents.',
       'Delaying statutory updates after registration.',
+    ],
+  },
+  '/finance-bill-kenya': {
+    whoShouldRead: 'Taxpayers, employers, SMEs, and policy readers following the annual Finance Bill in Kenya.',
+    practicalChecklist: [
+      'Read the official Finance Bill text and memorandum before forming a view.',
+      'Compare proposed VAT, excise duty, PAYE, and withholding tax changes against current law.',
+      'Prepare clause-specific comments with practical examples and real impact.',
+      'Track public participation deadlines and committee-stage amendments.',
+    ],
+    commonMistakes: [
+      'Relying on summaries without checking the official bill text.',
+      'Assuming a proposal is law before Parliament passes it and assent is granted.',
+      'Submitting broad comments that do not reference specific clauses or impacts.',
     ],
   },
   '/business-name-search-kenya': {
@@ -831,6 +877,14 @@ const categoryContextualLinks: Record<ContentCategory, ContextualLink[]> = {
     { to: '/business-tax-obligations-kenya', label: 'Business Tax Obligations' },
     { to: '/contactus', label: 'Get Business Law Support' },
   ],
+  tax: [
+    { to: '/finance-bill-kenya', label: 'Finance Bill Kenya Guide' },
+    { to: '/business-tax-obligations-kenya', label: 'Business Tax Obligations' },
+    { to: '/kra-pin-and-tax-registration-kenya', label: 'KRA PIN and Tax Registration' },
+    { to: '/company-annual-returns-and-filing-kenya', label: 'Annual Filing Guide' },
+    { to: '/updates', label: 'Legal News and Updates' },
+    { to: '/contactus', label: 'Get Tax Support' },
+  ],
   elections: [
     { to: '/understanding-iebc-kenya', label: 'Understanding IEBC' },
     { to: '/how-to-register-as-a-voter-kenya', label: 'Voter Registration Guide' },
@@ -873,6 +927,14 @@ const routeContextualLinks: Record<string, ContextualLink[]> = {
     { to: '/kenya-employment-labour-laws', label: 'Employment Law Updates' },
     { to: '/family-law-divorce-kenya', label: 'Family Law Updates' },
     { to: '/contactus', label: 'Request Legal Clarification' },
+  ],
+  '/finance-bill-kenya': [
+    { to: '/business-tax-obligations-kenya', label: 'Business Tax Obligations' },
+    { to: '/kra-pin-and-tax-registration-kenya', label: 'KRA PIN and Tax Registration' },
+    { to: '/company-annual-returns-and-filing-kenya', label: 'Annual Filing Guide' },
+    { to: '/updates', label: 'Kenya Legal News and Updates' },
+    { to: '/how-to-register-business-kenya', label: 'Business Registration Guide' },
+    { to: '/contactus', label: 'Talk to Wakili' },
   ],
 };
 
@@ -917,6 +979,20 @@ const categoryEditorialProfiles: Record<ContentCategory, EditorialTeamInfo> = {
       role: 'Advocate Reviewer',
       experience: 'Reviews legal and compliance accuracy for commercial content.',
       focusAreas: ['Corporate Law', 'Regulatory Filings', 'Commercial Risk'],
+    },
+  },
+  tax: {
+    author: {
+      name: 'Wakili Tax and Public Finance Desk',
+      role: 'Tax Content Author',
+      experience: 'Focuses on the Finance Bill, tax proposals, and public participation guidance in Kenya.',
+      focusAreas: ['Finance Bill', 'Tax Policy', 'Public Participation'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Reviews fiscal content for legal accuracy and source alignment.',
+      focusAreas: ['Tax Law', 'Public Finance', 'Legislative Procedure'],
     },
   },
   elections: {
@@ -986,6 +1062,20 @@ const routeEditorialProfiles: Record<string, Partial<EditorialTeamInfo>> = {
       role: 'Business Compliance Content Author',
       experience: 'Focuses on entity setup and practical compliance workflow guidance.',
       focusAreas: ['Entity Setup', 'Filings', 'Compliance'],
+    },
+  },
+  '/finance-bill-kenya': {
+    author: {
+      name: 'Wakili Tax and Public Finance Desk',
+      role: 'Tax Content Author',
+      experience: 'Focuses on the Finance Bill, tax proposals, and public participation guidance in Kenya.',
+      focusAreas: ['Finance Bill', 'Tax Policy', 'Public Participation'],
+    },
+    reviewer: {
+      name: 'Wakili Senior Legal Reviewer',
+      role: 'Advocate Reviewer',
+      experience: 'Reviews fiscal content for legal accuracy and source alignment.',
+      focusAreas: ['Tax Law', 'Public Finance', 'Legislative Procedure'],
     },
   },
   '/elections-in-kenya': {
@@ -1103,6 +1193,13 @@ const routeEvidenceNotes: Record<string, EvidenceNote[]> = {
       sourceLabel: 'eCitizen Business Registration Service',
     },
   ],
+  '/finance-bill-kenya': [
+    {
+      claim: 'The Finance Bill often signals the year’s most important tax and revenue changes.',
+      verificationTip: 'Compare the official text with current tax rules clause by clause.',
+      sourceLabel: 'National Assembly Bills',
+    },
+  ],
   '/elections-in-kenya': [
     {
       claim: 'Missing election timelines can invalidate otherwise valid complaints.',
@@ -1123,6 +1220,7 @@ const categoryAudienceTemplates: Record<ContentCategory, string> = {
   family: 'People dealing with {topic} and related family law decisions in Kenya.',
   land: 'People navigating {topic} and property rights procedures in Kenya.',
   business: 'Entrepreneurs and businesses handling {topic} and compliance obligations in Kenya.',
+  tax: 'Taxpayers, employers, SMEs, and policy readers following {topic} in Kenya.',
   elections: 'Voters, candidates, and stakeholders seeking clarity on {topic} in Kenya.',
   employment: 'Employees and employers managing {topic} obligations under Kenyan labour law.',
   general: 'Readers seeking practical guidance on {topic} and how to take compliant next steps in Kenya.',
@@ -1146,6 +1244,12 @@ const categoryChecklistTemplates: Record<ContentCategory, string[]> = {
     'Prepare all registration and statutory records accurately.',
     'Set filing reminders for recurring obligations.',
     'Retain submission confirmations and payment receipts.',
+  ],
+  tax: [
+    'Identify which Finance Bill proposals affect {topic} most directly.',
+    'Gather the official bill text, memorandum, and supporting notices.',
+    'Check the likely impact on cash flow, payroll, or consumer prices.',
+    'Prepare concise public participation comments before the deadline.',
   ],
   elections: [
     'Track official timelines relevant to {topic}.',
@@ -1183,6 +1287,11 @@ const categoryMistakeTemplates: Record<ContentCategory, string[]> = {
     'Submitting incomplete or inconsistent filing details.',
     'Missing deadlines due to absent compliance tracking.',
   ],
+  tax: [
+    'Reading Finance Bill {topic} only through social media summaries.',
+    'Ignoring the official text, bill memorandum, and committee amendments.',
+    'Missing public participation deadlines for {topic} comments.',
+  ],
   elections: [
     'Filing election-related complaints late in {topic} matters.',
     'Using unverified claims instead of admissible evidence.',
@@ -1205,7 +1314,8 @@ const applyTopic = (value: string, topic: string): string => value.replace('{top
 const getCategoryFromPath = (pathname: string): ContentCategory => {
   if (/divorce|family|child|succession|probate|will/i.test(pathname)) return 'family';
   if (/land|title|leasehold|freehold|survey|zoning|rates|property/i.test(pathname)) return 'land';
-  if (/business|company|kra|registration|llp|sole|cr12|permit|tax/i.test(pathname)) return 'business';
+  if (/finance-bill|revenue|vat|excise|paye|withholding|tax/i.test(pathname)) return 'tax';
+  if (/business|company|kra|registration|llp|sole|cr12|permit/i.test(pathname)) return 'business';
   if (/election|voter|iebc|political-parties|candidate|offences/i.test(pathname)) return 'elections';
   if (/employment|labour|redundancy|severance|occupational/i.test(pathname)) return 'employment';
   return 'general';
